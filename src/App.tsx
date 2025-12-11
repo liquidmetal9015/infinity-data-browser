@@ -6,9 +6,10 @@ import { QueryBuilder, type QueryState } from './components/QueryBuilder'
 import { FilterBar, type FiltersState } from './components/FilterBar'
 import { ResultsTable } from './components/ResultsTable'
 import { FactionView } from './components/FactionView'
-import { Loader2, LayoutGrid, Table2 } from 'lucide-react'
+import { BubbleChart } from './components/BubbleChart'
+import { Loader2, LayoutGrid, Table2, Circle } from 'lucide-react'
 
-type ViewMode = 'table' | 'faction';
+type ViewMode = 'table' | 'faction' | 'bubble';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -121,6 +122,14 @@ function App() {
                   <LayoutGrid size={18} />
                   <span>By Faction</span>
                 </button>
+                <button
+                  onClick={() => setViewMode('bubble')}
+                  className={`toggle-btn ${viewMode === 'bubble' ? 'active' : ''}`}
+                  title="Bubble Chart"
+                >
+                  <Circle size={18} />
+                  <span>Bubbles</span>
+                </button>
               </div>
               <div className="result-count">
                 {filteredUnits.length} {filteredUnits.length === 1 ? 'result' : 'results'}
@@ -167,6 +176,10 @@ function App() {
                       : 'Try a different search term'
                   }
                 </div>
+              </motion.div>
+            ) : viewMode === 'bubble' ? (
+              <motion.div key="bubble-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <BubbleChart units={filteredUnits} />
               </motion.div>
             ) : viewMode === 'faction' ? (
               <motion.div key="faction-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

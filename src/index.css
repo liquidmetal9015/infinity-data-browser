@@ -1664,3 +1664,91 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Bubble Chart ---------- */
+.bubble-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bubble-chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.bubble-legend {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 0.75rem;
+}
+
+.bubble-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bubble-legend .legend-item::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.bubble-legend .legend-item.access::before {
+  background: rgba(96, 165, 250, 0.8);
+  border: 2px solid rgba(96, 165, 250, 0.5);
+}
+
+.bubble-legend .legend-item.denied::before {
+  background: rgba(239, 68, 68, 0.15);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+}
+
+.bubble-chart-wrapper {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.bubble-chart-svg {
+  display: block;
+}
+
+.bubble-tooltip {
+  position: absolute;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.tooltip-name {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.tooltip-value {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+}
+
+.tooltip-value.access {
+  color: var(--success);
+}
+
+.tooltip-value.denied {
+  color: var(--error);
+}
