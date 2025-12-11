@@ -10,7 +10,8 @@ const mockMetadata: DatabaseMetadata = {
     ],
     weapons: [{ id: 101, name: "Combi Rifle" }],
     skills: [{ id: 201, name: "Mimetism" }],
-    equips: [{ id: 301, name: "Multispectral Visor" }]
+    equips: [{ id: 301, name: "Multispectral Visor" }],
+    ammunitions: [{ id: 1, name: "AP" }]
 };
 
 const mockUnitRaw: UnitRaw = {

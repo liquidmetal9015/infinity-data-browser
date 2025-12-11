@@ -11,6 +11,7 @@ export interface Profile {
     skills: { id: int; extra?: any }[];
     equip: { id: int; extra?: any }[]; // Note: Source JSON uses 'equip' in some places, 'equipment' in models
     weapons: { id: int; extra?: any }[];
+    type?: int; // Unit classification (1=LI, 2=MI, etc)
 }
 
 export interface Option {
@@ -68,9 +69,22 @@ export interface DatabaseMetadata {
         discontinued: boolean;
         logo: string;
     }[];
-    weapons: { id: int; name: string }[];
-    skills: { id: int; name: string }[];
-    equips: { id: int; name: string }[];
+    weapons: {
+        id: int;
+        name: string;
+        wiki?: string;
+        properties?: string[];
+        type?: string;
+        distance?: {
+            short?: { max: number; mod: string };
+            med?: { max: number; mod: string };
+            long?: { max: number; mod: string };
+            max?: { max: number; mod: string };
+        } | null;
+    }[];
+    skills: { id: int; name: string; wiki?: string }[];
+    equips: { id: int; name: string; wiki?: string }[];
+    ammunitions: { id: int; name: string; wiki?: string }[];
 }
 
 // Helper type for int
