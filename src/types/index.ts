@@ -75,3 +75,12 @@ export interface DatabaseMetadata {
 
 // Helper type for int
 type int = number;
+
+export interface SearchSuggestion {
+    id: int;
+    name: string;              // Base name "Mimetism"
+    displayName: string;       // "Mimetism(-6)" or "Mimetism (any)"
+    type: 'weapon' | 'skill' | 'equipment';
+    modifiers: number[];       // The modifier values
+    isAnyVariant: boolean;     // True for the "any" option
+}

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
-import { Database } from '../services/Database';
+import { useDatabase } from '../context/DatabaseContext';
+import type { SearchSuggestion } from '../types';
 
 export interface QueryFilter {
     id: string;
@@ -21,15 +22,6 @@ interface QueryBuilderProps {
     setQuery: React.Dispatch<React.SetStateAction<QueryState>>;
 }
 
-interface Suggestion {
-    id: number;
-    name: string;              // Base name "Mimetism"
-    displayName: string;       // "Mimetism(-6)" or "Mimetism (any)"
-    type: 'weapon' | 'skill' | 'equipment';
-    modifiers: number[];       // The modifier values
-    isAnyVariant: boolean;     // True for the "any" option
-}
-
 const TYPE_COLORS: Record<string, string> = {
     weapon: '#f97316',
     skill: '#8b5cf6',
@@ -42,84 +34,15 @@ const TYPE_LABELS: Record<string, string> = {
     equipment: 'E',
 };
 
-// Format modifier for display using the extras lookup
-function formatModifier(mods: number[], db: Database): string {
-    if (mods.length === 0) return '';
-
-    const parts = mods.map(modId => {
-        // Look up the extras mapping
-        const displayValue = db.extrasMap.get(modId);
-        if (displayValue) {
-            return `(${displayValue})`;
-        }
-        // Fallback if not found in extras map
-        return `(${modId})`;
-    });
-
-    return parts.join(' ');
-}
-
 export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) => {
     const [inputValue, setInputValue] = useState('');
-    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+    const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    const db = Database.getInstance();
-
-    // Build unique items with their modifier variants from all units
-    const allItemVariants = useMemo(() => {
-        const variants = new Map<string, Suggestion>();
-
-        for (const unit of db.units) {
-            for (const item of unit.allItemsWithMods) {
-                const modKey = item.modifiers.join(',');
-                const key = `${item.type}-${item.id}-${modKey}`;
-
-                if (!variants.has(key)) {
-                    const modDisplay = formatModifier(item.modifiers, db);
-                    variants.set(key, {
-                        id: item.id,
-                        name: item.name,
-                        displayName: modDisplay ? `${item.name}${modDisplay}` : item.name,
-                        type: item.type,
-                        modifiers: item.modifiers,
-                        isAnyVariant: false
-                    });
-                }
-            }
-        }
-
-        // Also add "any variant" options for items that have modifiers
-        const baseItems = new Map<string, { id: number; name: string; type: 'weapon' | 'skill' | 'equipment'; hasModifiers: boolean }>();
-        for (const v of variants.values()) {
-            const baseKey = `${v.type}-${v.id}`;
-            if (!baseItems.has(baseKey)) {
-                baseItems.set(baseKey, { id: v.id, name: v.name, type: v.type, hasModifiers: false });
-            }
-            if (v.modifiers.length > 0) {
-                baseItems.get(baseKey)!.hasModifiers = true;
-            }
-        }
-
-        // Add "any" variant for items with modifiers
-        for (const [baseKey, item] of baseItems.entries()) {
-            if (item.hasModifiers) {
-                variants.set(`${baseKey}-any`, {
-                    id: item.id,
-                    name: item.name,
-                    displayName: `${item.name} (any)`,
-                    type: item.type,
-                    modifiers: [],
-                    isAnyVariant: true
-                });
-            }
-        }
-
-        return Array.from(variants.values());
-    }, [db.units]);
+    const db = useDatabase();
 
     // Generate suggestions based on input
     useEffect(() => {
@@ -128,38 +51,10 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
             return;
         }
 
-        const q = inputValue.toLowerCase();
-        const matches = allItemVariants.filter(v =>
-            v.name.toLowerCase().includes(q) ||
-            v.displayName.toLowerCase().includes(q)
-        );
-
-        // Sort: exact matches first, then "any" variants, then by name
-        matches.sort((a, b) => {
-            const aLower = a.name.toLowerCase();
-            const bLower = b.name.toLowerCase();
-
-            // Exact match on base name
-            if (aLower === q && bLower !== q) return -1;
-            if (bLower === q && aLower !== q) return 1;
-
-            // "Any" variants after specific ones
-            if (a.isAnyVariant && !b.isAnyVariant && a.name === b.name) return 1;
-            if (!a.isAnyVariant && b.isAnyVariant && a.name === b.name) return -1;
-
-            // Group by name, then by modifier
-            const nameCompare = a.name.localeCompare(b.name);
-            if (nameCompare !== 0) return nameCompare;
-
-            // Within same name, sort by modifier value
-            const aMod = a.modifiers[0] || 0;
-            const bMod = b.modifiers[0] || 0;
-            return bMod - aMod;  // Higher modifiers first (e.g., -6 before -3)
-        });
-
+        const matches = db.getSuggestions(inputValue);
         setSuggestions(matches.slice(0, 15));
         setSelectedIndex(-1);
-    }, [inputValue, allItemVariants]);
+    }, [inputValue, db]);
 
     // Handle clicking outside to close dropdown
     useEffect(() => {
@@ -172,7 +67,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const addFilter = (suggestion: Suggestion) => {
+    const addFilter = (suggestion: SearchSuggestion) => {
         const newFilter: QueryFilter = {
             id: `${suggestion.type}-${suggestion.id}-${Date.now()}`,
             type: suggestion.type,
@@ -348,3 +243,4 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
         </div>
     );
 };
+

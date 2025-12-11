@@ -25,37 +25,42 @@
 - Data is loaded from static JSON files at runtime
 
 ### Python Scripts (Utilities)
-- Standalone scripts in `scripts/` for data analysis
+- Standalone script `scripts/identify_factions.py` for data analysis
 - No external dependencies beyond Python stdlib
 
 ---
 
 ## Directory Structure
 
-```
 infinity-data/
 ├── src/                    # React application source
 │   ├── components/         # React components
-│   │   ├── App.tsx         # Main app component
-│   │   ├── QueryBuilder.tsx# Search input with suggestions
+│   │   ├── App.tsx         # Main layout and composition
+│   │   ├── QueryBuilder.tsx# Search input with autocomplete
 │   │   ├── ResultsTable.tsx# Table view of results
 │   │   ├── FactionView.tsx # Faction-grouped view with compare mode
 │   │   └── FilterBar.tsx   # Faction filter controls
+│   ├── context/            # React Contexts
+│   │   └── DatabaseContext.tsx # Database dependency injection
+│   ├── hooks/              # Custom Hooks
+│   │   └── useUnitSearch.ts # Search state and logic
 │   ├── services/
-│   │   └── Database.ts     # Data loading and search logic
+│   │   ├── Database.ts     # Data loading and search logic
+│   │   └── Database.test.ts# Unit tests
 │   ├── utils/
 │   │   └── factions.ts     # Faction grouping and registry
 │   ├── types/
 │   │   └── index.ts        # TypeScript type definitions
-│   └── index.css           # All styles (CSS variables + component styles)
+│   ├── index.css           # All styles (CSS variables + component styles)
+│   ├── main.tsx            # Entry point with Providers
+│   └── setupTests.ts       # Vitest environment setup
 ├── public/
 │   └── data -> ../data     # Symlink to data directory
 ├── data/                   # Source unit data (45 JSON files)
 │   ├── metadata.json       # Global lookup tables (skills, weapons, etc.)
 │   └── [faction].json      # Per-faction unit data files
 ├── scripts/                # Python utility scripts
-│   ├── identify_factions.py
-│   └── query_infinity.py
+│   └── identify_factions.py
 ├── docs/                   # Documentation
 │   ├── DATA_STRUCTURE.md   # Explains JSON data format
 │   └── design.md           # Design decisions and notes
@@ -121,23 +126,25 @@ Skills/equipment can have modifiers (e.g., "Mimetism(-6)"):
 ## Key Components
 
 ### Database.ts (`src/services/Database.ts`)
-Singleton that handles all data loading and searching:
-- `init()` - Loads metadata and all faction JSON files
-- `extrasMap` - Maps modifier IDs to display strings (from `extras` arrays)
-- `searchWithModifiers()` - Main search function supporting modifier-aware queries
-- `getGroupedFactions()` - Returns factions organized by super-faction
+Core service implementing `IDatabase` interface:
+- **Dependency Injection**: Accessed via `useDatabase()` hook (Context-based)
+- **Key Methods**:
+  - `searchWithModifiers()` - Main search function
+  - `getSuggestions()` - Generates search autocomplete suggestions from all items
+  - `getGroupedFactions()` - Returns factions organized by super-faction
+  - `factionHasData()` - Checks data availability
+
+### useUnitSearch (`src/hooks/useUnitSearch.ts`)
+Encapsulates search state and logic:
+- Manages `QueryState` (filters, operators)
+- Handles `filteredUnits` memoization results based on database queries
+- Detaches business logic from the `App.tsx` view
 
 ### QueryBuilder.tsx
-Search input with autocomplete:
-- Shows suggestions for weapons, skills, equipment
-- Displays modifier variants (e.g., "Mimetism(-6)", "Mimetism(-3)", "Mimetism (any)")
-- "(any)" variant matches all modifier levels including no modifier
-
-### FactionView.tsx
-Three view modes:
-1. **Flat** - Alphabetical list of factions with/without access
-2. **Grouped** - Organized by super-faction (PanO, Yu Jing, etc.)
-3. **Compare** - Shows all sectorials per super-faction with color-coded access
+Search input UI:
+- Uses `useDatabase()` to fetch suggestions via `db.getSuggestions()`
+- Manages local input state and simplified UI logic
+- Displays modifier variants (e.g., "Mimetism(-6)", "Mimetism (any)")
 
 ### factions.ts (`src/utils/factions.ts`)
 `FactionRegistry` class for faction organization:
@@ -197,12 +204,14 @@ npm install
 # Start development server
 npm run dev
 
+# Run Unit Tests
+npm test
+
 # Build for production
 npm run build
 
 # Run Python scripts
 python scripts/identify_factions.py
-python scripts/query_infinity.py --skill "Mimetism" --by-faction
 ```
 
 ---
@@ -225,27 +234,34 @@ python scripts/query_infinity.py --skill "Mimetism" --by-faction
 - Each entry defines parent faction and child sectorials
 
 ### Adding a New Filter Type
-1. Add to `FiltersState` interface in `FilterBar.tsx`
+1. Add to `FiltersState` interface in `FilterBar.tsx` / `useUnitSearch.ts`
 2. Add UI in `FilterBar.tsx`
-3. Add filter logic in `filteredUnits` memo in `App.tsx`
+3. Update `useUnitSearch` hook to apply the new filter logic
 
 ---
 
-## Testing Notes
+## Testing Strategy
 
-- No automated tests currently
-- Manual testing: run `npm run dev`, search for various terms
-- Verify: modifiers display correctly, faction filtering works, compare view shows access
+- **Framework**: Vitest + React Testing Library + JSDOM
+- **Command**: `npm test`
+- **Unit Tests**:
+  - `src/services/Database.test.ts`: Verifies search logic, modifier matching, and suggestions
+  - `src/hooks/useUnitSearch.test.ts`: Verifies state management and filter application
+- **Methodology**:
+  - Services are tested in isolation (mocked fetch)
+  - Hooks are tested with mocked Database dependency
+  - Manual testing for UI layout and complex interactions
 
 ---
 
 ## Known Patterns and Conventions
 
-1. **Deduplication**: Units appear in multiple faction files; `Database.ts` deduplicates by ISC
-2. **Modifier Display**: Always use `db.extrasMap.get(modId)` to get display string
-3. **Faction Access**: A unit's `factions` array is authoritative for who can take it
-4. **Super-factions**: Parent factions (PanOceania, Yu Jing) contain both vanilla and sectorials
-5. **Symlink for data**: `public/data` → `../data` to avoid duplication
+1. **Dependency Injection**: Use `useDatabase()` hook to access the `IDatabase` instance. Avoid global singletons.
+2. **Deduplication**: Units appear in multiple faction files; `Database.ts` deduplicates by ISC
+3. **Modifier Display**: Always use `db.extrasMap.get(modId)` to get display string
+4. **Faction Access**: A unit's `factions` array is authoritative for who can take it
+5. **Super-factions**: Parent factions (PanOceania, Yu Jing) contain both vanilla and sectorials
+6. **Symlink for data**: `public/data` → `../data` to avoid duplication
 
 ---
 

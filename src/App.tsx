@@ -1,83 +1,30 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Database } from './services/Database'
-import type { Unit } from './types'
-import { QueryBuilder, type QueryState } from './components/QueryBuilder'
-import { FilterBar, type FiltersState } from './components/FilterBar'
+import { QueryBuilder } from './components/QueryBuilder'
+import { FilterBar } from './components/FilterBar'
 import { ResultsTable } from './components/ResultsTable'
 import { FactionView } from './components/FactionView'
 import { BubbleChart } from './components/BubbleChart'
-import { Loader2, LayoutGrid, Table2, Circle } from 'lucide-react'
+import { LayoutGrid, Table2, Circle } from 'lucide-react'
+import { useDatabase } from './context/DatabaseContext'
+import { useUnitSearch } from './hooks/useUnitSearch'
 
 type ViewMode = 'table' | 'faction' | 'bubble';
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [units, setUnits] = useState<Unit[]>([]);
+  const db = useDatabase();
   const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  const [query, setQuery] = useState<QueryState>({
-    filters: [],
-    operator: 'or'
-  });
+  // Use the custom hook for search logic
+  const {
+    query,
+    setQuery,
+    filters,
+    setFilters,
+    filteredUnits,
+    hasSearch
+  } = useUnitSearch(db, false); // No longer loading
 
-  const [filters, setFilters] = useState<FiltersState>({
-    factions: []
-  });
-
-  useEffect(() => {
-    const initDB = async () => {
-      await Database.getInstance().init();
-      setUnits(Database.getInstance().units);
-      setLoading(false);
-    };
-    initDB();
-  }, []);
-
-  // Apply query and filters to get final results
-  const filteredUnits = useMemo(() => {
-    if (loading) return [];
-
-    // First, apply query filters using modifier-aware search
-    let results: Unit[];
-    if (query.filters.length === 0) {
-      results = [];
-    } else {
-      results = Database.getInstance().searchWithModifiers(
-        query.filters.map(f => ({
-          type: f.type,
-          baseId: f.baseId,
-          modifiers: f.modifiers,
-          matchAnyModifier: f.matchAnyModifier
-        })),
-        query.operator
-      );
-    }
-
-    // Then apply additional filters
-    if (results.length > 0) {
-      // Faction filter
-      if (filters.factions.length > 0) {
-        results = results.filter(unit =>
-          unit.factions.some(fid => filters.factions.includes(fid))
-        );
-      }
-    }
-
-    return results;
-  }, [query, filters, loading]);
-
-  const hasSearch = query.filters.length > 0;
-
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <Loader2 className="loading-spinner" size={48} />
-        <div className="loading-text">Initializing Database...</div>
-        <div className="loading-subtext">Loading unit data</div>
-      </div>
-    );
-  }
 
   return (
     <div className="app-container">
@@ -86,7 +33,7 @@ function App() {
         <div className="header-content">
           <div className="logo-section">
             <h1 className="app-title">Infinity Explorer</h1>
-            <span className="unit-count">{units.length} units</span>
+            <span className="unit-count">{db.units.length} units</span>
           </div>
         </div>
       </header>

@@ -1,7 +1,26 @@
-import type { Unit, UnitRaw, DatabaseMetadata } from '../types';
+import type { Unit, UnitRaw, DatabaseMetadata, SearchSuggestion } from '../types';
 import { FactionRegistry, type FactionInfo, type SuperFaction } from '../utils/factions';
 
-export class Database {
+export interface IDatabase {
+    units: Unit[];
+    metadata: DatabaseMetadata | null;
+    init(): Promise<void>;
+    searchWithModifiers(filters: Array<{
+        type: 'weapon' | 'skill' | 'equipment';
+        baseId: number;
+        modifiers: number[];
+        matchAnyModifier: boolean;
+    }>, operator: 'and' | 'or'): Unit[];
+    getFactionName(id: number): string;
+    getFactionShortName(id: number): string;
+    getFactionInfo(id: number): FactionInfo | undefined;
+    getGroupedFactions(): SuperFaction[];
+    factionHasData(id: number): boolean;
+    getSuggestions(query: string): SearchSuggestion[];
+    extrasMap: Map<number, string>;
+}
+
+export class DatabaseImplementation implements IDatabase {
     units: Unit[] = [];
     metadata: DatabaseMetadata | null = null;
 
@@ -23,15 +42,15 @@ export class Database {
     // Faction registry with grouping and short names
     factionRegistry: FactionRegistry | null = null;
 
-    private static instance: Database;
+    private static instance: DatabaseImplementation;
 
-    private constructor() { }
+    constructor() { }
 
-    static getInstance(): Database {
-        if (!Database.instance) {
-            Database.instance = new Database();
+    static getInstance(): DatabaseImplementation {
+        if (!DatabaseImplementation.instance) {
+            DatabaseImplementation.instance = new DatabaseImplementation();
         }
-        return Database.instance;
+        return DatabaseImplementation.instance;
     }
 
     async init() {
@@ -202,55 +221,6 @@ export class Database {
         }
     }
 
-    // Legacy search method (OR logic only)
-    search(criteria: { weapon?: string; skill?: string; equip?: string }) {
-        const weaponIds = this.findIds(criteria.weapon, this.weaponMap);
-        const skillIds = this.findIds(criteria.skill, this.skillMap);
-        const equipIds = this.findIds(criteria.equip, this.equipmentMap);
-
-        if (weaponIds.length === 0 && skillIds.length === 0 && equipIds.length === 0) {
-            return [];
-        }
-
-        return this.units.filter(u => {
-            if (weaponIds.some(id => u.allWeaponIds.has(id))) return true;
-            if (skillIds.some(id => u.allSkillIds.has(id))) return true;
-            if (equipIds.some(id => u.allEquipmentIds.has(id))) return true;
-            return false;
-        });
-    }
-
-    // New advanced search with AND/OR support and modifier matching
-    searchAdvanced(filters: Array<{
-        type: 'weapon' | 'skill' | 'equipment';
-        matchedIds: number[];
-    }>, operator: 'and' | 'or'): Unit[] {
-        if (filters.length === 0) {
-            return [];
-        }
-
-        return this.units.filter(unit => {
-            const filterResults = filters.map(filter => {
-                switch (filter.type) {
-                    case 'weapon':
-                        return filter.matchedIds.some(id => unit.allWeaponIds.has(id));
-                    case 'skill':
-                        return filter.matchedIds.some(id => unit.allSkillIds.has(id));
-                    case 'equipment':
-                        return filter.matchedIds.some(id => unit.allEquipmentIds.has(id));
-                    default:
-                        return false;
-                }
-            });
-
-            if (operator === 'and') {
-                return filterResults.every(r => r);
-            } else {
-                return filterResults.some(r => r);
-            }
-        });
-    }
-
     // Modifier-aware search
     searchWithModifiers(filters: Array<{
         type: 'weapon' | 'skill' | 'equipment';
@@ -289,18 +259,6 @@ export class Database {
         });
     }
 
-    private findIds(query: string | undefined, map: Map<number, string>): number[] {
-        if (!query) return [];
-        const q = query.toLowerCase();
-        const ids: number[] = [];
-        for (const [id, name] of map.entries()) {
-            if (name.toLowerCase().includes(q)) {
-                ids.push(id);
-            }
-        }
-        return ids;
-    }
-
     getFactionName(id: number): string {
         return this.factionMap.get(id) || `Unknown (${id})`;
     }
@@ -324,4 +282,109 @@ export class Database {
     factionHasData(id: number): boolean {
         return this.factionRegistry?.hasData(id) || false;
     }
+
+    // Get search suggestions
+    getSuggestions(query: string): SearchSuggestion[] {
+        if (!query.trim()) return [];
+
+        const allVariants = this.getAllItemVariants();
+        const q = query.toLowerCase();
+
+        const matches = allVariants.filter(v =>
+            v.name.toLowerCase().includes(q) ||
+            v.displayName.toLowerCase().includes(q)
+        );
+
+        // Sort: exact matches first, then "any" variants, then by name
+        return matches.sort((a, b) => {
+            const aLower = a.name.toLowerCase();
+            const bLower = b.name.toLowerCase();
+
+            // Exact match on base name
+            if (aLower === q && bLower !== q) return -1;
+            if (bLower === q && aLower !== q) return 1;
+
+            // "Any" variants after specific ones
+            if (a.isAnyVariant && !b.isAnyVariant && a.name === b.name) return 1;
+            if (!a.isAnyVariant && b.isAnyVariant && a.name === b.name) return -1;
+
+            // Group by name, then by modifier
+            const nameCompare = a.name.localeCompare(b.name);
+            if (nameCompare !== 0) return nameCompare;
+
+            // Within same name, sort by modifier value
+            const aMod = a.modifiers[0] || 0;
+            const bMod = b.modifiers[0] || 0;
+            return bMod - aMod;  // Higher modifiers first (e.g., -6 before -3)
+        });
+    }
+
+    private cachedVariants: SearchSuggestion[] | null = null;
+
+    private getAllItemVariants(): SearchSuggestion[] {
+        if (this.cachedVariants) return this.cachedVariants;
+
+        const variants = new Map<string, SearchSuggestion>();
+
+        for (const unit of this.units) {
+            for (const item of unit.allItemsWithMods) {
+                const modKey = item.modifiers.join(',');
+                const key = `${item.type}-${item.id}-${modKey}`;
+
+                if (!variants.has(key)) {
+                    const modDisplay = this.formatModifier(item.modifiers);
+                    variants.set(key, {
+                        id: item.id,
+                        name: item.name,
+                        displayName: modDisplay ? `${item.name}${modDisplay}` : item.name,
+                        type: item.type,
+                        modifiers: item.modifiers,
+                        isAnyVariant: false
+                    });
+                }
+            }
+        }
+
+        // Also add "any variant" options for items that have modifiers
+        const baseItems = new Map<string, { id: number; name: string; type: 'weapon' | 'skill' | 'equipment'; hasModifiers: boolean }>();
+        for (const v of variants.values()) {
+            const baseKey = `${v.type}-${v.id}`;
+            if (!baseItems.has(baseKey)) {
+                baseItems.set(baseKey, { id: v.id, name: v.name, type: v.type, hasModifiers: false });
+            }
+            if (v.modifiers.length > 0) {
+                baseItems.get(baseKey)!.hasModifiers = true;
+            }
+        }
+
+        // Add "any" variant for items with modifiers
+        for (const [baseKey, item] of baseItems.entries()) {
+            if (item.hasModifiers) {
+                variants.set(`${baseKey}-any`, {
+                    id: item.id,
+                    name: item.name,
+                    displayName: `${item.name} (any)`,
+                    type: item.type,
+                    modifiers: [],
+                    isAnyVariant: true
+                });
+            }
+        }
+
+        this.cachedVariants = Array.from(variants.values());
+        return this.cachedVariants;
+    }
+
+    private formatModifier(mods: number[]): string {
+        if (mods.length === 0) return '';
+        const parts = mods.map(modId => {
+            const displayValue = this.extrasMap.get(modId);
+            return displayValue ? `(${displayValue})` : `(${modId})`;
+        });
+        return parts.join(' ');
+    }
 }
+
+// Deprecated export for backward compatibility during refactor
+export const Database = DatabaseImplementation;
+
