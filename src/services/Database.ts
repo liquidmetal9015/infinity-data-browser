@@ -41,7 +41,7 @@ export class Database {
 
         // 1. Load Metadata
         try {
-            const metaRes = await fetch('/data/metadata.json');
+            const metaRes = await fetch(import.meta.env.BASE_URL + 'data/metadata.json');
             this.metadata = await metaRes.json();
 
             this.metadata?.factions.forEach(f => this.factionMap.set(f.id, f.name));
@@ -59,7 +59,7 @@ export class Database {
         const loadResults = await Promise.all(
             this.metadata.factions.map(async (faction) => {
                 if (!faction.slug) return null;
-                const filename = `/data/${faction.slug}.json`;
+                const filename = `${import.meta.env.BASE_URL}data/${faction.slug}.json`;
                 try {
                     const res = await fetch(filename);
                     if (!res.ok) return null;
