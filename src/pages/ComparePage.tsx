@@ -1,19 +1,23 @@
 import { useState, useMemo } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
-import { Users, Info, X, Check } from 'lucide-react';
+import { Users, X, Check, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function ComparePage() {
     const db = useDatabase();
     const [selectedFactionIds, setSelectedFactionIds] = useState<number[]>([]);
 
-    // Get all factions (parents and sectorials)
+    // Get all factions
     const allFactions = useMemo(() => {
         if (!db.metadata) return [];
         return db.metadata.factions
             .filter(f => !f.discontinued)
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [db.metadata]);
+
+    const groupedFactions = useMemo(() => {
+        return db.getGroupedFactions();
+    }, [db]);
 
     const availableFactions = useMemo(() => {
         return allFactions.filter(f => !selectedFactionIds.includes(f.id));
@@ -76,12 +80,26 @@ export function ComparePage() {
             .sort((a, b) => a!.name.localeCompare(b!.name))
             .map(u => u!);
 
+        // Group shared units by faction combination
+        const sharedGroupsMap = new Map<string, { factions: number[], units: number[] }>();
+
+        shared.forEach(item => {
+            const key = item.factionIds.sort((a, b) => a - b).join(',');
+            if (!sharedGroupsMap.has(key)) {
+                sharedGroupsMap.set(key, { factions: item.factionIds, units: [] });
+            }
+            sharedGroupsMap.get(key)!.units.push(item.unitId);
+        });
+
+        const sharedGroups = Array.from(sharedGroupsMap.values()).map(group => ({
+            factions: group.factions.map(fid => allFactions.find(f => f.id === fid)).filter(f => f !== undefined) as typeof allFactions,
+            units: sortUnits(group.units)
+        })).filter(g => g.factions.length > 1) // Ensure we have valid groups
+            .sort((a, b) => b.factions.length - a.factions.length); // Sort by most overlapping first
+
         return {
             universal: sortUnits(universal),
-            shared: shared.map(item => ({
-                unit: getUnit(item.unitId)!,
-                factions: item.factionIds
-            })).sort((a, b) => a.unit.name.localeCompare(b.unit.name)),
+            sharedGroups,
             unique: Object.entries(unique).reduce((acc, [fid, uids]) => {
                 acc[Number(fid)] = sortUnits(uids);
                 return acc;
@@ -97,9 +115,30 @@ export function ComparePage() {
         }
     };
 
+    const addSuperFaction = (superId: number) => {
+        const superFaction = groupedFactions.find(sf => sf.id === superId);
+        if (!superFaction) return;
+
+        const newIds = new Set(selectedFactionIds);
+        // Add parent? Usually we compare sectorials. Let's add all children.
+        // If the user wants the "Vanilla" faction, that's the parent.
+        // Actually, in Infinity, Vanilla is distinct from Sectorials but shares units.
+        // Comparing Vanilla vs Sectorials text is common.
+        // Let's add the parent AND all children.
+
+        if (!newIds.has(superFaction.id)) newIds.add(superFaction.id);
+        superFaction.sectorials.forEach(child => {
+            if (!newIds.has(child.id)) newIds.add(child.id);
+        });
+
+        setSelectedFactionIds(Array.from(newIds));
+    };
+
     const removeFaction = (id: number) => {
         setSelectedFactionIds(selectedFactionIds.filter(fid => fid !== id));
     };
+
+    const clearAll = () => setSelectedFactionIds([]);
 
     return (
         <div className="page-container compare-page">
@@ -110,6 +149,8 @@ export function ComparePage() {
 
             {/* Controls */}
             <div className="controls-section">
+
+                {/* Visual Chip List */}
                 <div className="selected-chips">
                     <AnimatePresence>
                         {selectedFactions.map(f => (
@@ -125,22 +166,41 @@ export function ComparePage() {
                             </motion.div>
                         ))}
                     </AnimatePresence>
+                    {selectedFactions.length > 0 && (
+                        <button onClick={clearAll} className="clear-btn">Clear All</button>
+                    )}
                 </div>
 
-                <div className="add-dropdown">
-                    <select onChange={handleAddFaction} value="">
-                        <option value="">+ Add Faction</option>
-                        {availableFactions.map(f => (
-                            <option key={f.id} value={f.id}>{f.name}</option>
+                <div className="action-row">
+                    <div className="add-dropdown">
+                        <select onChange={handleAddFaction} value="">
+                            <option value="">+ Add Single Faction</option>
+                            {availableFactions.map(f => (
+                                <option key={f.id} value={f.id}>{f.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="super-faction-actions">
+                        <span className="label">Quick Add:</span>
+                        {groupedFactions.map(sf => (
+                            <button
+                                key={sf.id}
+                                onClick={() => addSuperFaction(sf.id)}
+                                className="super-btn"
+                                title={`Add all ${sf.name} factions`}
+                            >
+                                {sf.name}
+                            </button>
                         ))}
-                    </select>
+                    </div>
                 </div>
             </div>
 
             {/* Analysis Results */}
             {!analysis ? (
                 <div className="empty-state">
-                    <Info size={48} className="text-secondary" />
+                    <Layers size={48} className="text-secondary" />
                     <p>Select at least two factions to compare overlapping units.</p>
                 </div>
             ) : (
@@ -163,30 +223,35 @@ export function ComparePage() {
                         </div>
                     )}
 
-                    {/* 2. Partially Shared */}
-                    {analysis.shared.length > 0 && (
+                    {/* 2. Partially Shared Groups */}
+                    {analysis.sharedGroups.length > 0 && (
                         <div className="section shared-section">
                             <h3>
                                 <Users size={20} />
                                 Shared Units (Partial Overlap)
-                                <span className="count-badge">{analysis.shared.length}</span>
                             </h3>
-                            <div className="unit-list-grid">
-                                {analysis.shared.map(({ unit, factions }) => (
-                                    <div key={unit.id} className="unit-card shared">
-                                        <div className="unit-name">{unit.name}</div>
-                                        <div className="faction-dots">
-                                            {factions.map(fid => {
-                                                // Ideally we show logos, but for now simple dots with tooltip
-                                                const f = allFactions.find(af => af.id === fid);
-                                                return (
-                                                    <div
-                                                        key={fid}
-                                                        className="dot"
-                                                        title={f?.name}
-                                                    />
-                                                );
-                                            })}
+                            <div className="shared-groups-container">
+                                {analysis.sharedGroups.map((group, idx) => (
+                                    <div key={idx} className="shared-group-block">
+                                        <div className="group-header">
+                                            <div className="faction-tags">
+                                                {group.factions.map(f => {
+                                                    const color = `hsl(${(f.id * 137.5) % 360}, 70%, 50%)`;
+                                                    return (
+                                                        <span key={f.id} className="group-tag" style={{ borderLeftColor: color }}>
+                                                            {f.name}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                            <span className="count-badge">{group.units.length}</span>
+                                        </div>
+                                        <div className="unit-list-row">
+                                            {group.units.map(unit => (
+                                                <div key={unit.id} className="unit-card shared">
+                                                    {unit.name}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
@@ -200,10 +265,11 @@ export function ComparePage() {
                         <div className="unique-columns">
                             {selectedFactions.map(f => {
                                 const units = analysis.unique[f.id] || [];
+                                const color = `hsl(${(f.id * 137.5) % 360}, 70%, 50%)`;
                                 return (
-                                    <div key={f.id} className="faction-column">
+                                    <div key={f.id} className="faction-column" style={{ borderTopColor: color }}>
                                         <div className="column-header">
-                                            <h4>{f.name}</h4>
+                                            <h4 style={{ color }}>{f.name}</h4>
                                             <span className="count">{units.length} unique</span>
                                         </div>
                                         <div className="column-content">
@@ -239,8 +305,12 @@ export function ComparePage() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 1rem;
+                    gap: 1.5rem;
                     margin-bottom: 3rem;
+                    background: var(--bg-secondary);
+                    padding: 1.5rem;
+                    border-radius: 12px;
+                    border: 1px solid var(--border-color);
                 }
                 .selected-chips {
                     display: flex;
@@ -259,6 +329,7 @@ export function ComparePage() {
                     border-radius: 100px;
                     font-size: 0.9rem;
                     font-weight: 500;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
                 .faction-chip button {
                     background: none;
@@ -272,14 +343,64 @@ export function ComparePage() {
                 .faction-chip button:hover {
                     color: white;
                 }
+                .clear-btn {
+                    background: none;
+                    border: 1px solid var(--border-color);
+                    color: var(--text-secondary);
+                    padding: 0.5rem 1rem;
+                    border-radius: 100px;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                }
+                .clear-btn:hover {
+                    background: var(--bg-hover);
+                    color: var(--color-danger);
+                }
+
+                .action-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 2rem;
+                    align-items: center;
+                    justify-content: center;
+                }
+
                 .add-dropdown select {
                     padding: 0.75rem 1.5rem;
-                    border-radius: 100px;
+                    border-radius: 8px;
                     border: 1px solid var(--border-color);
-                    background: var(--bg-secondary);
+                    background: var(--bg-primary);
                     color: var(--text-primary);
                     cursor: pointer;
-                    font-size: 1rem;
+                    font-size: 0.95rem;
+                    min-width: 200px;
+                }
+
+                .super-faction-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
+                .super-faction-actions .label {
+                    font-size: 0.9rem;
+                    color: var(--text-secondary);
+                    margin-right: 0.5rem;
+                }
+                .super-btn {
+                    padding: 0.4rem 0.8rem;
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    color: var(--text-primary);
+                }
+                .super-btn:hover {
+                    background: var(--bg-hover);
+                    border-color: var(--color-primary);
+                    color: var(--color-primary);
                 }
                 
                 .empty-state {
@@ -350,13 +471,46 @@ export function ComparePage() {
                 }
                 .faction-dots {
                     display: flex;
-                    gap: 2px;
+                    gap: 4px;
                 }
                 .dot {
-                    width: 6px;
-                    height: 6px;
+                    width: 8px;
+                    height: 8px;
                     border-radius: 50%;
-                    background: var(--text-secondary);
+                    border: 1px solid rgba(0,0,0,0.1);
+                }
+
+                .shared-groups-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+                .shared-group-block {
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    padding: 1rem;
+                }
+                .group-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.75rem;
+                    border-bottom: 1px solid var(--border-color);
+                    padding-bottom: 0.5rem;
+                }
+                .faction-tags {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                }
+                .group-tag {
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    padding: 0.1rem 0.5rem;
+                    background: var(--bg-secondary);
+                    border-radius: 4px;
+                    border-left: 3px solid transparent;
                 }
 
                 .unique-columns-wrapper h3 {
@@ -365,25 +519,27 @@ export function ComparePage() {
                 }
                 .unique-columns {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
                     gap: 1rem;
                 }
                 .faction-column {
                     background: var(--bg-secondary);
                     border-radius: 12px;
                     border: 1px solid var(--border-color);
+                    border-top-width: 4px;
                     display: flex;
                     flex-direction: column;
                 }
                 .column-header {
                     padding: 1rem;
                     border-bottom: 1px solid var(--border-color);
-                    background: rgba(0,0,0,0.05);
+                    background: rgba(0,0,0,0.02);
                     text-align: center;
                 }
                 .column-header h4 {
                     margin: 0;
-                    font-size: 1rem;
+                    font-size: 1.1rem;
+                    font-weight: 600;
                 }
                 .column-header .count {
                     font-size: 0.8rem;
@@ -392,11 +548,17 @@ export function ComparePage() {
                 .column-content {
                     padding: 1rem;
                     flex: 1;
+                    max-height: 500px;
+                    overflow-y: auto;
                 }
                 .unit-item-compact {
-                    padding: 0.35rem 0;
+                    padding: 0.4rem 0.5rem;
                     border-bottom: 1px solid var(--border-color);
                     font-size: 0.9rem;
+                    border-radius: 4px;
+                }
+                .unit-item-compact:hover {
+                    background: var(--bg-hover);
                 }
                 .unit-item-compact:last-child {
                     border-bottom: none;

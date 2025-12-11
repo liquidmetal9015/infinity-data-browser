@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
-import { Search, Info } from 'lucide-react';
+import { Search, Info, Trophy } from 'lucide-react';
 import * as d3 from 'd3';
 
 interface RangeBand {
@@ -15,13 +15,43 @@ interface ParsedWeapon {
     bands: RangeBand[];
 }
 
+// Standard range bands in inches
+const RANGE_BANDS = [
+    { start: 0, end: 8, label: '0-8"' },
+    { start: 8, end: 16, label: '8-16"' },
+    { start: 16, end: 24, label: '16-24"' },
+    { start: 24, end: 32, label: '24-32"' },
+    { start: 32, end: 40, label: '32-40"' },
+    { start: 40, end: 48, label: '40-48"' },
+    { start: 48, end: 96, label: '48-96"' },
+];
+
 export function RangesPage() {
     const db = useDatabase();
-    const [search, setSearch] = useState('');
+    const [weaponSearch, setWeaponSearch] = useState('');
+    const [unitSearch, setUnitSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const containerRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState(0);
 
-    // Parse weapons data into usable range bands
+    // Handle Resize
+    useEffect(() => {
+        const updateWidth = () => {
+            if (containerRef.current) {
+                setContainerWidth(containerRef.current.clientWidth);
+            }
+        };
+
+        window.addEventListener('resize', updateWidth);
+        updateWidth();
+
+        // Small delay to ensure layout is settled
+        setTimeout(updateWidth, 100);
+
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    // Parse weapons data into usable range bands (Converted to Inches)
     const allWeapons = useMemo(() => {
         if (!db.metadata) return [];
 
@@ -37,7 +67,11 @@ export function RangesPage() {
                     // Convert distance object to array and sort by max range
                     const parts = Object.entries(w.distance)
                         .filter(([_, val]) => val !== null) // Filter out null bands
-                        .map(([key, val]) => ({ key, max: val!.max, mod: parseInt(val!.mod) }))
+                        .map(([, val]) => ({
+                            // Convert CM to Inches (approx 0.4 factor, 10cm = 4in)
+                            max: Math.round(val!.max * 0.4),
+                            mod: parseInt(val!.mod)
+                        }))
                         .sort((a, b) => a.max - b.max);
 
                     let currentStart = 0;
@@ -60,26 +94,86 @@ export function RangesPage() {
     }, [db.metadata]);
 
     const filteredWeapons = useMemo(() => {
-        return allWeapons.filter(w => w.name.toLowerCase().includes(search.toLowerCase()));
-    }, [allWeapons, search]);
+        return allWeapons.filter(w => w.name.toLowerCase().includes(weaponSearch.toLowerCase()));
+    }, [allWeapons, weaponSearch]);
+
+    // Unit Search Results
+    const filteredUnits = useMemo(() => {
+        if (!unitSearch.trim() || unitSearch.length < 2) return [];
+        return db.units
+            .filter(u => u.name.toLowerCase().includes(unitSearch.toLowerCase()))
+            .slice(0, 5); // Limit to top 5 matches
+    }, [db.units, unitSearch]);
 
     const selectedWeapons = useMemo(() => {
         return allWeapons.filter(w => selectedIds.has(w.id));
     }, [allWeapons, selectedIds]);
 
+    const selectUnitWeapons = (unitId: number) => {
+        const unit = db.units.find(u => u.id === unitId);
+        if (unit) {
+            // Find all weapons this unit has that exist in our parsed weapon list
+            const relevantWeaponIds = Array.from(unit.allWeaponIds)
+                .filter(id => allWeapons.some(w => w.id === id));
+
+            setSelectedIds(new Set(relevantWeaponIds));
+            setUnitSearch(''); // Clear search
+        }
+    };
+
+    // Calculate Best Weapons per Band
+    const bestWeapons = useMemo(() => {
+        if (selectedWeapons.length === 0) return [];
+
+        return RANGE_BANDS.map(band => {
+            let bestWeapon: ParsedWeapon | null = null;
+            let bestMod = -Infinity;
+            let secondBestMod = -Infinity;
+
+            selectedWeapons.forEach(w => {
+                // Find the modifier for this band (using middle of band to sample)
+                const samplePoint = band.start + 1;
+                const bandMod = w.bands.find(b => b.start < samplePoint && b.end >= samplePoint)?.mod ?? -Infinity;
+
+                if (bandMod > bestMod) {
+                    secondBestMod = bestMod;
+                    bestMod = bandMod;
+                    bestWeapon = w;
+                } else if (bandMod === bestMod) {
+                    // Tie logic (could be range, damage, etc. For now keep existing)
+                } else if (bandMod > secondBestMod) {
+                    secondBestMod = bandMod;
+                }
+            });
+
+            // If effective mod is too low (e.g. out of range), don't show
+            if (bestMod <= -100) return null;
+
+            return {
+                band,
+                weapon: bestWeapon,
+                mod: bestMod,
+                diff: secondBestMod > -Infinity ? bestMod - secondBestMod : 0
+            };
+        });
+
+    }, [selectedWeapons]);
+
+
+    const graphRef = useRef<HTMLDivElement>(null);
+
     // D3 Chart Drawing Effect
     useEffect(() => {
-        if (!containerRef.current || selectedWeapons.length === 0) {
-            d3.select(containerRef.current).selectAll("*").remove();
+        if (!graphRef.current || selectedWeapons.length === 0 || containerWidth === 0) {
             return;
         }
 
-        const container = containerRef.current;
-        const width = container.clientWidth;
+        const container = graphRef.current;
+        const width = containerWidth;
         const height = 400;
         const margin = { top: 20, right: 30, bottom: 40, left: 40 };
 
-        // Clear previous
+        // Clear previous D3 content ONLY
         d3.select(container).selectAll("*").remove();
 
         const svg = d3.select(container)
@@ -89,17 +183,20 @@ export function RangesPage() {
 
         // Scales
         const x = d3.scaleLinear()
-            .domain([0, 96]) // Max standard range usually 96"
+            .domain([0, 48]) // Focus on 0-48", allow extending if needed
             .range([margin.left, width - margin.right]);
 
         const y = d3.scaleLinear()
-            .domain([-6, 6]) // Mods usually -6 to +3 (extending to +6 for safety)
+            .domain([-6, 6]) // Mods usually -6 to +3 
             .range([height - margin.bottom, margin.top]);
 
-        // Draw Axes
+        // Draw Axes with Inch ticks
         svg.append("g")
             .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(x).ticks(10))
+            .call(d3.axisBottom(x)
+                .tickValues([0, 8, 16, 24, 32, 40, 48])
+                .tickFormat(d => d + '"')
+            )
             .append("text")
             .attr("x", width - margin.right)
             .attr("y", -6)
@@ -108,7 +205,7 @@ export function RangesPage() {
 
         svg.append("g")
             .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y))
+            .call(d3.axisLeft(y).ticks(6))
             .append("text")
             .attr("x", 6)
             .attr("y", margin.top)
@@ -120,13 +217,17 @@ export function RangesPage() {
         svg.append("g")
             .attr("class", "grid")
             .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(x).ticks(10).tickSize(-height + margin.top + margin.bottom).tickFormat(() => ""))
+            .call(d3.axisBottom(x)
+                .tickValues([0, 8, 16, 24, 32, 40, 48])
+                .tickSize(-height + margin.top + margin.bottom)
+                .tickFormat(() => "")
+            )
             .attr("stroke-opacity", 0.1);
 
         svg.append("g")
             .attr("class", "grid")
             .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y).ticks(5).tickSize(-width + margin.left + margin.right).tickFormat(() => ""))
+            .call(d3.axisLeft(y).ticks(6).tickSize(-width + margin.left + margin.right).tickFormat(() => ""))
             .attr("stroke-opacity", 0.1);
 
         // Zero line
@@ -145,28 +246,20 @@ export function RangesPage() {
 
         // Draw Lines
         selectedWeapons.forEach((weapon, i) => {
-            const linePath = d3.path();
-
-            // Start
-            linePath.moveTo(x(0), y(weapon.bands[0]?.mod || 0));
-
-            weapon.bands.forEach(band => {
-                // Horizontal line for the band
-                linePath.lineTo(x(band.end), y(band.mod));
-                // If there is a next band, vertical line to it? No, step chart
-                // For step chart, we draw H then V.
-            });
-
-            // To make it a proper step function, we need point-to-point
-            // (start, mod) -> (end, mod) -> (end, nextMod) ...
-
             const points: [number, number][] = [];
+
+            // Generate step points: start->end for each band
             weapon.bands.forEach(band => {
+                // If band starts beyond our view (e.g. 96"), clip it or skip?
+                // For now, let's clamp max view at 52" so graph looks clean, but actual data goes further
+                if (band.start > 56) return;
+
+                const endX = Math.min(band.end, 56);
+
                 points.push([band.start, band.mod]);
-                points.push([band.end, band.mod]); // End of band step
+                points.push([endX, band.mod]);
             });
 
-            // Line generator
             const line = d3.line()
                 .x(d => x(d[0]))
                 .y(d => y(d[1]));
@@ -175,14 +268,12 @@ export function RangesPage() {
                 .datum(points)
                 .attr("fill", "none")
                 .attr("stroke", color(i.toString()))
-                .attr("stroke-width", 2.5)
-                .attr("d", line);
-
-            // Add Label at the end or start?
-            // Legend is better handled in React UI
+                .attr("stroke-width", 3)
+                .attr("d", line)
+                .attr("stroke-opacity", 0.8);
         });
 
-    }, [selectedWeapons]);
+    }, [selectedWeapons, containerWidth]);
 
 
     const toggleWeapon = (id: number) => {
@@ -202,13 +293,44 @@ export function RangesPage() {
                 <div className="sidebar">
                     <div className="sidebar-header">
                         <h2>Range Visualizer</h2>
+
+                        {/* Unit Search */}
+                        <div className="unit-search-section">
+                            <div className="search-wrapper">
+                                <Search className="search-icon" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Load unit weapons..."
+                                    value={unitSearch}
+                                    onChange={(e) => setUnitSearch(e.target.value)}
+                                    className="search-input"
+                                />
+                            </div>
+                            {/* Autocomplete Dropdown */}
+                            {filteredUnits.length > 0 && (
+                                <div className="autocomplete-dropdown">
+                                    {filteredUnits.map(u => (
+                                        <div
+                                            key={u.id}
+                                            className="autocomplete-item"
+                                            onClick={() => selectUnitWeapons(u.id)}
+                                        >
+                                            {u.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="divider">or filter details</div>
+
                         <div className="search-wrapper">
                             <Search className="search-icon" size={16} />
                             <input
                                 type="text"
-                                placeholder="Filter weapons..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Filter list..."
+                                value={weaponSearch}
+                                onChange={(e) => setWeaponSearch(e.target.value)}
                                 className="search-input"
                             />
                         </div>
@@ -231,15 +353,39 @@ export function RangesPage() {
                 </div>
 
                 {/* Right: Chart Area */}
-                <div className="chart-area">
+                <div className="chart-area" ref={containerRef}>
                     {selectedWeapons.length === 0 ? (
                         <div className="empty-chart">
                             <Info size={48} />
-                            <p>Select weapons from the list to compare their range bands.</p>
+                            <p>Select a unit or weapons to visualize ranges (Inches).</p>
                         </div>
                     ) : (
                         <>
-                            <div ref={containerRef} className="d3-container"></div>
+                            <div className="d3-container" ref={graphRef}></div>
+
+                            {/* Best Weapons Analysis */}
+                            <div className="analysis-bar">
+                                <h3><Trophy size={16} /> Best Options per Range</h3>
+                                <div className="range-strip">
+                                    {bestWeapons.map((item, i) => {
+                                        if (!item || !item.weapon || item.band.start >= 48) return null;
+                                        const weapon = item.weapon as ParsedWeapon;
+                                        const weaponIndex = selectedWeapons.findIndex(w => w.id === weapon.id);
+                                        const color = d3.schemeCategory10[weaponIndex % 10];
+                                        return (
+                                            <div key={i} className="range-block" style={{ flex: 1, borderTop: `4px solid ${color}` }}>
+                                                <div className="range-label">{item.band.label}</div>
+                                                <div className="winner-name" style={{ color }}>{weapon.name}</div>
+                                                <div className="winner-mod">
+                                                    {item.mod > 0 ? '+' : ''}{item.mod}
+                                                    {item.diff > 0 && <span className="diff-badge" title="Better than next best">+{item.diff}</span>}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <div className="chart-legend">
                                 {selectedWeapons.map((w, i) => (
                                     <div key={w.id} className="legend-item">
@@ -263,16 +409,17 @@ export function RangesPage() {
 
             <style>{`
                 .ranges-page {
-                    height: calc(100vh - 80px); /* Adjust for header */
+                    height: calc(100vh - 80px);
                     max-width: 1400px;
                     margin: 0 auto;
                     padding: 1rem 2rem;
                 }
                 .ranges-layout {
                     display: grid;
-                    grid-template-columns: 300px 1fr;
-                    gap: 2rem;
+                    grid-template-columns: 280px 1fr;
+                    gap: 1.5rem;
                     height: 100%;
+                    overflow: hidden;
                 }
                 
                 /* Sidebar */
@@ -287,11 +434,47 @@ export function RangesPage() {
                 .sidebar-header {
                     padding: 1rem;
                     border-bottom: 1px solid var(--border-color);
+                    background: var(--bg-secondary);
+                    z-index: 10;
                 }
                 .sidebar-header h2 {
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
                     margin: 0 0 1rem 0;
                 }
+                .unit-search-section {
+                    position: relative;
+                    margin-bottom: 1rem;
+                }
+                .autocomplete-dropdown {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 100;
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+                .autocomplete-item {
+                    padding: 0.5rem 1rem;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                }
+                .autocomplete-item:hover {
+                    background: var(--bg-hover);
+                    color: var(--color-primary);
+                }
+                .divider {
+                    text-align: center;
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                    margin: 0.5rem 0;
+                    position: relative;
+                }
+                
                 .weapon-list {
                     flex: 1;
                     overflow-y: auto;
@@ -300,10 +483,11 @@ export function RangesPage() {
                 .weapon-item {
                     display: flex;
                     align-items: center;
-                    gap: 0.75rem;
-                    padding: 0.75rem;
+                    gap: 0.5rem;
+                    padding: 0.4rem 0.75rem; /* More compact */
                     border-radius: 6px;
                     cursor: pointer;
+                    font-size: 0.9rem;
                     transition: background 0.2s;
                 }
                 .weapon-item:hover {
@@ -311,6 +495,7 @@ export function RangesPage() {
                 }
                 .weapon-item.selected {
                     background: rgba(var(--color-primary-rgb), 0.1);
+                    color: var(--color-primary);
                 }
                 .search-input {
                     background: var(--bg-primary);
@@ -322,18 +507,17 @@ export function RangesPage() {
                     background: var(--bg-secondary);
                     border-radius: 12px;
                     border: 1px solid var(--border-color);
-                    padding: 2rem;
+                    padding: 1.5rem;
                     display: flex;
                     flex-direction: column;
-                    align-items: center;
-                    position: relative;
+                    overflow-y: auto; /* Allow scrolling if content is tall */
                 }
                 .d3-container {
                     width: 100%;
-                    flex: 1;
                     display: flex;
                     justify-content: center;
                     align-items: center;
+                    min-height: 400px;
                 }
                 .d3-container svg {
                     overflow: visible;
@@ -347,41 +531,91 @@ export function RangesPage() {
                 }
                 
                 .empty-chart {
+                    flex: 1;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
-                    height: 100%;
                     color: var(--text-secondary);
                     text-align: center;
                 }
-                .empty-chart p {
-                    margin-top: 1rem;
+
+                /* Analysis Bar */
+                .analysis-bar {
+                    margin-top: 2rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid var(--border-color);
+                }
+                .analysis-bar h3 {
+                    font-size: 1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 1rem;
+                    color: var(--text-primary);
+                }
+                .range-strip {
+                    display: flex;
+                    gap: 0.5rem;
+                    overflow-x: auto;
+                    padding-bottom: 0.5rem;
+                }
+                .range-block {
+                    background: var(--bg-primary);
+                    padding: 0.75rem;
+                    border-radius: 6px;
+                    min-width: 100px;
+                    border: 1px solid var(--border-color);
+                    text-align: center;
+                }
+                .range-label {
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                    margin-bottom: 0.25rem;
+                }
+                .winner-name {
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .winner-mod {
                     font-size: 1.1rem;
+                    font-weight: 700;
+                    margin-top: 0.2rem;
+                }
+                .diff-badge {
+                    font-size: 0.7rem;
+                    background: var(--color-success, #22c55e);
+                    color: white;
+                    padding: 0.1rem 0.3rem;
+                    border-radius: 4px;
+                    margin-left: 0.4rem;
+                    vertical-align: top;
                 }
 
                 .chart-legend {
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 1rem;
-                    margin-top: 1rem;
+                    gap: 0.75rem;
+                    margin-top: 1.5rem;
                     padding-top: 1rem;
                     border-top: 1px solid var(--border-color);
-                    width: 100%;
                 }
                 .legend-item {
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.25rem 0.75rem;
+                    gap: 0.4rem;
+                    padding: 0.2rem 0.6rem;
                     background: var(--bg-primary);
                     border-radius: 100px;
-                    font-size: 0.9rem;
+                    font-size: 0.85rem;
                     border: 1px solid var(--border-color);
                 }
                 .legend-color {
-                    width: 10px;
-                    height: 10px;
+                    width: 8px;
+                    height: 8px;
                     border-radius: 50%;
                 }
                 .remove-btn {
@@ -389,9 +623,10 @@ export function RangesPage() {
                     border: none;
                     color: var(--text-secondary);
                     cursor: pointer;
-                    font-size: 1.2rem;
-                    line-height: 1;
-                    padding: 0 0.25rem;
+                    font-size: 1.1rem;
+                    margin-left: 0.2rem;
+                    display: flex;
+                    align-items: center;
                 }
                 .remove-btn:hover {
                     color: var(--color-danger, #ef4444);
