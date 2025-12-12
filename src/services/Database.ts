@@ -24,6 +24,7 @@ export interface IDatabase {
     getWikiLink(type: 'weapon' | 'skill' | 'equipment', id: number): string | undefined;
     getFireteamChart(factionId: number): FireteamChart | undefined;
     getUnitBySlug(slug: string): Unit | undefined;
+    getExtraName(id: number): string | undefined;
 }
 
 export class DatabaseImplementation implements IDatabase {
@@ -46,6 +47,8 @@ export class DatabaseImplementation implements IDatabase {
 
     // Extras map: ID -> display string (e.g., 6 -> "-3", 7 -> "-6")
     extrasMap: Map<number, string> = new Map();
+    // Track which extras are distance modifiers (to append " for inches)
+    private distanceExtras: Set<number> = new Set();
 
     // Deduplication map: ISC -> Unit
     private unitsByISC: Map<string, Unit> = new Map();
@@ -114,6 +117,10 @@ export class DatabaseImplementation implements IDatabase {
                         for (const extra of data.filters.extras) {
                             if (!this.extrasMap.has(extra.id)) {
                                 this.extrasMap.set(extra.id, extra.name);
+                                // Track distance modifiers
+                                if (extra.type === 'DISTANCE') {
+                                    this.distanceExtras.add(extra.id);
+                                }
                             }
                         }
                     }
@@ -424,7 +431,8 @@ export class DatabaseImplementation implements IDatabase {
     private formatModifier(mods: number[]): string {
         if (mods.length === 0) return '';
         const parts = mods.map(modId => {
-            const displayValue = this.extrasMap.get(modId);
+            // Use getExtraName which handles cm to inch conversion for distances
+            const displayValue = this.getExtraName(modId);
             return displayValue ? `(${displayValue})` : `(${modId})`;
         });
         return parts.join(' ');
@@ -444,6 +452,25 @@ export class DatabaseImplementation implements IDatabase {
             case 'skill': return this.skillWikiMap.get(id);
             case 'equipment': return this.equipmentWikiMap.get(id);
         }
+    }
+
+    getExtraName(id: number): string | undefined {
+        const name = this.extrasMap.get(id);
+        if (!name) return undefined;
+
+        // Convert distance modifiers from cm to inches (5cm = 2")
+        if (this.distanceExtras.has(id)) {
+            // Parse the numeric value from the name (e.g., "+10" -> 10, "-6" -> -6)
+            const match = name.match(/^([+\-]?)(\d+\.?\d*)$/);
+            if (match) {
+                const sign = match[1] || '';
+                const cmValue = parseFloat(match[2]);
+                const inchValue = Math.round(cmValue * 0.4); // 5cm = 2", so multiply by 0.4
+                return `${sign}${inchValue}"`;
+            }
+        }
+
+        return name;
     }
 }
 

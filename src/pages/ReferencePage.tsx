@@ -47,7 +47,7 @@ export function ReferencePage() {
                     let displayName = item.name;
                     if (showModifiers && item.modifiers.length > 0) {
                         const modString = item.modifiers.map(m => {
-                            const val = db.extrasMap.get(m);
+                            const val = db.getExtraName(m);
                             return val ? `(${val})` : ``;
                         }).join(' ');
                         displayName = `${item.name} ${modString}`;

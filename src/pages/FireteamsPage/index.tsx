@@ -118,7 +118,7 @@ export function FireteamsPage() {
                         <div className="legend">
                             <span className="badge duo">DUO (2)</span>
                             <span className="badge haris">HARIS (3)</span>
-                            <span className="badge core">CORE (2-5)</span>
+                            <span className="badge core">CORE (3-5)</span>
                         </div>
                     </div>
 

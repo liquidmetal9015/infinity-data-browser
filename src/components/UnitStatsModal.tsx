@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Shield, Crosshair, Zap, Activity } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import { useDatabase } from '../context/DatabaseContext';
+import { formatMove } from '../utils/conversions';
 
 const ATTRIBUTES = [
     { key: 'move', label: 'MOV', icon: <Activity size={14} /> },
@@ -130,7 +131,8 @@ export function UnitStatsModal() {
                                         const profileRecord = activeProfile as unknown as Record<string, unknown>;
                                         let val: string | number | undefined = profileRecord[attr.key] as string | number | undefined;
                                         if (attr.key === 'move' && Array.isArray(profileRecord[attr.key])) {
-                                            val = (profileRecord[attr.key] as number[]).join('-');
+                                            // Convert move from cm to inches (5cm = 2")
+                                            val = formatMove(profileRecord[attr.key] as number[]);
                                         }
                                         let label = attr.label;
                                         if (attr.key === 'w' && activeProfile.str) label = 'STR';
@@ -163,7 +165,7 @@ export function UnitStatsModal() {
                                                         {getName('skill', s.id)}
                                                         {s.extra && s.extra.length > 0 &&
                                                             <span className="ml-1">
-                                                                ({s.extra.map((eid: number) => db.extrasMap.get(eid) || eid).join(', ')})
+                                                                ({s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})
                                                             </span>
                                                         }
                                                     </>
@@ -236,7 +238,7 @@ export function UnitStatsModal() {
                                                                     const content = (
                                                                         <>
                                                                             {getName('weapon', w.id)}
-                                                                            {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: number) => db.extrasMap.get(eid) || eid).join(', ')})</span>}
+                                                                            {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})</span>}
                                                                         </>
                                                                     );
                                                                     return (

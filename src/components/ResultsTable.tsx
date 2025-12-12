@@ -93,7 +93,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ units, query }) => {
                     let displayName = item.name;
                     if (item.modifiers.length > 0) {
                         const modStrings = item.modifiers.map(modId => {
-                            const modName = db.extrasMap.get(modId);
+                            const modName = db.getExtraName(modId);
                             return modName ? `(${modName})` : `(${modId})`;
                         });
                         displayName += modStrings.join(' ');
