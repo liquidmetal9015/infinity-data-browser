@@ -49,7 +49,8 @@ const mockDb: IDatabase = {
     equipmentMap: new Map(),
     getFireteamChart: vi.fn(() => undefined),
     getUnitBySlug: () => undefined,
-    getWikiLink: vi.fn()
+    getWikiLink: vi.fn(),
+    getExtraName: () => undefined
 };
 
 describe('useUnitSearch', () => {
