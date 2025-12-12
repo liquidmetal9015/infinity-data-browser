@@ -52,7 +52,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
         }
 
         const matches = db.getSuggestions(inputValue);
-        setSuggestions(matches.slice(0, 15));
+        setSuggestions(matches.slice(0, 35));
         setSelectedIndex(-1);
     }, [inputValue, db]);
 

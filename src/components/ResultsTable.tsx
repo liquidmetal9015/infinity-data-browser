@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Settings, Eye, EyeOff } from 'lucide-react';
 import { Database } from '../services/Database';
+import { UnitLink } from './UnitLink';
 import type { Unit } from '../types';
 import type { QueryState } from './QueryBuilder';
 
@@ -173,7 +174,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ units, query }) => {
                                     {visibleColumns.map(col => {
                                         switch (col.id) {
                                             case 'name':
-                                                return <td key={col.id}>{unit.name}</td>;
+                                                return <td key={col.id}><UnitLink name={unit.name} className="hover:text-cyber-primary font-medium" /></td>;
                                             case 'factions':
                                                 return (
                                                     <td key={col.id} className="td-factions">

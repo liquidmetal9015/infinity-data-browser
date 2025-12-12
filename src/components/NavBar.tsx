@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Search, Users, Activity, Library } from 'lucide-react';
+import { Search, Users, Activity, Library, Layers } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
 
 export function NavBar() {
@@ -28,6 +28,10 @@ export function NavBar() {
                     <NavLink to="/compare" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} />
                         <span>Compare</span>
+                    </NavLink>
+                    <NavLink to="/fireteams" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                        <Layers size={18} />
+                        <span>Fireteams</span>
                     </NavLink>
                 </nav>
             </div>
@@ -63,6 +67,6 @@ export function NavBar() {
                     cursor: not-allowed;
                 }
             `}</style>
-        </header>
+        </header >
     );
 }

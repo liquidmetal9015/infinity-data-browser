@@ -2,6 +2,8 @@
    INFINITY EXPLORER - Modern UI Design
    ============================================ */
 
+@import "tailwindcss";
+
 /* ---------- CSS Variables / Design Tokens ---------- */
 :root {
   /* Core Colors */

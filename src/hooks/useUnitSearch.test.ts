@@ -43,7 +43,13 @@ const mockDb: IDatabase = {
     getGroupedFactions: () => [],
     factionHasData: () => true,
     getSuggestions: () => [],
-    extrasMap: new Map()
+    extrasMap: new Map(),
+    weaponMap: new Map(),
+    skillMap: new Map(),
+    equipmentMap: new Map(),
+    getFireteamChart: vi.fn(() => undefined),
+    getUnitBySlug: () => undefined,
+    getWikiLink: vi.fn()
 };
 
 describe('useUnitSearch', () => {

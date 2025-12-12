@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, List, Users } from 'lucide-react';
 import { Database } from '../services/Database';
+import { UnitLink } from './UnitLink';
 import type { Unit } from '../types';
 
 interface FactionViewProps {
@@ -186,7 +187,7 @@ export const FactionView: React.FC<FactionViewProps> = ({ units }) => {
                                                 {faction.hasAccess && faction.units.length > 0 && (
                                                     <ul className="faction-unit-list compact">
                                                         {faction.units.slice(0, 5).map(name => (
-                                                            <li key={name} className="faction-unit-item">{name}</li>
+                                                            <li key={name} className="faction-unit-item"><UnitLink name={name} className="hover:text-cyber-primary" /></li>
                                                         ))}
                                                         {faction.units.length > 5 && (
                                                             <li className="faction-unit-item more">
@@ -232,7 +233,7 @@ export const FactionView: React.FC<FactionViewProps> = ({ units }) => {
                                         </div>
                                         <ul className="faction-unit-list">
                                             {factionUnits.map(name => (
-                                                <li key={name} className="faction-unit-item">{name}</li>
+                                                <li key={name} className="faction-unit-item"><UnitLink name={name} className="hover:text-cyber-primary" /></li>
                                             ))}
                                         </ul>
                                     </motion.div>

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 import { Search, ExternalLink, Shield, Zap, Crosshair, Atom } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { UnitLink } from '../components/UnitLink';
 
 type ItemType = 'skill' | 'weapon' | 'equipment';
 
@@ -22,6 +23,7 @@ export function ReferencePage() {
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState<'name' | 'count' | 'type'>('name');
     const [sortDesc, setSortDesc] = useState(false);
+    const [showModifiers, setShowModifiers] = useState(true);
 
     // Aggregate data
     const data = useMemo(() => {
@@ -29,8 +31,8 @@ export function ReferencePage() {
 
         db.units.forEach(unit => {
             unit.allItemsWithMods.forEach(item => {
-                // Generate a unique key for this configuration
-                const modKey = item.modifiers.sort().join(',');
+                // Generate key based on modifier preference
+                const modKey = showModifiers ? item.modifiers.sort().join(',') : '';
                 const key = `${item.type}-${item.id}-[${modKey}]`;
 
                 if (!rows.has(key)) {
@@ -43,7 +45,7 @@ export function ReferencePage() {
 
                     // Format Display Name
                     let displayName = item.name;
-                    if (item.modifiers.length > 0) {
+                    if (showModifiers && item.modifiers.length > 0) {
                         const modString = item.modifiers.map(m => {
                             const val = db.extrasMap.get(m);
                             return val ? `(${val})` : ``;
@@ -85,7 +87,7 @@ export function ReferencePage() {
                 if (sortField === 'type') return a.type.localeCompare(b.type) * modifier;
                 return a.displayName.localeCompare(b.displayName) * modifier;
             });
-    }, [db.units, db.metadata, db.extrasMap, search, sortField, sortDesc]);
+    }, [db.units, db.metadata, db.extrasMap, search, sortField, sortDesc, showModifiers]);
 
 
     const handleSort = (field: typeof sortField) => {
@@ -119,15 +121,33 @@ export function ReferencePage() {
         <div className="page-container reference-page">
             <div className="page-header">
                 <h2>Reference Library</h2>
-                <div className="search-wrapper">
-                    <Search className="search-icon" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search entries..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="search-input"
-                    />
+
+                <div className="controls-group">
+                    <div className="toggle-wrapper">
+                        <button
+                            className={`toggle-btn ${showModifiers ? 'active' : ''}`}
+                            onClick={() => setShowModifiers(true)}
+                        >
+                            With Modifiers
+                        </button>
+                        <button
+                            className={`toggle-btn ${!showModifiers ? 'active' : ''}`}
+                            onClick={() => setShowModifiers(false)}
+                        >
+                            Without Modifiers
+                        </button>
+                    </div>
+
+                    <div className="search-wrapper">
+                        <Search className="search-icon" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search entries..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -192,7 +212,11 @@ export function ReferencePage() {
                                 <td className="examples-cell">
                                     <div className="examples-list">
                                         {row.examples.map((ex, i) => (
-                                            <span key={i} className="example-tag">{ex}</span>
+                                            <UnitLink
+                                                key={i}
+                                                name={ex}
+                                                className="example-tag hover:border-accent hover:text-accent"
+                                            />
                                         ))}
                                         {row.count > 5 && <span className="more-tag">+{row.count - 5} more</span>}
                                     </div>
@@ -223,6 +247,42 @@ export function ReferencePage() {
                     font-weight: 700;
                     color: var(--text-primary);
                 }
+                .controls-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .toggle-wrapper {
+                    display: flex;
+                    background: var(--bg-secondary);
+                    padding: 4px;
+                    border-radius: 8px;
+                    border: 1px solid var(--border-color);
+                }
+
+                .toggle-btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    border: none;
+                    background: transparent;
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .toggle-btn:hover {
+                    color: var(--text-primary);
+                }
+
+                .toggle-btn.active {
+                    background: var(--bg-primary);
+                    color: var(--color-primary);
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+
                 .search-wrapper {
                     position: relative;
                     width: 300px;
@@ -349,6 +409,6 @@ export function ReferencePage() {
                     color: var(--text-secondary);
                 }
             `}</style>
-        </div>
+        </div >
     );
 }

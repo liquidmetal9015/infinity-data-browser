@@ -4,6 +4,7 @@ import { SearchPage } from './pages/SearchPage';
 import { ReferencePage } from './pages/ReferencePage';
 import { RangesPage } from './pages/RangesPage';
 import { ComparePage } from './pages/ComparePage';
+import { FireteamsPage } from './pages/FireteamsPage';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/reference" element={<ReferencePage />} />
           <Route path="/ranges" element={<RangesPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/fireteams" element={<FireteamsPage />} />
         </Route>
       </Routes>
     </HashRouter>

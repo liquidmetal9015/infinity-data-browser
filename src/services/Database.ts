@@ -1,4 +1,4 @@
-import type { Unit, UnitRaw, DatabaseMetadata, SearchSuggestion } from '../types';
+import type { Unit, UnitRaw, DatabaseMetadata, SearchSuggestion, FireteamChart } from '../types';
 import { FactionRegistry, type FactionInfo, type SuperFaction } from '../utils/factions';
 
 export interface IDatabase {
@@ -18,6 +18,12 @@ export interface IDatabase {
     factionHasData(id: number): boolean;
     getSuggestions(query: string): SearchSuggestion[];
     extrasMap: Map<number, string>;
+    weaponMap: Map<number, string>;
+    skillMap: Map<number, string>;
+    equipmentMap: Map<number, string>;
+    getWikiLink(type: 'weapon' | 'skill' | 'equipment', id: number): string | undefined;
+    getFireteamChart(factionId: number): FireteamChart | undefined;
+    getUnitBySlug(slug: string): Unit | undefined;
 }
 
 export class DatabaseImplementation implements IDatabase {
@@ -30,11 +36,21 @@ export class DatabaseImplementation implements IDatabase {
     skillMap: Map<number, string> = new Map();
     equipmentMap: Map<number, string> = new Map();
 
+    // Maps ID -> Wiki URL
+    weaponWikiMap: Map<number, string> = new Map();
+    skillWikiMap: Map<number, string> = new Map();
+    equipmentWikiMap: Map<number, string> = new Map();
+
+    // Map Faction ID -> FireteamChart
+    fireteamData: Map<number, FireteamChart> = new Map();
+
     // Extras map: ID -> display string (e.g., 6 -> "-3", 7 -> "-6")
     extrasMap: Map<number, string> = new Map();
 
     // Deduplication map: ISC -> Unit
     private unitsByISC: Map<string, Unit> = new Map();
+    // Helper map: Slug -> Unit (for fireteam resolution)
+    private unitsBySlug: Map<string, Unit> = new Map();
 
     // Loaded faction slugs (files we actually found)
     private loadedSlugs: string[] = [];
@@ -64,9 +80,18 @@ export class DatabaseImplementation implements IDatabase {
             this.metadata = await metaRes.json();
 
             this.metadata?.factions.forEach(f => this.factionMap.set(f.id, f.name));
-            this.metadata?.weapons.forEach(w => this.weaponMap.set(w.id, w.name));
-            this.metadata?.skills.forEach(s => this.skillMap.set(s.id, s.name));
-            this.metadata?.equips.forEach(e => this.equipmentMap.set(e.id, e.name));
+            this.metadata?.weapons.forEach(w => {
+                this.weaponMap.set(w.id, w.name);
+                if (w.wiki) this.weaponWikiMap.set(w.id, w.wiki);
+            });
+            this.metadata?.skills.forEach(s => {
+                this.skillMap.set(s.id, s.name);
+                if (s.wiki) this.skillWikiMap.set(s.id, s.wiki);
+            });
+            this.metadata?.equips.forEach(e => {
+                this.equipmentMap.set(e.id, e.name);
+                if (e.wiki) this.equipmentWikiMap.set(e.id, e.wiki);
+            });
         } catch (e) {
             console.error("Failed to load metadata", e);
             throw e;
@@ -91,6 +116,12 @@ export class DatabaseImplementation implements IDatabase {
                                 this.extrasMap.set(extra.id, extra.name);
                             }
                         }
+                    }
+
+
+                    if (data.fireteamChart) {
+                        // Store fireteam chart for this faction
+                        this.fireteamData.set(faction.id, data.fireteamChart);
                     }
 
                     this.ingestUnits(data.units);
@@ -155,6 +186,15 @@ export class DatabaseImplementation implements IDatabase {
                 pointsRange: [0, 0],
                 raw: u
             };
+
+            // Index by slug if available, otherwise by ISC (slugified)
+            if (u.slug) {
+                this.unitsBySlug.set(u.slug, unit);
+            }
+            // Also store by ISC as fallback
+            this.unitsBySlug.set(u.isc, unit);
+            // And a simple lower-case slug
+            this.unitsBySlug.set(u.isc.toLowerCase().replace(/[^a-z0-9]+/g, '-'), unit);
 
             // Compute Access (weapons, skills, equipment) and points
             u.profileGroups.forEach(pg => {
@@ -304,9 +344,15 @@ export class DatabaseImplementation implements IDatabase {
             if (aLower === q && bLower !== q) return -1;
             if (bLower === q && aLower !== q) return 1;
 
-            // "Any" variants after specific ones
-            if (a.isAnyVariant && !b.isAnyVariant && a.name === b.name) return 1;
-            if (!a.isAnyVariant && b.isAnyVariant && a.name === b.name) return -1;
+            // "Any" variants (isAnyVariant=true) come first among same-named items
+            if (a.isAnyVariant && !b.isAnyVariant && a.name === b.name) return -1;
+            if (!a.isAnyVariant && b.isAnyVariant && a.name === b.name) return 1;
+
+            // Base items (no modifiers) come next among same-named items
+            const aIsBase = a.modifiers.length === 0;
+            const bIsBase = b.modifiers.length === 0;
+            if (aIsBase && !bIsBase && a.name === b.name) return -1;
+            if (!aIsBase && bIsBase && a.name === b.name) return 1;
 
             // Group by name, then by modifier
             const nameCompare = a.name.localeCompare(b.name);
@@ -382,6 +428,22 @@ export class DatabaseImplementation implements IDatabase {
             return displayValue ? `(${displayValue})` : `(${modId})`;
         });
         return parts.join(' ');
+    }
+
+    getFireteamChart(factionId: number): FireteamChart | undefined {
+        return this.fireteamData.get(factionId);
+    }
+
+    getUnitBySlug(slug: string): Unit | undefined {
+        return this.unitsBySlug.get(slug);
+    }
+
+    getWikiLink(type: 'weapon' | 'skill' | 'equipment', id: number): string | undefined {
+        switch (type) {
+            case 'weapon': return this.weaponWikiMap.get(id);
+            case 'skill': return this.skillWikiMap.get(id);
+            case 'equipment': return this.equipmentWikiMap.get(id);
+        }
     }
 }
 

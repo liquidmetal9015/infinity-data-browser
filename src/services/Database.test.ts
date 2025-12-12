@@ -26,7 +26,16 @@ const mockUnitRaw: UnitRaw = {
             name: "Fusilier",
             skills: [{ id: 201, extra: [6] }], // Mimetism(-6) essentially
             equip: [],
-            weapons: [{ id: 101 }]
+            weapons: [{ id: 101 }],
+            move: [4, 4],
+            cc: 13,
+            bs: 11,
+            ph: 10,
+            wip: 13,
+            arm: 1,
+            bts: 0,
+            w: 1,
+            s: 2
         }],
         options: [{
             id: 1,

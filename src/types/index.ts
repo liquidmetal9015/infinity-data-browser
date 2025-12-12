@@ -12,6 +12,17 @@ export interface Profile {
     equip: { id: int; extra?: any }[]; // Note: Source JSON uses 'equip' in some places, 'equipment' in models
     weapons: { id: int; extra?: any }[];
     type?: int; // Unit classification (1=LI, 2=MI, etc)
+    // Stats
+    move: number[];
+    cc: number;
+    bs: number;
+    ph: number;
+    wip: number;
+    arm: number;
+    bts: number;
+    w: number;
+    s: number;
+    str?: boolean; // true if W is Structure
 }
 
 export interface Option {
@@ -19,9 +30,9 @@ export interface Option {
     name: string;
     points: number;
     swc: number;
-    skills: { id: int }[];
-    equip: { id: int }[];
-    weapons: { id: int }[];
+    skills: { id: int; extra?: number[] }[];
+    equip: { id: int; extra?: number[] }[];
+    weapons: { id: int; extra?: number[] }[];
 }
 
 export interface UnitRaw {
@@ -31,9 +42,12 @@ export interface UnitRaw {
     factions: int[];
     profileGroups: {
         id: int;
+        isc?: string;
+        isco?: string; // Option ISC (name for the group)
         profiles: Profile[];
         options: Option[];
     }[];
+    slug?: string;
 }
 
 // Represents a skill/equipment with its modifier value(s)
@@ -75,6 +89,11 @@ export interface DatabaseMetadata {
         wiki?: string;
         properties?: string[];
         type?: string;
+        burst?: string;
+        damage?: string;
+        saving?: string;
+        savingNum?: string;
+        ammunition?: number;
         distance?: {
             short?: { max: number; mod: string };
             med?: { max: number; mod: string };
@@ -97,4 +116,26 @@ export interface SearchSuggestion {
     type: 'weapon' | 'skill' | 'equipment';
     modifiers: number[];       // The modifier values
     isAnyVariant: boolean;     // True for the "any" option
+}
+
+export interface FireteamUnit {
+    name: string;
+    slug: string;
+    min: number;
+    max: number;
+    required?: boolean;
+    comment?: string;
+}
+
+export interface Fireteam {
+    name: string;
+    type: string[]; // e.g. ["CORE", "HARIS", "DUO"]
+    units: FireteamUnit[];
+    obs?: string;
+}
+
+export interface FireteamChart {
+    spec: Record<string, number>; // e.g. { CORE: 1, HARIS: 1, DUO: 256 }
+    desc?: string;
+    teams: Fireteam[];
 }

@@ -22,7 +22,33 @@ export default {
                     accent: '#f472b6',  // Pink 400 - Secondary accent
                     success: '#4ade80', // Green 400
                     danger: '#f87171',  // Red 400
-                }
+                },
+                // New Design System Colors
+                bg: {
+                    primary: 'var(--bg-primary)',
+                    secondary: 'var(--bg-secondary)',
+                    tertiary: 'var(--bg-tertiary)',
+                    elevated: 'var(--bg-elevated)',
+                },
+                text: {
+                    primary: 'var(--text-primary)',
+                    secondary: 'var(--text-secondary)',
+                    muted: 'var(--text-muted)',
+                },
+                border: 'var(--border)',
+                surface: {
+                    DEFAULT: 'var(--surface)',
+                    hover: 'var(--surface-hover)',
+                    active: 'var(--surface-active)',
+                },
+                accent: {
+                    DEFAULT: 'var(--accent)',
+                    hover: 'var(--accent-hover)',
+                    muted: 'var(--accent-muted)',
+                },
+                'skill-color': 'var(--skill-color)',
+                'weapon-color': 'var(--weapon-color)',
+                'equip-color': 'var(--equip-color)',
             },
             backgroundImage: {
                 'grid-pattern': "linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)",

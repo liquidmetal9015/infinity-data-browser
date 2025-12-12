@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
+import { useModal } from '../context/ModalContext';
 import { Search, Info, Trophy } from 'lucide-react';
 import * as d3 from 'd3';
 
@@ -13,6 +14,12 @@ interface ParsedWeapon {
     id: number;
     name: string;
     bands: RangeBand[];
+    burst: string;
+    damage: string;
+    saving: string;
+    savingNum: string;
+    ammunition: string; // Name of ammo
+    properties: string[];
 }
 
 // Standard range bands in inches
@@ -28,6 +35,7 @@ const RANGE_BANDS = [
 
 export function RangesPage() {
     const db = useDatabase();
+    const { openUnitModal } = useModal();
     const [weaponSearch, setWeaponSearch] = useState('');
     const [unitSearch, setUnitSearch] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -86,7 +94,24 @@ export function RangesPage() {
                         }
                     }
                 }
-                weaponsMap.set(w.id, { id: w.id, name: w.name, bands });
+                // Resolve Ammo Name
+                let ammoName = '-';
+                if (w.ammunition) {
+                    const ammo = db.metadata!.ammunitions.find(a => a.id === w.ammunition);
+                    ammoName = ammo ? ammo.name : w.ammunition.toString();
+                }
+
+                weaponsMap.set(w.id, {
+                    id: w.id,
+                    name: w.name,
+                    bands,
+                    burst: w.burst || '-',
+                    damage: w.damage || '-',
+                    saving: w.saving || '-',
+                    savingNum: w.savingNum || '-',
+                    ammunition: ammoName,
+                    properties: w.properties || []
+                });
             });
 
         return Array.from(weaponsMap.values())
@@ -165,12 +190,16 @@ export function RangesPage() {
     // D3 Chart Drawing Effect
     useEffect(() => {
         if (!graphRef.current || selectedWeapons.length === 0 || containerWidth === 0) {
+            // Safety cleanup: Ensure no stray SVGs if we have no weapons
+            if (containerRef.current && selectedWeapons.length === 0) {
+                d3.select(containerRef.current).selectAll("svg").remove();
+            }
             return;
         }
 
         const container = graphRef.current;
         const width = containerWidth;
-        const height = 400;
+        const height = 300; // Reduced height
         const margin = { top: 20, right: 30, bottom: 40, left: 40 };
 
         // Clear previous D3 content ONLY
@@ -199,19 +228,26 @@ export function RangesPage() {
             )
             .append("text")
             .attr("x", width - margin.right)
-            .attr("y", -6)
+            .attr("y", 35) // Increased padding to avoid cut-off
             .attr("fill", "currentColor")
+            .style("text-anchor", "end")
             .text("Range (inches)");
 
         svg.append("g")
             .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y).ticks(6))
+            .call(d3.axisLeft(y)
+                .tickValues([-6, -3, 0, 3, 6]) // Exact Infinity Modifiers
+                .tickFormat((d) => {
+                    const val = d.valueOf();
+                    return val > 0 ? `+${val}` : `${val}`;
+                })
+            )
             .append("text")
-            .attr("x", 6)
-            .attr("y", margin.top)
-            .attr("dy", "0.71em")
+            .attr("x", 5)
+            .attr("y", margin.top - 10)
             .attr("fill", "currentColor")
-            .text("Modifier");
+            .style("text-anchor", "start")
+            .text("Mod");
 
         // Grid lines
         svg.append("g")
@@ -227,7 +263,11 @@ export function RangesPage() {
         svg.append("g")
             .attr("class", "grid")
             .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(y).ticks(6).tickSize(-width + margin.left + margin.right).tickFormat(() => ""))
+            .call(d3.axisLeft(y)
+                .tickValues([-6, -3, 0, 3, 6])
+                .tickSize(-width + margin.left + margin.right)
+                .tickFormat(() => "")
+            )
             .attr("stroke-opacity", 0.1);
 
         // Zero line
@@ -314,8 +354,19 @@ export function RangesPage() {
                                             key={u.id}
                                             className="autocomplete-item"
                                             onClick={() => selectUnitWeapons(u.id)}
+                                            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                                         >
-                                            {u.name}
+                                            <span style={{ flex: 1 }}>{u.name}</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openUnitModal(u);
+                                                }}
+                                                className="hover:text-cyber-primary p-1"
+                                                title="View Unit Stats"
+                                            >
+                                                <Info size={14} />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -337,14 +388,13 @@ export function RangesPage() {
                     </div>
                     <div className="weapon-list">
                         {filteredWeapons.map(w => (
-                            <label key={w.id} className={`weapon-item ${selectedIds.has(w.id) ? 'selected' : ''}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.has(w.id)}
-                                    onChange={() => toggleWeapon(w.id)}
-                                />
+                            <div
+                                key={w.id}
+                                className={`weapon-item ${selectedIds.has(w.id) ? 'selected' : ''}`}
+                                onClick={() => toggleWeapon(w.id)}
+                            >
                                 <span className="weapon-name">{w.name}</span>
-                            </label>
+                            </div>
                         ))}
                         {filteredWeapons.length === 0 && (
                             <div className="empty-msg">No weapons found</div>
@@ -357,15 +407,15 @@ export function RangesPage() {
                     {selectedWeapons.length === 0 ? (
                         <div className="empty-chart">
                             <Info size={48} />
-                            <p>Select a unit or weapons to visualize ranges (Inches).</p>
+                            <p>Select a unit or weapons to visualize ranges.</p>
                         </div>
                     ) : (
                         <>
                             <div className="d3-container" ref={graphRef}></div>
 
-                            {/* Best Weapons Analysis */}
+                            {/* Best Weapons Analysis - Compacted */}
                             <div className="analysis-bar">
-                                <h3><Trophy size={16} /> Best Options per Range</h3>
+                                <h3><Trophy size={14} /> Best Options</h3>
                                 <div className="range-strip">
                                     {bestWeapons.map((item, i) => {
                                         if (!item || !item.weapon || item.band.start >= 48) return null;
@@ -373,12 +423,11 @@ export function RangesPage() {
                                         const weaponIndex = selectedWeapons.findIndex(w => w.id === weapon.id);
                                         const color = d3.schemeCategory10[weaponIndex % 10];
                                         return (
-                                            <div key={i} className="range-block" style={{ flex: 1, borderTop: `4px solid ${color}` }}>
+                                            <div key={i} className="range-block" style={{ flex: 1, borderTop: `3px solid ${color}` }}>
                                                 <div className="range-label">{item.band.label}</div>
                                                 <div className="winner-name" style={{ color }}>{weapon.name}</div>
                                                 <div className="winner-mod">
                                                     {item.mod > 0 ? '+' : ''}{item.mod}
-                                                    {item.diff > 0 && <span className="diff-badge" title="Better than next best">+{item.diff}</span>}
                                                 </div>
                                             </div>
                                         );
@@ -386,22 +435,73 @@ export function RangesPage() {
                                 </div>
                             </div>
 
-                            <div className="chart-legend">
-                                {selectedWeapons.map((w, i) => (
-                                    <div key={w.id} className="legend-item">
-                                        <div
-                                            className="legend-color"
-                                            style={{ background: d3.schemeCategory10[i % 10] }}
-                                        ></div>
-                                        <span>{w.name}</span>
-                                        <button
-                                            onClick={() => toggleWeapon(w.id)}
-                                            className="remove-btn"
-                                            title="Remove"
-                                        >×</button>
-                                    </div>
-                                ))}
-                            </div>
+                            {selectedWeapons.length > 0 && (
+                                <div className="stats-section">
+                                    <table className="weapon-table">
+                                        <thead>
+                                            <tr>
+                                                <th style={{ width: '20%' }}>Name</th>
+                                                <th style={{ width: '25%' }}>Range</th>
+                                                <th className="text-center" title="Power / Damage">PS</th>
+                                                <th className="text-center" title="Burst">B</th>
+                                                <th className="text-center">AMMO</th>
+                                                <th className="text-center">SR: ATTRIB</th>
+                                                <th className="text-center" title="Saving Roll Number">SR: No</th>
+                                                <th style={{ width: '20%' }}>Traits</th>
+                                                <th style={{ width: '30px' }}></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedWeapons.map((w, i) => {
+                                                const color = d3.schemeCategory10[i % 10];
+                                                return (
+                                                    <tr key={w.id}>
+                                                        <td className="weapon-cell-name">
+                                                            <div className="color-indicator" style={{ background: color }}></div>
+                                                            <span style={{ fontWeight: 600 }}>{w.name}</span>
+                                                        </td>
+                                                        <td className="weapon-cell-ranges">
+                                                            <div className="range-strip-row">
+                                                                {RANGE_BANDS.slice(0, 7).map((band, idx) => {
+                                                                    const samplePoint = band.start + 1;
+                                                                    const bandMod = w.bands.find(b => b.start < samplePoint && b.end >= samplePoint)?.mod ?? null;
+
+                                                                    let modClass = 'mod-0';
+                                                                    if (bandMod === null) modClass = 'mod-none';
+                                                                    else if (bandMod > 0) modClass = 'mod-pos';
+                                                                    else if (bandMod < 0) modClass = 'mod-neg';
+
+                                                                    return (
+                                                                        <div key={idx} className={`range-cell ${modClass}`} title={band.label}>
+                                                                            {bandMod !== null ? (bandMod > 0 ? `+${bandMod}` : bandMod) : '-'}
+                                                                        </div>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </td>
+                                                        <td className="text-center font-medium">{w.damage}</td>
+                                                        <td className="text-center font-medium">{w.burst}</td>
+                                                        <td className="text-center text-sm">{w.ammunition}</td>
+                                                        <td className="text-center text-sm">{w.saving}</td>
+                                                        <td className="text-center text-sm">{w.savingNum || '-'}</td>
+                                                        <td className="weapon-cell-traits">
+                                                            <div className="traits-list">
+                                                                {w.properties.map(p => <span key={p} className="trait-text">{p}</span>)}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <button
+                                                                className="remove-row-btn"
+                                                                onClick={() => toggleWeapon(w.id)}
+                                                            >×</button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -483,23 +583,172 @@ export function RangesPage() {
                 .weapon-item {
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.4rem 0.75rem; /* More compact */
+                    padding: 0.5rem 0.75rem;
                     border-radius: 6px;
                     cursor: pointer;
                     font-size: 0.9rem;
                     transition: background 0.2s;
+                    border: 1px solid transparent; /* Reserve space for border */
                 }
                 .weapon-item:hover {
                     background: var(--bg-hover);
                 }
                 .weapon-item.selected {
                     background: rgba(var(--color-primary-rgb), 0.1);
+                    border-color: var(--color-primary); /* Visible border */
                     color: var(--color-primary);
+                    font-weight: 500;
                 }
+
                 .search-input {
                     background: var(--bg-primary);
                     border: 1px solid var(--border-color);
+                }
+
+                /* Stats Table Section */
+                .stats-section {
+                    margin-top: 1rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid var(--border-color);
+                }
+                .weapon-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.85rem;
+                }
+                .weapon-table th {
+                    text-align: left;
+                    padding: 0.5rem;
+                    color: var(--text-secondary);
+                    font-weight: 500;
+                    border-bottom: 1px solid var(--border-color);
+                }
+                .weapon-table td {
+                    padding: 0.5rem;
+                    border-bottom: 1px solid var(--border-color);
+                    vertical-align: middle;
+                }
+                .weapon-cell-name {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    min-width: 150px;
+                }
+                .color-indicator {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                }
+                
+                /* Range Strip */
+                .range-strip-row {
+                    display: flex;
+                    gap: 2px;
+                }
+                .range-cell {
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    border-radius: 2px;
+                    background: var(--bg-primary);
+                    color: var(--text-secondary);
+                }
+                .range-cell.mod-pos { background: rgba(var(--color-success-rgb, 34, 197, 94), 0.15); color: var(--color-success, #22c55e); }
+                .range-cell.mod-neg { background: rgba(var(--color-danger-rgb, 239, 68, 68), 0.15); color: var(--color-danger, #ef4444); }
+                .range-cell.mod-0 { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+                .range-cell.mod-none { opacity: 0.3; }
+
+                .weapon-cell-stats {
+                    white-space: nowrap;
+                }
+                .stat-pill {
+                   display: inline-block;
+                   margin-right: 0.5rem;
+                   font-weight: 500;
+                   color: var(--text-primary);
+                }
+                
+                .weapon-cell-traits {
+                    
+                }
+                .traits-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.3rem;
+                }
+                .trait-text {
+                    font-size: 0.75rem;
+                    color: var(--text-secondary);
+                }
+                .trait-text::after {
+                    content: ", ";
+                }
+                .trait-text:last-child::after {
+                    content: "";
+                }
+
+                .remove-row-btn {
+                    background: none;
+                    border: none;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    font-size: 1.2rem;
+                    line-height: 1;
+                    padding: 0 0.5rem;
+                }
+                .remove-row-btn:hover {
+                    color: var(--color-danger);
+                }
+
+                /* Analysis Bar Compact */
+                .analysis-bar {
+                    margin-top: 1rem;
+                    padding-top: 0.5rem;
+                    border-top: 1px solid var(--border-color);
+                }
+                .analysis-bar h3 {
+                    font-size: 0.9rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--text-secondary);
+                }
+                .range-strip {
+                    display: flex;
+                    gap: 0.5rem;
+                    overflow-x: auto;
+                    padding-bottom: 0.2rem;
+                }
+                .range-block {
+                    background: var(--bg-primary);
+                    padding: 0.4rem;
+                    border-radius: 6px;
+                    min-width: 70px;
+                    border: 1px solid var(--border-color);
+                    text-align: center;
+                }
+                .range-label {
+                    font-size: 0.7rem;
+                    color: var(--text-secondary);
+                    margin-bottom: 0.1rem;
+                }
+                .winner-name {
+                    font-weight: 600;
+                    font-size: 0.8rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .winner-mod {
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    margin-top: 0.1rem;
                 }
 
                 /* Chart Area */
