@@ -19,12 +19,8 @@ const ATTRIBUTES = [
 export function UnitStatsModal() {
     const { isOpen, closeModal, selectedUnit } = useModal();
     const db = useDatabase();
+    // State is reset automatically via key prop in Layout.tsx when unit changes
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
-
-    // Reset group index when unit changes
-    useEffect(() => {
-        setActiveGroupIndex(0);
-    }, [selectedUnit]);
 
     // Lock body scroll when modal is open
     useEffect(() => {
@@ -130,9 +126,11 @@ export function UnitStatsModal() {
                                 <div className="grid grid-cols-9 gap-6 p-8 rounded-2xl bg-[#0f172a] border border-white/5 relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
                                     {ATTRIBUTES.map((attr) => {
-                                        let val = (activeProfile as any)[attr.key];
-                                        if (attr.key === 'move' && Array.isArray(val)) {
-                                            val = val.join('-');
+                                        // Use type assertion for dynamic property access on profile
+                                        const profileRecord = activeProfile as unknown as Record<string, unknown>;
+                                        let val: string | number | undefined = profileRecord[attr.key] as string | number | undefined;
+                                        if (attr.key === 'move' && Array.isArray(profileRecord[attr.key])) {
+                                            val = (profileRecord[attr.key] as number[]).join('-');
                                         }
                                         let label = attr.label;
                                         if (attr.key === 'w' && activeProfile.str) label = 'STR';
@@ -165,7 +163,7 @@ export function UnitStatsModal() {
                                                         {getName('skill', s.id)}
                                                         {s.extra && s.extra.length > 0 &&
                                                             <span className="ml-1">
-                                                                ({s.extra.map((eid: any) => db.extrasMap.get(eid) || eid).join(', ')})
+                                                                ({s.extra.map((eid: number) => db.extrasMap.get(eid) || eid).join(', ')})
                                                             </span>
                                                         }
                                                     </>
@@ -238,7 +236,7 @@ export function UnitStatsModal() {
                                                                     const content = (
                                                                         <>
                                                                             {getName('weapon', w.id)}
-                                                                            {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: any) => db.extrasMap.get(eid) || eid).join(', ')})</span>}
+                                                                            {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: number) => db.extrasMap.get(eid) || eid).join(', ')})</span>}
                                                                         </>
                                                                     );
                                                                     return (

@@ -213,15 +213,15 @@ export class DatabaseImplementation implements IDatabase {
                     });
                 });
                 pg.options.forEach(o => {
-                    o.skills?.forEach((s: any) => {
+                    o.skills?.forEach((s: { id: number; extra?: number[] }) => {
                         unit.allSkillIds.add(s.id);
                         addItemWithMod(s.id, 'skill', s.extra);
                     });
-                    o.equip?.forEach((e: any) => {
+                    o.equip?.forEach((e: { id: number; extra?: number[] }) => {
                         unit.allEquipmentIds.add(e.id);
                         addItemWithMod(e.id, 'equipment', e.extra);
                     });
-                    o.weapons?.forEach((w: any) => {
+                    o.weapons?.forEach((w: { id: number; extra?: number[] }) => {
                         unit.allWeaponIds.add(w.id);
                         addItemWithMod(w.id, 'weapon', w.extra);
                     });

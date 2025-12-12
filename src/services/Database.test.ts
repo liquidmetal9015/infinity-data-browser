@@ -144,7 +144,8 @@ describe('DatabaseImplementation', () => {
         const res = db.getSuggestions("Mime");
         expect(res.length).toBeGreaterThan(0);
         expect(res[0].name).toBe("Mimetism");
-        // Check display name construction: "Mimetism(-3)" because ID 6 -> "-3"
-        expect(res[0].displayName).toContain("Mimetism(-3)");
+        // The first result is the "(any)" variant which matches all modifiers
+        expect(res[0].displayName).toBe("Mimetism (any)");
+        expect(res[0].isAnyVariant).toBe(true);
     });
 });

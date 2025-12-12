@@ -33,13 +33,13 @@ export const FactionView: React.FC<FactionViewProps> = ({ units }) => {
         return map;
     }, [units]);
 
-    const allFactionIds = Array.from(db.factionMap.keys());
-    const accessFactionIds = new Set(Object.keys(factionMap).map(Number));
-    const missingFactionIds = allFactionIds.filter(id => !accessFactionIds.has(id));
+    const allFactionIds = useMemo(() => Array.from(db.factionMap.keys()), [db.factionMap]);
+    const accessFactionIds = useMemo(() => new Set(Object.keys(factionMap).map(Number)), [factionMap]);
+    const missingFactionIds = useMemo(() => allFactionIds.filter(id => !accessFactionIds.has(id)), [allFactionIds, accessFactionIds]);
 
-    const sortedAccessIds = Object.keys(factionMap).map(Number).sort((a, b) =>
+    const sortedAccessIds = useMemo(() => Object.keys(factionMap).map(Number).sort((a, b) =>
         db.getFactionName(a).localeCompare(db.getFactionName(b))
-    );
+    ), [factionMap, db]);
 
     // By-faction mode: all super-factions with all sectorials showing access status
     const byFactionGroups = useMemo((): SuperFactionGroup[] => {

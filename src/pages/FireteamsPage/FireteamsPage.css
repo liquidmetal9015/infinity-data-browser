@@ -1,0 +1,557 @@
+/* FireteamsPage Component Styles */
+
+.fireteams-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.selector-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.faction-select {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    min-width: 250px;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-primary);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-btn.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    gap: 1rem;
+}
+
+.faction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.faction-header h3 {
+    margin: 0;
+}
+
+.legend {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: white;
+}
+
+.badge.core {
+    background-color: #ef4444;
+}
+
+.badge.haris {
+    background-color: #f97316;
+}
+
+.badge.duo {
+    background-color: #3b82f6;
+}
+
+.badge.neutral {
+    background-color: #64748b;
+}
+
+/* List View Styles */
+.fireteam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.fireteam-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-header h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.types-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.card-content {
+    padding: 1rem;
+    flex: 1;
+}
+
+.unit-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+}
+
+.unit-row:last-child {
+    border-bottom: none;
+}
+
+.unit-row.required {
+    font-weight: 600;
+}
+
+.unit-note {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+    font-style: italic;
+}
+
+.min-max {
+    font-family: monospace;
+    color: var(--text-secondary);
+}
+
+/* Unit Perspective Styles */
+.unit-perspective-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.unit-perspective-card {
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.unit-info {
+    min-width: 200px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.teams-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.team-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.team-types {
+    display: flex;
+    gap: 2px;
+}
+
+.mini-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.mini-dot.core {
+    background-color: #ef4444;
+}
+
+.mini-dot.haris {
+    background-color: #f97316;
+}
+
+.mini-dot.duo {
+    background-color: #3b82f6;
+}
+
+/* Builder Styles */
+.builder-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    min-height: 600px;
+}
+
+/* Selection Column */
+.builder-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    height: fit-content;
+}
+
+.team-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.team-select-btn {
+    text-align: left;
+    padding: 0.8rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.team-select-btn:hover {
+    border-color: var(--color-primary);
+}
+
+.team-select-btn.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.unit-pool {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.pool-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.pool-item:hover {
+    border-color: var(--color-primary);
+}
+
+.pool-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Workspace Column */
+.builder-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.active-team-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.team-slots {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.member-slot {
+    width: 120px;
+    height: 140px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    position: relative;
+    text-align: center;
+    padding: 0.5rem;
+    transition: all 0.2s;
+}
+
+.member-slot.filled {
+    border-style: solid;
+    border-color: var(--color-success);
+    background: rgba(var(--color-success-rgb), 0.1);
+}
+
+.member-slot.empty:hover {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.member-slot.locked {
+    background: #111;
+    border-style: dotted;
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.slot-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bonus-panel {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.bonus-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.bonus-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    opacity: 0.4;
+    filter: grayscale(1);
+    transition: all 0.3s;
+}
+
+.bonus-item.active {
+    opacity: 1;
+    filter: none;
+    background: rgba(var(--color-success-rgb), 0.1);
+    border: 1px solid var(--color-success);
+}
+
+.bonus-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bonus-item.active .bonus-check {
+    background: var(--color-success);
+    color: white;
+}
+
+.counts-as-tag {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    margin-top: 4px;
+    color: var(--text-secondary);
+}
+
+/* New Builder Vis */
+.counts-as-tiny {
+    font-size: 0.9em;
+    color: inherit;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+.pool-item.level-up {
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.pool-item.required-glow {
+    border: 1px solid #f59e0b;
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.level-up-tag {
+    display: none;
+}
+
+.required-tag {
+    display: none;
+}
+
+/* Unit Analysis Updates */
+.team-tag.nominal-member {
+    border: 2px solid white;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.fireteams-page .type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    color: white;
+}
+
+.fireteams-page .type-badge.core {
+    background-color: #ef4444;
+}
+
+.fireteams-page .type-badge.haris {
+    background-color: #f59e0b;
+}
+
+.fireteams-page .type-badge.duo {
+    background-color: #3b82f6;
+}
+
+.team-tag .team-name {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+.info-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+
+.info-btn:hover {
+    color: var(--color-primary);
+    background: rgba(255, 255, 255, 0.1);
+}

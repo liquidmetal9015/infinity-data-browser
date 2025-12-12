@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { DatabaseImplementation, type IDatabase } from '../services/Database';
 import { LoadingScreen } from '../components/LoadingScreen';
 
-const DatabaseContext = createContext<IDatabase | null>(null);
+export const DatabaseContext = createContext<IDatabase | null>(null);
 
 export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [db] = useState<IDatabase>(() => DatabaseImplementation.getInstance());
@@ -31,12 +31,5 @@ export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 };
 
-export const useDatabase = () => {
-    const context = useContext(DatabaseContext);
-    if (!context) {
-        throw new Error('useDatabase must be used within a DatabaseProvider');
-    }
-    return context;
-};
-
-
+// Re-export hook for convenience (hook is defined in hooks/useDatabase.ts)
+export { useDatabase } from '../hooks/useDatabase';

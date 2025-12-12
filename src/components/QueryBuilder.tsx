@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
 import type { SearchSuggestion } from '../types';
@@ -36,7 +36,6 @@ const TYPE_LABELS: Record<string, string> = {
 
 export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) => {
     const [inputValue, setInputValue] = useState('');
-    const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -44,17 +43,15 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
 
     const db = useDatabase();
 
-    // Generate suggestions based on input
-    useEffect(() => {
+    // Generate suggestions based on input using useMemo (not useEffect)
+    const suggestions = useMemo<SearchSuggestion[]>(() => {
         if (!inputValue.trim()) {
-            setSuggestions([]);
-            return;
+            return [];
         }
-
         const matches = db.getSuggestions(inputValue);
-        setSuggestions(matches.slice(0, 35));
-        setSelectedIndex(-1);
+        return matches.slice(0, 35);
     }, [inputValue, db]);
+
 
     // Handle clicking outside to close dropdown
     useEffect(() => {
@@ -83,7 +80,6 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
         }));
 
         setInputValue('');
-        setSuggestions([]);
         setShowSuggestions(false);
         inputRef.current?.focus();
     };

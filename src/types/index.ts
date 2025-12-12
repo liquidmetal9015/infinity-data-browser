@@ -8,9 +8,9 @@ export interface Item {
 export interface Profile {
     id: int;
     name: string;
-    skills: { id: int; extra?: any }[];
-    equip: { id: int; extra?: any }[]; // Note: Source JSON uses 'equip' in some places, 'equipment' in models
-    weapons: { id: int; extra?: any }[];
+    skills: { id: int; extra?: number[] }[];
+    equip: { id: int; extra?: number[] }[]; // Note: Source JSON uses 'equip' in some places, 'equipment' in models
+    weapons: { id: int; extra?: number[] }[];
     type?: int; // Unit classification (1=LI, 2=MI, etc)
     // Stats
     move: number[];
