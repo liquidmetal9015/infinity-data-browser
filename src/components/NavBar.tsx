@@ -23,7 +23,7 @@ export function NavBar() {
                     </NavLink>
                     <NavLink to="/ranges" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                         <Activity size={18} />
-                        <span>Ranges</span>
+                        <span>Weapons</span>
                     </NavLink>
                     <NavLink to="/compare" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} />

@@ -20,6 +20,7 @@ interface ParsedWeapon {
     savingNum: string;
     ammunition: string; // Name of ammo
     properties: string[];
+    templateType?: 'small' | 'large' | 'none';
 }
 
 // Standard range bands in inches
@@ -66,11 +67,23 @@ export function RangesPage() {
         const weaponsMap = new Map<number, ParsedWeapon>();
 
         db.metadata.weapons
-            .filter(w => w.distance) // Only weapons with range data
+            // .filter(w => w.distance) // REMOVE THIS FILTER so we can catch template weapons with null distance
             .forEach(w => {
                 if (weaponsMap.has(w.id)) return; // Skip duplicates
 
                 const bands: RangeBand[] = [];
+                let templateType: 'small' | 'large' | 'none' = 'none';
+
+                // Check for Direct Template first
+                if (w.properties && w.properties.some(p => p.includes('Direct Template'))) {
+                    // It's a template weapon
+                    if (w.properties.some(p => p.includes('Small Teardrop'))) {
+                        templateType = 'small';
+                    } else if (w.properties.some(p => p.includes('Large Teardrop'))) {
+                        templateType = 'large';
+                    }
+                }
+
                 if (w.distance) {
                     // Convert distance object to array and sort by max range
                     const parts = Object.entries(w.distance)
@@ -101,6 +114,13 @@ export function RangesPage() {
                     ammoName = ammo ? ammo.name : w.ammunition.toString();
                 }
 
+                // If it has NO distance bands but IS a template weapon, add it
+                if (bands.length === 0 && templateType !== 'none') {
+                    // We don't synthesize bands here for the graph anymore, we handle it via templateType
+                } else if (bands.length === 0) {
+                    return; // Skip if no distance and no template
+                }
+
                 weaponsMap.set(w.id, {
                     id: w.id,
                     name: w.name,
@@ -110,7 +130,8 @@ export function RangesPage() {
                     saving: w.saving || '-',
                     savingNum: w.savingNum || '-',
                     ammunition: ammoName,
-                    properties: w.properties || []
+                    properties: w.properties || [],
+                    templateType
                 });
             });
 
@@ -191,9 +212,6 @@ export function RangesPage() {
     useEffect(() => {
         if (!graphRef.current || selectedWeapons.length === 0 || containerWidth === 0) {
             // Safety cleanup: Ensure no stray SVGs if we have no weapons
-            if (containerRef.current && selectedWeapons.length === 0) {
-                d3.select(containerRef.current).selectAll("svg").remove();
-            }
             return;
         }
 
@@ -311,6 +329,36 @@ export function RangesPage() {
                 .attr("stroke-width", 3)
                 .attr("d", line)
                 .attr("stroke-opacity", 0.8);
+        });
+
+        // Draw Template Bars (Overlay)
+        selectedWeapons.forEach((weapon, i) => {
+            if (weapon.templateType && weapon.templateType !== 'none') {
+                const templateLength = weapon.templateType === 'small' ? 8.4 : 10.2;
+                const barHeight = 40; // Height of the bar
+                const yPos = y(0) - (barHeight / 2); // Center on 0 line
+
+                // Draw rectangle
+                svg.append("rect")
+                    .attr("x", x(0))
+                    .attr("y", yPos)
+                    .attr("width", x(templateLength) - x(0))
+                    .attr("height", barHeight)
+                    .attr("fill", color(i.toString()))
+                    .attr("fill-opacity", 0.3)
+                    .attr("stroke", color(i.toString()))
+                    .attr("stroke-width", 2);
+
+                // Label
+                svg.append("text")
+                    .attr("x", x(templateLength / 2))
+                    .attr("y", yPos - 5)
+                    .attr("fill", color(i.toString()))
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "bold")
+                    .text("DIRECT TEMPLATE");
+            }
         });
 
     }, [selectedWeapons, containerWidth]);
@@ -467,13 +515,39 @@ export function RangesPage() {
                                                                     const bandMod = w.bands.find(b => b.start < samplePoint && b.end >= samplePoint)?.mod ?? null;
 
                                                                     let modClass = 'mod-0';
-                                                                    if (bandMod === null) modClass = 'mod-none';
-                                                                    else if (bandMod > 0) modClass = 'mod-pos';
-                                                                    else if (bandMod < 0) modClass = 'mod-neg';
+                                                                    let content: string | number = '-';
+
+                                                                    // Template Handling
+                                                                    if (w.templateType && w.templateType !== 'none') {
+                                                                        const tLen = w.templateType === 'small' ? 8.4 : 10.2;
+                                                                        if (band.start < tLen) {
+                                                                            modClass = 'mod-template';
+                                                                            content = 'DT'; // Direct Template
+                                                                        } else {
+                                                                            modClass = 'mod-none';
+                                                                            content = '-';
+                                                                        }
+                                                                    } else {
+                                                                        // Standard Bands
+                                                                        if (bandMod === null) {
+                                                                            modClass = 'mod-none';
+                                                                            content = '-';
+                                                                        }
+                                                                        else if (bandMod > 0) {
+                                                                            modClass = 'mod-pos';
+                                                                            content = `+${bandMod}`;
+                                                                        }
+                                                                        else if (bandMod < 0) {
+                                                                            modClass = 'mod-neg';
+                                                                            content = bandMod;
+                                                                        } else {
+                                                                            content = '0';
+                                                                        }
+                                                                    }
 
                                                                     return (
                                                                         <div key={idx} className={`range-cell ${modClass}`} title={band.label}>
-                                                                            {bandMod !== null ? (bandMod > 0 ? `+${bandMod}` : bandMod) : '-'}
+                                                                            {content}
                                                                         </div>
                                                                     )
                                                                 })}
@@ -661,7 +735,14 @@ export function RangesPage() {
                 .range-cell.mod-pos { background: rgba(var(--color-success-rgb, 34, 197, 94), 0.15); color: var(--color-success, #22c55e); }
                 .range-cell.mod-neg { background: rgba(var(--color-danger-rgb, 239, 68, 68), 0.15); color: var(--color-danger, #ef4444); }
                 .range-cell.mod-0 { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+                .range-cell.mod-0 { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
                 .range-cell.mod-none { opacity: 0.3; }
+                .range-cell.mod-template { 
+                    background: rgba(var(--color-primary-rgb), 0.2); 
+                    color: var(--color-primary); 
+                    font-weight: 700;
+                    border: 1px solid rgba(var(--color-primary-rgb), 0.3);
+                }
 
                 .weapon-cell-stats {
                     white-space: nowrap;
