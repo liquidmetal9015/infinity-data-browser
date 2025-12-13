@@ -299,6 +299,94 @@ body {
   align-items: stretch;
 }
 
+.stat-builder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.stat-select {
+  padding: 0 12px;
+  height: 42px;
+  /* Match input height */
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.stat-select.op {
+  width: 60px;
+  text-align: center;
+}
+
+.stat-input {
+  width: 80px;
+  height: 42px;
+  padding: 0 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.add-stat-btn {
+  height: 42px;
+  padding: 0 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.add-stat-btn:hover {
+  background: var(--accent-hover);
+}
+
+.cancel-stat-btn {
+  height: 42px;
+  width: 42px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-stat-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.toggle-stat-btn {
+  padding: 0 16px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle-stat-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
 .type-selector {
   position: relative;
 }

@@ -3,14 +3,24 @@ import { Search, X } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
 import type { SearchSuggestion } from '../types';
 
-export interface QueryFilter {
+export interface ItemFilter {
     id: string;
     type: 'weapon' | 'skill' | 'equipment';
     value: string;           // Display name like "Mimetism(-6)"
     baseId: number;          // The base skill/weapon/equipment ID
     modifiers: number[];     // Required modifiers (empty = any variant)
-    matchAnyModifier: boolean; // If true, match any modifier variant
+    matchAnyModifier: boolean; // If true, match any variant
 }
+
+export interface StatFilter {
+    id: string;
+    type: 'stat';
+    stat: 'MOV' | 'CC' | 'BS' | 'PH' | 'WIP' | 'ARM' | 'BTS' | 'W' | 'S';
+    operator: '>' | '>=' | '=' | '<=' | '<';
+    value: number;
+}
+
+export type QueryFilter = ItemFilter | StatFilter;
 
 export interface QueryState {
     filters: QueryFilter[];
@@ -26,18 +36,30 @@ const TYPE_COLORS: Record<string, string> = {
     weapon: '#f97316',
     skill: '#8b5cf6',
     equipment: '#06b6d4',
+    stat: '#10b981',
 };
 
 const TYPE_LABELS: Record<string, string> = {
     weapon: 'W',
     skill: 'S',
     equipment: 'E',
+    stat: '#',
 };
+
+const STAT_OPTIONS = ['MOV', 'CC', 'BS', 'PH', 'WIP', 'ARM', 'BTS', 'W', 'S'];
+const OPERATOR_OPTIONS = ['>', '>=', '=', '<=', '<'];
 
 export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) => {
     const [inputValue, setInputValue] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+
+    // Stat Builder State
+    const [showStatBuilder, setShowStatBuilder] = useState(false);
+    const [statType, setStatType] = useState('WIP');
+    const [statOp, setStatOp] = useState('>=');
+    const [statVal, setStatVal] = useState('13');
+
     const inputRef = useRef<HTMLInputElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +87,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
     }, []);
 
     const addFilter = (suggestion: SearchSuggestion) => {
-        const newFilter: QueryFilter = {
+        const newFilter: ItemFilter = {
             id: `${suggestion.type}-${suggestion.id}-${Date.now()}`,
             type: suggestion.type,
             value: suggestion.displayName,
@@ -82,6 +104,26 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
         setInputValue('');
         setShowSuggestions(false);
         inputRef.current?.focus();
+    };
+
+    const addStatFilter = () => {
+        const val = parseInt(statVal);
+        if (isNaN(val)) return;
+
+        const newFilter: StatFilter = {
+            id: `stat-${statType}-${statOp}-${val}-${Date.now()}`,
+            type: 'stat',
+            stat: statType as any,
+            operator: statOp as any,
+            value: val
+        };
+
+        setQuery(prev => ({
+            ...prev,
+            filters: [...prev.filters, newFilter]
+        }));
+
+        setShowStatBuilder(false);
     };
 
     const removeFilter = (filterId: string) => {
@@ -153,7 +195,12 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
                                 >
                                     {TYPE_LABELS[filter.type]}
                                 </span>
-                                <span className="filter-value">{filter.value}</span>
+                                <span className="filter-value">
+                                    {filter.type === 'stat'
+                                        ? `${(filter as StatFilter).stat} ${(filter as StatFilter).operator} ${(filter as StatFilter).value}`
+                                        : (filter as ItemFilter).value
+                                    }
+                                </span>
                                 <button
                                     className="filter-remove"
                                     onClick={() => removeFilter(filter.id)}
@@ -171,72 +218,111 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
 
             {/* Unified Search Input */}
             <div className="query-input-row">
-                <div className="input-wrapper">
-                    <Search size={16} className="input-icon" />
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => {
-                            setInputValue(e.target.value);
-                            setShowSuggestions(true);
-                        }}
-                        onFocus={() => setShowSuggestions(true)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Search weapons, skills, or equipment..."
-                        className="query-input"
-                    />
-                    {inputValue && (
-                        <button
-                            className="input-clear"
-                            onClick={() => {
-                                setInputValue('');
-                                inputRef.current?.focus();
-                            }}
+                {showStatBuilder ? (
+                    <div className="stat-builder">
+                        <select
+                            value={statType}
+                            onChange={e => setStatType(e.target.value)}
+                            className="stat-select"
                         >
+                            {STAT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <select
+                            value={statOp}
+                            onChange={e => setStatOp(e.target.value)}
+                            className="stat-select op"
+                        >
+                            {OPERATOR_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                        <input
+                            type="number"
+                            value={statVal}
+                            onChange={e => setStatVal(e.target.value)}
+                            className="stat-input"
+                            onKeyDown={e => e.key === 'Enter' && addStatFilter()}
+                        />
+                        <button className="add-stat-btn" onClick={addStatFilter}>Add</button>
+                        <button className="cancel-stat-btn" onClick={() => setShowStatBuilder(false)}>
                             <X size={14} />
                         </button>
-                    )}
+                    </div>
+                ) : (
+                    <div className="input-wrapper">
+                        <Search size={16} className="input-icon" />
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => {
+                                setInputValue(e.target.value);
+                                setShowSuggestions(true);
+                            }}
+                            onFocus={() => setShowSuggestions(true)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Search weapons, skills, or equipment..."
+                            className="query-input"
+                        />
+                        {inputValue && (
+                            <button
+                                className="input-clear"
+                                onClick={() => {
+                                    setInputValue('');
+                                    inputRef.current?.focus();
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
 
-                    {/* Suggestions Dropdown */}
-                    {showSuggestions && suggestions.length > 0 && (
-                        <div className="suggestions-dropdown">
-                            {suggestions.map((s, idx) => (
-                                <button
-                                    key={`${s.type}-${s.id}-${s.modifiers.join(',')}-${s.isAnyVariant}`}
-                                    className={`suggestion-item ${idx === selectedIndex ? 'selected' : ''}`}
-                                    onClick={() => addFilter(s)}
-                                    onMouseEnter={() => setSelectedIndex(idx)}
-                                >
-                                    <span
-                                        className="suggestion-type"
-                                        style={{
-                                            background: TYPE_COLORS[s.type],
-                                            color: 'white'
-                                        }}
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div className="suggestions-dropdown">
+                                {suggestions.map((s, idx) => (
+                                    <button
+                                        key={`${s.type}-${s.id}-${s.modifiers.join(',')}-${s.isAnyVariant}`}
+                                        className={`suggestion-item ${idx === selectedIndex ? 'selected' : ''}`}
+                                        onClick={() => addFilter(s)}
+                                        onMouseEnter={() => setSelectedIndex(idx)}
                                     >
-                                        {TYPE_LABELS[s.type]}
-                                    </span>
-                                    <span className="suggestion-name">{s.displayName}</span>
-                                    {s.isAnyVariant && (
-                                        <span className="suggestion-badge">all variants</span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* No results message */}
-                    {showSuggestions && inputValue.trim() && suggestions.length === 0 && (
-                        <div className="suggestions-dropdown">
-                            <div className="no-suggestions">
-                                No matching items found
+                                        <span
+                                            className="suggestion-type"
+                                            style={{
+                                                background: TYPE_COLORS[s.type],
+                                                color: 'white'
+                                            }}
+                                        >
+                                            {TYPE_LABELS[s.type]}
+                                        </span>
+                                        <span className="suggestion-name">{s.displayName}</span>
+                                        {s.isAnyVariant && (
+                                            <span className="suggestion-badge">all variants</span>
+                                        )}
+                                    </button>
+                                ))}
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+
+                        {/* No results message */}
+                        {showSuggestions && inputValue.trim() && suggestions.length === 0 && (
+                            <div className="suggestions-dropdown">
+                                <div className="no-suggestions">
+                                    No matching items found
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {!showStatBuilder && (
+                    <button
+                        className="toggle-stat-btn"
+                        onClick={() => setShowStatBuilder(true)}
+                        title="Add Stat Filter"
+                    >
+                        + Stat
+                    </button>
+                )}
             </div>
         </div>
     );
 };
-

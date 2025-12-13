@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useUnitSearch } from './useUnitSearch';
 import type { IDatabase } from '../services/Database';
 import type { Unit } from '../types';
+import type { StatFilter } from '../components/QueryBuilder';
 
 // Mock Database
 const mockUnits: Unit[] = [
@@ -16,7 +17,26 @@ const mockUnits: Unit[] = [
         allEquipmentIds: new Set(),
         allItemsWithMods: [],
         pointsRange: [0, 0],
-        raw: {} as any
+        raw: {
+            profileGroups: [
+                {
+                    profiles: [
+                        {
+                            cc: 20,
+                            bs: 10,
+                            ph: 10,
+                            wip: 10,
+                            arm: 1,
+                            bts: 0,
+                            w: 1,
+                            s: 2,
+                            move: [10, 10] // 20cm = 8 inches
+                        }
+                    ],
+                    options: []
+                }
+            ]
+        } as any
     },
     {
         id: 2,
@@ -28,7 +48,26 @@ const mockUnits: Unit[] = [
         allEquipmentIds: new Set(),
         allItemsWithMods: [],
         pointsRange: [0, 0],
-        raw: {} as any
+        raw: {
+            profileGroups: [
+                {
+                    profiles: [
+                        {
+                            cc: 10,
+                            bs: 15, // High BS
+                            ph: 10,
+                            wip: 14, // High WIP
+                            arm: 1,
+                            bts: 0,
+                            w: 1,
+                            s: 2,
+                            move: [15, 10] // 25cm = 10 inches
+                        }
+                    ],
+                    options: []
+                }
+            ]
+        } as any
     }
 ];
 
@@ -105,5 +144,94 @@ describe('useUnitSearch', () => {
 
         expect(result.current.filteredUnits).toHaveLength(1);
         expect(result.current.filteredUnits[0].name).toBe('Unit B');
+    });
+
+    it('filters by single stat (CC > 15)', () => {
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [{
+                    id: 's1',
+                    type: 'stat',
+                    stat: 'CC',
+                    operator: '>',
+                    value: 15
+                } as StatFilter],
+                operator: 'or'
+            });
+        });
+
+        // Should return Unit A (CC 20)
+        expect(result.current.filteredUnits).toHaveLength(1);
+        expect(result.current.filteredUnits[0].name).toBe('Unit A');
+    });
+
+    it('filters by movement inches (MOV >= 10)', () => {
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [{
+                    id: 's2',
+                    type: 'stat',
+                    stat: 'MOV',
+                    operator: '>=',
+                    value: 10
+                } as StatFilter],
+                operator: 'or'
+            });
+        });
+
+        // Unit A: 20cm = 8 inches. Unit B: 25cm = 10 inches.
+        // Should match Unit B only.
+        expect(result.current.filteredUnits).toHaveLength(1);
+        expect(result.current.filteredUnits[0].name).toBe('Unit B');
+    });
+
+    it('combines item and stat filters with AND', () => {
+        // Mock DB returns both for the item search
+        (mockDb.searchWithModifiers as any).mockReturnValue(mockUnits);
+
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [
+                    { id: '1', type: 'skill', value: 'x', baseId: 1, modifiers: [], matchAnyModifier: false },
+                    { id: 's1', type: 'stat', stat: 'BS', operator: '>', value: 12 } as StatFilter
+                ],
+                operator: 'and'
+            });
+        });
+
+        // Only Unit B matches BS > 12
+        expect(result.current.filteredUnits).toHaveLength(1);
+        expect(result.current.filteredUnits[0].name).toBe('Unit B');
+    });
+
+    it('combines item and stat filters with OR', () => {
+        // Mock DB returns Unit A for the item search
+        (mockDb.searchWithModifiers as any).mockReturnValue([mockUnits[0]]);
+
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [
+                    { id: '1', type: 'skill', value: 'x', baseId: 1, modifiers: [], matchAnyModifier: false },
+                    { id: 's1', type: 'stat', stat: 'WIP', operator: '>', value: 13 } as StatFilter
+                ],
+                operator: 'or'
+            });
+        });
+
+        // Unit A comes from item search.
+        // Unit B matches WIP > 13 (WIP 14).
+        // Result should be both.
+        expect(result.current.filteredUnits).toHaveLength(2);
+
+        const names = result.current.filteredUnits.map(u => u.name).sort();
+        expect(names).toEqual(['Unit A', 'Unit B']);
     });
 });
