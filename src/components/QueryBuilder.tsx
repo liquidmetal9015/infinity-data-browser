@@ -15,7 +15,7 @@ export interface ItemFilter {
 export interface StatFilter {
     id: string;
     type: 'stat';
-    stat: 'MOV' | 'CC' | 'BS' | 'PH' | 'WIP' | 'ARM' | 'BTS' | 'W' | 'S';
+    stat: 'MOV' | 'MOV-1' | 'MOV-2' | 'CC' | 'BS' | 'PH' | 'WIP' | 'ARM' | 'BTS' | 'W' | 'S';
     operator: '>' | '>=' | '=' | '<=' | '<';
     value: number;
 }
@@ -46,7 +46,7 @@ const TYPE_LABELS: Record<string, string> = {
     stat: '#',
 };
 
-const STAT_OPTIONS = ['MOV', 'CC', 'BS', 'PH', 'WIP', 'ARM', 'BTS', 'W', 'S'];
+const STAT_OPTIONS = ['MOV', 'MOV-1', 'MOV-2', 'CC', 'BS', 'PH', 'WIP', 'ARM', 'BTS', 'W', 'S'];
 const OPERATOR_OPTIONS = ['>', '>=', '=', '<=', '<'];
 
 export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) => {

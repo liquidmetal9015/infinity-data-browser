@@ -33,6 +33,10 @@ export function NavBar() {
                         <Layers size={18} />
                         <span>Fireteams</span>
                     </NavLink>
+                    <NavLink to="/units" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                        <Users size={18} />
+                        <span>Units</span>
+                    </NavLink>
                 </nav>
             </div>
             <style>{`

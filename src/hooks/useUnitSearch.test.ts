@@ -234,4 +234,47 @@ describe('useUnitSearch', () => {
         const names = result.current.filteredUnits.map(u => u.name).sort();
         expect(names).toEqual(['Unit A', 'Unit B']);
     });
+
+    it('filters by MOV-1 (First Move Value)', () => {
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [{
+                    id: 's-mov1',
+                    type: 'stat',
+                    stat: 'MOV-1',
+                    operator: '>',
+                    value: 5
+                } as StatFilter],
+                operator: 'or'
+            });
+        });
+
+        // Unit A: [10, 10]cm -> 4 inches. Unit B: [15, 10]cm -> 6 inches.
+        // MOV-1 > 5 should match Unit B (6").
+        expect(result.current.filteredUnits).toHaveLength(1);
+        expect(result.current.filteredUnits[0].name).toBe('Unit B');
+    });
+
+    it('filters by MOV-2 (Second Move Value)', () => {
+        const { result } = renderHook(() => useUnitSearch(mockDb, false));
+
+        act(() => {
+            result.current.setQuery({
+                filters: [{
+                    id: 's-mov2',
+                    type: 'stat',
+                    stat: 'MOV-2',
+                    operator: '=',
+                    value: 4
+                } as StatFilter],
+                operator: 'or'
+            });
+        });
+
+        // Unit A: [10, 10]cm -> 4 inches. Unit B: [15, 10]cm -> 4 inches.
+        // Both match MOV-2 = 4.
+        expect(result.current.filteredUnits).toHaveLength(2);
+    });
 });

@@ -38,6 +38,20 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
                     return false;
                 }
                 break;
+            case 'MOV-1':
+                if (Array.isArray(profile.move) && profile.move.length >= 1) {
+                    statVal = Math.round(profile.move[0] * 0.4);
+                } else {
+                    return false;
+                }
+                break;
+            case 'MOV-2':
+                if (Array.isArray(profile.move) && profile.move.length >= 2) {
+                    statVal = Math.round(profile.move[1] * 0.4);
+                } else {
+                    return false;
+                }
+                break;
             default: return false;
         }
 
