@@ -3,11 +3,13 @@
 
 import type { DatabaseMetadata, FireteamChart, FactionInfo, SuperFaction, SearchSuggestion, Unit } from '../types';
 import { BaseDatabase, type FactionDataFile, type SearchFilter } from '../../shared/BaseDatabase';
+import type { ClassifiedObjective } from '../../shared/classifieds';
 
 // Re-export interface for backwards compatibility
 export interface IDatabase {
     units: Unit[];
     metadata: DatabaseMetadata | null;
+    classifieds: ClassifiedObjective[];
     init(): Promise<void>;
     searchWithModifiers(filters: SearchFilter[], operator: 'and' | 'or'): Unit[];
     getFactionName(id: number): string;
@@ -28,6 +30,7 @@ export interface IDatabase {
 
 export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     private static instance: DatabaseImplementation;
+    public classifieds: ClassifiedObjective[] = [];
 
     constructor() {
         super();
@@ -40,6 +43,15 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
         return DatabaseImplementation.instance;
     }
 
+    public async init(): Promise<void> {
+        await super.init();
+        try {
+            this.classifieds = await this.loadClassifieds();
+        } catch (e) {
+            console.error("Failed to load classifieds", e);
+        }
+    }
+
     // ========================================================================
     // Platform-specific: Load via fetch()
     // ========================================================================
@@ -48,6 +60,16 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
         const res = await fetch(import.meta.env.BASE_URL + 'data/metadata.json');
         if (!res.ok) {
             throw new Error(`Failed to load metadata: ${res.status}`);
+        }
+        return res.json();
+    }
+
+    protected async loadClassifieds(): Promise<ClassifiedObjective[]> {
+        const res = await fetch(import.meta.env.BASE_URL + 'data/classifieds.json');
+        if (!res.ok) {
+            // fallback or empty if missing
+            console.warn(`Failed to load classifieds.json: ${res.status}`);
+            return [];
         }
         return res.json();
     }
