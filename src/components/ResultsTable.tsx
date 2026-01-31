@@ -40,7 +40,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ units, query }) => {
 
             switch (sortField) {
                 case 'name':
-                    comparison = a.name.localeCompare(b.name);
+                    // Handle null/undefined names safely
+                    const nameA = a.name ?? '';
+                    const nameB = b.name ?? '';
+                    comparison = nameA.localeCompare(nameB);
                     break;
                 case 'factions':
                     comparison = a.factions.length - b.factions.length;

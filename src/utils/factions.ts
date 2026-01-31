@@ -108,27 +108,61 @@ export class FactionRegistry {
     ) {
         // Build set of valid slugs
         this.validFactionSlugs = new Set(availableSlugs);
+        const processedSlugs = new Set<string>();
 
-        // First pass: create FactionInfo for each faction
+        // First pass: create FactionInfo for each faction, deduplicating by slug
         for (const raw of rawFactions) {
+            if (processedSlugs.has(raw.slug)) continue;
+            processedSlugs.add(raw.slug);
+
+            // Fix parent ID for Reinforcements (ids ending in 91 usually parented to x01)
+            // e.g. 191 (PanO Reinf) -> 101 (PanO)
+            let parentId = raw.parent;
+            if (parentId % 100 === 91) {
+                // Try to map to the main faction (x01)
+                const mainId = Math.floor(parentId / 100) * 100 + 1;
+                // Special case: 991 (NA2/Mercs) -> 901 (Non-Aligned)
+                // Special case: 1091 (Teams Gladius / O-12) -> 1001 (O-12)
+                parentId = mainId;
+            }
+
+            // Special handling for JSA (1101) to be under Non-Aligned (901) or standalone?
+            // Metadata puts JSA at 1101 with parent 1101. It often sits apart or under NA2.
+            // For now, leave as is (Standalone).
+
             const info: FactionInfo = {
                 id: raw.id,
-                parentId: raw.parent,
+                parentId: parentId,
                 name: raw.name,
                 shortName: deriveShortName(raw.name),
                 slug: raw.slug,
                 discontinued: raw.discontinued,
-                logo: raw.logo,
-                isVanilla: raw.id === raw.parent,
+                logo: `/logos/factions/${raw.slug}.svg`,
+                isVanilla: raw.id === raw.parent, // Use original parent for vanilla check? No, rely on mapped ID.
                 hasData: this.validFactionSlugs.has(raw.slug)
             };
+
+            // Re-evaluate isVanilla after remapping? 
+            // If we remapped parent, then `id !== parent` usually.
+            // Exception: If we remapped a vanilla faction's parent... but vanilla has id==parent.
+            // Reinforcements (199) had parent 191. Remapped to 101. 199 != 101. So not vanilla. Correct.
+
             this.factions.set(raw.id, info);
         }
 
         // Second pass: build SuperFaction structure
         for (const faction of this.factions.values()) {
-            if (faction.isVanilla) {
-                // This is a super-faction
+            // Check if this faction is a root/vanilla faction
+            // A faction is a root if:
+            // 1. It marks itself as vanilla (id == raw.parent from before?) 
+            //    Wait, we need to trust the remapped parent.
+            //    If we remapped 199 to 101, then 101 is the parent.
+            //    101 is PanO. PanO (101) has parent 101.
+
+            // We need to find the "SuperFaction" object for the parentId
+
+            // If the faction IS the super faction (id === parentId)
+            if (faction.id === faction.parentId) {
                 if (!this.superFactions.has(faction.id)) {
                     this.superFactions.set(faction.id, {
                         id: faction.id,
@@ -137,22 +171,65 @@ export class FactionRegistry {
                         vanilla: faction.hasData ? faction : null,
                         sectorials: []
                     });
+                } else {
+                    // We might have created a placeholder already?
+                    const sf = this.superFactions.get(faction.id)!;
+                    sf.name = faction.name;
+                    sf.shortName = faction.shortName;
+                    sf.vanilla = faction.hasData ? faction : null;
                 }
             } else {
-                // This is a sectorial - add to parent's sectorials
+                // This is a child faction/sectorial
                 let parent = this.superFactions.get(faction.parentId);
+
                 if (!parent) {
-                    // Parent doesn't exist yet, create placeholder
+                    // Parent doesn't exist yet, we must find it or create a placeholder
                     const parentFaction = this.factions.get(faction.parentId);
-                    parent = {
-                        id: faction.parentId,
-                        name: parentFaction?.name || 'Unknown',
-                        shortName: parentFaction?.shortName || '?',
-                        vanilla: parentFaction?.hasData ? parentFaction : null,
-                        sectorials: []
-                    };
-                    this.superFactions.set(faction.parentId, parent);
+
+                    if (parentFaction) {
+                        // The parent exists in our registry, just hasn't been processed into SuperFactions yet?
+                        // Or maybe we process in order.
+                        parent = {
+                            id: faction.parentId,
+                            name: parentFaction.name,
+                            shortName: parentFaction.shortName,
+                            vanilla: parentFaction.hasData ? parentFaction : null,
+                            sectorials: []
+                        };
+                        this.superFactions.set(faction.parentId, parent);
+                    } else {
+                        // Parent key exists but no faction info (e.g. NA2 parent 900? Metadata says 901->900)
+                        // Wait, NA2 (901) has parent 900 in metadata.
+                        // Faction 900 doesn't exist.
+                        // So NA2 is a child of 900?
+                        // If 900 doesn't exist, NA2 becomes an orphan or we create 900.
+                        // Ideally NA2 (901) should be a root.
+
+                        // Fix for NA2:
+                        if (faction.parentId === 900 && faction.id === 901) {
+                            // Treat NA2 as root
+                            this.superFactions.set(faction.id, {
+                                id: faction.id,
+                                name: faction.name,
+                                shortName: faction.shortName,
+                                vanilla: faction.hasData ? faction : null,
+                                sectorials: []
+                            });
+                            continue; // Done with NA2
+                        }
+
+                        // Fallback placeholder
+                        parent = {
+                            id: faction.parentId,
+                            name: `Unknown (${faction.parentId})`,
+                            shortName: '?',
+                            vanilla: null,
+                            sectorials: []
+                        };
+                        this.superFactions.set(faction.parentId, parent);
+                    }
                 }
+
                 if (faction.hasData) {
                     parent.sectorials.push(faction);
                 }

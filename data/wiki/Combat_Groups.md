@@ -1,0 +1,160 @@
+# Combat Groups
+
+Source: https://infinitythewiki.com/Combat_Groups
+
+**[Basic Rules](/Basic_Rules "Basic Rules")**
+
+* * *
+
+[Open and Private Information](/Open_and_Private_Information "Open and Private Information") | [Unit Profile](/Unit_Profile "Unit Profile") | Army List | [Orders and the Order Pool](/Orders_and_the_Order_Pool "Orders and the Order Pool") | [Trooper Activation](/Trooper_Activation "Trooper Activation") | [ARO: Automatic Reaction Order](/ARO:_Automatic_Reaction_Order "ARO: Automatic Reaction Order") | [Order Expenditure Sequence](/Order_Expenditure_Sequence "Order Expenditure Sequence") | [Initiative and Deployment](/Initiative_and_Deployment "Initiative and Deployment") | [Game Sequence](/Game_Sequence "Game Sequence") | [Loss of Lieutenant](/Loss_of_Lieutenant "Loss of Lieutenant") | [Silhouettes](/Silhouettes "Silhouettes") | [Line of Fire](/Line_of_Fire "Line of Fire") | [Zone of Control](/Zone_of_Control "Zone of Control") | [Zones, Bases and Silhouettes](/Zones,_Bases_and_Silhouettes "Zones, Bases and Silhouettes") | [Coherency](/Coherency "Coherency") | [Distances and Measurements](/Distances_and_Measurements "Distances and Measurements") | [Replacing Game Elements](/Replacing_Game_Elements "Replacing Game Elements") | [Rolls](/Rolls "Rolls") | [Face to Face Rolls](/Face_to_Face_Rolls "Face to Face Rolls")
+
+  
+
+Contents
+--------
+
+*   [1 Army List](#Army_List)
+    *   [1.1 Sectorial Army Lists](#Sectorial_Army_Lists)
+*   [2 Army Points and Value](#Army_Points_and_Value)
+*   [3 Combat Group](#Combat_Group)
+*   [4 Availability (AVA)](#Availability_.28AVA.29)
+*   [5 Support Weapons Cost (SWC)](#Support_Weapons_Cost_.28SWC.29)
+*   [6 Lieutenant](#Lieutenant)
+*   [7 Infinity Army](#Infinity_Army)
+
+Army List
+---------
+
+The Army List is the list of Troopers that make up the combat forces the player will be using during the game.
+
+In order to play a game of Infinity, the first step will be to determine the number of Army Points with which the Army Lists will be created. This number will be decided by mutual agreement between the players, or it could be determined by a specific mission or scenario you are playing, or by the organizer if you are playing at an event.
+
+**An Army List may include a maximum of 15 Troopers.**
+
+A standard Infinity game is organized with 300 Points and 6 SWC, which would let players include up to 15 Troopers for an average duration game.
+
+  
+
+### Sectorial Army Lists
+
+The Sectorial Armies are specific sections of a faction, or small territorial armies from a specific area, region, or planet of the faction to which they belong. Each faction in Infinity may have one or more Sectorial Armies.
+
+The Sectorial Armies have their own distinct Army Lists with Trooper Availabilities that are different from the generic Army of the faction they belong to. They will often have greater access to specific units, at the cost of not being able to access other units from their generic Armies, which in turn belong to other Sectorial Armies of the same faction.
+
+A player who uses a Sectorial Army List will only be able to field Troopers listed in the Sectorial Army, and will not be able to field Troopers from the Generic Army List that are not specifically listed in the Sectorial Army.
+
+At the same time, if a Generic Army List is used, players may not field Sectorial Army Troopers that are not included in the Generic Army List, or field the troopers using the Availabilities listed for the Sectorial Army.
+
+  
+
+Army Points and Value
+---------------------
+
+The **total sum** of the [Cost](/Cost "Cost") of the [Troopers](/Troopers "Troopers") that make up an Army List must always be **equal to or lower than** the number of [Army Points](/Army_Points "Army Points") agreed upon for the game.
+
+In order to create an Army List, the player needs to select his Troopers from the ones available for his faction (PanOceania, Yu Jing, Combined Army...) and add up their Cost.
+
+  
+
+Combat Group
+------------
+
+A Combat Group is a closed group of Troopers with a maximum number of members no greater than 10.
+
+When the total number of Troopers making up an **Army List** is more than 10, the player must organize the Troopers into separate Combat Groups.
+
+When creating the **Army List**, the player must assign each Trooper to a Combat Group; he can create extra Combat Groups as needed, as long as the total number of Troopers in each one is no greater than 10.
+
+A Combat Group cannot normally be reorganized during the game. Because of this, players are not allowed to transfer Troopers or their Orders from one Combat Group to another.
+
+SEE ALSO
+
+**[Executive Use of Command Tokens](/Command_Tokens#Command_Tokens:_Executive_Use "Command Tokens")**  
+For each Command Token expended, the player may do one of the following:
+
+*   Permanently move an [Allied](/Allied "Allied") Trooper and all their [Peripherals](/Peripheral "Peripheral") to a different [Combat Group](/Combat_Group "Combat Group"), keeping in mind the 10-member limit.
+
+  
+**[Dead State](/Dead_State "Dead State")**
+
+*   The Trooper is removed from the game table and their [Combat Group](/Combat_Group "Combat Group").
+
+  
+**[Unconscious State](/Unconscious_State "Unconscious State")**
+
+**Update** _PDF 5.2, October 2025_  
+
+*   Troopers in Unconscious State still belong to their [Combat Group](/Combat_Group "Combat Group").
+
+  
+
+REMEMBER
+
+Only those Troopers who contribute or spend Orders take up space in the Combat Group. [Peripherals](/Peripheral "Peripheral") do not contribute or spend Orders, so they do not count towards the maximum limit of 10 Troopers in a Combat Group.
+
+  
+
+IMPORTANT
+
+Although the content of a Marker is [Private Information](/Private_Information "Private Information"), which Combat Group they belong to is Open Information.
+
+If the Marker is a [Deployable Weapon](/Deployable_Weapon "Deployable Weapon") or piece of Equipment, it belongs to the Combat Group of the Trooper that deployed it.
+
+  
+
+Availability (AVA)
+------------------
+
+All Troopers have an [Availability](/Availability "Availability") (AVA) value on their [Unit Profile](/Unit_Profile "Unit Profile"). The Availability Attribute determines the maximum number of Troopers from the Unit that can be included in the player’s Army List.
+
+An Availability of Total allows the player to field as many Troopers from that Unit as desired, without exceeding the agreed Army Points for the game, or the number of Troopers allowed in the Army List.
+
+  
+
+Support Weapons Cost (SWC)
+--------------------------
+
+Support Weapons are the weapons or Special Equipment not included in the basic or standard equipment. These Support Weapons have a specific cost named Support Weapons Cost (SWC).
+
+On each [Unit Profile](/Unit_Profile "Unit Profile"), the SWC for each option for that Trooper is specified, taking into account the weapons and the equipment at their disposal.
+
+In game terms, each 50 Army Points will provide 1 point of SWC to spend on Troopers with Support Weapons.
+
+For example, in a standard 300 Point game, players will have 6 SWC points available to spend on Troopers with Support Weapons.
+
+  
+
+EXTRA SWC
+
+Troopers whose SWC value has the + symbol will provide the player that many extra SWC points to be added to the total of the Support Weapons Points available for his Army List. In addition, it will not cost the player any SWC to field these Troopers, as their SWC points value is considered to be 0.
+
+  
+
+Lieutenant
+----------
+
+Army Lists must have one Trooper with the [Lieutenant](/Lieutenant "Lieutenant") Special Skill.
+
+However, players are not allowed to field more than one Trooper with the Lieutenant Special Skill in their Army List.
+
+  
+
+Infinity Army
+-------------
+
+INFINITY ARMY
+
+Infinity Army is the free and official tool to create Army Lists for Infinity. This tool offers:
+
+*   An easy and intuitive interface. This software assesses the legality of each Army List the player creates, both for standard games and to participate in Infinity events.
+*   Infinity Army has all the updated Unit Profiles available for Infinity.
+
+Infinity Army and the Infinity Army App for mobile devices are the quickest and easiest ways to create Army Lists, and both are available for free on the official Infinity website: Infinityuniverse.com
+
+  
+
+**[Basic Rules](/Basic_Rules "Basic Rules")**
+
+* * *
+
+[Open and Private Information](/Open_and_Private_Information "Open and Private Information") | [Unit Profile](/Unit_Profile "Unit Profile") | Army List | [Orders and the Order Pool](/Orders_and_the_Order_Pool "Orders and the Order Pool") | [Trooper Activation](/Trooper_Activation "Trooper Activation") | [ARO: Automatic Reaction Order](/ARO:_Automatic_Reaction_Order "ARO: Automatic Reaction Order") | [Order Expenditure Sequence](/Order_Expenditure_Sequence "Order Expenditure Sequence") | [Initiative and Deployment](/Initiative_and_Deployment "Initiative and Deployment") | [Game Sequence](/Game_Sequence "Game Sequence") | [Loss of Lieutenant](/Loss_of_Lieutenant "Loss of Lieutenant") | [Silhouettes](/Silhouettes "Silhouettes") | [Line of Fire](/Line_of_Fire "Line of Fire") | [Zone of Control](/Zone_of_Control "Zone of Control") | [Zones, Bases and Silhouettes](/Zones,_Bases_and_Silhouettes "Zones, Bases and Silhouettes") | [Coherency](/Coherency "Coherency") | [Distances and Measurements](/Distances_and_Measurements "Distances and Measurements") | [Replacing Game Elements](/Replacing_Game_Elements "Replacing Game Elements") | [Rolls](/Rolls "Rolls") | [Face to Face Rolls](/Face_to_Face_Rolls "Face to Face Rolls")

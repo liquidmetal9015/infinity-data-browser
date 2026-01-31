@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Shield, Crosshair, Zap, Activity } from 'lucide-react';
+import { X, Shield, Crosshair, Zap, Activity, CheckCircle } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import { useDatabase } from '../context/DatabaseContext';
 import { formatMove } from '../utils/conversions';
+import type { Unit } from '../types';
 
 const ATTRIBUTES = [
     { key: 'move', label: 'MOV', icon: <Activity size={14} /> },
@@ -17,10 +18,29 @@ const ATTRIBUTES = [
     { key: 's', label: 'S', icon: <Activity size={14} /> },
 ];
 
-export function UnitStatsModal() {
-    const { isOpen, closeModal, selectedUnit } = useModal();
+interface UnitStatsModalProps {
+    /** 
+     * Selection mode props - when these are provided, the modal operates in "selection mode"
+     * where the user can click to select a specific loadout.
+     */
+    selectionMode?: {
+        unit: Unit;
+        onSelectLoadout: (unit: Unit, profileGroupId: number, profileId: number, optionId: number) => void;
+        onClose: () => void;
+    };
+}
+
+export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
+    // Use context for viewing mode, or props for selection mode
+    const contextModal = useModal();
     const db = useDatabase();
-    // State is reset automatically via key prop in Layout.tsx when unit changes
+
+    // Determine which unit and handlers to use
+    const unit = selectionMode?.unit || contextModal.selectedUnit;
+    const isOpen = selectionMode ? true : contextModal.isOpen;
+    const closeModal = selectionMode?.onClose || contextModal.closeModal;
+    const inSelectionMode = !!selectionMode;
+
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
     // Lock body scroll when modal is open
@@ -35,9 +55,9 @@ export function UnitStatsModal() {
         };
     }, [isOpen]);
 
-    if (!selectedUnit) return null;
+    if (!unit) return null;
 
-    const profileGroups = selectedUnit.raw.profileGroups || [];
+    const profileGroups = unit.raw.profileGroups || [];
     const activeGroup = profileGroups[activeGroupIndex];
     const activeProfile = activeGroup?.profiles[0];
 
@@ -49,6 +69,12 @@ export function UnitStatsModal() {
         if (type === 'skill') return db.skillMap.get(id) || `Skill ${id}`;
         if (type === 'equipment') return db.equipmentMap.get(id) || `Equipment ${id}`;
         return '?';
+    };
+
+    const handleSelectLoadout = (optionId: number) => {
+        if (selectionMode) {
+            selectionMode.onSelectLoadout(unit, activeGroup.id, activeProfile.id, optionId);
+        }
     };
 
     return (
@@ -78,14 +104,19 @@ export function UnitStatsModal() {
                             <div className="space-y-3">
                                 <div className="flex items-center gap-6">
                                     <h2 className="text-4xl font-bold text-white tracking-tight leading-none bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                                        {selectedUnit.name.toUpperCase()}
+                                        {unit.name.toUpperCase()}
                                     </h2>
                                     <span className="px-3 py-1.5 rounded-md text-sm font-mono font-medium bg-white/5 border border-white/5 text-gray-400 tracking-wide">
-                                        {selectedUnit.isc}
+                                        {unit.isc}
                                     </span>
+                                    {inSelectionMode && (
+                                        <span className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-500/20 border border-blue-500/30 text-blue-300">
+                                            Select Loadout
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {selectedUnit.factions.map(fid => (
+                                    {unit.factions.map(fid => (
                                         <span key={fid} className="text-xs font-bold text-gray-500 uppercase tracking-widest px-3 py-1.5 rounded-full bg-black/20 border border-white/5">
                                             {db.getFactionName(fid)}
                                         </span>
@@ -215,7 +246,7 @@ export function UnitStatsModal() {
                                 <div className="space-y-6">
                                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-3 pb-4 border-b border-white/5">
                                         <Crosshair size={14} className="text-red-500/80" />
-                                        Loadout Options
+                                        {inSelectionMode ? 'Select a Loadout' : 'Loadout Options'}
                                     </h3>
                                     <div className="border border-white/5 rounded-xl overflow-hidden bg-[#0f172a] shadow-inner">
                                         <table className="w-full text-left border-collapse">
@@ -226,11 +257,18 @@ export function UnitStatsModal() {
                                                     <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider w-1/4">Skills</th>
                                                     <th className="px-8 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right w-28">SWC</th>
                                                     <th className="px-8 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right w-28">Points</th>
+                                                    {inSelectionMode && (
+                                                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-center w-24">Action</th>
+                                                    )}
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-white/5">
                                                 {activeGroup.options.map((opt, idx) => (
-                                                    <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
+                                                    <tr
+                                                        key={idx}
+                                                        className={`transition-colors group ${inSelectionMode ? 'hover:bg-blue-500/10 cursor-pointer' : 'hover:bg-white/[0.02]'}`}
+                                                        onClick={inSelectionMode ? () => handleSelectLoadout(opt.id) : undefined}
+                                                    >
                                                         <td className="px-8 py-6 align-top">
                                                             <div className="flex flex-col gap-2">
                                                                 {opt.weapons?.map((w, i) => {
@@ -243,7 +281,7 @@ export function UnitStatsModal() {
                                                                     );
                                                                     return (
                                                                         <span key={i} className={`text-sm ${i === 0 ? "text-gray-200 font-medium" : "text-gray-400"}`}>
-                                                                            {wikiLink ? (
+                                                                            {!inSelectionMode && wikiLink ? (
                                                                                 <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
                                                                                     {content}
                                                                                 </a>
@@ -259,7 +297,7 @@ export function UnitStatsModal() {
                                                                     const wikiLink = db.getWikiLink('equipment', e.id);
                                                                     return (
                                                                         <span key={i}>
-                                                                            {wikiLink ? (
+                                                                            {!inSelectionMode && wikiLink ? (
                                                                                 <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-gray-200 hover:underline decoration-white/30 underline-offset-2">
                                                                                     {getName('equipment', e.id)}
                                                                                 </a>
@@ -275,7 +313,7 @@ export function UnitStatsModal() {
                                                                     const wikiLink = db.getWikiLink('skill', s.id);
                                                                     return (
                                                                         <span key={i}>
-                                                                            {wikiLink ? (
+                                                                            {!inSelectionMode && wikiLink ? (
                                                                                 <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-gray-200 hover:underline decoration-white/30 underline-offset-2">
                                                                                     {getName('skill', s.id)}
                                                                                 </a>
@@ -291,6 +329,20 @@ export function UnitStatsModal() {
                                                         <td className="px-8 py-6 align-top text-right font-mono font-bold text-blue-400 text-lg">
                                                             {opt.points}
                                                         </td>
+                                                        {inSelectionMode && (
+                                                            <td className="px-6 py-6 align-top text-center">
+                                                                <button
+                                                                    className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 mx-auto"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleSelectLoadout(opt.id);
+                                                                    }}
+                                                                >
+                                                                    <CheckCircle size={16} />
+                                                                    Select
+                                                                </button>
+                                                            </td>
+                                                        )}
                                                     </tr>
                                                 ))}
                                             </tbody>

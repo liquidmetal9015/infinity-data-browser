@@ -6,6 +6,7 @@ import { RangesPage } from './pages/RangesPage';
 import { ComparePage } from './pages/ComparePage';
 import { FireteamsPage } from './pages/FireteamsPage';
 import { UnitSearchPage } from './pages/UnitSearchPage';
+import { ListBuilderPage } from './pages/ListBuilderPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/fireteams" element={<FireteamsPage />} />
           <Route path="/units" element={<UnitSearchPage />} />
+          <Route path="/builder" element={<ListBuilderPage />} />
         </Route>
       </Routes>
     </HashRouter>
@@ -25,3 +27,4 @@ function App() {
 }
 
 export default App;
+
