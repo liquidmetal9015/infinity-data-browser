@@ -13,7 +13,7 @@ interface ListState {
 }
 
 type ListAction =
-    | { type: 'CREATE_LIST'; factionId: number; factionName: string; pointsLimit?: number }
+    | { type: 'CREATE_LIST'; factionId: number; factionName: string; pointsLimit?: number; name?: string }
     | { type: 'ADD_UNIT'; unit: Unit; groupIndex: number; profileGroupId: number; profileId: number; optionId: number }
     | { type: 'REMOVE_UNIT'; groupIndex: number; unitId: string }
     | { type: 'REORDER_UNIT'; groupIndex: number; fromIndex: number; toIndex: number }
@@ -38,7 +38,7 @@ function listReducer(state: ListState, action: ListAction): ListState {
             const pointsLimit = action.pointsLimit || 300;
             const newList: ArmyList = {
                 id: generateId(),
-                name: `New ${action.factionName} List`,
+                name: action.name || `New ${action.factionName} List`,
                 factionId: action.factionId,
                 pointsLimit,
                 swcLimit: pointsLimit / 50,
@@ -249,7 +249,7 @@ function listReducer(state: ListState, action: ListAction): ListState {
 
 interface ListContextValue {
     state: ListState;
-    createList: (factionId: number, factionName: string, pointsLimit?: number) => void;
+    createList: (factionId: number, factionName: string, pointsLimit?: number, name?: string) => void;
     addUnit: (unit: Unit, groupIndex: number, profileGroupId: number, profileId: number, optionId: number) => void;
     removeUnit: (groupIndex: number, unitId: string) => void;
     addCombatGroup: () => void;
@@ -270,8 +270,8 @@ const ListContext = createContext<ListContextValue | null>(null);
 export function ListProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(listReducer, initialState);
 
-    const createList = useCallback((factionId: number, factionName: string, pointsLimit?: number) => {
-        dispatch({ type: 'CREATE_LIST', factionId, factionName, pointsLimit });
+    const createList = useCallback((factionId: number, factionName: string, pointsLimit?: number, name?: string) => {
+        dispatch({ type: 'CREATE_LIST', factionId, factionName, pointsLimit, name });
     }, []);
 
     const addUnit = useCallback((unit: Unit, groupIndex: number, profileGroupId: number, profileId: number, optionId: number) => {

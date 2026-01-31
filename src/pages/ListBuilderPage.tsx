@@ -29,8 +29,8 @@ export function ListBuilderPage() {
         try {
             const decoded = decodeArmyCode(importCode.trim());
 
-            // Create the list with decoded faction and points
-            createList(decoded.factionId, decoded.factionSlug || 'Unknown', decoded.maxPoints);
+            // Create the list with decoded faction, points and name
+            createList(decoded.factionId, decoded.factionSlug || 'Unknown', decoded.maxPoints, decoded.armyName);
 
             // For each combat group and member, find the unit and add it
             // Note: This is a simplified import - it matches by unit ID
