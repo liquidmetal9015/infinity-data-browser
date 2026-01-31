@@ -3,15 +3,18 @@ import { useDatabase } from '../context/DatabaseContext';
 import { useList } from '../context/ListContext';
 import { useModal } from '../context/ModalContext';
 import { ListDashboard } from '../components/ListBuilder/ListDashboard';
-import { Trash2, ChevronRight, Copy, Check } from 'lucide-react';
-import { encodeArmyList, copyArmyCodeToClipboard } from '../utils/armyCode';
+import { Trash2, ChevronRight, Copy, Check, Upload, X, Shield } from 'lucide-react';
+import { encodeArmyList, copyArmyCodeToClipboard, decodeArmyCode } from '../utils/armyCode';
 import type { Unit } from '../types';
 
 export function ListBuilderPage() {
     const db = useDatabase();
-    const { state, createList, resetList, updatePointsLimit } = useList();
+    const { state, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useList();
     const { openUnitModal } = useModal();
     const [codeCopied, setCodeCopied] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importCode, setImportCode] = useState('');
+    const [importError, setImportError] = useState('');
 
     const groupedFactions = db.getGroupedFactions();
 
@@ -20,14 +23,59 @@ export function ListBuilderPage() {
         createList(factionId, factionName, 300);
     };
 
+    const handleImportCode = () => {
+        setImportError('');
+
+        try {
+            const decoded = decodeArmyCode(importCode.trim());
+
+            // Create the list with decoded faction and points
+            createList(decoded.factionId, decoded.factionSlug || 'Unknown', decoded.maxPoints);
+
+            // For each combat group and member, find the unit and add it
+            // Note: This is a simplified import - it matches by unit ID
+            decoded.combatGroups.forEach((group, index) => {
+                // If this is group 2 or later (index > 0), we need to add a combat group
+                if (index > 0) {
+                    addCombatGroup();
+                }
+
+                group.members.forEach(member => {
+                    // Find unit by ID (check both internal ID and idArmy)
+                    const unit = db.units.find(u => u.id === member.unitId || u.idArmy === member.unitId);
+
+                    if (unit) {
+                        // Add unit to the correct group
+                        addUnit(
+                            unit,
+                            index,
+                            member.groupChoice,
+                            member.groupChoice, // Use groupChoice as profileId placeholder if needed?
+                            member.optionChoice
+                        );
+                    }
+                });
+            });
+
+            setShowImportModal(false);
+            setImportCode('');
+        } catch (error) {
+            console.error('Import error:', error);
+            setImportError('Invalid army code format. Please check and try again.');
+        }
+    };
+
     const handleCopyCode = async () => {
         if (!state.currentList) return;
 
-        const factionName = db.getFactionName(state.currentList.factionId);
+        // Get faction info to get the slug (official format uses slug)
+        const faction = db.getFactionInfo(state.currentList.factionId);
+        const factionSlug = faction?.slug || 'unknown';
+
         const code = encodeArmyList(
             state.currentList,
-            factionName,
-            (unit) => unit.id
+            factionSlug,
+            (unit) => unit.idArmy || unit.id
         );
 
         await copyArmyCodeToClipboard(code);
@@ -145,6 +193,24 @@ export function ListBuilderPage() {
                         outline: none;
                         border-color: var(--color-primary);
                     }
+                    .code-button {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        padding: 0.75rem 1.25rem;
+                        background: rgba(34, 197, 94, 0.1);
+                        color: #22c55e;
+                        border: 1px solid rgba(34, 197, 94, 0.3);
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 0.875rem;
+                        font-weight: 500;
+                        transition: all 0.2s ease;
+                    }
+                    .code-button:hover {
+                        background: rgba(34, 197, 94, 0.2);
+                        transform: translateY(-1px);
+                    }
                     .reset-button {
                         display: flex;
                         align-items: center;
@@ -173,18 +239,52 @@ export function ListBuilderPage() {
         <div className="list-builder-page">
             <div className="faction-selector-hero">
                 <h1>Army Builder</h1>
-                <p>Select a faction to begin operational planning</p>
+                <p>Select a faction to begin, or import an existing army code</p>
+                <button className="import-btn" onClick={() => setShowImportModal(true)}>
+                    <Upload size={18} />
+                    Import Army Code
+                </button>
             </div>
+
+            {/* Import Modal */}
+            {showImportModal && (
+                <div className="import-modal-overlay" onClick={() => setShowImportModal(false)}>
+                    <div className="import-modal" onClick={e => e.stopPropagation()}>
+                        <div className="import-modal-header">
+                            <h3>Import Army Code</h3>
+                            <button className="close-btn" onClick={() => setShowImportModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="import-modal-body">
+                            <p>Paste an army code from the official Infinity Army builder:</p>
+                            <textarea
+                                value={importCode}
+                                onChange={e => setImportCode(e.target.value)}
+                                placeholder="Paste army code here..."
+                                rows={4}
+                            />
+                            {importError && <div className="import-error">{importError}</div>}
+                        </div>
+                        <div className="import-modal-footer">
+                            <button className="cancel-btn" onClick={() => setShowImportModal(false)}>
+                                Cancel
+                            </button>
+                            <button className="import-confirm-btn" onClick={handleImportCode} disabled={!importCode.trim()}>
+                                Import List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="faction-grid-container">
                 {groupedFactions.map(superFaction => (
                     <div key={superFaction.id} className="super-faction-card">
                         <div className="super-faction-header">
-                            {superFaction.vanilla ? (
-                                <img src={superFaction.vanilla.logo} alt="" className="faction-logo-sm" />
-                            ) : (
-                                <div className="faction-logo-placeholder" />
-                            )}
+                            <div className="faction-icon">
+                                <Shield size={24} />
+                            </div>
                             <h3>{superFaction.name}</h3>
                         </div>
 
@@ -242,6 +342,136 @@ export function ListBuilderPage() {
                 .faction-selector-hero p {
                     color: var(--text-secondary);
                     font-size: 1.2rem;
+                    margin-bottom: 1.5rem;
+                }
+                .import-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.875rem 1.5rem;
+                    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .import-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+                }
+
+                /* Import Modal */
+                .import-modal-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(4px);
+                }
+                .import-modal {
+                    background: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 12px;
+                    width: 90%;
+                    max-width: 500px;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                }
+                .import-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 1.25rem;
+                    border-bottom: 1px solid #334155;
+                }
+                .import-modal-header h3 {
+                    margin: 0;
+                    font-size: 1.1rem;
+                    color: #f1f5f9;
+                }
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: #64748b;
+                    cursor: pointer;
+                    padding: 0.25rem;
+                }
+                .close-btn:hover {
+                    color: #f1f5f9;
+                }
+                .import-modal-body {
+                    padding: 1.25rem;
+                }
+                .import-modal-body p {
+                    margin: 0 0 1rem 0;
+                    font-size: 0.9rem;
+                    color: #94a3b8;
+                }
+                .import-modal-body textarea {
+                    width: 100%;
+                    padding: 0.75rem;
+                    background: #0d1117;
+                    border: 1px solid #334155;
+                    border-radius: 8px;
+                    color: #f1f5f9;
+                    font-family: monospace;
+                    font-size: 0.85rem;
+                    resize: vertical;
+                }
+                .import-modal-body textarea:focus {
+                    outline: none;
+                    border-color: #3b82f6;
+                }
+                .import-error {
+                    margin-top: 0.75rem;
+                    padding: 0.75rem;
+                    background: rgba(239, 68, 68, 0.1);
+                    border: 1px solid rgba(239, 68, 68, 0.3);
+                    border-radius: 6px;
+                    color: #ef4444;
+                    font-size: 0.85rem;
+                }
+                .import-modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 0.75rem;
+                    padding: 1rem 1.25rem;
+                    border-top: 1px solid #334155;
+                }
+                .cancel-btn {
+                    padding: 0.625rem 1rem;
+                    background: transparent;
+                    border: 1px solid #334155;
+                    border-radius: 6px;
+                    color: #94a3b8;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                }
+                .cancel-btn:hover {
+                    background: #334155;
+                    color: #f1f5f9;
+                }
+                .import-confirm-btn {
+                    padding: 0.625rem 1.25rem;
+                    background: #3b82f6;
+                    border: none;
+                    border-radius: 6px;
+                    color: white;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                }
+                .import-confirm-btn:hover:not(:disabled) {
+                    background: #2563eb;
+                }
+                .import-confirm-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
                 }
 
                 .faction-grid-container {
@@ -273,16 +503,15 @@ export function ListBuilderPage() {
                     gap: 1rem;
                     border-bottom: 1px solid var(--border-subtle);
                 }
-                .faction-logo-sm {
+                .faction-icon {
                     width: 32px;
                     height: 32px;
-                    object-fit: contain;
-                }
-                .faction-logo-placeholder {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     background: var(--surface-base);
+                    border-radius: 50%;
+                    color: var(--color-primary);
                 }
                 .super-faction-header h3 {
                     margin: 0;

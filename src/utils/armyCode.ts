@@ -4,7 +4,23 @@
  * Army codes are base64 encoded strings that represent army lists.
  * Format based on Corvus Belli's Infinity Army builder.
  * 
- * @see https://github.com/Infinity-Army-Tools/Docs/Armycodes.md
+ * Format analysis (from xxd of official code):
+ * - factionId (VLI)
+ * - factionSlug (length-prefixed string, lowercase-dashes)
+ * - armyName (length-prefixed string, usually just " ")
+ * - points (VLI)
+ * - groupCount (VLI)
+ * - For each group:
+ *   - groupNumber (VLI, 1-indexed)
+ *   - constant 0x01 (unknown purpose)
+ *   - constant 0x00 
+ *   - memberCount (VLI)
+ *   - For each member:
+ *     - 0x00 separator
+ *     - unitId (VLI)
+ *     - profileGroupId (VLI)
+ *     - optionId (VLI)
+ *     - 0x00 terminator
  */
 
 import type { ArmyList, ListUnit } from '../types/list';
@@ -80,7 +96,7 @@ function writeString(str: string): number[] {
 
 export interface DecodedArmyList {
     factionId: number;
-    factionName: string;
+    factionSlug: string;
     armyName: string;
     maxPoints: number;
     combatGroups: DecodedCombatGroup[];
@@ -121,7 +137,7 @@ export function decodeArmyCode(armyCode: string): DecodedArmyList {
 
     // Read header
     const factionId = readVLI(view, offset);
-    const factionName = readString(view, offset);
+    const factionSlug = readString(view, offset);
     const armyName = readString(view, offset);
     const maxPoints = readVLI(view, offset);
     const combatGroupCount = readVLI(view, offset);
@@ -130,7 +146,26 @@ export function decodeArmyCode(armyCode: string): DecodedArmyList {
     const combatGroups: DecodedCombatGroup[] = [];
     for (let i = 0; i < combatGroupCount; i++) {
         const groupNumber = readVLI(view, offset);
-        const memberCount = readVLI(view, offset);
+
+        // Skip unknown bytes (0x01 0x00 or similar, seen in official codes)
+        // Actually, looking at the format more carefully, the memberCount follows
+        const byte1 = view.getUint8(offset.value);
+        offset.value++;
+
+        // If byte1 is 0x01, skip next 0x00 and read member count
+        // If byte1 is the actual count, use it
+        let memberCount: number;
+        if (byte1 === 0x01 || byte1 === 0x00) {
+            const byte2 = view.getUint8(offset.value);
+            offset.value++;
+            if (byte2 === 0x00) {
+                memberCount = readVLI(view, offset);
+            } else {
+                memberCount = byte2;
+            }
+        } else {
+            memberCount = byte1;
+        }
 
         const members: DecodedMember[] = [];
         for (let j = 0; j < memberCount; j++) {
@@ -152,7 +187,7 @@ export function decodeArmyCode(armyCode: string): DecodedArmyList {
 
     return {
         factionId,
-        factionName,
+        factionSlug,
         armyName,
         maxPoints,
         combatGroups,
@@ -165,32 +200,38 @@ export function decodeArmyCode(armyCode: string): DecodedArmyList {
 
 /**
  * Encode an army list into an army code string.
+ * 
+ * @param list - The army list to encode
+ * @param factionSlug - The faction slug (lowercase-dashes format, e.g. "kestrel-colonial-force")
+ * @param getUnitId - Function to get the unit ID for encoding
  */
 export function encodeArmyList(
     list: ArmyList,
-    factionName: string,
+    factionSlug: string,
     getUnitId: (unit: Unit) => number
 ): string {
     const bytes: number[] = [];
 
-    // Header
+    // Header - matching official format
     bytes.push(...writeVLI(list.factionId));
-    bytes.push(...writeString(factionName));
-    bytes.push(...writeString(list.name || ' ')); // Default is a single space
+    bytes.push(...writeString(factionSlug)); // Use slug, not display name
+    bytes.push(...writeString(list.name || ' ')); // Use list name or default to space
     bytes.push(...writeVLI(list.pointsLimit));
     bytes.push(...writeVLI(list.groups.length));
 
-    // Combat groups
+    // Combat groups - matching official format
     list.groups.forEach((group, groupIndex) => {
-        bytes.push(...writeVLI(groupIndex + 1)); // 1-indexed
-        bytes.push(...writeVLI(group.units.length));
+        bytes.push(...writeVLI(groupIndex + 1)); // 1-indexed group number
+        bytes.push(0x01); // Unknown constant from official format
+        bytes.push(0x00); // Unknown constant from official format
+        bytes.push(...writeVLI(group.units.length)); // Member count
 
         group.units.forEach((listUnit: ListUnit) => {
-            bytes.push(0x00); // Leading null byte
+            bytes.push(0x00); // Leading separator
             bytes.push(...writeVLI(getUnitId(listUnit.unit)));
             bytes.push(...writeVLI(listUnit.profileGroupId));
             bytes.push(...writeVLI(listUnit.optionId));
-            bytes.push(0x00); // Trailing null byte
+            bytes.push(0x00); // Trailing terminator
         });
     });
 

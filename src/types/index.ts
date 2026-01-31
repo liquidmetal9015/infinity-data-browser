@@ -37,6 +37,7 @@ export interface Option {
 
 export interface UnitRaw {
     id: int;
+    idArmy?: int;
     isc: string;
     name: string;
     factions: int[];
@@ -60,6 +61,7 @@ export interface ItemWithModifier {
 
 export interface Unit {
     id: int;
+    idArmy?: int;
     isc: string;
     name: string;
     factions: int[];

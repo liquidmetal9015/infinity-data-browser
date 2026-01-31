@@ -183,6 +183,7 @@ export class DatabaseImplementation implements IDatabase {
 
             const unit: Unit = {
                 id: u.id,
+                idArmy: u.idArmy,
                 isc: u.isc,
                 name: u.name,
                 factions: u.factions,

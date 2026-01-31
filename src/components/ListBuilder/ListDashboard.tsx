@@ -555,23 +555,34 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 .units-table {
                     width: 100%;
                     border-collapse: collapse;
+                    table-layout: fixed;
+                }
+                .units-table th,
+                .units-table td {
+                    padding: 0.375rem 0.5rem;
+                    vertical-align: middle;
+                    text-align: left;
                 }
                 .units-table th {
-                    padding: 0.375rem 0.5rem;
                     font-size: 0.65rem;
                     font-weight: 600;
                     color: #475569;
                     text-transform: uppercase;
-                    text-align: left;
                     background: #161b22;
                     border-bottom: 1px solid #1e293b;
                 }
-                .units-table .col-drag { width: 24px; }
-                .units-table .col-name { width: 180px; }
-                .units-table .col-weapons { }
-                .units-table .col-swc { width: 50px; text-align: right; }
-                .units-table .col-pts { width: 50px; text-align: right; }
-                .units-table .col-actions { width: 60px; }
+                .units-table th:nth-child(1),
+                .units-table td:nth-child(1) { width: 30px; }
+                .units-table th:nth-child(2),
+                .units-table td:nth-child(2) { width: 180px; }
+                .units-table th:nth-child(3),
+                .units-table td:nth-child(3) { } /* weapons - auto */
+                .units-table th:nth-child(4),
+                .units-table td:nth-child(4) { width: 50px; text-align: right; }
+                .units-table th:nth-child(5),
+                .units-table td:nth-child(5) { width: 50px; text-align: right; }
+                .units-table th:nth-child(6),
+                .units-table td:nth-child(6) { width: 70px; }
 
                 .unit-row {
                     background: #0d1117;
@@ -588,15 +599,12 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 }
 
                 .unit-row td {
-                    padding: 0.5rem 0.5rem;
-                    vertical-align: middle;
                     border-bottom: 1px solid #1e293b;
                 }
 
                 .drag-handle {
                     cursor: grab;
                     color: #475569;
-                    padding: 0.5rem 0.25rem !important;
                 }
                 .drag-handle:active {
                     cursor: grabbing;
@@ -606,6 +614,10 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     font-size: 0.85rem;
                     font-weight: 600;
                     color: #e2e8f0;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: block;
                 }
 
                 .unit-weapons {
@@ -614,22 +626,26 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 }
                 .unit-weapons .weapons {
                     display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .unit-weapons .equipment {
                     display: block;
                     color: #64748b;
                     font-style: italic;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
                 .unit-swc {
-                    text-align: right;
                     font-size: 0.8rem;
                     color: #f59e0b;
                     font-weight: 500;
                 }
 
                 .unit-pts {
-                    text-align: right;
                     font-size: 0.9rem;
                     color: #3b82f6;
                     font-weight: 700;
