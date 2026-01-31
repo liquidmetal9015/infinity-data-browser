@@ -467,6 +467,42 @@ server.tool(
     }
 );
 
+// 10. Parse Army Code
+server.tool(
+    "parse_army_code",
+    "Parse an Infinity Army Code (Base64) into a detailed list analysis. Returns full stats, weapons, and skills for every unit. Use this to analyze lists or compare them.",
+    {
+        armyCode: z.string().describe("The Base64 army code string")
+    },
+    async ({ armyCode }) => {
+        if (!db.metadata) await db.init();
+
+        // Dynamic import to avoid initialization issues if modules depend on DB
+        const { decodeArmyCode } = await import('./army-utils.js');
+        const { hydrateList } = await import('./list-utils.js');
+
+        try {
+            const decoded = decodeArmyCode(armyCode);
+            const hydrated = hydrateList(decoded);
+
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(hydrated, null, 2)
+                }]
+            };
+        } catch (e) {
+            return {
+                isError: true,
+                content: [{
+                    type: "text",
+                    text: `Failed to parse army code: ${e instanceof Error ? e.message : String(e)}`
+                }]
+            };
+        }
+    }
+);
+
 // Start Server
 async function main() {
     await db.init();

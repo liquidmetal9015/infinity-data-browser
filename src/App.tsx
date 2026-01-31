@@ -7,6 +7,7 @@ import { ComparePage } from './pages/ComparePage';
 import { FireteamsPage } from './pages/FireteamsPage';
 import { UnitSearchPage } from './pages/UnitSearchPage';
 import { ListBuilderPage } from './pages/ListBuilderPage';
+import { DiceCalculatorPage } from './pages/DiceCalculatorPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/fireteams" element={<FireteamsPage />} />
           <Route path="/units" element={<UnitSearchPage />} />
           <Route path="/builder" element={<ListBuilderPage />} />
+          <Route path="/calculator" element={<DiceCalculatorPage />} />
         </Route>
       </Routes>
     </HashRouter>

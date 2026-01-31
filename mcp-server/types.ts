@@ -153,3 +153,48 @@ export interface ITSRules {
     }[];
     content: string;
 }
+
+// Army List Analysis Types
+export interface HydratedItem {
+    name: string;
+    wiki?: string;
+    modifiers: string[];
+}
+
+export interface HydratedUnit {
+    isc: string;
+    name: string;
+    points: number;
+    swc: number;
+    profile: {
+        move: string;
+        cc: number;
+        bs: number;
+        ph: number;
+        wip: number;
+        arm: number;
+        bts: number;
+        w: number;
+        s: number;
+        str: boolean;
+    };
+    weapons: HydratedItem[];
+    skills: HydratedItem[];
+    equipment: HydratedItem[];
+}
+
+export interface HydratedGroup {
+    groupNumber: number;
+    units: HydratedUnit[];
+}
+
+export interface HydratedList {
+    faction: string;
+    factionSlug: string;
+    armyName: string;
+    points: number;
+    maxPoints: number;
+    swc: number;
+    maxSwc: number;
+    groups: HydratedGroup[];
+}

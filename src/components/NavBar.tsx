@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Search, Users, Activity, Library, Layers, ClipboardList } from 'lucide-react';
+import { Search, Users, Activity, Library, Layers, ClipboardList, Calculator } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
 
 export function NavBar() {
@@ -40,6 +40,10 @@ export function NavBar() {
                     <NavLink to="/builder" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                         <ClipboardList size={18} />
                         <span>Builder</span>
+                    </NavLink>
+                    <NavLink to="/calculator" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                        <Calculator size={18} />
+                        <span>Calculator</span>
                     </NavLink>
                 </nav>
             </div>
