@@ -1,0 +1,213 @@
+[
+    {
+        "id": 20,
+        "name": "HVT: Assassination",
+        "category": "High-Value Target (HVT) & Infiltration Objectives",
+        "designatedTroopers": [
+            "Lieutenant",
+            "NCO",
+            "Chain of Command"
+        ],
+        "objective": "Spend a Short Skill while the enemy HVT is in Line of Fire (LoF) and Zone of Control (ZoC), and pass a WIP Roll.",
+        "bonus": "+3 MOD to WIP if in Silhouette contact with the HVT."
+    },
+    {
+        "id": 19,
+        "name": "Vigilance",
+        "category": "High-Value Target (HVT) & Infiltration Objectives",
+        "designatedTroopers": [
+            "Medium Infantry (MI)",
+            "Heavy Infantry (HI)"
+        ],
+        "objective": "Be inside the ZoC of an enemy trooper who is entirely in the enemy half of the table, spend a Short Skill, and pass a WIP Roll.",
+        "bonus": "+3 MOD if the trooper has LoF to the enemy."
+    },
+    {
+        "id": 18,
+        "name": "Suspected Infiltration",
+        "category": "High-Value Target (HVT) & Infiltration Objectives",
+        "designatedTroopers": [
+            "Doctor",
+            "Hacker",
+            "Veteran",
+            "Elite Troop"
+        ],
+        "objective": "Be in Silhouette contact with an enemy trooper (excluding REM or TAG), spend a Short Skill, and pass a WIP Roll with a -3 MOD.",
+        "note": "Can be completed via Peripheral (Servant) without the modifier."
+    },
+    {
+        "id": 17,
+        "name": "Predator",
+        "category": "High-Value Target (HVT) & Infiltration Objectives",
+        "designatedTroopers": [
+            "Any"
+        ],
+        "objective": "During the game, put at least two enemy troopers into the Unconscious or Dead state using CC Attacks."
+    },
+    {
+        "id": 16,
+        "name": "Telemetry",
+        "category": "Intelligence & Scanning Objectives",
+        "designatedTroopers": [
+            "Forward Observer",
+            "Spotlight Hacking Program"
+        ],
+        "objective": "Make a successful Forward Observer or Spotlight roll against an enemy trooper."
+    },
+    {
+        "id": 15,
+        "name": "HVT: Designation",
+        "category": "Intelligence & Scanning Objectives",
+        "designatedTroopers": [
+            "Forward Observer",
+            "Spotlight Hacking Program"
+        ],
+        "objective": "Make two successful Forward Observer or Spotlight rolls against a single enemy HVT model."
+    },
+    {
+        "id": 14,
+        "name": "Data Scan",
+        "category": "Intelligence & Scanning Objectives",
+        "designatedTroopers": [
+            "Hacker"
+        ],
+        "objective": "Spend a Short Skill and pass a WIP Roll against an enemy trooper in ZoC (Comms Attack; can be avoided with Reset)."
+    },
+    {
+        "id": 13,
+        "name": "Mapping",
+        "category": "Intelligence & Scanning Objectives",
+        "designatedTroopers": [
+            "Forward Observer",
+            "Hacker"
+        ],
+        "objective": "Be in Silhouette contact with scenery inside the enemy Deployment Zone, spend a Short Skill, and pass a WIP Roll."
+    },
+    {
+        "id": 12,
+        "name": "Nanoespionage",
+        "category": "Engineering & Technical Operations",
+        "designatedTroopers": [
+            "Engineer",
+            "Doctor",
+            "Paramedic"
+        ],
+        "objective": "Perform a successful BS Attack with a Medikit or GizmoKit against an enemy Specialist (no actual effect occurs)."
+    },
+    {
+        "id": 11,
+        "name": "Industrial Espionage",
+        "category": "Engineering & Technical Operations",
+        "designatedTroopers": [
+            "Engineer",
+            "Forward Observer",
+            "Veteran",
+            "Elite Troop"
+        ],
+        "objective": "Be in Silhouette contact with an enemy Engineer or an HI, REM, or TAG unit, spend a Short Skill, and pass a WIP Roll with a -3 MOD."
+    },
+    {
+        "id": 10,
+        "name": "HVT: Reverse Engineering",
+        "category": "Engineering & Technical Operations",
+        "designatedTroopers": [
+            "Engineer"
+        ],
+        "objective": "Be in Silhouette contact with an enemy HVT, spend a Short Skill, and pass a WIP Roll with a -3 MOD."
+    },
+    {
+        "id": 9,
+        "name": "HVT: Espionage",
+        "category": "Engineering & Technical Operations",
+        "designatedTroopers": [
+            "Hacker"
+        ],
+        "objective": "Have an enemy HVT in ZoC, spend a Short Skill, and pass a WIP Roll with a -3 MOD."
+    },
+    {
+        "id": 8,
+        "name": "Combat Support",
+        "category": "Support & Sabotage",
+        "designatedTroopers": [
+            "Doctor",
+            "Paramedic",
+            "Engineer"
+        ],
+        "objective": "Restore one point of Wounds or Structure to an allied trooper using skills or kits.",
+        "note": "Cannot be completed using a Peripheral (Servant)."
+    },
+    {
+        "id": 7,
+        "name": "Sabotage",
+        "category": "Support & Sabotage",
+        "designatedTroopers": [
+            "Trooper with D-Charges"
+        ],
+        "objective": "After Initiative but before Deployment, pick a scenery piece in the enemy half. Place and detonate a D-Charge on it during the game."
+    },
+    {
+        "id": 6,
+        "name": "HVT: Inoculation",
+        "category": "Support & Sabotage",
+        "designatedTroopers": [
+            "Doctor",
+            "Paramedic"
+        ],
+        "objective": "Be in Silhouette contact with an enemy HVT, spend a Short Skill, and pass a WIP Roll with a -3 MOD."
+    },
+    {
+        "id": 5,
+        "name": "HVT: Kidnapping",
+        "category": "Support & Sabotage",
+        "designatedTroopers": [
+            "Veteran",
+            "Elite",
+            "Chain of Command"
+        ],
+        "objective": "At the end of the game, the designated trooper must have a CivEvaced enemy HVT."
+    },
+    {
+        "id": 4,
+        "name": "Capture",
+        "category": "Battlefield Control",
+        "designatedTroopers": [
+            "Veteran",
+            "Elite",
+            "Chain of Command"
+        ],
+        "objective": "At the end of the game, be in Silhouette contact with an enemy trooper who is in a Null or Immobilized state."
+    },
+    {
+        "id": 3,
+        "name": "HVT: Identity Check",
+        "category": "Battlefield Control",
+        "designatedTroopers": [
+            "Trooper with Biometric Visor",
+            "MSV",
+            "Sensor"
+        ],
+        "objective": "Have an enemy HVT in ZoC and LoF, spend a Short Skill, and pass a WIP Roll."
+    },
+    {
+        "id": 2,
+        "name": "Net-Undermine",
+        "category": "Battlefield Control",
+        "designatedTroopers": [
+            "Veteran",
+            "Elite",
+            "Chain of Command"
+        ],
+        "objective": "Be inside the enemy half of the table, spend a Short Skill, and pass a WIP Roll."
+    },
+    {
+        "id": 1,
+        "name": "HVT: Follow-Up",
+        "category": "Battlefield Control",
+        "designatedTroopers": [
+            "Medium Infantry",
+            "Heavy Infantry"
+        ],
+        "objective": "Have an enemy HVT in ZoC, spend a Short Skill, and pass a WIP Roll.",
+        "bonus": "+3 MOD if the trooper has LoF to the HVT."
+    }
+]
