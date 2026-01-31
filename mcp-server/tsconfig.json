@@ -7,9 +7,10 @@
         "resolveJsonModule": true,
         "strict": true,
         "outDir": "dist",
-        "rootDir": "."
+        "rootDir": ".."
     },
     "include": [
-        "**/*.ts"
+        "**/*.ts",
+        "../shared/**/*.ts"
     ]
 }
