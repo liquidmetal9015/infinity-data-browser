@@ -9,6 +9,18 @@ export interface Item {
     wiki?: string;
 }
 
+// Rule summaries for agent context - compact explanations of skills/equipment
+export interface RuleSummary {
+    name: string;
+    summary: string;
+}
+
+export interface RuleSummariesData {
+    skills: Record<string, RuleSummary>;
+    equipment: Record<string, RuleSummary>;
+}
+
+
 export interface Profile {
     id: number;
     name: string;
@@ -204,6 +216,8 @@ export interface HydratedItem {
     name: string;
     wiki?: string;
     modifiers: string[];
+    summary?: string;
+    stats?: ParsedWeapon;
 }
 
 export interface HydratedUnit {
@@ -256,4 +270,27 @@ export interface SearchFilter {
     stat?: string;
     statOperator?: '>' | '>=' | '=' | '<=' | '<';
     value?: number;
+}
+// ============================================================================
+// Weapon Analysis Types
+// ============================================================================
+
+export interface RangeBand {
+    start: number;
+    end: number;
+    mod: number;
+    label?: string; // Optional for display, e.g. '0-8"'
+}
+
+export interface ParsedWeapon {
+    id: number;
+    name: string;
+    bands: RangeBand[];
+    burst: string;
+    damage: string;
+    saving: string;
+    savingNum: string;
+    ammunition: string; // resolved name
+    properties: string[];
+    templateType?: 'small' | 'large' | 'none';
 }

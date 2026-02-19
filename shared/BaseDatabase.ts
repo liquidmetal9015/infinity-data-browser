@@ -1,6 +1,5 @@
-// BaseDatabase - Abstract class with shared database logic
-// Platform-specific subclasses implement data loading
-
+import { parseWeapon } from './weapon-utils.js';
+import type { ParsedWeapon } from './types.js';
 import type {
     Unit,
     UnitRaw,
@@ -10,6 +9,8 @@ import type {
     FactionInfo,
     SuperFaction,
     SearchFilter,
+    RuleSummariesData,
+    RuleSummary,
 } from './types.js';
 import { FactionRegistry } from './factions.js';
 
@@ -42,6 +43,9 @@ export abstract class BaseDatabase {
     skillMap: Map<number, string> = new Map();
     equipmentMap: Map<number, string> = new Map();
 
+    // Detailed Weapon Stats (Parsed)
+    weaponDetailsMap: Map<number, ParsedWeapon> = new Map();
+
     // Maps ID -> Wiki URL
     weaponWikiMap: Map<number, string> = new Map();
     skillWikiMap: Map<number, string> = new Map();
@@ -58,6 +62,8 @@ export abstract class BaseDatabase {
     protected unitsByISC: Map<string, Unit> = new Map();
     // Helper map: Slug -> Unit
     protected unitsBySlug: Map<string, Unit> = new Map();
+    // ID-based lookup: ID -> Unit (handles deduplicated IDs)
+    protected unitIdMap: Map<number, Unit> = new Map();
 
     // Loaded faction slugs
     protected loadedSlugs: string[] = [];
@@ -67,6 +73,9 @@ export abstract class BaseDatabase {
 
     // Cached suggestions
     protected cachedVariants: SearchSuggestion[] | null = null;
+
+    // Rule summaries for agent context (optional)
+    protected ruleSummaries: RuleSummariesData | null = null;
 
     // ========================================================================
     // Abstract methods - implemented by platform-specific subclasses
@@ -82,7 +91,7 @@ export abstract class BaseDatabase {
     async init(): Promise<void> {
         if (this.metadata) return; // Already initialized
 
-        console.log("Initializing Database...");
+        console.error("Initializing Database...");
 
         // 1. Load Metadata
         try {
@@ -140,7 +149,7 @@ export abstract class BaseDatabase {
 
         // Convert deduped map to array
         this.units = Array.from(this.unitsByISC.values());
-        console.log(`Database loaded. ${this.units.length} unique units. ${this.loadedSlugs.length} factions with data.`);
+        console.error(`Database loaded. ${this.units.length} unique units. ${this.loadedSlugs.length} factions with data.`);
     }
 
     // ========================================================================
@@ -149,10 +158,18 @@ export abstract class BaseDatabase {
 
     protected processMetadata(metadata: DatabaseMetadata): void {
         metadata.factions.forEach(f => this.factionMap.set(f.id, f.name));
+
         metadata.weapons.forEach(w => {
             this.weaponMap.set(w.id, w.name);
             if (w.wiki) this.weaponWikiMap.set(w.id, w.wiki);
+
+            // Parse full weapon stats
+            const parsed = parseWeapon(w, metadata.ammunitions);
+            if (parsed) {
+                this.weaponDetailsMap.set(w.id, parsed);
+            }
         });
+
         metadata.skills.forEach(s => {
             this.skillMap.set(s.id, s.name);
             if (s.wiki) this.skillWikiMap.set(s.id, s.wiki);
@@ -162,6 +179,14 @@ export abstract class BaseDatabase {
             if (e.wiki) this.equipmentWikiMap.set(e.id, e.wiki);
         });
     }
+
+    // Add Getter for Weapon Details
+    getWeaponDetails(id: number): ParsedWeapon | undefined {
+        return this.weaponDetailsMap.get(id);
+    }
+
+    // ... (rest of methods)
+
 
     // ========================================================================
     // Unit ingestion - shared logic
@@ -176,6 +201,8 @@ export abstract class BaseDatabase {
                 const existingFactions = new Set(existing.factions);
                 u.factions.forEach(fid => existingFactions.add(fid));
                 existing.factions = Array.from(existingFactions);
+                // Map this ID to the existing unit as well
+                this.unitIdMap.set(u.id, existing);
                 continue;
             }
 
@@ -274,6 +301,7 @@ export abstract class BaseDatabase {
             ];
 
             this.unitsByISC.set(u.isc, unit);
+            this.unitIdMap.set(u.id, unit);
         }
     }
 
@@ -447,6 +475,10 @@ export abstract class BaseDatabase {
         return this.unitsBySlug.get(slug);
     }
 
+    getUnitById(id: number): Unit | undefined {
+        return this.unitIdMap.get(id);
+    }
+
     getWikiLink(type: 'weapon' | 'skill' | 'equipment', id: number): string | undefined {
         switch (type) {
             case 'weapon': return this.weaponWikiMap.get(id);
@@ -472,4 +504,27 @@ export abstract class BaseDatabase {
 
         return name;
     }
+
+    // ========================================================================
+    // Rule Summaries (for agent context enrichment)
+    // ========================================================================
+
+    setRuleSummaries(data: RuleSummariesData): void {
+        this.ruleSummaries = data;
+    }
+
+    getRuleSummary(type: 'skill' | 'equipment', id: number): RuleSummary | undefined {
+        if (!this.ruleSummaries) return undefined;
+        const idStr = String(id);
+        if (type === 'skill') {
+            return this.ruleSummaries.skills[idStr];
+        } else {
+            return this.ruleSummaries.equipment[idStr];
+        }
+    }
+
+    hasRuleSummaries(): boolean {
+        return this.ruleSummaries !== null;
+    }
 }
+

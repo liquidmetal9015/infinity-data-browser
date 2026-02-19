@@ -56,6 +56,13 @@ export class DatabaseAdapter extends BaseDatabase {
 
         await super.init();
 
+        // Load Optional Data
+        await Promise.all([
+            this.loadWiki(),
+            this.loadITSRules(),
+            this.loadRuleSummaries()
+        ]);
+
         console.error(`Database loaded. ${this.units.length} units.`);
     }
 
@@ -223,5 +230,21 @@ export class DatabaseAdapter extends BaseDatabase {
             if (results.length >= 5) break;
         }
         return results;
+    }
+
+    // ========================================================================
+    // Rule Summaries support
+    // ========================================================================
+
+    async loadRuleSummaries(): Promise<void> {
+        if (this.hasRuleSummaries()) return;
+        try {
+            const summaryPath = path.join(this.dataDir, 'rule_summaries.json');
+            const content = await fs.readFile(summaryPath, 'utf-8');
+            this.setRuleSummaries(JSON.parse(content));
+            console.error("Loaded Rule Summaries.");
+        } catch (e) {
+            console.error("Failed to load Rule Summaries (this is optional):", e);
+        }
     }
 }

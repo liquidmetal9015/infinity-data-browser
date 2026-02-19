@@ -9,9 +9,9 @@ import {
     WeaponTable,
     BestWeaponsBar,
     RANGE_BANDS,
-    type ParsedWeapon,
     type BestWeaponInfo
 } from '../components/RangesPage';
+import type { ParsedWeapon } from '../../shared/types';
 import './RangesPage.css';
 
 export function RangesPage() {
@@ -43,66 +43,22 @@ export function RangesPage() {
     const allWeapons = useMemo(() => {
         if (!db.metadata) return [];
 
-        const weaponsMap = new Map<number, ParsedWeapon>();
+        const validWeapons: ParsedWeapon[] = [];
+        const seenIds = new Set<number>();
 
+        // Use the parsed details directly from BaseDatabase
         db.metadata.weapons.forEach(w => {
-            if (weaponsMap.has(w.id)) return;
+            if (seenIds.has(w.id)) return;
+            seenIds.add(w.id);
 
-            const bands: { start: number; end: number; mod: number }[] = [];
-            let templateType: 'small' | 'large' | 'none' = 'none';
-
-            if (w.properties?.some(p => p.includes('Direct Template'))) {
-                if (w.properties.some(p => p.includes('Small Teardrop'))) {
-                    templateType = 'small';
-                } else if (w.properties.some(p => p.includes('Large Teardrop'))) {
-                    templateType = 'large';
-                }
+            const details = db.getWeaponDetails(w.id);
+            if (details) {
+                validWeapons.push(details);
             }
-
-            if (w.distance) {
-                const parts = Object.entries(w.distance)
-                    .filter(([, val]) => val !== null)
-                    .map(([, val]) => ({
-                        max: Math.round(val!.max * 0.4),
-                        mod: parseInt(val!.mod)
-                    }))
-                    .sort((a, b) => a.max - b.max);
-
-                let currentStart = 0;
-                for (const part of parts) {
-                    if (part.max > currentStart) {
-                        bands.push({ start: currentStart, end: part.max, mod: part.mod });
-                        currentStart = part.max;
-                    }
-                }
-            }
-
-            let ammoName = '-';
-            if (w.ammunition) {
-                const ammo = db.metadata!.ammunitions.find(a => a.id === w.ammunition);
-                ammoName = ammo ? ammo.name : w.ammunition.toString();
-            }
-
-            if (bands.length === 0 && templateType === 'none') {
-                return;
-            }
-
-            weaponsMap.set(w.id, {
-                id: w.id,
-                name: w.name,
-                bands,
-                burst: w.burst || '-',
-                damage: w.damage || '-',
-                saving: w.saving || '-',
-                savingNum: w.savingNum || '-',
-                ammunition: ammoName,
-                properties: w.properties || [],
-                templateType
-            });
         });
 
-        return Array.from(weaponsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-    }, [db.metadata]);
+        return validWeapons.sort((a, b) => a.name.localeCompare(b.name));
+    }, [db.metadata, db]);
 
     const filteredWeapons = useMemo(() => {
         return allWeapons.filter(w => w.name.toLowerCase().includes(weaponSearch.toLowerCase()));

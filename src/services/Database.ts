@@ -3,6 +3,7 @@
 
 import type { DatabaseMetadata, FireteamChart, FactionInfo, SuperFaction, SearchSuggestion, Unit } from '../types';
 import { BaseDatabase, type FactionDataFile, type SearchFilter } from '../../shared/BaseDatabase';
+import type { ParsedWeapon } from '../../shared/types';
 import type { ClassifiedObjective } from '../../shared/classifieds';
 
 // Re-export interface for backwards compatibility
@@ -26,6 +27,7 @@ export interface IDatabase {
     getFireteamChart(factionId: number): FireteamChart | undefined;
     getUnitBySlug(slug: string): Unit | undefined;
     getExtraName(id: number): string | undefined;
+    getWeaponDetails(id: number): ParsedWeapon | undefined;
 }
 
 export class DatabaseImplementation extends BaseDatabase implements IDatabase {

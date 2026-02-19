@@ -13,64 +13,56 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
 
     const groups: HydratedGroup[] = decoded.combatGroups.map(group => {
         const units: HydratedUnit[] = group.members.map(member => {
-            const unit = db.units.find(u => u.id === member.unitId);
-            if (!unit) {
-                // Fallback for unknown unit
-                return createUnknownUnit(member);
+            try {
+                const unit = db.getUnitById(member.unitId);
+                if (!unit) {
+                    return createUnknownUnit(member);
+                }
+
+                // Try to find the specific profile group
+                let profileGroup = unit.raw.profileGroups.find(pg => pg.id === member.groupChoice);
+
+                // If not found (or if we need to search broader due to some legacy/weird code), we can do a broader search later
+                // But for now let's proceed.
+
+                // The army code provides optionChoice (Option ID).
+                // We need to find the specific option. 
+                // If profileGroup failed, we can search all groups.
+                let option;
+
+                if (profileGroup) {
+                    option = profileGroup.options.find(o => o.id === member.optionChoice);
+                }
+
+                if (!option) {
+                    // Fallback: look across ALL profile groups
+                    const fallbackGroup = unit.raw.profileGroups.find(pg => pg.options.some(o => o.id === member.optionChoice));
+                    if (fallbackGroup) {
+                        profileGroup = fallbackGroup;
+                        option = fallbackGroup.options.find(o => o.id === member.optionChoice);
+                    }
+                }
+
+                if (!profileGroup || !option) {
+                    return createUnknownUnit(member, `${unit.name} (Option ${member.optionChoice}?)`);
+                }
+
+                // Heuristic: Use first profile in group.
+                const profile = profileGroup.profiles[0];
+
+                if (!profile) {
+                    return createUnknownUnit(member, unit.name);
+                }
+
+                totalPoints += option.points;
+                // Ensure SWC is treated as a number
+                const swcVal = typeof option.swc === 'string' ? parseFloat(option.swc) : (option.swc || 0);
+                totalSwc += swcVal;
+
+                return hydrateUnit(db, unit, profile, option, swcVal);
+            } catch (e) {
+                return createUnknownUnit(member, 'Error Unit');
             }
-
-            const profileGroup = unit.raw.profileGroups.find(pg => pg.id === member.groupChoice);
-            // Profile ID is tricky in the army code format - looking at src/utils/armyCode.ts: 
-            // "pg.options.find(o => o.id === listUnit.optionId)" implies optionId is unique within the group?
-            // Wait, the army code has `groupChoice` (profileGroupId) and `optionChoice` (optionId).
-            // A profile is NOT explicitly selected in the code structure I see in armyCode.ts export, 
-            // but the `ListUnit` type in src/types/list.ts has `profileId`.
-            // Let's re-read armyCode.ts::decodeArmyCode
-            // It returns { unitId, groupChoice, optionChoice }.
-            // The option object usually contains the profile reference implicitly because options belong to a profile?
-            // Actually, looking at `UnitRaw` type: `profileGroups` -> `options`.
-            // Options are children of ProfileGroup, NOT directly children of Profile?
-            // Let's check `UnitRaw` in `types.ts` again.
-            // profileGroups: { profiles: Profile[], options: Option[] }
-            // So options and profiles are siblings in the group? That seems odd.
-            // Usually an option is "Combi Rifle, Paramedic" and it is tied to a specific Profile (stats).
-            // How do we know WHICH profile stats to use for an option?
-            // In the official data, usually options map to profiles by index or ID, or they share a "linked" ID?
-            // Let's assume for now we can find the profile from the option, or the option implies the profile.
-            // Wait, `ListUnit` has `profileId`. Where does it come from in `decodeArmyCode`?
-            // It DOESN'T return profileId! It returns `groupChoice` and `optionChoice`.
-            // The `addUnit` action in `ListContext` takes `profileId`.
-            // When DECODING, we typically have to infer the profile.
-            // In Infinity data, `options` often have a `profile` property or we match by something.
-            // Inspecting `DatabaseAdapter.ts` ingest: `o.weapons`, `o.skills`.
-            // There is no explicit link in `Option` type to `Profile`.
-            // However, often `Profile` and `Option` are linked.
-            // Let's look at `src/utils/armyCode.ts` again. 
-            // `bytes.push(...writeVLI(listUnit.profileGroupId));`
-            // `bytes.push(...writeVLI(listUnit.optionId));`
-            // It does NOT write profileId.
-            // So the army code relies on `profileGroupId` + `optionId`.
-            // How does the app display stats?
-            // `ListDashboard.tsx`: `const option = listUnit.unit.raw.profileGroups...find(o => o.id === listUnit.optionId);`
-            // It gets SWC/Points from `option`.
-            // Where does it get stats (BS, PH, etc)?
-            // The `DraggableUnitRow` only shows name/weapons.
-            // `UnitStatsModal` must handle this.
-            // Deep dive: `Option` sometimes has `parentId` or similar? Or maybe all options in a ProfileGroup share the SAME profiles?
-            // Usually a ProfileGroup has ONE set of stats (Profile) and multiple Options (Loadouts).
-            // BUT, some units (transforming ones) have multiple Profiles in a group.
-            // For now, I will assume the FIRST profile in the group is the one to use, or try to find a better heuristic.
-            // Most units have 1 Profile per ProfileGroup.
-
-            const option = profileGroup?.options.find(o => o.id === member.optionChoice);
-            const profile = profileGroup?.profiles[0]; // Heuristic: Use first profile in group.
-
-            if (!option || !profile) return createUnknownUnit(member, unit.name);
-
-            totalPoints += option.points;
-            totalSwc += option.swc;
-
-            return hydrateUnit(db, unit, profile, option);
         }).filter(u => u !== null);
 
         return {
@@ -106,11 +98,12 @@ function createUnknownUnit(member: DecodedMember, name: string = 'Unknown Unit')
     };
 }
 
-function hydrateUnit(
+export function hydrateUnit(
     db: DatabaseAdapter,
     unit: Unit,
     profile: Profile,
-    option: Option
+    option: Option,
+    overrideSwc?: number
 ): HydratedUnit {
     // Merge lists from Profile and Option (unit stats + loadout)
     const allWeapons = [...(profile.weapons || []), ...(option.weapons || [])];
@@ -155,16 +148,31 @@ function hydrateUnit(
             });
         }
 
+        // Get Rule Summary
+        let summary: string | undefined = undefined;
+        if (type === 'skill' || type === 'equipment') {
+            const ruleSummary = db.getRuleSummary(type, itemRef.id);
+            if (ruleSummary) summary = ruleSummary.summary;
+        }
+
         // Fancy name composition
         let displayName = name;
         if (modifiers.length > 0) {
             displayName += ` (${modifiers.join(', ')})`;
         }
 
+        // Resolve Stats for Weapons
+        let stats;
+        if (type === 'weapon') {
+            stats = db.getWeaponDetails(itemRef.id);
+        }
+
         return {
             name: displayName,
             wiki,
-            modifiers
+            modifiers,
+            summary,
+            stats
         };
     };
 
@@ -187,7 +195,7 @@ function hydrateUnit(
         isc: unit.isc,
         name: option.name || unit.name,
         points: option.points,
-        swc: option.swc,
+        swc: overrideSwc !== undefined ? overrideSwc : (typeof option.swc === 'string' ? parseFloat(option.swc) : (option.swc || 0)),
         profile: {
             move: move,
             cc: profile.cc,
