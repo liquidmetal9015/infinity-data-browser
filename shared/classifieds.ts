@@ -40,7 +40,7 @@ function normalizeCriterion(criterion: string): string {
  * This is the core matching logic.
  */
 export function checkCriterion(
-    unit: Unit,
+    _unit: Unit,
     profile: Profile,
     option: Option,
     criterion: string,

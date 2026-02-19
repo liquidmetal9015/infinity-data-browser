@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BaseDatabase, type FactionDataFile } from '../../shared/BaseDatabase';
-import { parseWeapon } from '../../shared/weapon-utils';
-import type { DatabaseMetadata, UnitRaw, ParsedWeapon } from '../../shared/types';
+import type { DatabaseMetadata } from '../../shared/types';
 
 // Mock Database Implementation for testing
 class TestDatabase extends BaseDatabase {
@@ -39,7 +38,7 @@ class TestDatabase extends BaseDatabase {
         });
     }
 
-    protected loadFactionData(slug: string): Promise<FactionDataFile | null> {
+    protected loadFactionData(_slug: string): Promise<FactionDataFile | null> {
         return Promise.resolve(null);
     }
 }

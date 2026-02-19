@@ -1,6 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
-import { createInfinityDie, solveF2F, calculateExpectedWounds, WoundResults } from './engine';
+import { createInfinityDie, solveF2F, calculateExpectedWounds } from './engine';
+import type { WoundResults } from './engine';
 
 function checkResults(
     actual: WoundResults,
@@ -32,7 +33,8 @@ describe('Infinity N5 Dice Engine', () => {
 
         const f2f = solveF2F(burstA, burstB, dieA, dieB);
 
-        // Pass bArm = 3 (6th argument)
+        // bArm = 3 → save threshold = damage(13) + arm(3) = 16
+        // P(save) = 16/20 = 0.8
         const res = calculateExpectedWounds(
             f2f,
             13, 0, 'N',
@@ -41,18 +43,17 @@ describe('Infinity N5 Dice Engine', () => {
 
         const totalRolls = 10000;
 
-        // P(Active Win) approx 0.6475.
-        // P(Save) = 0.8 (16/20).
-        // P(Active 0) = 0.6475 * 0.8 = 0.518 (5180).
-        // P(Active 1) = 0.6475 * 0.2 = 0.1295 (1295).
-
-        const expWounds1 = 0.1295 * totalRolls;
-        const expWounds0 = 0.518 * totalRolls;
+        // Die A (SV 13): P(miss)=7/20=0.35, P(hit non-crit)=12/20=0.6, P(crit)=1/20=0.05
+        // Die B has burst 0, so B max is always 0 → active wins on any hit
+        // Non-crit wins: 1 hit, 1 save roll. P(fail save)=0.2. So P(wound)=0.6*0.2=0.12
+        // Crit wins: 1 auto-wound (no save). P=0.05
+        // P(active,1 wound) = 0.12 + 0.05 = 0.17
+        // P(active,0 wounds) = 0.6*0.8 = 0.48
 
         const expected = {
             'active': {
-                1: expWounds1,
-                0: expWounds0
+                1: 0.17 * totalRolls,
+                0: 0.48 * totalRolls
             }
         };
 

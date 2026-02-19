@@ -102,7 +102,7 @@ export function scoreList(
     units: Array<{ unit: Unit; profile: Profile; option: Option }>,
     classifieds: ClassifiedObjective[],
     metadata: ScoringMetadata,
-    pointsLimit: number = 300
+    _pointsLimit: number = 300
 ): ListScore {
     const listUnits: ScoredListUnit[] = units.map(({ unit, profile, option }) => ({
         unit,

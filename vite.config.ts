@@ -10,5 +10,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.ts',
+    exclude: [
+      'ai-tmp/**',
+      'mcp-server/**',
+      'node_modules/**',
+    ],
   },
 })

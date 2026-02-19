@@ -76,6 +76,7 @@ const mockDb: IDatabase = {
     searchWithModifiers: vi.fn(),
     init: vi.fn(),
     metadata: null,
+    classifieds: [],
     getFactionName: () => '',
     getFactionShortName: () => '',
     getFactionInfo: () => undefined,
@@ -89,7 +90,8 @@ const mockDb: IDatabase = {
     getFireteamChart: vi.fn(() => undefined),
     getUnitBySlug: () => undefined,
     getWikiLink: vi.fn(),
-    getExtraName: () => undefined
+    getExtraName: () => undefined,
+    getWeaponDetails: () => undefined
 };
 
 describe('useUnitSearch', () => {

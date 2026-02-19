@@ -40,3 +40,9 @@ coverage/
 
 # Vite
 *.local
+
+# Scratch / AI working directories
+ai-tmp/
+
+# Windows artifacts
+*:Zone.Identifier
