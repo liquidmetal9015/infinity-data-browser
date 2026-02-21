@@ -1,4 +1,6 @@
 // Common types for dice calculator components
+import type { RangeBand } from '../../../shared/types';
+export type { RangeBand };
 
 export interface WeaponPreset {
     name: string;
@@ -11,6 +13,13 @@ export interface WeaponPreset {
 export interface ArmorPreset {
     name: string;
     armor: number;
+}
+
+export interface WeaponProfile {
+    burst: number;
+    damage: string;
+    ammo: string[];
+    bands: RangeBand[];
 }
 
 // Standard presets

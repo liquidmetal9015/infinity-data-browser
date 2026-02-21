@@ -3,12 +3,14 @@ import { AMMO_LIST } from './types';
 
 interface AmmoSelectorProps {
     ammo: string;
+    ap: boolean;
     continuous: boolean;
     critImmune: boolean;
+    cover?: boolean;
     onUpdate: (field: string, val: any) => void;
 }
 
-export const AmmoSelector = ({ ammo, continuous, critImmune, onUpdate }: AmmoSelectorProps) => (
+export const AmmoSelector = ({ ammo, ap, continuous, critImmune, cover, onUpdate }: AmmoSelectorProps) => (
     <div className="ammo-selector">
         <div className="ammo-row">
             {AMMO_LIST.map(a => (
@@ -23,6 +25,12 @@ export const AmmoSelector = ({ ammo, continuous, critImmune, onUpdate }: AmmoSel
         </div>
         <div className="ammo-toggles">
             <button
+                className={`toggle-btn ${ap ? 'active' : ''}`}
+                onClick={() => onUpdate('ap', !ap)}
+            >
+                AP
+            </button>
+            <button
                 className={`toggle-btn ${continuous ? 'active' : ''}`}
                 onClick={() => onUpdate('continuous', !continuous)}
             >
@@ -34,6 +42,14 @@ export const AmmoSelector = ({ ammo, continuous, critImmune, onUpdate }: AmmoSel
             >
                 CRIT IMMUNE
             </button>
+            {cover !== undefined && (
+                <button
+                    className={`toggle-btn ${cover ? 'active' : ''}`}
+                    onClick={() => onUpdate('cover', !cover)}
+                >
+                    COVER
+                </button>
+            )}
         </div>
     </div>
 );

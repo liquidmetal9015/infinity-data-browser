@@ -78,7 +78,7 @@ export function ComparePage() {
         const sortUnits = (ids: number[]) => ids
             .map(id => getUnit(id))
             .filter(u => u !== undefined)
-            .sort((a, b) => a!.name.localeCompare(b!.name))
+            .sort((a, b) => (a!.name || a!.isc || '').localeCompare(b!.name || b!.isc || ''))
             .map(u => u!);
 
         // Group shared units by faction combination
@@ -252,7 +252,7 @@ export function ComparePage() {
                                         className="unit-card universal cursor-pointer hover:border-success/80 transition-colors"
                                         onClick={() => openUnitModal(u)}
                                     >
-                                        {u.name}
+                                        {u.name || u.isc || 'Unknown'}
                                     </div>
                                 ))}
                             </div>
@@ -289,7 +289,7 @@ export function ComparePage() {
                                                     className="unit-card shared cursor-pointer hover:border-primary/80 transition-colors"
                                                     onClick={() => openUnitModal(unit)}
                                                 >
-                                                    {unit.name}
+                                                    {unit.name || unit.isc || 'Unknown'}
                                                 </div>
                                             ))}
                                         </div>
@@ -322,7 +322,7 @@ export function ComparePage() {
                                                         className="unit-item-compact cursor-pointer hover:text-accent transition-colors"
                                                         onClick={() => openUnitModal(u)}
                                                     >
-                                                        {u.name}
+                                                        {u.name || u.isc || 'Unknown'}
                                                     </div>
                                                 ))
                                             )}

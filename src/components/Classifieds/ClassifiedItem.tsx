@@ -1,12 +1,13 @@
 import React from 'react';
 import type { ClassifiedObjective, ClassifiedMatch } from '../../../shared/classifieds';
+import './ClassifiedItem.css';
 
 interface ClassifiedItemProps {
     objective: ClassifiedObjective;
     match?: ClassifiedMatch;
     isActive: boolean; // Hovered or selected
     isSubdued: boolean; // If another item is active and this one isn't relevant
-    onHover: (id: number | null) => void;
+    onClick: () => void;
 }
 
 export const ClassifiedItem: React.FC<ClassifiedItemProps> = ({
@@ -14,45 +15,36 @@ export const ClassifiedItem: React.FC<ClassifiedItemProps> = ({
     match,
     isActive,
     isSubdued,
-    onHover
+    onClick
 }) => {
-    // Determine style based on state
-    let className = "p-4 border rounded shadow-sm transition-all duration-200 cursor-pointer ";
+    let className = "classified-item ";
 
     if (isActive) {
-        className += "border-blue-500 bg-blue-50 ring-2 ring-blue-200 ";
+        className += "active ";
     } else if (match?.canComplete) {
-        className += "border-green-200 bg-green-50 hover:bg-green-100 ";
-    } else if (match && !match.canComplete) {
-        className += "border-red-200 bg-opacity-50 "; // slightly grayed out if impossible?
-    } else {
-        className += "border-gray-200 hover:border-blue-300 ";
+        className += "completable ";
     }
 
     if (isSubdued) {
-        className += "opacity-40 grayscale ";
+        className += "subdued ";
     }
 
     return (
-        <div
-            className={className}
-            onMouseEnter={() => onHover(objective.id)}
-            onMouseLeave={() => onHover(null)}
-        >
-            <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg">{objective.name}</h3>
-                <span className="text-xs font-mono text-gray-500">{objective.category.split(' ')[0]}</span>
+        <div className={className.trim()} onClick={onClick}>
+            <div className="classified-header">
+                <h3 className="classified-title">{objective.name}</h3>
+                <span className="classified-category">{objective.category.split(' ')[0]}</span>
             </div>
 
-            <p className="text-sm text-gray-700 mb-3">{objective.objective}</p>
+            <p className="classified-desc">{objective.objective}</p>
 
-            <div className="text-xs bg-gray-100 p-2 rounded">
-                <strong>Designated:</strong> {objective.designatedTroopers.join(', ')}
+            <div className="classified-designated">
+                <span className="designated-label">Designated:</span> {objective.designatedTroopers.join(', ')}
             </div>
 
-            {match && match.canComplete && (
-                <div className="mt-2 text-xs text-green-700 font-bold">
-                    ✓ Completable via {match.reason}
+            {match && match.canComplete && match.reason && (
+                <div className="classified-match-status">
+                    <span className="match-icon">✓</span> Completable via {match.reason}
                 </div>
             )}
         </div>

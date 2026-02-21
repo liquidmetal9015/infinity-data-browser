@@ -1,24 +1,49 @@
 // Dice Calculator Page - Main component
+import { useState } from 'react';
 import { useDiceCalculator } from '../hooks/useDiceCalculator';
 import { Swords, Shield, ArrowLeftRight, Zap } from 'lucide-react';
 import {
     CompactNumber,
     BurstSelector,
     AmmoSelector,
-    PresetsBar,
     ComparisonSummary,
     WoundsTable,
     WoundsBar,
-    type WeaponPreset,
-    type ArmorPreset
+    WeaponSelector,
+    CalculatorUnitSelector,
+    CalculatorProfileSelector
 } from '../components/DiceCalculator';
+import type { WeaponProfile } from '../components/DiceCalculator/types';
+import type { ParsedWeapon, Unit, Profile, Option } from '../../shared/types';
 import './DiceCalculatorPage.css';
 
 export function DiceCalculatorPage() {
-    const { activeParams, reactiveParams, setActiveParams, setReactiveParams, results } = useDiceCalculator();
+    const [mode, setMode] = useState<'freeform' | 'simulator'>('freeform');
+    const {
+        distance, setDistance,
+        activeParams, reactiveParams,
+        setActiveParams, setReactiveParams,
+        results
+    } = useDiceCalculator(mode);
 
-    const updateActive = (field: string, val: any) => setActiveParams({ ...activeParams, [field]: val });
-    const updateReactive = (field: string, val: any) => setReactiveParams({ ...reactiveParams, [field]: val });
+    const RANGE_BANDS = [
+        { label: '0-8"', value: 8 },
+        { label: '8-16"', value: 16 },
+        { label: '16-24"', value: 24 },
+        { label: '24-32"', value: 32 },
+        { label: '32-48"', value: 48 },
+        { label: '48-96"', value: 96 }
+    ];
+
+    const updateActive = (field: string, val: any) => {
+        const resetWeapon = ['sv', 'damage', 'armor', 'ammo', 'burst', 'ap', 'continuous', 'weaponBands'].includes(field);
+        setActiveParams({ ...activeParams, [field]: val, ...(resetWeapon && { selectedWeapon: undefined }) });
+    };
+
+    const updateReactive = (field: string, val: any) => {
+        const resetWeapon = ['sv', 'damage', 'armor', 'ammo', 'burst', 'ap', 'continuous', 'weaponBands'].includes(field);
+        setReactiveParams({ ...reactiveParams, [field]: val, ...(resetWeapon && { selectedWeapon: undefined }) });
+    };
 
     const swap = () => {
         const temp = { ...activeParams };
@@ -26,25 +51,307 @@ export function DiceCalculatorPage() {
         setReactiveParams({ ...temp });
     };
 
-    const applyWeaponToActive = (preset: WeaponPreset) => {
-        setActiveParams({ ...activeParams, damage: preset.ps, ammo: preset.ammo, burst: preset.burst });
+    const parseAmmo = (ammunition: string) => {
+        const upper = ammunition.toUpperCase();
+        const ap = upper.includes('AP');
+
+        // Find base ammo
+        let baseAmmo = 'N';
+        if (upper.includes('PLASMA')) baseAmmo = 'PLASMA';
+        else if (upper.includes('EXP')) baseAmmo = 'EXP';
+        else if (upper.includes('DA')) baseAmmo = 'DA';
+        else if (upper.includes('T2')) baseAmmo = 'T2';
+
+        return { ap, baseAmmo };
     };
 
-    const applyArmorToReactive = (preset: ArmorPreset) => {
-        setReactiveParams({ ...reactiveParams, armor: preset.armor });
+    const applyWeaponToActive = (weapon: ParsedWeapon, profile: WeaponProfile) => {
+        const { ap, baseAmmo } = parseAmmo(profile.ammo[0] || 'N');
+        setActiveParams({
+            ...activeParams,
+            damage: parseInt(profile.damage) || 13,
+            ammo: baseAmmo,
+            burst: profile.burst,
+            ap,
+            weaponBands: profile.bands,
+            selectedWeapon: weapon.name
+        });
     };
+
+    const handleActiveUnitSelect = (unit: Unit) => {
+        setActiveParams({
+            ...activeParams,
+            selectedUnit: unit,
+            selectedProfile: undefined,
+            selectedOption: undefined,
+            selectedWeapon: undefined
+        });
+    };
+
+    const handleActiveProfileSelect = (profile: Profile, option: Option) => {
+        setActiveParams({
+            ...activeParams,
+            selectedProfile: profile,
+            selectedOption: option,
+            sv: profile.bs,
+            armor: profile.arm,
+            bts: profile.bts,
+            selectedWeapon: undefined
+        });
+    };
+
+    const applyWeaponToReactive = (weapon: ParsedWeapon, profile: WeaponProfile) => {
+        const { ap, baseAmmo } = parseAmmo(profile.ammo[0] || 'N');
+        setReactiveParams({
+            ...reactiveParams,
+            damage: parseInt(profile.damage) || 13,
+            ammo: baseAmmo,
+            burst: 1, // Default to ARO burst 1
+            ap,
+            weaponBands: profile.bands,
+            selectedWeapon: weapon.name
+        });
+    };
+
+    const handleReactiveUnitSelect = (unit: Unit) => {
+        setReactiveParams({
+            ...reactiveParams,
+            selectedUnit: unit,
+            selectedProfile: undefined,
+            selectedOption: undefined,
+            selectedWeapon: undefined
+        });
+    };
+
+    const handleReactiveProfileSelect = (profile: Profile, option: Option) => {
+        setReactiveParams({
+            ...reactiveParams,
+            selectedProfile: profile,
+            selectedOption: option,
+            sv: profile.bs,
+            armor: profile.arm,
+            bts: profile.bts,
+            selectedWeapon: undefined
+        });
+    };
+
+    const computeEffectiveSv = (params: any, distanceInches: number, opponentHasCover: boolean) => {
+        let sv = params.sv;
+        if (params.weaponBands && params.weaponBands.length > 0) {
+            const band = params.weaponBands.find((b: any) => distanceInches >= b.start && distanceInches <= b.end);
+            if (band) {
+                sv += band.mod;
+            } else if (distanceInches > params.weaponBands[params.weaponBands.length - 1].end) {
+                sv -= 6;
+            }
+        }
+        if (opponentHasCover) {
+            sv -= 3;
+        }
+        sv += params.miscMod;
+        return Math.max(1, sv);
+    };
+
+    const activeEffectiveSv = computeEffectiveSv(activeParams, distance, reactiveParams.cover);
+    const reactiveEffectiveSv = computeEffectiveSv(reactiveParams, distance, activeParams.cover);
 
     return (
         <div className="dice-calculator-page">
             <div className="page-header">
                 <h2><Zap size={24} /> N5 Dice Calculator</h2>
+
+                <div className="mode-toggle">
+                    <button
+                        className={`mode-btn ${mode === 'freeform' ? 'active' : ''}`}
+                        onClick={() => setMode('freeform')}
+                    >
+                        Freeform
+                    </button>
+                    <button
+                        className={`mode-btn ${mode === 'simulator' ? 'active' : ''}`}
+                        onClick={() => setMode('simulator')}
+                    >
+                        Matchup Simulator
+                    </button>
+                </div>
             </div>
 
-            {/* Presets */}
-            <PresetsBar
-                onApplyWeapon={applyWeaponToActive}
-                onApplyArmor={applyArmorToReactive}
-            />
+            {mode === 'simulator' && (
+                <div className="global-controls">
+                    <div className="distance-control">
+                        <label>Engagement Distance</label>
+                        <div className="range-pills">
+                            {RANGE_BANDS.map(band => (
+                                <button
+                                    key={band.label}
+                                    className={`range-pill ${distance === band.value ? 'active' : ''}`}
+                                    onClick={() => setDistance(band.value)}
+                                >
+                                    {band.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Input Panels */}
+            <div className="input-panels">
+                {/* Active Panel */}
+                <div className="input-panel active-panel">
+                    <div className="panel-header">
+                        <Swords size={18} /> <span>Active</span>
+                    </div>
+
+                    {mode === 'simulator' && (
+                        <>
+                            <div className="panel-section">
+                                <CalculatorUnitSelector
+                                    onSelect={handleActiveUnitSelect}
+                                    placeholder="Search Active Unit..."
+                                    onClear={() => handleActiveUnitSelect(undefined as any)}
+                                />
+                                {activeParams.selectedUnit && (
+                                    <CalculatorProfileSelector
+                                        unit={activeParams.selectedUnit}
+                                        onSelect={handleActiveProfileSelect}
+                                    />
+                                )}
+                            </div>
+
+                            <div className="panel-section">
+                                <WeaponSelector
+                                    onSelect={applyWeaponToActive}
+                                    placeholder="Execute Attack With..."
+                                    filterOptionIds={activeParams.selectedOption?.weapons.map((w: any) => w.id)}
+                                    disabled={!activeParams.selectedProfile}
+                                />
+                                {activeParams.selectedWeapon && (
+                                    <div className="selected-weapon-indicator">
+                                        {activeParams.selectedWeapon}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    <div className="panel-row">
+                        <div className="sv-group">
+                            <CompactNumber
+                                label={mode === 'freeform' ? 'SV' : 'Base SV'}
+                                value={activeParams.sv}
+                                onChange={v => updateActive('sv', v)}
+                                readOnly={mode === 'simulator'}
+                            />
+                            {mode === 'simulator' && (
+                                <div className="effective-sv">
+                                    Final SV: <strong>{activeEffectiveSv}</strong>
+                                </div>
+                            )}
+                        </div>
+                        {mode === 'simulator' && (
+                            <CompactNumber label="MOD" value={activeParams.miscMod} onChange={v => updateActive('miscMod', v)} />
+                        )}
+                        <CompactNumber label="PS" value={activeParams.damage} onChange={v => updateActive('damage', v)} readOnly={mode === 'simulator'} />
+                        <CompactNumber label="ARM" value={activeParams.armor} onChange={v => updateActive('armor', v)} readOnly={mode === 'simulator'} />
+                    </div>
+
+                    <BurstSelector
+                        value={activeParams.burst}
+                        onChange={(v: number) => updateActive('burst', v)}
+                        readOnly={mode === 'simulator'}
+                    />
+
+                    <AmmoSelector
+                        ammo={activeParams.ammo}
+                        ap={activeParams.ap}
+                        continuous={activeParams.continuous}
+                        critImmune={activeParams.critImmune}
+                        cover={mode === 'simulator' ? activeParams.cover : undefined}
+                        onUpdate={updateActive}
+                    />
+                </div>
+
+                <button className="swap-btn" onClick={swap} title="Swap">
+                    <ArrowLeftRight size={18} />
+                </button>
+
+                {/* Reactive Panel */}
+                <div className="input-panel reactive-panel">
+                    <div className="panel-header">
+                        <Shield size={18} /> <span>Reactive</span>
+                    </div>
+
+                    {mode === 'simulator' && (
+                        <>
+                            <div className="panel-section">
+                                <CalculatorUnitSelector
+                                    onSelect={handleReactiveUnitSelect}
+                                    placeholder="Search Reactive Unit..."
+                                    onClear={() => handleReactiveUnitSelect(undefined as any)}
+                                />
+                                {reactiveParams.selectedUnit && (
+                                    <CalculatorProfileSelector
+                                        unit={reactiveParams.selectedUnit}
+                                        onSelect={handleReactiveProfileSelect}
+                                    />
+                                )}
+                            </div>
+
+                            <div className="panel-section">
+                                <WeaponSelector
+                                    onSelect={applyWeaponToReactive}
+                                    placeholder="Execute ARO With..."
+                                    filterOptionIds={reactiveParams.selectedOption?.weapons.map((w: any) => w.id)}
+                                    disabled={!reactiveParams.selectedProfile}
+                                />
+                                {reactiveParams.selectedWeapon && (
+                                    <div className="selected-weapon-indicator">
+                                        {reactiveParams.selectedWeapon}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    <div className="panel-row">
+                        <div className="sv-group">
+                            <CompactNumber
+                                label={mode === 'freeform' ? 'SV' : 'Base SV'}
+                                value={reactiveParams.sv}
+                                onChange={v => updateReactive('sv', v)}
+                                readOnly={mode === 'simulator'}
+                            />
+                            {mode === 'simulator' && (
+                                <div className="effective-sv">
+                                    Final SV: <strong>{reactiveEffectiveSv}</strong>
+                                </div>
+                            )}
+                        </div>
+                        {mode === 'simulator' && (
+                            <CompactNumber label="MOD" value={reactiveParams.miscMod} onChange={v => updateReactive('miscMod', v)} />
+                        )}
+                        <CompactNumber label="PS" value={reactiveParams.damage} onChange={v => updateReactive('damage', v)} readOnly={mode === 'simulator'} />
+                        <CompactNumber label="ARM" value={reactiveParams.armor} onChange={v => updateReactive('armor', v)} readOnly={mode === 'simulator'} />
+                    </div>
+
+                    <BurstSelector
+                        value={reactiveParams.burst}
+                        onChange={(v: number) => updateReactive('burst', v)}
+                        isReactive={true}
+                        readOnly={mode === 'simulator'}
+                    />
+
+                    <AmmoSelector
+                        ammo={reactiveParams.ammo}
+                        ap={reactiveParams.ap}
+                        continuous={reactiveParams.continuous}
+                        critImmune={reactiveParams.critImmune}
+                        cover={mode === 'simulator' ? reactiveParams.cover : undefined}
+                        onUpdate={updateReactive}
+                    />
+                </div>
+            </div>
 
             {/* Results Section */}
             {results && (
@@ -67,64 +374,6 @@ export function DiceCalculatorPage() {
                     />
                 </div>
             )}
-
-            {/* Input Panels */}
-            <div className="input-panels">
-                <button className="swap-btn" onClick={swap} title="Swap">
-                    <ArrowLeftRight size={18} />
-                </button>
-
-                {/* Active Panel */}
-                <div className="input-panel active-panel">
-                    <div className="panel-header">
-                        <Swords size={18} /> <span>Active</span>
-                    </div>
-
-                    <div className="panel-row">
-                        <CompactNumber label="BS" value={activeParams.sv} onChange={v => updateActive('sv', v)} />
-                        <CompactNumber label="PS" value={activeParams.damage} onChange={v => updateActive('damage', v)} />
-                        <CompactNumber label="ARM" value={activeParams.armor} onChange={v => updateActive('armor', v)} />
-                    </div>
-
-                    <BurstSelector
-                        value={activeParams.burst}
-                        onChange={(v: number) => updateActive('burst', v)}
-                    />
-
-                    <AmmoSelector
-                        ammo={activeParams.ammo}
-                        continuous={activeParams.continuous}
-                        critImmune={activeParams.critImmune}
-                        onUpdate={updateActive}
-                    />
-                </div>
-
-                {/* Reactive Panel */}
-                <div className="input-panel reactive-panel">
-                    <div className="panel-header">
-                        <Shield size={18} /> <span>Reactive</span>
-                    </div>
-
-                    <div className="panel-row">
-                        <CompactNumber label="BS" value={reactiveParams.sv} onChange={v => updateReactive('sv', v)} />
-                        <CompactNumber label="PS" value={reactiveParams.damage} onChange={v => updateReactive('damage', v)} />
-                        <CompactNumber label="ARM" value={reactiveParams.armor} onChange={v => updateReactive('armor', v)} />
-                    </div>
-
-                    <BurstSelector
-                        value={reactiveParams.burst}
-                        onChange={(v: number) => updateReactive('burst', v)}
-                        isReactive={true}
-                    />
-
-                    <AmmoSelector
-                        ammo={reactiveParams.ammo}
-                        continuous={reactiveParams.continuous}
-                        critImmune={reactiveParams.critImmune}
-                        onUpdate={updateReactive}
-                    />
-                </div>
-            </div>
         </div>
     );
 }

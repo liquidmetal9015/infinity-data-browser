@@ -120,34 +120,30 @@ export function ReferencePage() {
     return (
         <div className="page-container reference-page">
             <div className="page-header">
-                <h2>Reference Library</h2>
+                <div className="search-wrapper">
+                    <Search className="search-icon" size={24} />
+                    <input
+                        type="text"
+                        placeholder="Search reference library..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
 
-                <div className="controls-group">
-                    <div className="toggle-wrapper">
-                        <button
-                            className={`toggle-btn ${showModifiers ? 'active' : ''}`}
-                            onClick={() => setShowModifiers(true)}
-                        >
-                            With Modifiers
-                        </button>
-                        <button
-                            className={`toggle-btn ${!showModifiers ? 'active' : ''}`}
-                            onClick={() => setShowModifiers(false)}
-                        >
-                            Without Modifiers
-                        </button>
-                    </div>
-
-                    <div className="search-wrapper">
-                        <Search className="search-icon" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search entries..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
+                <div className="toggle-wrapper">
+                    <button
+                        className={`toggle-btn ${showModifiers ? 'active' : ''}`}
+                        onClick={() => setShowModifiers(true)}
+                    >
+                        With Modifiers
+                    </button>
+                    <button
+                        className={`toggle-btn ${!showModifiers ? 'active' : ''}`}
+                        onClick={() => setShowModifiers(false)}
+                    >
+                        Without Modifiers
+                    </button>
                 </div>
             </div>
 
@@ -238,37 +234,58 @@ export function ReferencePage() {
                 }
                 .page-header {
                     display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 2rem;
-                }
-                .page-header h2 {
-                    font-size: 1.8rem;
-                    font-weight: 700;
-                    color: var(--text-primary);
-                }
-                .controls-group {
-                    display: flex;
+                    flex-direction: column;
                     align-items: center;
                     gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+
+                .search-wrapper {
+                    position: relative;
+                    width: 100%;
+                    max-width: 600px;
+                }
+                .search-icon {
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--text-secondary);
+                }
+                .search-input {
+                    width: 100%;
+                    padding: 1rem 1.5rem 1rem 3.5rem;
+                    border-radius: 12px;
+                    font-size: 1.1rem;
+                    border: 1px solid var(--border-color);
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                    transition: all 0.2s;
+                }
+                .search-input:focus {
+                    outline: none;
+                    border-color: var(--color-primary);
+                    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 59, 130, 246), 0.15);
                 }
 
                 .toggle-wrapper {
                     display: flex;
                     background: var(--bg-secondary);
                     padding: 4px;
-                    border-radius: 8px;
+                    border-radius: 9999px; /* Pill-shaped */
                     border: 1px solid var(--border-color);
                 }
 
                 .toggle-btn {
-                    padding: 0.5rem 1rem;
-                    border-radius: 6px;
+                    padding: 0.4rem 1rem;
+                    border-radius: 9999px; /* Pill-shaped */
                     border: none;
                     background: transparent;
                     color: var(--text-secondary);
-                    font-size: 0.9rem;
+                    font-size: 0.85rem;
                     font-weight: 500;
+                    white-space: nowrap; /* Keep text on one line */
                     cursor: pointer;
                     transition: all 0.2s;
                 }
@@ -281,26 +298,6 @@ export function ReferencePage() {
                     background: var(--bg-primary);
                     color: var(--color-primary);
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-
-                .search-wrapper {
-                    position: relative;
-                    width: 300px;
-                }
-                .search-icon {
-                    position: absolute;
-                    left: 12px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: var(--text-secondary);
-                }
-                .search-input {
-                    width: 100%;
-                    padding: 0.75rem 1rem 0.75rem 2.5rem;
-                    border-radius: 8px;
-                    border: 1px solid var(--border-color);
-                    background: var(--bg-secondary);
-                    color: var(--text-primary);
                 }
 
                 .table-container {

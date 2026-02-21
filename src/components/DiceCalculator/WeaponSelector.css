@@ -1,0 +1,86 @@
+.weapon-selector {
+    position: relative;
+    width: 100%;
+}
+
+.search-input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 0.5rem;
+    transition: border-color 0.2s;
+}
+
+.search-input-wrapper:focus-within {
+    border-color: var(--accent);
+}
+
+.search-icon {
+    color: var(--text-secondary);
+    margin-right: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.dropdown-icon {
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.no-results {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.weapon-row-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.15s;
+    font-weight: 500;
+}
+
+.weapon-row-btn:last-child {
+    border-bottom: none;
+}
+
+.weapon-row-btn:hover {
+    background-color: var(--bg-tertiary);
+}

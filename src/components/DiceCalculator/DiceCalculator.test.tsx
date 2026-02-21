@@ -101,8 +101,10 @@ describe('DiceCalculator Components', () => {
             render(
                 <AmmoSelector
                     ammo="N"
+                    ap={false}
                     continuous={false}
                     critImmune={false}
+                    cover={false}
                     onUpdate={onUpdate}
                 />
             );
@@ -119,8 +121,10 @@ describe('DiceCalculator Components', () => {
             render(
                 <AmmoSelector
                     ammo="DA"
+                    ap={false}
                     continuous={false}
                     critImmune={false}
+                    cover={false}
                     onUpdate={onUpdate}
                 />
             );
@@ -134,8 +138,10 @@ describe('DiceCalculator Components', () => {
             render(
                 <AmmoSelector
                     ammo="N"
+                    ap={false}
                     continuous={true}
                     critImmune={false}
+                    cover={false}
                     onUpdate={onUpdate}
                 />
             );
@@ -149,8 +155,10 @@ describe('DiceCalculator Components', () => {
             render(
                 <AmmoSelector
                     ammo="N"
+                    ap={false}
                     continuous={false}
                     critImmune={false}
+                    cover={false}
                     onUpdate={onUpdate}
                 />
             );

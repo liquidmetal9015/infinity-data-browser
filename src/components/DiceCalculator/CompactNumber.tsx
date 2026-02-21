@@ -8,6 +8,7 @@ interface CompactNumberProps {
     min?: number;
     max?: number;
     showZero?: boolean;
+    readOnly?: boolean;
 }
 
 export const CompactNumber = ({
@@ -16,7 +17,8 @@ export const CompactNumber = ({
     onChange,
     min = 0,
     max = 25,
-    showZero = false
+    showZero = false,
+    readOnly = false
 }: CompactNumberProps) => (
     <div className="compact-input">
         <span className="compact-label">{label}</span>
@@ -24,7 +26,7 @@ export const CompactNumber = ({
             <button
                 className="compact-btn"
                 onClick={() => onChange(Math.max(min, value - 1))}
-                disabled={value <= min}
+                disabled={value <= min || readOnly}
             >
                 <Minus size={14} />
             </button>
@@ -33,11 +35,12 @@ export const CompactNumber = ({
                 className="compact-value"
                 value={value}
                 onChange={e => onChange(Math.max(min, Math.min(max, parseInt(e.target.value) || 0)))}
+                readOnly={readOnly}
             />
             <button
                 className="compact-btn"
                 onClick={() => onChange(Math.min(max, value + 1))}
-                disabled={value >= max}
+                disabled={value >= max || readOnly}
             >
                 <Plus size={14} />
             </button>

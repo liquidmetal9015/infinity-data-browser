@@ -5,23 +5,29 @@ import type { SuperFaction } from '../../types';
 interface FactionSelectorProps {
     groupedFactions: SuperFaction[];
     onFactionClick: (factionId: number) => void;
-    onImportClick: () => void;
+    onImportClick?: () => void;
+    title?: string;
+    subtitle?: string;
 }
 
 export function FactionSelector({
     groupedFactions,
     onFactionClick,
-    onImportClick
+    onImportClick,
+    title = "Army Builder",
+    subtitle = "Select a faction to begin, or import an existing army code"
 }: FactionSelectorProps) {
     return (
         <>
             <div className="faction-selector-hero">
-                <h1>Army Builder</h1>
-                <p>Select a faction to begin, or import an existing army code</p>
-                <button className="import-btn" onClick={onImportClick}>
-                    <Upload size={18} />
-                    Import Army Code
-                </button>
+                <h1>{title}</h1>
+                <p>{subtitle}</p>
+                {onImportClick && (
+                    <button className="import-btn" onClick={onImportClick}>
+                        <Upload size={18} />
+                        Import Army Code
+                    </button>
+                )}
             </div>
 
             <div className="faction-grid-container">

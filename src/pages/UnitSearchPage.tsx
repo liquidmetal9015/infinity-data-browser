@@ -13,9 +13,11 @@ export function UnitSearchPage() {
             return db.units; // Or return [] if we want to show nothing by default
         }
         const lowerTerm = searchTerm.toLowerCase();
-        return db.units.filter(unit =>
-            unit.name.toLowerCase().includes(lowerTerm)
-        );
+        return db.units.filter(unit => {
+            const nameMatch = unit.name?.toLowerCase().includes(lowerTerm) ?? false;
+            const iscMatch = unit.isc?.toLowerCase().includes(lowerTerm) ?? false;
+            return nameMatch || iscMatch;
+        });
     }, [db.units, searchTerm]);
 
     // Empty query state to satisfy ResultsTable props
