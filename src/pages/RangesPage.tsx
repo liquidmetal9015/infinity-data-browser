@@ -120,16 +120,20 @@ export function RangesPage() {
 
     // D3 Chart Drawing Effect
     useEffect(() => {
-        if (!graphRef.current || selectedWeapons.length === 0 || containerWidth === 0) {
+        if (!graphRef.current || containerWidth === 0) {
             return;
         }
 
         const container = graphRef.current;
+        d3.select(container).selectAll("*").remove();
+
+        if (selectedWeapons.length === 0) {
+            return;
+        }
+
         const width = containerWidth;
         const height = 300;
         const margin = { top: 20, right: 30, bottom: 40, left: 40 };
-
-        d3.select(container).selectAll("*").remove();
 
         const svg = d3.select(container)
             .append("svg")
@@ -236,13 +240,13 @@ export function RangesPage() {
 
                 <div className="chart-area" ref={containerRef}>
                     {selectedWeapons.length === 0 ? (
-                        <div className="empty-chart">
+                        <div key="empty-chart" className="empty-chart">
                             <Info size={48} />
                             <p>Select a unit or weapons to visualize ranges.</p>
                         </div>
                     ) : (
                         <>
-                            <div className="d3-container" ref={graphRef}></div>
+                            <div key="d3-container" className="d3-container" ref={graphRef}></div>
                             <BestWeaponsBar bestWeapons={bestWeapons} selectedWeapons={selectedWeapons} />
                             <WeaponTable weapons={selectedWeapons} onRemoveWeapon={toggleWeapon} />
                         </>
