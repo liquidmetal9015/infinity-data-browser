@@ -102,34 +102,36 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
             }}
             onMouseDown={handleFrameMouseDown}
         >
-            {/* Title Bar */}
-            <div className="window-titlebar" onMouseDown={handleDragStart}>
-                {icon && <div className="window-titlebar-icon">{icon}</div>}
-                <div className="window-title">{win.title}</div>
-                <div className="window-controls">
-                    <button
-                        className="window-control-btn minimize"
-                        onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }}
-                        title="Minimize"
-                    >
-                        <Minus size={14} />
-                    </button>
-                    <button
-                        className="window-control-btn maximize"
-                        onClick={(e) => { e.stopPropagation(); toggleMaximize(win.id); }}
-                        title={isMaximized ? "Restore" : "Maximize"}
-                    >
-                        {isMaximized ? <Minimize size={14} /> : <Maximize size={14} />}
-                    </button>
-                    <button
-                        className="window-control-btn close"
-                        onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }}
-                        title="Close"
-                    >
-                        <X size={14} />
-                    </button>
+            {/* Title Bar - Only show in Multi-Window mode */}
+            {!isMaximized && (
+                <div className="window-titlebar" onMouseDown={handleDragStart}>
+                    {icon && <div className="window-titlebar-icon">{icon}</div>}
+                    <div className="window-title">{win.title}</div>
+                    <div className="window-controls">
+                        <button
+                            className="window-control-btn minimize"
+                            onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }}
+                            title="Minimize"
+                        >
+                            <Minus size={14} />
+                        </button>
+                        <button
+                            className="window-control-btn maximize"
+                            onClick={(e) => { e.stopPropagation(); toggleMaximize(win.id); }}
+                            title={isMaximized ? "Restore" : "Maximize"}
+                        >
+                            {isMaximized ? <Minimize size={14} /> : <Maximize size={14} />}
+                        </button>
+                        <button
+                            className="window-control-btn close"
+                            onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }}
+                            title="Close"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Content */}
             <div className="window-content">

@@ -15,11 +15,14 @@ test.describe('Dice Calculator – Golden Path', () => {
             }
         });
 
-        // Navigate to the Dice Calculator page (HashRouter)
-        await page.goto('/#/calculator');
+        // Navigate to Workspace
+        await page.goto('/');
 
-        // Wait for the page to render
-        await expect(page.locator('.dice-calculator-page')).toBeVisible({ timeout: 15_000 });
+        // Open Calculator via NavBar tab
+        await page.locator('.tab-btn[title*="Calculator"]').click();
+
+        // Wait for the page to render inside the window
+        await expect(page.locator('.window-frame .dice-calculator-page')).toBeVisible({ timeout: 15_000 });
     });
 
     test('should display the calculator in freeform mode by default', async ({ page }) => {

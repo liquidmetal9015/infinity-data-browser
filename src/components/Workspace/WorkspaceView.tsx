@@ -3,12 +3,11 @@ import { useEffect } from 'react';
 import { Layout as LayoutIcon } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { WindowFrame } from './WindowFrame';
-import { widgetRegistry, LAUNCHER_WIDGETS } from './widgetRegistry';
-import type { WidgetType } from '../../types/workspace';
+import { widgetRegistry } from './widgetRegistry';
 import './WorkspaceView.css';
 
 export function WorkspaceView() {
-    const { state, openWindow, focusWindow, restoreWindow } = useWorkspace();
+    const { state } = useWorkspace();
 
     // Lock page scroll while workspace is active — the canvas manages its own layout
     useEffect(() => {
@@ -64,51 +63,6 @@ export function WorkspaceView() {
                         </WindowFrame>
                     );
                 })}
-            </div>
-
-            {/* Launcher Bar */}
-            <div className="workspace-launcher">
-                {/* Tool launch buttons */}
-                {LAUNCHER_WIDGETS.map((widgetType: WidgetType) => {
-                    const entry = widgetRegistry[widgetType];
-                    const IconComponent = entry.icon;
-                    return (
-                        <button
-                            key={widgetType}
-                            className="launcher-btn"
-                            onClick={() => openWindow(widgetType)}
-                            title={`Open ${entry.label}`}
-                        >
-                            <IconComponent size={14} />
-                            <span>{entry.label}</span>
-                        </button>
-                    );
-                })}
-
-                {/* Divider + active/minimized window indicators */}
-                {state.windows.length > 0 && (
-                    <>
-                        <div className="launcher-divider" />
-                        {state.windows.map(win => {
-                            const entry = widgetRegistry[win.type];
-                            if (!entry) return null;
-                            const IconComponent = entry.icon;
-                            const isMinimized = win.isMinimized;
-
-                            return (
-                                <button
-                                    key={win.id}
-                                    className={`launcher-window-btn ${isMinimized ? 'minimized' : ''}`}
-                                    onClick={() => isMinimized ? restoreWindow(win.id) : focusWindow(win.id)}
-                                    title={isMinimized ? `Restore ${win.title}` : `Focus ${win.title}`}
-                                >
-                                    <IconComponent size={12} />
-                                    <span>{win.title}</span>
-                                </button>
-                            );
-                        })}
-                    </>
-                )}
             </div>
         </div>
     );

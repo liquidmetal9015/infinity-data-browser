@@ -19,7 +19,7 @@
 .workspace-canvas {
     position: absolute;
     inset: 0;
-    bottom: 36px;
+    bottom: 0px;
     /* Leave room for launcher */
     background-image: radial-gradient(circle, var(--border, #334155) 0.5px, transparent 0.5px);
     background-size: 24px 24px;
@@ -30,14 +30,14 @@
 .workspace-windows {
     position: absolute;
     inset: 0;
-    bottom: 36px;
+    bottom: 0px;
 }
 
 /* Empty state */
 .workspace-empty {
     position: absolute;
     inset: 0;
-    bottom: 36px;
+    bottom: 0px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -62,87 +62,4 @@
     font-size: 0.85rem;
     color: var(--text-secondary, #64748b);
     opacity: 0.3;
-}
-
-/* ─── Launcher Bar ─────────────────────────────────────────────────── */
-.workspace-launcher {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0 0.75rem;
-    background: var(--bg-tertiary, #0f172a);
-    border-top: 1px solid var(--border, #334155);
-    overflow-x: auto;
-    z-index: 9999;
-}
-
-/* Launcher tool buttons */
-.launcher-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid transparent;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-secondary, #94a3b8);
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-}
-
-.launcher-btn:hover {
-    background: var(--surface-hover, #1e293b);
-    color: var(--text-primary, #f1f5f9);
-    border-color: var(--border, #334155);
-}
-
-.launcher-btn:active {
-    transform: scale(0.97);
-}
-
-/* Divider between launcher buttons and active windows */
-.launcher-divider {
-    width: 1px;
-    height: 24px;
-    background: var(--border, #334155);
-    margin: 0 0.5rem;
-    flex-shrink: 0;
-}
-
-/* Minimized window indicators in the launcher */
-.launcher-window-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--accent, #6366f1);
-    border-radius: 5px;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--accent, #6366f1);
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-}
-
-.launcher-window-btn:hover {
-    background: rgba(99, 102, 241, 0.2);
-}
-
-.launcher-window-btn.minimized {
-    opacity: 0.7;
-    border-style: dashed;
-}
-
-.launcher-window-btn.minimized:hover {
-    opacity: 1;
 }

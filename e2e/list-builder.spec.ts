@@ -15,11 +15,14 @@ test.describe('List Builder – Golden Path', () => {
             }
         });
 
-        // Navigate to the List Builder page (HashRouter)
-        await page.goto('/#/builder');
+        // Navigate to the Workspace (root)
+        await page.goto('/');
 
-        // Wait for the database to initialize and faction cards to appear
-        await expect(page.locator('.faction-grid-container')).toBeVisible({ timeout: 15_000 });
+        // Open the Builder widget via the NavBar tab
+        await page.locator('.tab-btn[title*="Builder"]').click();
+
+        // Wait for the database to initialize and faction cards to appear inside the window
+        await expect(page.locator('.window-frame .faction-grid-container')).toBeVisible({ timeout: 15_000 });
     });
 
     test('should display the faction selector on load', async ({ page }) => {
@@ -114,35 +117,5 @@ test.describe('List Builder – Golden Path', () => {
         // The points should be the same as right before the reload
         const reloadedPoints = await pointsValue.textContent();
         expect(reloadedPoints).toEqual(updatedPoints);
-    });
-
-    test('should share state directly between builder and workspace routes', async ({ page }) => {
-        // Start a list
-        await page.locator('.sectorial-btn').first().click();
-        await expect(page.locator('.roster-panel')).toBeVisible();
-
-        // Add a unit
-        await page.locator('.roster-item').first().click();
-        await page.waitForTimeout(500);
-        const selectBtn = page.getByRole('button', { name: 'Select' }).first();
-        if (await selectBtn.isVisible().catch(() => false)) {
-            await selectBtn.click();
-        }
-
-        const pointsValue = await page.locator('.summary-bar .stat .value').first().textContent();
-
-        // Navigate to the workspace
-        await page.goto('/#/workspace');
-
-        // Open the Army Builder widget in the workspace
-        await page.locator('.launcher-btn').filter({ hasText: 'Builder' }).click();
-
-        // Inside the workspace widget, the list dashboard should immediately appear (not faction selector)
-        const workspaceWidget = page.locator('.window-frame');
-        await expect(workspaceWidget.locator('.roster-panel')).toBeVisible({ timeout: 10_000 });
-
-        // The points value inside the widget should match the full-screen page
-        const workspacePointsValue = await workspaceWidget.locator('.summary-bar .stat .value').first().textContent();
-        expect(workspacePointsValue).toEqual(pointsValue);
     });
 });

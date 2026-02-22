@@ -49,6 +49,31 @@ export const initialState: WorkspaceState = {
 export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
     switch (action.type) {
         case 'OPEN_WINDOW': {
+            // Check if a window of this type already exists. If so, just focus and restore it.
+            const existingWindow = state.windows.find(w => w.type === action.widgetType);
+            if (existingWindow) {
+                // If it's already focused and not minimized (and properly maximized if in tabbed mode), do nothing
+                if (
+                    existingWindow.zIndex === state.nextZIndex - 1 &&
+                    !existingWindow.isMinimized &&
+                    !(state.layoutMode === 'tabbed' && state.maximizedWindowId !== existingWindow.id)
+                ) {
+                    return state;
+                }
+
+                return {
+                    ...state,
+                    windows: state.windows.map(w =>
+                        w.id === existingWindow.id
+                            ? { ...w, zIndex: state.nextZIndex, isMinimized: false, props: action.props || w.props }
+                            : w
+                    ),
+                    nextZIndex: state.nextZIndex + 1,
+                    maximizedWindowId: state.layoutMode === 'tabbed' ? existingWindow.id : state.maximizedWindowId,
+                };
+            }
+
+            // Otherwise, open a new instance (there shouldn't be multiple instances anymore)
             const newWindow: WindowState = {
                 id: generateId(),
                 type: action.widgetType,
