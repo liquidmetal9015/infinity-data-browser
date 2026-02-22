@@ -361,7 +361,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     display: grid;
                     grid-template-columns: 280px 1fr;
                     gap: 1rem;
-                    min-height: calc(100vh - 200px);
+                    min-height: 400px;
                 }
 
                 /* Roster Panel */
@@ -373,7 +373,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     flex-direction: column;
                     overflow: hidden;
                     height: fit-content;
-                    max-height: calc(100vh - 200px);
+                    max-height: 100%;
                     position: sticky;
                     top: 1rem;
                 }

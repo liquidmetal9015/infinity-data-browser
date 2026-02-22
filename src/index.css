@@ -72,6 +72,9 @@
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
+
+  /* Layout */
+  --navbar-height: 41px;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -95,6 +98,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -149,7 +153,7 @@ body {
 .app-header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  padding: var(--space-4) var(--space-6);
+  padding: 0.625rem var(--space-6);
   position: sticky;
   top: 0;
   z-index: 100;

@@ -302,7 +302,7 @@ export function ClassifiedsPage() {
                 .classifieds-grid {
                     display: grid;
                     grid-template-columns: 350px 1fr;
-                    height: calc(100vh - 160px); /* Fill remaining height */
+                    height: 100%; /* Fill container height */
                 }
                 
                 @media (max-width: 1024px) {

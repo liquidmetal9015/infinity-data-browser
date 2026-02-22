@@ -9,6 +9,7 @@ import { UnitSearchPage } from './pages/UnitSearchPage';
 import { ListBuilderPage } from './pages/ListBuilderPage';
 import { DiceCalculatorPage } from './pages/DiceCalculatorPage';
 import { ClassifiedsPage } from './pages/ClassifiedsPage';
+import { WorkspaceView } from './components/Workspace/WorkspaceView';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/builder" element={<ListBuilderPage />} />
           <Route path="/calculator" element={<DiceCalculatorPage />} />
           <Route path="/classifieds" element={<ClassifiedsPage />} />
+          <Route path="/workspace" element={<WorkspaceView />} />
         </Route>
       </Routes>
     </HashRouter>

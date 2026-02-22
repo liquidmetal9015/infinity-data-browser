@@ -2,6 +2,7 @@
 
 .ranges-page {
     height: calc(100vh - 80px);
+    min-height: 0;
     max-width: 1400px;
     margin: 0 auto;
     padding: 1rem 2rem;
