@@ -1,14 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 import { useModal } from '../context/ModalContext';
 import { Users, X, Check, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCompareStore } from '../stores/useCompareStore';
 import './ComparePage.css';
 
 export function ComparePage() {
     const db = useDatabase();
     const { openUnitModal } = useModal();
-    const [selectedFactionIds, setSelectedFactionIds] = useState<number[]>([]);
+    const { selectedFactionIds, addFaction, removeFaction, addMultipleFactions, clearAll } = useCompareStore();
 
     // Get all factions
     const allFactions = useMemo(() => {
@@ -111,8 +112,8 @@ export function ComparePage() {
 
     const handleAddFaction = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const id = Number(e.target.value);
-        if (id && !selectedFactionIds.includes(id)) {
-            setSelectedFactionIds([...selectedFactionIds, id]);
+        if (id) {
+            addFaction(id);
         }
     };
 
@@ -121,27 +122,20 @@ export function ComparePage() {
         if (!superFaction) return;
 
         const validIds = new Set(allFactions.map(f => f.id));
-        const newIds = new Set(selectedFactionIds);
+        const idsToAdd: number[] = [];
 
-        // Only add if they are valid (not discontinued/hidden)
-        if (validIds.has(superFaction.id) && !newIds.has(superFaction.id)) {
-            newIds.add(superFaction.id);
+        if (validIds.has(superFaction.id)) {
+            idsToAdd.push(superFaction.id);
         }
 
         superFaction.sectorials.forEach(child => {
-            if (validIds.has(child.id) && !newIds.has(child.id)) {
-                newIds.add(child.id);
+            if (validIds.has(child.id)) {
+                idsToAdd.push(child.id);
             }
         });
 
-        setSelectedFactionIds(Array.from(newIds));
+        addMultipleFactions(idsToAdd);
     };
-
-    const removeFaction = (id: number) => {
-        setSelectedFactionIds(selectedFactionIds.filter(fid => fid !== id));
-    };
-
-    const clearAll = () => setSelectedFactionIds([]);
 
     return (
         <div className="page-container compare-page">

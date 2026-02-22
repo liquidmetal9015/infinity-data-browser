@@ -1,17 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 import { FactionSelector } from '../components/ListBuilder/FactionSelector';
 import { ClassifiedItem } from '../components/Classifieds/ClassifiedItem';
 import { getClassifiedsForOption, type ClassifiedMatch } from '../../shared/classifieds';
 import type { Unit, Profile, Option } from '../../shared/types';
+import { useClassifiedsStore } from '../stores/useClassifiedsStore';
 import { ChevronLeft } from 'lucide-react';
 
 export function ClassifiedsPage() {
     const db = useDatabase();
-    const [selectedFactionId, setSelectedFactionId] = useState<number | null>(null);
-    const [selectedClassified, setSelectedClassified] = useState<number | null>(null);
-    const [selectedUnitISC, setSelectedUnitISC] = useState<string | null>(null);
-    const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
+    const {
+        selectedFactionId, selectedClassified, selectedUnitISC, selectedProfileId,
+        setSelectedFactionId, setSelectedClassified, setSelectedUnitISC, setSelectedProfileId,
+        resetAll,
+    } = useClassifiedsStore();
 
     // Filter units for the selected faction
     const factionUnits = useMemo(() => {
@@ -101,12 +103,7 @@ export function ClassifiedsPage() {
             {/* Header */}
             <div className="search-header flex-row items-center border-b border-border pb-4 mb-6">
                 <button
-                    onClick={() => {
-                        setSelectedFactionId(null);
-                        setSelectedUnitISC(null);
-                        setSelectedClassified(null);
-                        setSelectedProfileId(null);
-                    }}
+                    onClick={() => resetAll()}
                     className="mr-4 p-2 bg-bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary rounded-xl transition-colors"
                     title="Change Faction"
                 >

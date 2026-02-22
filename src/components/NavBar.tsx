@@ -1,9 +1,16 @@
 import { NavLink } from 'react-router-dom';
-import { Search, Users, Activity, Library, Layers, ClipboardList, Calculator, Target, Layout } from 'lucide-react';
+import { Search, Users, Activity, Library, Layers, ClipboardList, Calculator, Target, Layout, Trash2 } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
+import { clearAllDataAndReload } from '../utils/clearData';
 
 export function NavBar() {
     const db = useDatabase();
+
+    const handleClearData = () => {
+        if (window.confirm('Clear all saved data? This will reset your army lists, calculator settings, and workspace layout. The page will reload.')) {
+            clearAllDataAndReload();
+        }
+    };
 
     return (
         <header className="app-header">
@@ -53,6 +60,11 @@ export function NavBar() {
                         <Layout size={18} />
                         <span>Workspace</span>
                     </NavLink>
+
+                    <div className="nav-divider" />
+                    <button className="nav-link clear-data-btn" onClick={handleClearData} title="Clear all saved data">
+                        <Trash2 size={16} />
+                    </button>
                 </nav>
             </div>
             <style>{`
@@ -85,6 +97,25 @@ export function NavBar() {
                 .nav-link.disabled {
                     opacity: 0.5;
                     cursor: not-allowed;
+                }
+                .nav-divider {
+                    width: 1px;
+                    height: 20px;
+                    background: var(--border);
+                    margin: 0 0.25rem;
+                    opacity: 0.5;
+                }
+                .clear-data-btn {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    opacity: 0.5;
+                    transition: all 0.2s ease;
+                }
+                .clear-data-btn:hover {
+                    opacity: 1;
+                    color: var(--error, #ef4444) !important;
+                    background: rgba(239, 68, 68, 0.1) !important;
                 }
             `}</style>
         </header >

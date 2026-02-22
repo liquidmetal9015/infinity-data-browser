@@ -1,7 +1,7 @@
 // List Builder Page - Main component
 import { useState } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
-import { useList } from '../context/ListContext';
+import { useListStore } from '../stores/useListStore';
 import { useModal } from '../context/ModalContext';
 import {
     ListDashboard,
@@ -15,7 +15,7 @@ import './ListBuilderPage.css';
 
 export function ListBuilderPage() {
     const db = useDatabase();
-    const { state, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useList();
+    const { currentList, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useListStore();
     const { openUnitModal } = useModal();
     const [codeCopied, setCodeCopied] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
@@ -71,14 +71,14 @@ export function ListBuilderPage() {
     };
 
     const handleCopyCode = async () => {
-        if (!state.currentList) return;
+        if (!currentList) return;
 
         // Get faction info to get the slug (official format uses slug)
-        const faction = db.getFactionInfo(state.currentList.factionId);
+        const faction = db.getFactionInfo(currentList.factionId);
         const factionSlug = faction?.slug || 'unknown';
 
         const code = encodeArmyList(
-            state.currentList,
+            currentList,
             factionSlug,
             (unit) => unit.idArmy || unit.id
         );
@@ -89,12 +89,12 @@ export function ListBuilderPage() {
     };
 
     // If a list exists, show the Dashboard
-    if (state.currentList) {
+    if (currentList) {
         return (
             <div className="list-builder-page">
                 <ListHeader
-                    list={state.currentList}
-                    factionName={db.getFactionName(state.currentList.factionId)}
+                    list={currentList}
+                    factionName={db.getFactionName(currentList.factionId)}
                     codeCopied={codeCopied}
                     onPointsLimitChange={updatePointsLimit}
                     onCopyCode={handleCopyCode}
@@ -102,7 +102,7 @@ export function ListBuilderPage() {
                 />
 
                 <ListDashboard
-                    list={state.currentList}
+                    list={currentList}
                     onViewUnit={(unit: Unit) => {
                         openUnitModal(unit);
                     }}

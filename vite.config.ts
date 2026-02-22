@@ -12,6 +12,7 @@ export default defineConfig({
     setupFiles: './src/setupTests.ts',
     exclude: [
       'ai-tmp/**',
+      'e2e/**',
       'mcp-server/**',
       'node_modules/**',
     ],

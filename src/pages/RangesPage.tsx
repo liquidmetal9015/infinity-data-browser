@@ -11,15 +11,17 @@ import {
     RANGE_BANDS,
     type BestWeaponInfo
 } from '../components/RangesPage';
+import { useRangesStore } from '../stores/useRangesStore';
 import type { ParsedWeapon } from '../../shared/types';
 import './RangesPage.css';
 
 export function RangesPage() {
     const db = useDatabase();
     const { openUnitModal } = useModal();
-    const [weaponSearch, setWeaponSearch] = useState('');
+    const { selectedWeaponIds, weaponSearch, toggleWeapon, setSelectedWeaponIds, setWeaponSearch } = useRangesStore();
     const [unitSearch, setUnitSearch] = useState('');
-    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    // Derive Set from stored array for compatibility with downstream components
+    const selectedIds = useMemo(() => new Set(selectedWeaponIds), [selectedWeaponIds]);
     const containerRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -80,7 +82,7 @@ export function RangesPage() {
         if (unit) {
             const relevantWeaponIds = Array.from(unit.allWeaponIds)
                 .filter(id => allWeapons.some(w => w.id === id));
-            setSelectedIds(new Set(relevantWeaponIds));
+            setSelectedWeaponIds(relevantWeaponIds);
             setUnitSearch('');
         }
     };
@@ -212,15 +214,7 @@ export function RangesPage() {
         });
     }, [selectedWeapons, containerWidth]);
 
-    const toggleWeapon = (id: number) => {
-        const next = new Set(selectedIds);
-        if (next.has(id)) {
-            next.delete(id);
-        } else {
-            next.add(id);
-        }
-        setSelectedIds(next);
-    };
+    // toggleWeapon is now provided by the store
 
     return (
         <div className="page-container ranges-page">

@@ -91,7 +91,7 @@ export abstract class BaseDatabase {
     async init(): Promise<void> {
         if (this.metadata) return; // Already initialized
 
-        console.error("Initializing Database...");
+        console.log("Initializing Database...");
 
         // 1. Load Metadata
         try {
@@ -149,7 +149,7 @@ export abstract class BaseDatabase {
 
         // Convert deduped map to array
         this.units = Array.from(this.unitsByISC.values());
-        console.error(`Database loaded. ${this.units.length} unique units. ${this.loadedSlugs.length} factions with data.`);
+        console.log(`Database loaded. ${this.units.length} unique units. ${this.loadedSlugs.length} factions with data.`);
     }
 
     // ========================================================================

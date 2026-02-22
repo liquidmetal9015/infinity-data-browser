@@ -1,6 +1,8 @@
 // Dice Calculator Page - Main component
+// State is managed by useDiceCalcStore (Zustand) for persistence
+// Computation logic from useDiceCalculator hook
 import { useState } from 'react';
-import { useDiceCalculator } from '../hooks/useDiceCalculator';
+import { useDiceCalculator, type PlayerParams } from '../hooks/useDiceCalculator';
 import { Swords, Shield, ArrowLeftRight, Zap } from 'lucide-react';
 import {
     CompactNumber,
@@ -15,16 +17,41 @@ import {
 } from '../components/DiceCalculator';
 import type { WeaponProfile } from '../components/DiceCalculator/types';
 import type { ParsedWeapon, Unit, Profile, Option } from '../../shared/types';
+import { useDiceCalcStore } from '../stores/useDiceCalcStore';
 import './DiceCalculatorPage.css';
 
 export function DiceCalculatorPage() {
-    const [mode, setMode] = useState<'freeform' | 'simulator'>('freeform');
+    // Persisted state from Zustand store
     const {
-        distance, setDistance,
-        activeParams, reactiveParams,
-        setActiveParams, setReactiveParams,
-        results
-    } = useDiceCalculator(mode);
+        mode, distance, activeParams, reactiveParams,
+        setMode, setDistance, setActiveParams, setReactiveParams,
+        updateActive, updateReactive, swap,
+    } = useDiceCalcStore();
+
+    // Non-persisted unit selection state (large objects, not serializable)
+    const [activeUnit, setActiveUnit] = useState<Unit | undefined>();
+    const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
+    const [activeOption, setActiveOption] = useState<Option | undefined>();
+    const [reactiveUnit, setReactiveUnit] = useState<Unit | undefined>();
+    const [reactiveProfile, setReactiveProfile] = useState<Profile | undefined>();
+    const [reactiveOption, setReactiveOption] = useState<Option | undefined>();
+
+    // Build full PlayerParams by merging store params with local unit objects
+    const fullActiveParams: PlayerParams = {
+        ...activeParams,
+        selectedUnit: activeUnit,
+        selectedProfile: activeProfile,
+        selectedOption: activeOption,
+    };
+    const fullReactiveParams: PlayerParams = {
+        ...reactiveParams,
+        selectedUnit: reactiveUnit,
+        selectedProfile: reactiveProfile,
+        selectedOption: reactiveOption,
+    };
+
+    // Computation (pure, from hook)
+    const results = useDiceCalculator(mode, fullActiveParams, fullReactiveParams, distance);
 
     const RANGE_BANDS = [
         { label: '0-8"', value: 8 },
@@ -34,22 +61,6 @@ export function DiceCalculatorPage() {
         { label: '32-48"', value: 48 },
         { label: '48-96"', value: 96 }
     ];
-
-    const updateActive = (field: string, val: any) => {
-        const resetWeapon = ['sv', 'damage', 'armor', 'ammo', 'burst', 'ap', 'continuous', 'weaponBands'].includes(field);
-        setActiveParams({ ...activeParams, [field]: val, ...(resetWeapon && { selectedWeapon: undefined }) });
-    };
-
-    const updateReactive = (field: string, val: any) => {
-        const resetWeapon = ['sv', 'damage', 'armor', 'ammo', 'burst', 'ap', 'continuous', 'weaponBands'].includes(field);
-        setReactiveParams({ ...reactiveParams, [field]: val, ...(resetWeapon && { selectedWeapon: undefined }) });
-    };
-
-    const swap = () => {
-        const temp = { ...activeParams };
-        setActiveParams({ ...reactiveParams });
-        setReactiveParams({ ...temp });
-    };
 
     const parseAmmo = (ammunition: string) => {
         const upper = ammunition.toUpperCase();
@@ -79,20 +90,20 @@ export function DiceCalculatorPage() {
     };
 
     const handleActiveUnitSelect = (unit: Unit) => {
+        setActiveUnit(unit);
+        setActiveProfile(undefined);
+        setActiveOption(undefined);
         setActiveParams({
             ...activeParams,
-            selectedUnit: unit,
-            selectedProfile: undefined,
-            selectedOption: undefined,
             selectedWeapon: undefined
         });
     };
 
     const handleActiveProfileSelect = (profile: Profile, option: Option) => {
+        setActiveProfile(profile);
+        setActiveOption(option);
         setActiveParams({
             ...activeParams,
-            selectedProfile: profile,
-            selectedOption: option,
             sv: profile.bs,
             armor: profile.arm,
             bts: profile.bts,
@@ -114,20 +125,20 @@ export function DiceCalculatorPage() {
     };
 
     const handleReactiveUnitSelect = (unit: Unit) => {
+        setReactiveUnit(unit);
+        setReactiveProfile(undefined);
+        setReactiveOption(undefined);
         setReactiveParams({
             ...reactiveParams,
-            selectedUnit: unit,
-            selectedProfile: undefined,
-            selectedOption: undefined,
             selectedWeapon: undefined
         });
     };
 
     const handleReactiveProfileSelect = (profile: Profile, option: Option) => {
+        setReactiveProfile(profile);
+        setReactiveOption(option);
         setReactiveParams({
             ...reactiveParams,
-            selectedProfile: profile,
-            selectedOption: option,
             sv: profile.bs,
             armor: profile.arm,
             bts: profile.bts,
@@ -211,9 +222,9 @@ export function DiceCalculatorPage() {
                                     placeholder="Search Active Unit..."
                                     onClear={() => handleActiveUnitSelect(undefined as any)}
                                 />
-                                {activeParams.selectedUnit && (
+                                {activeUnit && (
                                     <CalculatorProfileSelector
-                                        unit={activeParams.selectedUnit}
+                                        unit={activeUnit}
                                         onSelect={handleActiveProfileSelect}
                                     />
                                 )}
@@ -223,8 +234,8 @@ export function DiceCalculatorPage() {
                                 <WeaponSelector
                                     onSelect={applyWeaponToActive}
                                     placeholder="Execute Attack With..."
-                                    filterOptionIds={activeParams.selectedOption?.weapons.map((w: any) => w.id)}
-                                    disabled={!activeParams.selectedProfile}
+                                    filterOptionIds={activeOption?.weapons.map((w: any) => w.id)}
+                                    disabled={!activeProfile}
                                 />
                                 {activeParams.selectedWeapon && (
                                     <div className="selected-weapon-indicator">
@@ -290,9 +301,9 @@ export function DiceCalculatorPage() {
                                     placeholder="Search Reactive Unit..."
                                     onClear={() => handleReactiveUnitSelect(undefined as any)}
                                 />
-                                {reactiveParams.selectedUnit && (
+                                {reactiveUnit && (
                                     <CalculatorProfileSelector
-                                        unit={reactiveParams.selectedUnit}
+                                        unit={reactiveUnit}
                                         onSelect={handleReactiveProfileSelect}
                                     />
                                 )}
@@ -302,8 +313,8 @@ export function DiceCalculatorPage() {
                                 <WeaponSelector
                                     onSelect={applyWeaponToReactive}
                                     placeholder="Execute ARO With..."
-                                    filterOptionIds={reactiveParams.selectedOption?.weapons.map((w: any) => w.id)}
-                                    disabled={!reactiveParams.selectedProfile}
+                                    filterOptionIds={reactiveOption?.weapons.map((w: any) => w.id)}
+                                    disabled={!reactiveProfile}
                                 />
                                 {reactiveParams.selectedWeapon && (
                                     <div className="selected-weapon-indicator">

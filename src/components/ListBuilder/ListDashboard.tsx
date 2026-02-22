@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useDatabase } from '../../context/DatabaseContext';
-import { useList } from '../../context/ListContext';
+import { useListStore } from '../../stores/useListStore';
 import { UnitStatsModal } from '../UnitStatsModal';
 import { calculateListPoints, calculateListSWC, type ArmyList, type ListUnit } from '../../types/list';
 import { Plus, Trash2, Eye, Search, GripVertical } from 'lucide-react';
@@ -104,7 +104,7 @@ function DragOverlayUnit({ listUnit }: { listUnit: ListUnit }) {
 
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
-    const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup } = useList();
+    const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup } = useListStore();
     const [showUnitSelector, setShowUnitSelector] = useState(false);
     const [targetGroupIndex, setTargetGroupIndex] = useState(0);
     const [rosterSearch, setRosterSearch] = useState('');
