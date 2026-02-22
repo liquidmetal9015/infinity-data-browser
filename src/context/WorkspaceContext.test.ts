@@ -153,10 +153,36 @@ describe('workspaceReducer', () => {
                     isMinimized: false,
                 }],
                 nextZIndex: 2,
+                layoutMode: 'multi-window',
+                maximizedWindowId: null,
             };
 
             const result = workspaceReducer(initialState, { type: 'RESTORE_STATE', state: savedState });
             expect(result).toEqual(savedState);
+        });
+    });
+
+    describe('SET_LAYOUT_MODE', () => {
+        it('updates layout mode and clears maximized window if switching to multi-window', () => {
+            let state = workspaceReducer(initialState, { type: 'SET_LAYOUT_MODE', mode: 'tabbed' });
+            expect(state.layoutMode).toBe('tabbed');
+
+            state = { ...state, maximizedWindowId: 'win_1' };
+            state = workspaceReducer(state, { type: 'SET_LAYOUT_MODE', mode: 'multi-window' });
+            expect(state.layoutMode).toBe('multi-window');
+            expect(state.maximizedWindowId).toBeNull();
+        });
+    });
+
+    describe('TOGGLE_MAXIMIZE', () => {
+        it('switches to tabbed mode and maximizes if currently in multi-window', () => {
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            const windowId = state.windows[0].id;
+
+            state = workspaceReducer(state, { type: 'TOGGLE_MAXIMIZE', windowId });
+            expect(state.layoutMode).toBe('tabbed');
+            expect(state.maximizedWindowId).toBe(windowId);
+            expect(state.windows[0].isMinimized).toBe(false);
         });
     });
 

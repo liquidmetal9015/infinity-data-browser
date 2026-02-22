@@ -27,6 +27,20 @@
     display: none;
 }
 
+.window-frame.maximized {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.window-frame.hidden-tab {
+    display: none !important;
+}
+
 /* Title Bar */
 .window-titlebar {
     display: flex;
@@ -42,6 +56,14 @@
 
 .window-titlebar:active {
     cursor: grabbing;
+}
+
+.window-frame.maximized .window-titlebar {
+    cursor: default;
+}
+
+.window-frame.maximized .window-titlebar:active {
+    cursor: default;
 }
 
 .window-titlebar-icon {
@@ -123,4 +145,8 @@
 
 .window-resize-handle:hover::after {
     opacity: 0.8;
+}
+
+.window-frame.maximized .window-resize-handle {
+    display: none;
 }

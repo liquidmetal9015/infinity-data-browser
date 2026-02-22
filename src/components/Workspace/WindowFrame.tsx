@@ -1,6 +1,6 @@
 // WindowFrame - Draggable, resizable window with title bar controls
 import { useRef, useCallback, type ReactNode } from 'react';
-import { Minus, X } from 'lucide-react';
+import { Minus, X, Maximize, Minimize } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import type { WindowState } from '../../types/workspace';
 import { MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../../types/workspace';
@@ -14,14 +14,20 @@ interface WindowFrameProps {
 }
 
 export function WindowFrame({ window: win, icon, isFocused, children }: WindowFrameProps) {
-    const { focusWindow, minimizeWindow, closeWindow, moveWindow, resizeWindow } = useWorkspace();
+    const { state, focusWindow, minimizeWindow, closeWindow, moveWindow, resizeWindow, toggleMaximize } = useWorkspace();
     const frameRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
     const isResizing = useRef(false);
     const dragOffset = useRef({ x: 0, y: 0 });
 
+    const isTabbed = state.layoutMode === 'tabbed';
+    const isMaximized = isTabbed && state.maximizedWindowId === win.id;
+    const isHidden = isTabbed && !isMaximized;
+
     // ── Drag logic ──────────────────────────────────────────────────────
     const handleDragStart = useCallback((e: React.MouseEvent) => {
+        if (isMaximized) return; // Disable drag in maximized mode
+
         // Don't drag if clicking on a button
         if ((e.target as HTMLElement).closest('button')) return;
 
@@ -86,7 +92,7 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
     return (
         <div
             ref={frameRef}
-            className={`window-frame ${isFocused ? 'focused' : ''} ${win.isMinimized ? 'minimized' : ''}`}
+            className={`window-frame ${isFocused ? 'focused' : ''} ${win.isMinimized ? 'minimized' : ''} ${isMaximized ? 'maximized' : ''} ${isHidden ? 'hidden-tab' : ''}`}
             style={{
                 left: win.position.x,
                 top: win.position.y,
@@ -107,6 +113,13 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
                         title="Minimize"
                     >
                         <Minus size={14} />
+                    </button>
+                    <button
+                        className="window-control-btn maximize"
+                        onClick={(e) => { e.stopPropagation(); toggleMaximize(win.id); }}
+                        title={isMaximized ? "Restore" : "Maximize"}
+                    >
+                        {isMaximized ? <Minimize size={14} /> : <Maximize size={14} />}
                     </button>
                     <button
                         className="window-control-btn close"

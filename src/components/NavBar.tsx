@@ -1,10 +1,11 @@
-import { NavLink } from 'react-router-dom';
-import { Search, Users, Activity, Library, Layers, ClipboardList, Calculator, Target, Layout, Trash2 } from 'lucide-react';
+import { Trash2, AppWindow, Maximize } from 'lucide-react';
 import { useDatabase } from '../context/DatabaseContext';
+import { useWorkspace } from '../context/WorkspaceContext';
 import { clearAllDataAndReload } from '../utils/clearData';
 
 export function NavBar() {
     const db = useDatabase();
+    const { state, setLayoutMode } = useWorkspace();
 
     const handleClearData = () => {
         if (window.confirm('Clear all saved data? This will reset your army lists, calculator settings, and workspace layout. The page will reload.')) {
@@ -19,53 +20,20 @@ export function NavBar() {
                     <h1 className="app-title">Infinity Explorer</h1>
                     <span className="unit-count">{db.units.length} units</span>
                 </div>
-                <nav className="main-nav">
-                    <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Search size={18} />
-                        <span>Search</span>
-                    </NavLink>
-                    <NavLink to="/reference" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Library size={18} />
-                        <span>Reference</span>
-                    </NavLink>
-                    <NavLink to="/ranges" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Activity size={18} />
-                        <span>Weapons</span>
-                    </NavLink>
-                    <NavLink to="/compare" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Users size={18} />
-                        <span>Compare</span>
-                    </NavLink>
-                    <NavLink to="/fireteams" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Layers size={18} />
-                        <span>Fireteams</span>
-                    </NavLink>
-                    <NavLink to="/units" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Users size={18} />
-                        <span>Units</span>
-                    </NavLink>
-                    <NavLink to="/builder" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <ClipboardList size={18} />
-                        <span>Builder</span>
-                    </NavLink>
-                    <NavLink to="/calculator" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Calculator size={18} />
-                        <span>Calculator</span>
-                    </NavLink>
-                    <NavLink to="/classifieds" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Target size={18} />
-                        <span>Classifieds</span>
-                    </NavLink>
-                    <NavLink to="/workspace" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                        <Layout size={18} />
-                        <span>Workspace</span>
-                    </NavLink>
-
+                <div className="main-nav">
+                    <button
+                        className="nav-link layout-toggle-btn"
+                        onClick={() => setLayoutMode(state.layoutMode === 'tabbed' ? 'multi-window' : 'tabbed')}
+                        title={`Switch to ${state.layoutMode === 'tabbed' ? 'Multi-Window' : 'Tabbed'} Mode`}
+                    >
+                        {state.layoutMode === 'tabbed' ? <Maximize size={16} /> : <AppWindow size={16} />}
+                        <span className="layout-label">{state.layoutMode === 'tabbed' ? 'Maximized' : 'Multi-Window'}</span>
+                    </button>
                     <div className="nav-divider" />
                     <button className="nav-link clear-data-btn" onClick={handleClearData} title="Clear all saved data">
                         <Trash2 size={16} />
                     </button>
-                </nav>
+                </div>
             </div>
             <style>{`
                 .main-nav {
@@ -90,20 +58,9 @@ export function NavBar() {
                     color: var(--color-primary);
                     background: rgba(var(--color-primary-rgb), 0.1);
                 }
-                .nav-link.active {
-                    color: var(--color-primary);
-                    background: rgba(var(--color-primary-rgb), 0.15);
-                }
                 .nav-link.disabled {
                     opacity: 0.5;
                     cursor: not-allowed;
-                }
-                .nav-divider {
-                    width: 1px;
-                    height: 20px;
-                    background: var(--border);
-                    margin: 0 0.25rem;
-                    opacity: 0.5;
                 }
                 .clear-data-btn {
                     background: none;
@@ -116,6 +73,21 @@ export function NavBar() {
                     opacity: 1;
                     color: var(--error, #ef4444) !important;
                     background: rgba(239, 68, 68, 0.1) !important;
+                }
+                .nav-divider {
+                    width: 1px;
+                    height: 20px;
+                    background: var(--border);
+                    margin: 0 0.25rem;
+                    opacity: 0.5;
+                }
+                .layout-label {
+                    display: none;
+                }
+                @media (min-width: 640px) {
+                    .layout-label {
+                        display: inline;
+                    }
                 }
             `}</style>
         </header >

@@ -42,6 +42,8 @@ function getCascadePosition(existingWindows: WindowState[]): WindowPosition {
 export const initialState: WorkspaceState = {
     windows: [],
     nextZIndex: 1,
+    layoutMode: typeof window !== 'undefined' && window.innerWidth < 768 ? 'tabbed' : 'multi-window',
+    maximizedWindowId: null,
 };
 
 export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
@@ -58,32 +60,47 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                 props: action.props,
             };
             return {
+                ...state,
                 windows: [...state.windows, newWindow],
                 nextZIndex: state.nextZIndex + 1,
+                maximizedWindowId: state.layoutMode === 'tabbed' ? newWindow.id : state.maximizedWindowId,
             };
         }
 
         case 'CLOSE_WINDOW': {
+            const newWindows = state.windows.filter(w => w.id !== action.windowId);
+            let nextMaximized = state.maximizedWindowId;
+            if (state.maximizedWindowId === action.windowId) {
+                if (newWindows.length > 0) {
+                    const topWindow = [...newWindows].sort((a, b) => b.zIndex - a.zIndex)[0];
+                    nextMaximized = topWindow.id;
+                } else {
+                    nextMaximized = null;
+                }
+            }
             return {
                 ...state,
-                windows: state.windows.filter(w => w.id !== action.windowId),
+                windows: newWindows,
+                maximizedWindowId: nextMaximized,
             };
         }
 
         case 'FOCUS_WINDOW': {
             const targetWindow = state.windows.find(w => w.id === action.windowId);
             if (!targetWindow) return state;
-            // Skip if already on top and not minimized
-            if (targetWindow.zIndex === state.nextZIndex - 1 && !targetWindow.isMinimized) {
+            // Skip if already on top and not minimized, unless in tabbed mode and it's not maximized
+            if (targetWindow.zIndex === state.nextZIndex - 1 && !targetWindow.isMinimized && !(state.layoutMode === 'tabbed' && state.maximizedWindowId !== action.windowId)) {
                 return state;
             }
             return {
+                ...state,
                 windows: state.windows.map(w =>
                     w.id === action.windowId
                         ? { ...w, zIndex: state.nextZIndex, isMinimized: false }
                         : w
                 ),
                 nextZIndex: state.nextZIndex + 1,
+                maximizedWindowId: state.layoutMode === 'tabbed' ? action.windowId : state.maximizedWindowId,
             };
         }
 
@@ -98,12 +115,14 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
 
         case 'RESTORE_WINDOW': {
             return {
+                ...state,
                 windows: state.windows.map(w =>
                     w.id === action.windowId
                         ? { ...w, isMinimized: false, zIndex: state.nextZIndex }
                         : w
                 ),
                 nextZIndex: state.nextZIndex + 1,
+                maximizedWindowId: state.layoutMode === 'tabbed' ? action.windowId : state.maximizedWindowId,
             };
         }
 
@@ -127,6 +146,49 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
 
         case 'RESTORE_STATE': {
             return action.state;
+        }
+
+        case 'SET_LAYOUT_MODE': {
+            return {
+                ...state,
+                layoutMode: action.mode,
+                maximizedWindowId: action.mode === 'multi-window' ? null : state.maximizedWindowId,
+            };
+        }
+
+        case 'TOGGLE_MAXIMIZE': {
+            if (state.layoutMode === 'multi-window') {
+                return {
+                    ...state,
+                    layoutMode: 'tabbed',
+                    maximizedWindowId: action.windowId,
+                    windows: state.windows.map(w =>
+                        w.id === action.windowId
+                            ? { ...w, zIndex: state.nextZIndex, isMinimized: false }
+                            : w
+                    ),
+                    nextZIndex: state.nextZIndex + 1,
+                };
+            } else {
+                if (state.maximizedWindowId === action.windowId) {
+                    return {
+                        ...state,
+                        layoutMode: 'multi-window',
+                        maximizedWindowId: null,
+                    };
+                } else {
+                    return {
+                        ...state,
+                        maximizedWindowId: action.windowId,
+                        windows: state.windows.map(w =>
+                            w.id === action.windowId
+                                ? { ...w, zIndex: state.nextZIndex, isMinimized: false }
+                                : w
+                        ),
+                        nextZIndex: state.nextZIndex + 1,
+                    };
+                }
+            }
         }
 
         default:
@@ -153,7 +215,12 @@ function loadFromStorage(): WorkspaceState | null {
         const parsed = JSON.parse(raw);
         // Basic shape validation
         if (parsed && Array.isArray(parsed.windows) && typeof parsed.nextZIndex === 'number') {
-            return parsed as WorkspaceState;
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+            return {
+                ...parsed,
+                layoutMode: parsed.layoutMode || (isMobile ? 'tabbed' : 'multi-window'),
+                maximizedWindowId: parsed.maximizedWindowId ?? null,
+            } as WorkspaceState;
         }
     } catch {
         // Silently fail
@@ -175,6 +242,8 @@ interface WorkspaceContextValue {
     restoreWindow: (windowId: string) => void;
     moveWindow: (windowId: string, position: WindowPosition) => void;
     resizeWindow: (windowId: string, size: WindowSize) => void;
+    setLayoutMode: (mode: 'multi-window' | 'tabbed') => void;
+    toggleMaximize: (windowId: string) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -221,6 +290,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'RESIZE_WINDOW', windowId, size });
     }, []);
 
+    const setLayoutMode = useCallback((mode: 'multi-window' | 'tabbed') => {
+        dispatch({ type: 'SET_LAYOUT_MODE', mode });
+    }, []);
+
+    const toggleMaximize = useCallback((windowId: string) => {
+        dispatch({ type: 'TOGGLE_MAXIMIZE', windowId });
+    }, []);
+
     return (
         <WorkspaceContext.Provider value={{
             state,
@@ -232,6 +309,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             restoreWindow,
             moveWindow,
             resizeWindow,
+            setLayoutMode,
+            toggleMaximize,
         }}>
             {children}
         </WorkspaceContext.Provider>

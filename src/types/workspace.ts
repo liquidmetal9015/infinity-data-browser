@@ -35,6 +35,8 @@ export interface WindowState {
 export interface WorkspaceState {
     windows: WindowState[];
     nextZIndex: number;
+    layoutMode: 'multi-window' | 'tabbed';
+    maximizedWindowId: string | null;
 }
 
 export type WorkspaceAction =
@@ -45,7 +47,9 @@ export type WorkspaceAction =
     | { type: 'RESTORE_WINDOW'; windowId: string }
     | { type: 'MOVE_WINDOW'; windowId: string; position: WindowPosition }
     | { type: 'RESIZE_WINDOW'; windowId: string; size: WindowSize }
-    | { type: 'RESTORE_STATE'; state: WorkspaceState };
+    | { type: 'RESTORE_STATE'; state: WorkspaceState }
+    | { type: 'SET_LAYOUT_MODE'; mode: 'multi-window' | 'tabbed' }
+    | { type: 'TOGGLE_MAXIMIZE'; windowId: string };
 
 // Default sizes for each widget type
 export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
