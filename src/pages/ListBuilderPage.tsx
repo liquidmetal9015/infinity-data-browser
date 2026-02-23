@@ -123,7 +123,7 @@ export function ListBuilderPage() {
                         <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Select a faction to start building a new roster manually.</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'stretch' }}>
                         <div style={{ flex: 1 }}>
                             <CompactFactionSelector
                                 groupedFactions={groupedFactions}
@@ -132,7 +132,7 @@ export function ListBuilderPage() {
                             />
                         </div>
                         <button
-                            className="px-8 py-4 bg-[#6366f1] hover:bg-[#818cf8] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center whitespace-nowrap h-[4.5rem]"
+                            className="px-8 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center whitespace-nowrap"
                             onClick={handleCreateList}
                             disabled={!globalFactionId}
                         >
@@ -164,7 +164,7 @@ export function ListBuilderPage() {
                         />
                         {importError && <div style={{ color: 'var(--error-color)', fontSize: '0.9rem', textAlign: 'center' }}>{importError}</div>}
                         <button
-                            className="px-8 py-4 bg-[#18181b] hover:bg-[#1f1f23] border border-[#ffffff14] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg w-full flex items-center justify-center whitespace-nowrap mt-4 h-[4.5rem]"
+                            className="px-8 py-4 bg-[#18181b] hover:bg-[#1f1f23] border border-[#ffffff14] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg w-full flex items-center justify-center whitespace-nowrap mt-4"
                             onClick={handleImportCode}
                             disabled={!importCode.trim()}
                         >

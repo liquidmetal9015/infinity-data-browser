@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { QueryBuilder } from '../components/QueryBuilder'
+import { UnifiedSearchBar } from '../components/shared/UnifiedSearchBar'
 import { FilterBar } from '../components/FilterBar'
 import { FactionView } from '../components/FactionView'
 import { BubbleChart } from '../components/BubbleChart'
 import { ExpandableUnitCard } from '../components/shared/ExpandableUnitCard'
-import { LayoutGrid, List, Circle, Search as SearchIcon, ChevronDown, ChevronUp } from 'lucide-react'
+import { LayoutGrid, List, Circle } from 'lucide-react'
 import { useDatabase } from '../context/DatabaseContext'
 import { useUnitSearch } from '../hooks/useUnitSearch'
 
@@ -14,7 +14,7 @@ type ViewMode = 'list' | 'faction' | 'bubble';
 export function SearchPage() {
     const db = useDatabase();
     const [viewMode, setViewMode] = useState<ViewMode>('list');
-    const [showAdvanced, setShowAdvanced] = useState(false);
+
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
     // Use the custom hook for search logic
@@ -50,43 +50,17 @@ export function SearchPage() {
     return (
         <div className="search-page-container">
             <section className="search-section">
-                {/* Global Search Bar */}
+                {/* Unified Search Bar */}
                 <div className="global-search-container max-w-4xl mx-auto mb-6">
-                    <div className="relative">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Global Search: unit names, weapons, skills, equipment..."
-                            value={textQuery}
-                            onChange={(e) => setTextQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-[#0d1117] border border-white/10 rounded-xl text-lg text-white font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-lg"
+                    <div className="p-4 bg-black/20 border border-white/5 rounded-xl">
+                        <UnifiedSearchBar
+                            query={query}
+                            setQuery={setQuery}
+                            textQuery={textQuery}
+                            setTextQuery={setTextQuery}
+                            placeholder="Search names, profiles, weapons, skills, or equipment..."
                         />
                     </div>
-                </div>
-
-                <div className="max-w-4xl mx-auto flex flex-col gap-4">
-                    <button
-                        onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mx-auto text-sm font-medium"
-                    >
-                        {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        Advanced Rule Builder {query.filters.length > 0 && <span className="text-blue-400">({query.filters.length} active)</span>}
-                    </button>
-
-                    <AnimatePresence>
-                        {showAdvanced && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="p-4 bg-black/20 border border-white/5 rounded-xl mb-6">
-                                    <QueryBuilder query={query} setQuery={setQuery} />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
                 </div>
 
                 {/* Filters */}

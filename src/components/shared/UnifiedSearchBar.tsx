@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import { useDatabase } from '../context/DatabaseContext';
-import type { SearchSuggestion } from '../types';
+import { useDatabase } from '../../context/DatabaseContext';
+import type { SearchSuggestion } from '../../types';
 
 export interface ItemFilter {
     id: string;
@@ -27,9 +27,13 @@ export interface QueryState {
     operator: 'or' | 'and';
 }
 
-interface QueryBuilderProps {
+interface UnifiedSearchBarProps {
     query: QueryState;
     setQuery: React.Dispatch<React.SetStateAction<QueryState>>;
+    textQuery: string;
+    setTextQuery: (value: string) => void;
+    placeholder?: string;
+    className?: string;
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -49,8 +53,14 @@ const TYPE_LABELS: Record<string, string> = {
 const STAT_OPTIONS = ['MOV', 'MOV-1', 'MOV-2', 'CC', 'BS', 'PH', 'WIP', 'ARM', 'BTS', 'W', 'S'];
 const OPERATOR_OPTIONS = ['>', '>=', '=', '<=', '<'];
 
-export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) => {
-    const [inputValue, setInputValue] = useState('');
+export const UnifiedSearchBar: React.FC<UnifiedSearchBarProps> = ({
+    query,
+    setQuery,
+    textQuery,
+    setTextQuery,
+    placeholder = "Search units, weapons, skills, or equipment...",
+    className = ""
+}) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
@@ -65,15 +75,14 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
 
     const db = useDatabase();
 
-    // Generate suggestions based on input using useMemo (not useEffect)
+    // Generate suggestions based on input using useMemo
     const suggestions = useMemo<SearchSuggestion[]>(() => {
-        if (!inputValue.trim()) {
+        if (!textQuery.trim()) {
             return [];
         }
-        const matches = db.getSuggestions(inputValue);
+        const matches = db.getSuggestions(textQuery);
         return matches.slice(0, 35);
-    }, [inputValue, db]);
-
+    }, [textQuery, db]);
 
     // Handle clicking outside to close dropdown
     useEffect(() => {
@@ -101,7 +110,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
             filters: [...prev.filters, newFilter]
         }));
 
-        setInputValue('');
+        setTextQuery('');
         setShowSuggestions(false);
         inputRef.current?.focus();
     };
@@ -142,7 +151,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
 
     const clearAll = () => {
         setQuery({ filters: [], operator: 'or' });
-        setInputValue('');
+        setTextQuery('');
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -155,11 +164,11 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
             e.preventDefault();
             setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
         } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+            if (showSuggestions && selectedIndex >= 0 && suggestions[selectedIndex]) {
+                e.preventDefault();
                 addFilter(suggestions[selectedIndex]);
-            } else if (suggestions.length > 0) {
-                addFilter(suggestions[0]);
+            } else {
+                setShowSuggestions(false);
             }
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);
@@ -167,7 +176,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
     };
 
     return (
-        <div className="query-builder" ref={wrapperRef}>
+        <div className={`query-builder ${className}`} ref={wrapperRef}>
             {/* Active Filters */}
             {query.filters.length > 0 && (
                 <div className="active-filters">
@@ -252,21 +261,29 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
                         <input
                             ref={inputRef}
                             type="text"
-                            value={inputValue}
+                            value={textQuery}
                             onChange={(e) => {
-                                setInputValue(e.target.value);
+                                setTextQuery(e.target.value);
                                 setShowSuggestions(true);
+                                setSelectedIndex(-1);
                             }}
-                            onFocus={() => setShowSuggestions(true)}
+                            onFocus={() => {
+                                if (textQuery.trim()) setShowSuggestions(true);
+                            }}
                             onKeyDown={handleKeyDown}
-                            placeholder="Search weapons, skills, or equipment..."
+                            placeholder={placeholder}
                             className="query-input"
+                            style={{
+                                padding: '12px 14px 12px 36px',
+                                fontSize: '1rem',
+                                backgroundColor: 'var(--bg-secondary)'
+                            }}
                         />
-                        {inputValue && (
+                        {textQuery && (
                             <button
                                 className="input-clear"
                                 onClick={() => {
-                                    setInputValue('');
+                                    setTextQuery('');
                                     inputRef.current?.focus();
                                 }}
                             >
@@ -299,15 +316,6 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({ query, setQuery }) =
                                         )}
                                     </button>
                                 ))}
-                            </div>
-                        )}
-
-                        {/* No results message */}
-                        {showSuggestions && inputValue.trim() && suggestions.length === 0 && (
-                            <div className="suggestions-dropdown">
-                                <div className="no-suggestions">
-                                    No matching items found
-                                </div>
                             </div>
                         )}
                     </div>

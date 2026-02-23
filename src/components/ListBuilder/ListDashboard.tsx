@@ -20,11 +20,13 @@ import { CSS } from '@dnd-kit/utilities';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useListStore } from '../../stores/useListStore';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '../../types/list';
-import { Plus, Trash2, Eye, Search, GripVertical, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Eye, GripVertical, Settings2 } from 'lucide-react';
 import type { Unit } from '../../types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { OrderIcon } from '../shared/OrderIcon';
 import { countGroupOrders, getProfileOrders } from '../../utils/orderUtils';
+import { useUnitSearch } from '../../hooks/useUnitSearch';
+import { UnifiedSearchBar } from '../shared/UnifiedSearchBar';
 
 interface ListDashboardProps {
     list: ArmyList;
@@ -119,7 +121,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
 
     const [targetGroupIndex, setTargetGroupIndex] = useState(0);
-    const [rosterSearch, setRosterSearch] = useState('');
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState<ListUnit | null>(null);
 
@@ -128,20 +129,28 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    // Get roster for this faction
+    // Use the custom hook for search logic
+    const {
+        query: rosterQuery,
+        setQuery: setRosterQuery,
+        textQuery: rosterTextQuery,
+        setTextQuery: setRosterTextQuery,
+        filteredUnits: baseFilteredRoster,
+        setFilters
+    } = useUnitSearch(db, false);
+
+    // Apply faction filter
+    useMemo(() => {
+        setFilters({ factions: [list.factionId] });
+    }, [list.factionId, setFilters]);
+
+    // Use the baseFilteredRoster directly
+    const filteredRoster = baseFilteredRoster;
+
+    // Kept factionUnits for count
     const factionUnits = useMemo(() => {
         return db.units.filter(unit => unit.factions.includes(list.factionId));
     }, [db.units, list.factionId]);
-
-    // Filter roster by search
-    const filteredRoster = useMemo(() => {
-        if (!rosterSearch.trim()) return factionUnits;
-        const q = rosterSearch.toLowerCase();
-        return factionUnits.filter(unit =>
-            unit.isc.toLowerCase().includes(q) ||
-            unit.name.toLowerCase().includes(q)
-        );
-    }, [factionUnits, rosterSearch]);
 
     const totalPoints = calculateListPoints(list);
     const totalSWC = calculateListSWC(list);
@@ -223,13 +232,14 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     </div>
                 </div>
 
-                <div className="roster-search">
-                    <Search size={16} />
-                    <input
-                        type="text"
-                        placeholder="Search units..."
-                        value={rosterSearch}
-                        onChange={e => setRosterSearch(e.target.value)}
+                <div className="roster-search border-b border-[#1e293b]">
+                    <UnifiedSearchBar
+                        query={rosterQuery}
+                        setQuery={setRosterQuery}
+                        textQuery={rosterTextQuery}
+                        setTextQuery={setRosterTextQuery}
+                        placeholder="Search roster..."
+                        className="bg-transparent"
                     />
                 </div>
 
@@ -240,6 +250,8 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                             unit={unit}
                             isExpanded={expandedUnitIds.has(unit.id)}
                             onToggle={() => toggleExpand(unit.id)}
+                            searchQuery={rosterTextQuery.trim()}
+                            activeFilters={rosterQuery.filters}
                             onAddUnit={(unit, pgId, pId, oId) => {
                                 addUnit(unit, targetGroupIndex, pgId, pId, oId);
                             }}

@@ -1,8 +1,14 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { ChevronDown, ChevronRight, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, X } from 'lucide-react';
 import type { SuperFaction, FactionInfo } from '../utils/factions';
 import { useMemo, useState } from 'react';
 import { clsx } from 'clsx';
+
+const getSafeLogo = (path?: string | null) => {
+    if (!path) return undefined;
+    if (path.startsWith('http')) return path;
+    return `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
+};
 
 interface MultiFactionSelectorProps {
     value: number[];
@@ -63,26 +69,33 @@ export function MultiFactionSelector({
                 <ListboxButton className="relative w-full cursor-default rounded-xl bg-gray-800 py-4 pl-5 pr-16 text-left border border-gray-600 shadow-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 text-base text-gray-200 transition-colors hover:bg-gray-700 hover:border-gray-500">
                     <span className="flex items-center gap-2 min-h-[2.5rem] overflow-hidden flex-wrap pr-2">
                         {selectedFactions.length > 0 ? (
-                            selectedFactions.map(f => (
-                                <span
-                                    key={f.id}
-                                    className="inline-flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 select-none"
-                                >
-                                    <img
-                                        src={`${import.meta.env.BASE_URL}${f.logo.slice(1)}`}
-                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        alt=""
-                                        className="h-5 w-5 object-contain flex-shrink-0"
-                                    />
-                                    <span className="text-sm font-semibold truncate max-w-[120px]">{f.name}</span>
+                            selectedFactions.map(f => {
+                                const logoSrc = getSafeLogo(f.logo);
+                                return (
                                     <span
-                                        className="cursor-pointer hover:text-white text-gray-400 p-0.5"
-                                        onClick={(e) => requestRemove(f.id, e)}
+                                        key={f.id}
+                                        className="inline-flex items-center gap-1.5 bg-gray-900 border border-gray-700 rounded-lg pl-2 pr-1 py-1 select-none hover:border-gray-500 transition-colors shadow-sm"
                                     >
-                                        &times;
+                                        {logoSrc && (
+                                            <img
+                                                src={logoSrc}
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                alt=""
+                                                className="h-5 w-5 object-contain flex-shrink-0 opacity-90"
+                                            />
+                                        )}
+                                        <span className="text-sm font-semibold truncate max-w-[120px] pl-0.5">{f.name}</span>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer flex items-center justify-center bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-md p-1.5 ml-1 transition-all flex-shrink-0"
+                                            onClick={(e) => requestRemove(f.id, e)}
+                                            title={`Remove ${f.name}`}
+                                        >
+                                            <X size={14} strokeWidth={2.5} />
+                                        </button>
                                     </span>
-                                </span>
-                            ))
+                                )
+                            })
                         ) : (
                             <span className="text-base text-gray-500 block truncate">{placeholder}</span>
                         )}
@@ -134,7 +147,7 @@ export function MultiFactionSelector({
                                     >
                                         {headerLogo && (
                                             <img
-                                                src={`${import.meta.env.BASE_URL}${headerLogo.slice(1)}`}
+                                                src={getSafeLogo(headerLogo)}
                                                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                 alt=""
                                                 className="h-8 w-8 object-contain flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity"
@@ -173,7 +186,7 @@ export function MultiFactionSelector({
                                                         <Check className="h-3.5 w-3.5" />
                                                     </div>
                                                     <img
-                                                        src={`${import.meta.env.BASE_URL}${vanilla.logo.slice(1)}`}
+                                                        src={getSafeLogo(vanilla.logo)}
                                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                         alt=""
                                                         className="h-9 w-9 flex-shrink-0 object-contain"
@@ -199,7 +212,7 @@ export function MultiFactionSelector({
                                                         <Check className="h-3.5 w-3.5" />
                                                     </div>
                                                     <img
-                                                        src={`${import.meta.env.BASE_URL}${s.logo.slice(1)}`}
+                                                        src={getSafeLogo(s.logo)}
                                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                         alt=""
                                                         className="h-9 w-9 flex-shrink-0 object-contain"

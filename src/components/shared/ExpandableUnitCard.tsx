@@ -5,6 +5,7 @@ import { formatMove } from '../../utils/conversions';
 import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';
 import type { Unit, Option } from '../../types';
+import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 
 interface ExpandableUnitCardProps {
     unit: Unit;
@@ -13,6 +14,7 @@ interface ExpandableUnitCardProps {
     onAddUnit?: (unit: Unit, profileGroupId: number, profileId: number, optionId: number) => void;
     onViewUnit?: (unit: Unit) => void;
     searchQuery?: string;
+    activeFilters?: QueryFilter[];
 }
 
 const ATTRIBUTES = [
@@ -36,7 +38,7 @@ function getLogoLocalPath(remoteUrl?: string): string | undefined {
     return remoteUrl;
 }
 
-export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery }: ExpandableUnitCardProps) {
+export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery, activeFilters = [] }: ExpandableUnitCardProps) {
     const db = useDatabase();
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
@@ -163,11 +165,39 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
 
                                 const weapsAndEqStr = weapsAndEq.join(' ').toLowerCase();
                                 const optionModsAndSkillsStr = optionModsAndSkills.join(' ').toLowerCase();
-                                const matchesSearch = searchQuery && searchQuery.length > 2 && (
-                                    optName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    weapsAndEqStr.includes(searchQuery.toLowerCase()) ||
-                                    optionModsAndSkillsStr.includes(searchQuery.toLowerCase())
-                                );
+
+                                let matchesSearch = false;
+
+                                // Text Search Match
+                                if (searchQuery && searchQuery.length > 2) {
+                                    if (
+                                        optName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        weapsAndEqStr.includes(searchQuery.toLowerCase()) ||
+                                        optionModsAndSkillsStr.includes(searchQuery.toLowerCase())
+                                    ) {
+                                        matchesSearch = true;
+                                    }
+                                }
+
+                                // Active Filters Match
+                                if (!matchesSearch && activeFilters.length > 0) {
+                                    // Item Filters (Skills, Equipment, Weapons)
+                                    const itemFilters = activeFilters.filter(f => f.type !== 'stat') as ItemFilter[];
+                                    if (itemFilters.length > 0) {
+                                        const matchesAnyFilter = itemFilters.some(filter => {
+                                            // Check if the option has this item
+                                            if (filter.type === 'weapon') {
+                                                return opt.weapons?.some(w => w.id === filter.baseId);
+                                            } else if (filter.type === 'skill') {
+                                                return opt.skills?.some(s => s.id === filter.baseId) || activeProfile.skills?.some(s => s.id === filter.baseId);
+                                            } else if (filter.type === 'equipment') {
+                                                return opt.equip?.some(e => e.id === filter.baseId) || activeProfile.equip?.some(e => e.id === filter.baseId);
+                                            }
+                                            return false;
+                                        });
+                                        if (matchesAnyFilter) matchesSearch = true;
+                                    }
+                                }
 
                                 return (
                                     <div

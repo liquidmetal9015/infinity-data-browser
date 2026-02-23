@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Unit } from '../types';
 import type { IDatabase } from '../services/Database';
-import type { QueryState } from '../components/QueryBuilder';
+import type { QueryState } from '../components/shared/UnifiedSearchBar';
 import type { FiltersState } from '../components/FilterBar';
 
 export const useUnitSearch = (db: IDatabase, loading: boolean) => {

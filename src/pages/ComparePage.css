@@ -223,9 +223,16 @@
 .unit-card {
     padding: 0.5rem 1rem;
     background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 6px;
     font-size: 0.95rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.unit-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
 }
 
 .unit-card.universal {
@@ -340,18 +347,25 @@
 }
 
 .unit-item-compact {
-    padding: 0.4rem 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.2);
     font-size: 0.9rem;
-    border-radius: 4px;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
 }
 
 .unit-item-compact:hover {
     background: var(--bg-hover);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
 }
 
 .unit-item-compact:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .empty-col {
