@@ -8,8 +8,7 @@ export type WidgetType =
     | 'RANGES'
     | 'COMPARE'
     | 'SEARCH'
-    | 'REFERENCE'
-    | 'UNIT_SEARCH';
+    | 'REFERENCE';
 
 export interface WindowPosition {
     x: number;
@@ -61,7 +60,6 @@ export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
     COMPARE: { width: 800, height: 600 },
     SEARCH: { width: 600, height: 500 },
     REFERENCE: { width: 700, height: 600 },
-    UNIT_SEARCH: { width: 500, height: 500 },
 };
 
 // Display labels for widget types
@@ -74,7 +72,6 @@ export const WIDGET_LABELS: Record<WidgetType, string> = {
     COMPARE: 'Compare',
     SEARCH: 'Search',
     REFERENCE: 'Reference',
-    UNIT_SEARCH: 'Units',
 };
 
 export const MIN_WINDOW_WIDTH = 300;

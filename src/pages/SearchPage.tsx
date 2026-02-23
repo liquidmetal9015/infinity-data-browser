@@ -1,19 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QueryBuilder } from '../components/QueryBuilder'
 import { FilterBar } from '../components/FilterBar'
-import { ResultsTable } from '../components/ResultsTable'
 import { FactionView } from '../components/FactionView'
 import { BubbleChart } from '../components/BubbleChart'
-import { LayoutGrid, Table2, Circle } from 'lucide-react'
+import { ExpandableUnitCard } from '../components/shared/ExpandableUnitCard'
+import { LayoutGrid, List, Circle, Search as SearchIcon, ChevronDown, ChevronUp } from 'lucide-react'
 import { useDatabase } from '../context/DatabaseContext'
 import { useUnitSearch } from '../hooks/useUnitSearch'
 
-type ViewMode = 'table' | 'faction' | 'bubble';
+type ViewMode = 'list' | 'faction' | 'bubble';
 
 export function SearchPage() {
     const db = useDatabase();
-    const [viewMode, setViewMode] = useState<ViewMode>('table');
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
     // Use the custom hook for search logic
     const {
@@ -21,54 +23,109 @@ export function SearchPage() {
         setQuery,
         filters,
         setFilters,
+        textQuery,
+        setTextQuery,
         filteredUnits,
         hasSearch
-    } = useUnitSearch(db, false); // No longer loading
+    } = useUnitSearch(db, false);
 
+    const toggleExpand = (id: number) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    // Auto-expand units when searching
+    useEffect(() => {
+        if (textQuery.trim().length > 1 || query.filters.length > 0) {
+            setExpandedIds(new Set(filteredUnits.map(u => u.id)));
+        } else {
+            setExpandedIds(new Set());
+        }
+    }, [textQuery, query.filters.length, filteredUnits]);
 
     return (
-        <>
+        <div className="search-page-container">
             <section className="search-section">
-                <QueryBuilder query={query} setQuery={setQuery} />
+                {/* Global Search Bar */}
+                <div className="global-search-container max-w-4xl mx-auto mb-6">
+                    <div className="relative">
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Global Search: unit names, weapons, skills, equipment..."
+                            value={textQuery}
+                            onChange={(e) => setTextQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-4 bg-[#0d1117] border border-white/10 rounded-xl text-lg text-white font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-lg"
+                        />
+                    </div>
+                </div>
 
-                {/* Filters - show when there's a search */}
+                <div className="max-w-4xl mx-auto flex flex-col gap-4">
+                    <button
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mx-auto text-sm font-medium"
+                    >
+                        {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        Advanced Rule Builder {query.filters.length > 0 && <span className="text-blue-400">({query.filters.length} active)</span>}
+                    </button>
+
+                    <AnimatePresence>
+                        {showAdvanced && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="p-4 bg-black/20 border border-white/5 rounded-xl mb-6">
+                                    <QueryBuilder query={query} setQuery={setQuery} />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Filters */}
                 {hasSearch && (
-                    <FilterBar filters={filters} setFilters={setFilters} />
+                    <div className="max-w-4xl mx-auto mb-6">
+                        <FilterBar filters={filters} setFilters={setFilters} />
+                    </div>
                 )}
 
                 {/* View Toggle */}
                 {hasSearch && filteredUnits.length > 0 && (
-                    <div className="view-controls">
-                        <div className="view-toggle">
+                    <div className="view-controls max-w-4xl mx-auto flex justify-between items-end border-b border-white/10 pb-4 mb-6">
+                        <div className="view-toggle flex gap-2">
                             <button
-                                onClick={() => setViewMode('table')}
-                                className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
-                                title="Table View"
+                                onClick={() => setViewMode('list')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <Table2 size={18} />
-                                <span>Table</span>
+                                <List size={16} />
+                                <span>List</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('faction')}
-                                className={`toggle-btn ${viewMode === 'faction' ? 'active' : ''}`}
-                                title="Group by Faction"
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'faction' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <LayoutGrid size={18} />
+                                <LayoutGrid size={16} />
                                 <span>By Faction</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('bubble')}
-                                className={`toggle-btn ${viewMode === 'bubble' ? 'active' : ''}`}
-                                title="Bubble Chart"
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'bubble' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <Circle size={18} />
-                                <span>Bubbles</span>
+                                <Circle size={16} />
+                                <span>Stats Bubble</span>
                             </button>
                         </div>
-                        <div className="result-count">
-                            {filteredUnits.length} {filteredUnits.length === 1 ? 'result' : 'results'}
+                        <div className="text-gray-400 text-sm font-medium">
+                            {filteredUnits.length} {filteredUnits.length === 1 ? 'match' : 'matches'}
                             {query.operator === 'and' && query.filters.length > 1 && (
-                                <span className="operator-indicator"> (matching ALL)</span>
+                                <span className="text-blue-400 opacity-80"> (matching ALL rules)</span>
                             )}
                         </div>
                     </div>
@@ -76,7 +133,7 @@ export function SearchPage() {
             </section>
 
             {/* Results Section */}
-            <section className="results-section">
+            <section className="results-section max-w-5xl mx-auto pb-12">
                 <AnimatePresence mode='wait'>
                     {!hasSearch ? (
                         <motion.div
@@ -84,13 +141,13 @@ export function SearchPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             key="empty"
-                            className="empty-state"
+                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center max-w-2xl mx-auto mt-8"
                         >
-                            <div className="empty-icon">⚡</div>
-                            <div className="empty-title">Search for units</div>
-                            <div className="empty-subtitle">
-                                Type a weapon, skill, or equipment name to find matching units.
-                                Add multiple filters and use AND/OR to refine your search.
+                            <div className="text-4xl mb-4 opacity-50">⚡</div>
+                            <div className="text-xl font-bold text-gray-300 mb-2">Search the Infinity Database</div>
+                            <div className="text-gray-500">
+                                Use the global search bar above to look up units, weapons, or skills.
+                                Or open the Advanced Rule Builder to combine multiple specific criteria like "WIP &gt; 13 AND HMG".
                             </div>
                         </motion.div>
                     ) : filteredUnits.length === 0 ? (
@@ -98,16 +155,16 @@ export function SearchPage() {
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             key="no-results"
-                            className="no-results"
+                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center max-w-2xl mx-auto mt-8"
                         >
-                            <div className="no-results-icon">∅</div>
-                            <div className="no-results-title">No matches found</div>
-                            <div className="no-results-subtitle">
+                            <div className="text-4xl mb-4 opacity-50">∅</div>
+                            <div className="text-xl font-bold text-gray-300 mb-2">No matches found</div>
+                            <div className="text-gray-500">
                                 {filters.factions.length > 0
                                     ? 'Try selecting different factions or adjusting your filters'
                                     : query.operator === 'and'
                                         ? 'Try using OR instead, or remove some filters'
-                                        : 'Try a different search term'
+                                        : 'Try a wildly different search term'
                                 }
                             </div>
                         </motion.div>
@@ -121,16 +178,30 @@ export function SearchPage() {
                         </motion.div>
                     ) : (
                         <motion.div
-                            key="table-view"
+                            key="list-view"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
+                            className="flex flex-col gap-3"
                         >
-                            <ResultsTable units={filteredUnits} query={query} />
+                            {filteredUnits.slice(0, 100).map(unit => (
+                                <ExpandableUnitCard
+                                    key={unit.id}
+                                    unit={unit}
+                                    isExpanded={expandedIds.has(unit.id)}
+                                    onToggle={() => toggleExpand(unit.id)}
+                                    searchQuery={textQuery.trim()}
+                                />
+                            ))}
+                            {filteredUnits.length > 100 && (
+                                <div className="text-center text-gray-500 py-6 border border-dashed border-white/10 rounded-xl mt-4">
+                                    Displaying first 100 of {filteredUnits.length} results. Please refine your search.
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
             </section>
-        </>
+        </div>
     )
 }

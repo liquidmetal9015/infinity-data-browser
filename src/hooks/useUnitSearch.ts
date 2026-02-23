@@ -14,6 +14,8 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         factions: []
     });
 
+    const [textQuery, setTextQuery] = useState('');
+
     // Helper to check if a unit matches ALL stat filters
     const checkProfileStat = (profile: any, stat: string, operator: string, value: number) => {
         let statVal = 0;
@@ -171,27 +173,39 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
             }
         }
 
+        // Apply text query
+        if (results.length > 0 && textQuery.trim()) {
+            const lowerTerm = textQuery.trim().toLowerCase();
+            results = results.filter(unit => {
+                if (unit.name?.toLowerCase().includes(lowerTerm) || unit.isc.toLowerCase().includes(lowerTerm)) return true;
+
+                for (const group of unit.raw.profileGroups) {
+                    for (const profile of group.profiles) {
+                        if (profile.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(lowerTerm))) return true;
+                        if (profile.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(lowerTerm))) return true;
+                    }
+                    for (const opt of group.options) {
+                        if (opt.weapons?.some(w => db.weaponMap.get(w.id)?.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.name?.toLowerCase().includes(lowerTerm) || group.isco?.toLowerCase().includes(lowerTerm)) return true;
+                    }
+                }
+                return false;
+            });
+        }
+
         return results;
-    }, [query, filters, loading, db]);
-
-    // Helper to check if a unit matches ALL stat filters (stats are always ANDed together? Or do they obey query.operator?)
-    // Usually in a list of filters, the operator applies to the list.
-    // If I have Filters: [Weapon A, WIP > 14] and Operator OR. -> Units with Weapon A OR Units with WIP > 14.
-    // If Operator AND -> Units with Weapon A AND WIP > 14.
-
-    // So for the checking logic:
-    // If operator is OR, we check if unit matches AT LEAST ONE stat filter (if item filters didn't match).
-    // NO, that's complex.
-    // Let's simplify:
-    // IF operator is AND: Unit must match ALL filters.
-    // IF operator is OR: Unit must match ANY filter.
+    }, [query, filters, textQuery, loading, db]);
 
     return {
         query,
         setQuery,
         filters,
         setFilters,
+        textQuery,
+        setTextQuery,
         filteredUnits,
-        hasSearch: query.filters.length > 0
+        hasSearch: query.filters.length > 0 || textQuery.trim().length > 0
     };
 };

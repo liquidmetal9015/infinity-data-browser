@@ -19,10 +19,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useListStore } from '../../stores/useListStore';
-import { UnitStatsModal } from '../UnitStatsModal';
-import { calculateListPoints, calculateListSWC, type ArmyList, type ListUnit } from '../../types/list';
-import { Plus, Trash2, Eye, Search, GripVertical } from 'lucide-react';
+import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '../../types/list';
+import { Plus, Trash2, Eye, Search, GripVertical, Settings2 } from 'lucide-react';
 import type { Unit } from '../../types';
+import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
+import { OrderIcon } from '../shared/OrderIcon';
+import { countGroupOrders, getProfileOrders } from '../../utils/orderUtils';
 
 interface ListDashboardProps {
     list: ArmyList;
@@ -54,24 +56,30 @@ function DraggableUnitRow({
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const option = listUnit.unit.raw.profileGroups
-        .find(pg => pg.id === listUnit.profileGroupId)
-        ?.options.find(o => o.id === listUnit.optionId);
+    const profileGroup = listUnit.unit.raw.profileGroups.find(g => g.id === listUnit.profileGroupId);
+    const { profile, option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
+    const orders = getProfileOrders(profile, option);
 
     const weapons = option?.weapons?.map(w => db.weaponMap.get(w.id) || 'Unknown').join(', ') || '—';
     const equipment = option?.equip?.map(e => db.equipmentMap.get(e.id) || 'Unknown').join(', ') || '';
+    const displayName = profileGroup?.isco || listUnit.unit.isc;
 
     return (
         <tr ref={setNodeRef} style={style} className={`unit-row ${isDragging ? 'dragging' : ''}`}>
             <td className="drag-handle" {...attributes} {...listeners}>
                 <GripVertical size={14} />
             </td>
+            <td className="unit-orders">
+                <div className="flex items-center justify-center">
+                    {orders.map((o, i) => <OrderIcon key={i} type={o} size={16} className={i > 0 ? "-ml-1.5" : ""} />)}
+                </div>
+            </td>
             <td className="unit-name">
-                <span className="name">{listUnit.unit.isc}</span>
+                <span className="name" title={displayName}>{displayName}</span>
             </td>
             <td className="unit-weapons">
-                <span className="weapons">{weapons}</span>
-                {equipment && <span className="equipment">{equipment}</span>}
+                <span className="weapons" title={weapons}>{weapons}</span>
+                {equipment && <span className="equipment" title={equipment}>{equipment}</span>}
             </td>
             <td className="unit-swc">{option?.swc || 0}</td>
             <td className="unit-pts">{option?.points || 0}</td>
@@ -89,14 +97,14 @@ function DraggableUnitRow({
 
 // Overlay component shown while dragging
 function DragOverlayUnit({ listUnit }: { listUnit: ListUnit }) {
-    const option = listUnit.unit.raw.profileGroups
-        .find(pg => pg.id === listUnit.profileGroupId)
-        ?.options.find(o => o.id === listUnit.optionId);
+    const profileGroup = listUnit.unit.raw.profileGroups.find(g => g.id === listUnit.profileGroupId);
+    const { option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
+    const displayName = profileGroup?.isco || listUnit.unit.isc;
 
     return (
         <div className="drag-overlay-unit">
             <GripVertical size={14} />
-            <span className="name">{listUnit.unit.isc}</span>
+            <span className="name">{displayName}</span>
             <span className="pts">{option?.points || 0} pts</span>
         </div>
     );
@@ -105,10 +113,13 @@ function DragOverlayUnit({ listUnit }: { listUnit: ListUnit }) {
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
     const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup } = useListStore();
-    const [showUnitSelector, setShowUnitSelector] = useState(false);
+
+    // Toggleable unit expanded states
+    const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
+    const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
+
     const [targetGroupIndex, setTargetGroupIndex] = useState(0);
     const [rosterSearch, setRosterSearch] = useState('');
-    const [preselectedUnit, setPreselectedUnit] = useState<Unit | null>(null);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState<ListUnit | null>(null);
 
@@ -137,22 +148,19 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const pointsOver = totalPoints > list.pointsLimit;
     const swcOver = totalSWC > list.swcLimit;
 
-    const handleAddFromRoster = (unit: Unit) => {
-        // If unit has only one option, add directly
-        if (unit.raw.profileGroups.length === 1 && unit.raw.profileGroups[0].options.length === 1) {
-            const pg = unit.raw.profileGroups[0];
-            addUnit(unit, targetGroupIndex, pg.id, pg.profiles[0].id, pg.options[0].id);
-        } else {
-            // Open modal for option selection
-            setPreselectedUnit(unit);
-            setShowUnitSelector(true);
-        }
-    };
-
-    const handleSelectUnit = (unit: Unit, profileGroupId: number, profileId: number, optionId: number) => {
-        addUnit(unit, targetGroupIndex, profileGroupId, profileId, optionId);
-        setShowUnitSelector(false);
-        setPreselectedUnit(null);
+    const toggleExpand = (unitId: number) => {
+        setExpandedUnitIds(prev => {
+            const next = new Set(prev);
+            if (next.has(unitId)) {
+                next.delete(unitId);
+            } else {
+                if (expandMode === 'single') {
+                    next.clear();
+                }
+                next.add(unitId);
+            }
+            return next;
+        });
     };
 
     const handleDragStart = (event: DragStartEvent) => {
@@ -203,7 +211,16 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
             <div className="roster-panel">
                 <div className="roster-header">
                     <h3>Unit Roster</h3>
-                    <span className="roster-count">{factionUnits.length}</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            className={`p-1 rounded transition-colors ${expandMode === 'multiple' ? 'bg-blue-500/20 text-blue-400' : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/10'}`}
+                            onClick={() => setExpandMode(m => m === 'single' ? 'multiple' : 'single')}
+                            title={expandMode === 'single' ? 'Enable Multiple Expansion' : 'Enable Single Expansion'}
+                        >
+                            <Settings2 size={16} />
+                        </button>
+                        <span className="roster-count">{factionUnits.length}</span>
+                    </div>
                 </div>
 
                 <div className="roster-search">
@@ -216,24 +233,19 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     />
                 </div>
 
-                <div className="roster-list">
-                    {filteredRoster.map(unit => {
-                        const pointsRange = unit.pointsRange;
-                        const pointsDisplay = pointsRange[0] === pointsRange[1]
-                            ? `${pointsRange[0]}`
-                            : `${pointsRange[0]}–${pointsRange[1]}`;
-
-                        return (
-                            <button
-                                key={unit.id}
-                                className="roster-item"
-                                onClick={() => handleAddFromRoster(unit)}
-                            >
-                                <span className="name">{unit.isc}</span>
-                                <span className="pts">{pointsDisplay}</span>
-                            </button>
-                        );
-                    })}
+                <div className="roster-list p-2 space-y-1.5 overflow-y-auto">
+                    {filteredRoster.map(unit => (
+                        <ExpandableUnitCard
+                            key={unit.id}
+                            unit={unit}
+                            isExpanded={expandedUnitIds.has(unit.id)}
+                            onToggle={() => toggleExpand(unit.id)}
+                            onAddUnit={(unit, pgId, pId, oId) => {
+                                addUnit(unit, targetGroupIndex, pgId, pId, oId);
+                            }}
+                            onViewUnit={onViewUnit}
+                        />
+                    ))}
                 </div>
             </div>
 
@@ -263,66 +275,87 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 >
                     <SortableContext items={allUnitIds} strategy={verticalListSortingStrategy}>
                         {/* Combat Groups */}
-                        {list.groups.map((group, groupIndex) => (
-                            <div key={group.id} className="combat-group">
-                                <div className="group-header">
-                                    <div className="group-info">
-                                        <span className="group-name">{group.name}</span>
-                                        <span className="group-count">{group.units.length} units</span>
-                                    </div>
-                                    <div className="group-actions">
-                                        <button
-                                            className="add-btn"
-                                            onClick={() => {
-                                                setTargetGroupIndex(groupIndex);
-                                                setPreselectedUnit(null);
-                                            }}
-                                        >
-                                            <Plus size={14} />
-                                        </button>
-                                        {list.groups.length > 1 && (
-                                            <button
-                                                className="delete-btn"
-                                                onClick={() => removeCombatGroup(groupIndex)}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                        {list.groups.map((group, groupIndex) => {
+                            const groupOrders = countGroupOrders(
+                                group.units.map(lu => {
+                                    const { profile, option } = getUnitDetails(lu.unit, lu.profileGroupId, lu.profileId, lu.optionId);
+                                    return { profile, option };
+                                })
+                            );
 
-                                {group.units.length === 0 ? (
-                                    <div className="empty-group">
-                                        Click a unit from the roster to add it here
+                            return (
+                                <div key={group.id} className="combat-group">
+                                    <div className="group-header">
+                                        <div className="group-info">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="group-name">{group.name}</span>
+                                                    <span className="group-count">{group.units.length} units</span>
+                                                </div>
+                                                <div className="flex gap-2.5 mt-1.5">
+                                                    {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
+                                                    {groupOrders['irregular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="irregular" size={12} /> {groupOrders['irregular']}</span>}
+                                                    {groupOrders['impetuous'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="impetuous" size={12} /> {groupOrders['impetuous']}</span>}
+                                                    {groupOrders['lieutenant'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="lieutenant" size={12} /> {groupOrders['lieutenant']}</span>}
+                                                    {groupOrders['tactical-awareness'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="tactical-awareness" size={12} /> {groupOrders['tactical-awareness']}</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="group-actions self-start">
+                                            <button
+                                                className="add-btn"
+                                                title="Add Unit to this Group"
+                                                onClick={() => {
+                                                    setTargetGroupIndex(groupIndex);
+                                                }}
+                                            >
+                                                <Plus size={16} className={targetGroupIndex === groupIndex ? "text-blue-400" : ""} />
+                                            </button>
+                                            {list.groups.length > 1 && (
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => removeCombatGroup(groupIndex)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <table className="units-table">
-                                        <thead>
-                                            <tr>
-                                                <th className="col-drag"></th>
-                                                <th className="col-name">Name</th>
-                                                <th className="col-weapons">Weapons / Equipment</th>
-                                                <th className="col-swc">SWC</th>
-                                                <th className="col-pts">Pts</th>
-                                                <th className="col-actions"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {group.units.map(listUnit => (
-                                                <DraggableUnitRow
-                                                    key={listUnit.id}
-                                                    listUnit={listUnit}
-                                                    groupIndex={groupIndex}
-                                                    onViewUnit={onViewUnit}
-                                                    onRemove={() => removeUnit(groupIndex, listUnit.id)}
-                                                    db={db}
-                                                />
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div>
-                        ))}
+
+                                    {group.units.length === 0 ? (
+                                        <div className="empty-group">
+                                            Click a unit from the roster to add it here
+                                        </div>
+                                    ) : (
+                                        <table className="units-table">
+                                            <thead>
+                                                <tr>
+                                                    <th className="col-drag"></th>
+                                                    <th className="col-orders text-center">Ord</th>
+                                                    <th className="col-name">Name</th>
+                                                    <th className="col-weapons">Weapons / Equipment</th>
+                                                    <th className="col-swc">SWC</th>
+                                                    <th className="col-pts">Pts</th>
+                                                    <th className="col-actions"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {group.units.map(listUnit => (
+                                                    <DraggableUnitRow
+                                                        key={listUnit.id}
+                                                        listUnit={listUnit}
+                                                        groupIndex={groupIndex}
+                                                        onViewUnit={onViewUnit}
+                                                        onRemove={() => removeUnit(groupIndex, listUnit.id)}
+                                                        db={db}
+                                                    />
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </SortableContext>
 
                     <DragOverlay>
@@ -340,28 +373,13 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 )}
             </div>
 
-            {/* Unit Selection Modal */}
-            {showUnitSelector && preselectedUnit && (
-                <UnitStatsModal
-                    selectionMode={{
-                        unit: preselectedUnit,
-                        onSelectLoadout: (unit, profileGroupId, profileId, optionId) => {
-                            handleSelectUnit(unit, profileGroupId, profileId, optionId);
-                        },
-                        onClose: () => {
-                            setShowUnitSelector(false);
-                            setPreselectedUnit(null);
-                        }
-                    }}
-                />
-            )}
-
             <style>{`
                 .list-dashboard-dense {
                     display: grid;
-                    grid-template-columns: 280px 1fr;
+                    grid-template-columns: 350px 1fr;
                     gap: 1rem;
                     min-height: 400px;
+                    height: calc(100vh - 100px);
                 }
 
                 /* Roster Panel */
@@ -372,10 +390,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     display: flex;
                     flex-direction: column;
                     overflow: hidden;
-                    height: fit-content;
-                    max-height: 100%;
-                    position: sticky;
-                    top: 1rem;
+                    height: 100%;
                 }
 
                 .roster-header {
@@ -423,36 +438,8 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 .roster-list {
                     flex: 1;
                     overflow-y: auto;
-                    padding: 0.25rem;
-                }
-
-                .roster-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    width: 100%;
-                    padding: 0.5rem 0.75rem;
-                    background: transparent;
-                    border: 1px solid transparent;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    text-align: left;
-                    transition: all 0.1s;
-                    margin-bottom: 1px;
-                }
-                .roster-item:hover {
-                    background: #1e293b;
-                    border-color: #334155;
-                }
-                .roster-item .name {
-                    font-size: 0.8rem;
-                    color: #e2e8f0;
-                    font-weight: 500;
-                }
-                .roster-item .pts {
-                    font-size: 0.7rem;
-                    color: #3b82f6;
-                    font-weight: 600;
+                    scrollbar-width: thin;
+                    scrollbar-color: #334155 transparent;
                 }
 
                 /* List Panel */
@@ -460,6 +447,8 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     display: flex;
                     flex-direction: column;
                     gap: 0.75rem;
+                    overflow-y: auto;
+                    padding-right: 0.5rem;
                 }
 
                 .summary-bar {
@@ -469,6 +458,9 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     background: #0d1117;
                     border: 1px solid #1e293b;
                     border-radius: 8px;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
                 }
                 .summary-bar .stat {
                     display: flex;
@@ -495,13 +487,14 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     border: 1px solid #1e293b;
                     border-radius: 8px;
                     overflow: hidden;
+                    margin-bottom: 0.75rem;
                 }
 
                 .group-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 0.5rem 0.75rem;
+                    padding: 0.75rem 1rem;
                     background: linear-gradient(90deg, #1a365d 0%, #0d1117 100%);
                     border-bottom: 1px solid #1e4a7d;
                 }
@@ -511,22 +504,22 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     gap: 0.75rem;
                 }
                 .group-name {
-                    font-size: 0.8rem;
+                    font-size: 0.9rem;
                     font-weight: 700;
                     color: #60a5fa;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                 }
                 .group-count {
-                    font-size: 0.7rem;
+                    font-size: 0.75rem;
                     color: #64748b;
                 }
                 .group-actions {
                     display: flex;
-                    gap: 0.25rem;
+                    gap: 0.5rem;
                 }
                 .group-actions button {
-                    padding: 0.25rem;
+                    padding: 0.35rem;
                     background: transparent;
                     border: 1px solid transparent;
                     border-radius: 4px;
@@ -538,8 +531,12 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     background: #1e293b;
                     color: #f1f5f9;
                 }
+                .group-actions .add-btn:hover {
+                    background: rgba(59, 130, 246, 0.2);
+                    color: #60a5fa;
+                }
                 .group-actions .delete-btn:hover {
-                    background: #7f1d1d;
+                    background: rgba(127, 29, 29, 0.4);
                     color: #fca5a5;
                 }
 
@@ -559,7 +556,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 }
                 .units-table th,
                 .units-table td {
-                    padding: 0.375rem 0.5rem;
+                    padding: 0.5rem 0.5rem;
                     vertical-align: middle;
                     text-align: left;
                 }
@@ -574,15 +571,17 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 .units-table th:nth-child(1),
                 .units-table td:nth-child(1) { width: 30px; }
                 .units-table th:nth-child(2),
-                .units-table td:nth-child(2) { width: 180px; }
+                .units-table td:nth-child(2) { width: 50px; text-align: center; } /* col-orders */
                 .units-table th:nth-child(3),
-                .units-table td:nth-child(3) { } /* weapons - auto */
+                .units-table td:nth-child(3) { width: 200px; } /* col-name */
                 .units-table th:nth-child(4),
-                .units-table td:nth-child(4) { width: 50px; text-align: right; }
+                .units-table td:nth-child(4) { } /* weapons - auto */
                 .units-table th:nth-child(5),
                 .units-table td:nth-child(5) { width: 50px; text-align: right; }
                 .units-table th:nth-child(6),
-                .units-table td:nth-child(6) { width: 70px; }
+                .units-table td:nth-child(6) { width: 50px; text-align: right; }
+                .units-table th:nth-child(7),
+                .units-table td:nth-child(7) { width: 80px; }
 
                 .unit-row {
                     background: #0d1117;
@@ -657,7 +656,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     justify-content: flex-end;
                 }
                 .unit-actions button {
-                    padding: 0.25rem;
+                    padding: 0.35rem;
                     background: transparent;
                     border: 1px solid transparent;
                     border-radius: 4px;
@@ -666,7 +665,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     transition: all 0.1s;
                 }
                 .unit-actions button:hover {
-                    background: #1e293b;
+                    background: #3b82f6;
                     color: #f1f5f9;
                 }
                 .unit-actions button.delete:hover {
@@ -691,6 +690,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 .add-group-btn:hover {
                     border-color: #3b82f6;
                     color: #3b82f6;
+                    background: rgba(59, 130, 246, 0.05);
                 }
 
                 /* Drag Overlay */
@@ -717,10 +717,11 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 @media (max-width: 900px) {
                     .list-dashboard-dense {
                         grid-template-columns: 1fr;
+                        height: auto;
                     }
                     .roster-panel {
                         position: static;
-                        max-height: 300px;
+                        max-height: 400px;
                     }
                 }
             `}</style>

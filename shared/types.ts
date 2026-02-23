@@ -38,6 +38,7 @@ export interface Profile {
     w: number;
     s: number;
     str?: boolean; // true if W is Structure
+    logo?: string; // Corvus Belli occasionally puts the unit logo on the profile
 }
 
 export interface Option {
@@ -64,6 +65,7 @@ export interface UnitRaw {
         options: Option[];
     }[];
     slug?: string;
+    logo?: string;
 }
 
 // Represents a skill/equipment with its modifier value(s)

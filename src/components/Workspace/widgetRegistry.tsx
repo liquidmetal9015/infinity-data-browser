@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
     Search, Library, Activity, Users, Layers,
-    ClipboardList, Calculator, Target, UserSearch
+    ClipboardList, Calculator, Target
 } from 'lucide-react';
 import type { WidgetType, WindowSize } from '../../types/workspace';
 import { DEFAULT_SIZES, WIDGET_LABELS } from '../../types/workspace';
@@ -14,7 +14,6 @@ import { ReferencePage } from '../../pages/ReferencePage';
 import { RangesPage } from '../../pages/RangesPage';
 import { ComparePage } from '../../pages/ComparePage';
 import { FireteamsPage } from '../../pages/FireteamsPage';
-import { UnitSearchPage } from '../../pages/UnitSearchPage';
 import { ListBuilderPage } from '../../pages/ListBuilderPage';
 import { DiceCalculatorPage } from '../../pages/DiceCalculatorPage';
 import { ClassifiedsPage } from '../../pages/ClassifiedsPage';
@@ -57,12 +56,6 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
         icon: Layers,
         defaultSize: DEFAULT_SIZES.FIRETEAMS,
     },
-    UNIT_SEARCH: {
-        component: UnitSearchPage,
-        label: WIDGET_LABELS.UNIT_SEARCH,
-        icon: UserSearch,
-        defaultSize: DEFAULT_SIZES.UNIT_SEARCH,
-    },
     LIST_BUILDER: {
         component: ListBuilderPage,
         label: WIDGET_LABELS.LIST_BUILDER,
@@ -93,5 +86,4 @@ export const LAUNCHER_WIDGETS: WidgetType[] = [
     'COMPARE',
     'SEARCH',
     'REFERENCE',
-    'UNIT_SEARCH',
 ];
