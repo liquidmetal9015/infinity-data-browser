@@ -14,7 +14,6 @@ type ViewMode = 'list' | 'faction' | 'bubble';
 export function SearchPage() {
     const db = useDatabase();
     const [viewMode, setViewMode] = useState<ViewMode>('list');
-
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
     // Use the custom hook for search logic
@@ -48,10 +47,10 @@ export function SearchPage() {
     }, [textQuery, query.filters.length, filteredUnits]);
 
     return (
-        <div className="search-page-container">
-            <section className="search-section">
+        <div className="search-page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1.5rem' }}>
+            <section className="search-section" style={{ width: '100%', maxWidth: '56rem' }}>
                 {/* Unified Search Bar */}
-                <div className="global-search-container max-w-4xl mx-auto mb-6">
+                <div className="global-search-container mb-6">
                     <div className="p-4 bg-black/20 border border-white/5 rounded-xl">
                         <UnifiedSearchBar
                             query={query}
@@ -65,14 +64,14 @@ export function SearchPage() {
 
                 {/* Filters */}
                 {hasSearch && (
-                    <div className="max-w-4xl mx-auto mb-6">
+                    <div className="mb-6">
                         <FilterBar filters={filters} setFilters={setFilters} />
                     </div>
                 )}
 
                 {/* View Toggle */}
                 {hasSearch && filteredUnits.length > 0 && (
-                    <div className="view-controls max-w-4xl mx-auto flex justify-between items-end border-b border-white/10 pb-4 mb-6">
+                    <div className="view-controls flex justify-between items-end border-b border-white/10 pb-4 mb-6">
                         <div className="view-toggle flex gap-2">
                             <button
                                 onClick={() => setViewMode('list')}
@@ -107,7 +106,7 @@ export function SearchPage() {
             </section>
 
             {/* Results Section */}
-            <section className="results-section max-w-5xl mx-auto pb-12">
+            <section className="results-section pb-12" style={{ width: '100%', maxWidth: '64rem' }}>
                 <AnimatePresence mode='wait'>
                     {!hasSearch ? (
                         <motion.div
@@ -120,8 +119,9 @@ export function SearchPage() {
                             <div className="text-4xl mb-4 opacity-50">⚡</div>
                             <div className="text-xl font-bold text-gray-300 mb-2">Search the Infinity Database</div>
                             <div className="text-gray-500">
-                                Use the global search bar above to look up units, weapons, or skills.
-                                Or open the Advanced Rule Builder to combine multiple specific criteria like "WIP &gt; 13 AND HMG".
+                                Use the search bar above to look up units, weapons, or skills.
+                                Use the autocomplete suggestions to add specific filter chips, or just type freely to search by name.
+                                Click "+ Stat" to add stat-based filters like "WIP &gt; 13".
                             </div>
                         </motion.div>
                     ) : filteredUnits.length === 0 ? (
@@ -165,6 +165,7 @@ export function SearchPage() {
                                     isExpanded={expandedIds.has(unit.id)}
                                     onToggle={() => toggleExpand(unit.id)}
                                     searchQuery={textQuery.trim()}
+                                    activeFilters={query.filters}
                                 />
                             ))}
                             {filteredUnits.length > 100 && (

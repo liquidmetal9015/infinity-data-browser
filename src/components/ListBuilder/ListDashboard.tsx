@@ -25,8 +25,7 @@ import type { Unit } from '../../types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { OrderIcon } from '../shared/OrderIcon';
 import { countGroupOrders, getProfileOrders } from '../../utils/orderUtils';
-import { useUnitSearch } from '../../hooks/useUnitSearch';
-import { UnifiedSearchBar } from '../shared/UnifiedSearchBar';
+import { UnifiedSearchBar, type QueryState } from '../shared/UnifiedSearchBar';
 
 interface ListDashboardProps {
     list: ArmyList;
@@ -129,28 +128,58 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    // Use the custom hook for search logic
-    const {
-        query: rosterQuery,
-        setQuery: setRosterQuery,
-        textQuery: rosterTextQuery,
-        setTextQuery: setRosterTextQuery,
-        filteredUnits: baseFilteredRoster,
-        setFilters
-    } = useUnitSearch(db, false);
+    // Search state for UnifiedSearchBar
+    const [rosterQuery, setRosterQuery] = useState<QueryState>({ filters: [], operator: 'or' });
+    const [rosterTextQuery, setRosterTextQuery] = useState('');
 
-    // Apply faction filter
-    useMemo(() => {
-        setFilters({ factions: [list.factionId] });
-    }, [list.factionId, setFilters]);
-
-    // Use the baseFilteredRoster directly
-    const filteredRoster = baseFilteredRoster;
-
-    // Kept factionUnits for count
+    // Get roster for this faction
     const factionUnits = useMemo(() => {
         return db.units.filter(unit => unit.factions.includes(list.factionId));
     }, [db.units, list.factionId]);
+
+    // Filter roster by search (text + query filters)
+    const filteredRoster = useMemo(() => {
+        let results = factionUnits;
+
+        // Apply item filters from UnifiedSearchBar
+        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat') as any[];
+        if (itemFilters.length > 0) {
+            const searched = db.searchWithModifiers(
+                itemFilters.map((f: any) => ({
+                    type: f.type,
+                    baseId: f.baseId,
+                    modifiers: f.modifiers,
+                    matchAnyModifier: f.matchAnyModifier
+                })),
+                rosterQuery.operator
+            );
+            const searchedIds = new Set(searched.map(u => u.id));
+            results = results.filter(u => searchedIds.has(u.id));
+        }
+
+        // Apply text query
+        if (rosterTextQuery.trim()) {
+            const q = rosterTextQuery.trim().toLowerCase();
+            results = results.filter(unit => {
+                if (unit.isc.toLowerCase().includes(q) || unit.name?.toLowerCase().includes(q)) return true;
+                for (const group of unit.raw.profileGroups) {
+                    for (const profile of group.profiles) {
+                        if (profile.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
+                        if (profile.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
+                    }
+                    for (const opt of group.options) {
+                        if (opt.weapons?.some(w => db.weaponMap.get(w.id)?.toLowerCase().includes(q))) return true;
+                        if (opt.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
+                        if (opt.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
+                        if (opt.name?.toLowerCase().includes(q) || group.isco?.toLowerCase().includes(q)) return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        return results;
+    }, [factionUnits, rosterQuery, rosterTextQuery, db]);
 
     const totalPoints = calculateListPoints(list);
     const totalSWC = calculateListSWC(list);

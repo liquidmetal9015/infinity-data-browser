@@ -62,7 +62,7 @@ test.describe('List Builder – Golden Path', () => {
         // Search for a unit – just type a common prefix to filter the roster
         // First wait for the roster to fully populate
         await expect(page.locator('.roster-list > div').first()).toBeVisible({ timeout: 10_000 });
-        const searchInput = page.locator('.roster-search input');
+        const searchInput = page.locator('.roster-search .query-input');
         await searchInput.fill('a');
         await page.waitForTimeout(300);
 
