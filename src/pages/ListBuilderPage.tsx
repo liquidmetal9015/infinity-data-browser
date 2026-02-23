@@ -6,7 +6,6 @@ import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { useModal } from '../context/ModalContext';
 import {
     ListDashboard,
-    ImportModal,
     ListHeader
 } from '../components/ListBuilder';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
@@ -20,7 +19,6 @@ export function ListBuilderPage() {
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const { openUnitModal } = useModal();
     const [codeCopied, setCodeCopied] = useState(false);
-    const [showImportModal, setShowImportModal] = useState(false);
     const [importCode, setImportCode] = useState('');
     const [importError, setImportError] = useState('');
 
@@ -66,7 +64,6 @@ export function ListBuilderPage() {
                 });
             });
 
-            setShowImportModal(false);
             setImportCode('');
         } catch (error) {
             console.error('Import error:', error);
@@ -118,39 +115,66 @@ export function ListBuilderPage() {
     // Faction Selection View
     return (
         <div className="list-builder-page">
-            <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '50vh', gap: '2rem' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>Select a faction below to begin building your roster.</p>
+            <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '4rem', paddingBottom: '4rem', height: '100%', minHeight: '50vh', gap: '2rem', maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
+
+                {/* Create New Block */}
+                <div style={{ width: '100%', padding: '2rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Select a faction to start building a new roster manually.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                        <div style={{ flex: 1 }}>
+                            <CompactFactionSelector
+                                groupedFactions={groupedFactions}
+                                value={globalFactionId}
+                                onChange={setGlobalFactionId}
+                            />
+                        </div>
+                        <button
+                            className="btn-primary"
+                            onClick={handleCreateList}
+                            disabled={!globalFactionId}
+                        >
+                            Create List
+                        </button>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <CompactFactionSelector
-                        groupedFactions={groupedFactions}
-                        value={globalFactionId}
-                        onChange={setGlobalFactionId}
-                    />
-                    <button
-                        className="btn-primary"
-                        onClick={handleCreateList}
-                        disabled={!globalFactionId}
-                    >
-                        Create List
-                    </button>
-                    <button className="btn-secondary" onClick={() => setShowImportModal(true)}>
-                        Import Code
-                    </button>
+                {/* OR Divider */}
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '1rem' }}>
+                    <hr style={{ flex: 1, borderColor: 'var(--border-color)', borderTop: 'none' }} />
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>OR</span>
+                    <hr style={{ flex: 1, borderColor: 'var(--border-color)', borderTop: 'none' }} />
                 </div>
+
+                {/* Import Block */}
+                <div style={{ width: '100%', padding: '2rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Import Existing List</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Paste an army code from the official Infinity builder or another source.</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                        <textarea
+                            value={importCode}
+                            onChange={e => setImportCode(e.target.value)}
+                            placeholder="Paste army code here..."
+                            rows={3}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', resize: 'none' }}
+                        />
+                        {importError && <div style={{ color: 'var(--error-color)', fontSize: '0.9rem', textAlign: 'center' }}>{importError}</div>}
+                        <button
+                            className="btn-secondary"
+                            onClick={handleImportCode}
+                            disabled={!importCode.trim()}
+                            style={{ width: '100%' }}
+                        >
+                            Import Code
+                        </button>
+                    </div>
+                </div>
+
             </div>
-
-            <ImportModal
-                isOpen={showImportModal}
-                onClose={() => setShowImportModal(false)}
-                importCode={importCode}
-                setImportCode={setImportCode}
-                importError={importError}
-                onImport={handleImportCode}
-            />
         </div>
     );
 }
