@@ -376,7 +376,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
             <style>{`
                 .list-dashboard-dense {
                     display: grid;
-                    grid-template-columns: 350px 1fr;
+                    grid-template-columns: 420px 1fr;
                     gap: 1rem;
                     min-height: 400px;
                     height: calc(100vh - 100px);

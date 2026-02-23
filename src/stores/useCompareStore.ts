@@ -9,6 +9,7 @@ interface CompareStore {
     addFaction: (id: number) => void;
     removeFaction: (id: number) => void;
     addMultipleFactions: (ids: number[]) => void;
+    setFactions: (ids: number[]) => void;
     clearAll: () => void;
 }
 
@@ -32,6 +33,8 @@ export const useCompareStore = create<CompareStore>()(
                 ids.forEach(id => existing.add(id));
                 return { selectedFactionIds: Array.from(existing) };
             }),
+
+            setFactions: (ids) => set({ selectedFactionIds: ids }),
 
             clearAll: () => set({ selectedFactionIds: [] }),
         }),

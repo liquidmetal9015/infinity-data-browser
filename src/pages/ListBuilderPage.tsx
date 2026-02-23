@@ -132,7 +132,7 @@ export function ListBuilderPage() {
                             />
                         </div>
                         <button
-                            className="btn-primary"
+                            className="px-8 py-4 bg-[#6366f1] hover:bg-[#818cf8] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg flex items-center justify-center whitespace-nowrap h-[4.5rem]"
                             onClick={handleCreateList}
                             disabled={!globalFactionId}
                         >
@@ -164,10 +164,9 @@ export function ListBuilderPage() {
                         />
                         {importError && <div style={{ color: 'var(--error-color)', fontSize: '0.9rem', textAlign: 'center' }}>{importError}</div>}
                         <button
-                            className="btn-secondary"
+                            className="px-8 py-4 bg-[#18181b] hover:bg-[#1f1f23] border border-[#ffffff14] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-lg w-full flex items-center justify-center whitespace-nowrap mt-4 h-[4.5rem]"
                             onClick={handleImportCode}
                             disabled={!importCode.trim()}
-                            style={{ width: '100%' }}
                         >
                             Import Code
                         </button>

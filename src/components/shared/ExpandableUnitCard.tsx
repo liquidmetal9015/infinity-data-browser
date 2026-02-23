@@ -31,7 +31,7 @@ function getLogoLocalPath(remoteUrl?: string): string | undefined {
     if (!remoteUrl) return undefined;
     if (remoteUrl.startsWith('http')) {
         const filename = remoteUrl.split('/').pop();
-        return `/logos/units/${filename}`;
+        return `${import.meta.env.BASE_URL}logos/units/${filename}`;
     }
     return remoteUrl;
 }
@@ -55,25 +55,25 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
     const logoPath = getLogoLocalPath(logoUrl);
 
     return (
-        <div className={`overflow-hidden rounded-md border text-sm transition-all duration-200 ${isExpanded ? 'border-blue-500/50 bg-[#0f172a]' : 'border-white/5 bg-[#162032] hover:border-white/20'}`}>
+        <div className={`overflow-hidden rounded-lg border text-sm transition-all duration-200 ${isExpanded ? 'border-blue-500/50 bg-[#0f172a]' : 'border-white/5 bg-[#162032] hover:border-white/20'}`}>
             {/* Header (Always Visible) */}
             <div
-                className={`flex items-center justify-between p-3 cursor-pointer ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
+                className={`flex items-center justify-between px-4 py-3.5 cursor-pointer ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
                 onClick={onToggle}
             >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     {logoPath ? (
-                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1 overflow-hidden">
-                            <img src={logoPath} alt={unit.isc} className="w-full h-full object-contain filter invert opacity-80" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
+                            <img src={logoPath} alt={unit.isc} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         </div>
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                             <span className="text-gray-500 text-xs font-bold">{unit.isc[0]}</span>
                         </div>
                     )}
                     <div>
-                        <div className="font-bold text-gray-200 tracking-wide">{unit.isc}</div>
-                        <div className="font-mono text-xs text-blue-400">
+                        <div className="font-bold text-base text-gray-100 tracking-wide leading-tight">{unit.isc}</div>
+                        <div className="font-mono text-sm text-blue-400 mt-0.5">
                             {unit.pointsRange[0] === unit.pointsRange[1] ? `${unit.pointsRange[0]} pts` : `${unit.pointsRange[0]} - ${unit.pointsRange[1]} pts`}
                         </div>
                     </div>
