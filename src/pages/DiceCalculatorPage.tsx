@@ -3,7 +3,7 @@
 // Computation logic from useDiceCalculator hook
 import { useState } from 'react';
 import { useDiceCalculator, type PlayerParams } from '../hooks/useDiceCalculator';
-import { Swords, Shield, ArrowLeftRight, Zap } from 'lucide-react';
+import { Swords, Shield, ArrowLeftRight } from 'lucide-react';
 import {
     CompactNumber,
     BurstSelector,
@@ -169,8 +169,6 @@ export function DiceCalculatorPage() {
     return (
         <div className="dice-calculator-page">
             <div className="page-header">
-                <h2><Zap size={24} /> N5 Dice Calculator</h2>
-
                 <div className="mode-toggle">
                     <button
                         className={`mode-btn ${mode === 'freeform' ? 'active' : ''}`}

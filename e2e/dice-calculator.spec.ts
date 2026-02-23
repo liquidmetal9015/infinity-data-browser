@@ -26,8 +26,8 @@ test.describe('Dice Calculator – Golden Path', () => {
     });
 
     test('should display the calculator in freeform mode by default', async ({ page }) => {
-        // The page header should be visible
-        await expect(page.locator('.page-header h2')).toContainText('Dice Calculator');
+        // The mode toggle should be visible
+        await expect(page.locator('.mode-toggle')).toBeVisible();
 
         // Freeform mode should be active
         const freeformBtn = page.locator('.mode-btn').filter({ hasText: 'Freeform' });

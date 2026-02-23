@@ -139,10 +139,6 @@ export function ComparePage() {
 
     return (
         <div className="page-container compare-page">
-            <div className="header-section">
-                <h2>Shared Unit Analysis</h2>
-                <p>Select multiple factions to analyze shared availability and unique units.</p>
-            </div>
 
             {/* Controls */}
             <div className="controls-section">

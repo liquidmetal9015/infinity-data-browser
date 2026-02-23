@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 import { useListStore } from '../stores/useListStore';
+import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { useModal } from '../context/ModalContext';
 import {
     ListDashboard,
     ImportModal,
-    FactionSelector,
     ListHeader
 } from '../components/ListBuilder';
+import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { encodeArmyList, copyArmyCodeToClipboard, decodeArmyCode } from '../utils/armyCode';
 import type { Unit } from '../types';
 import './ListBuilderPage.css';
@@ -16,6 +17,7 @@ import './ListBuilderPage.css';
 export function ListBuilderPage() {
     const db = useDatabase();
     const { currentList, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useListStore();
+    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const { openUnitModal } = useModal();
     const [codeCopied, setCodeCopied] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
@@ -24,9 +26,10 @@ export function ListBuilderPage() {
 
     const groupedFactions = db.getGroupedFactions();
 
-    const handleFactionClick = (factionId: number) => {
-        const factionName = db.getFactionName(factionId);
-        createList(factionId, factionName, 300);
+    const handleCreateList = () => {
+        if (!globalFactionId) return;
+        const factionName = db.getFactionName(globalFactionId);
+        createList(globalFactionId, factionName, 300);
     };
 
     const handleImportCode = () => {
@@ -37,6 +40,7 @@ export function ListBuilderPage() {
 
             // Create the list with decoded faction, points and name
             createList(decoded.factionId, decoded.factionSlug || 'Unknown', decoded.maxPoints, decoded.armyName);
+            setGlobalFactionId(decoded.factionId);
 
             // For each combat group and member, find the unit and add it
             decoded.combatGroups.forEach((group, index) => {
@@ -114,11 +118,30 @@ export function ListBuilderPage() {
     // Faction Selection View
     return (
         <div className="list-builder-page">
-            <FactionSelector
-                groupedFactions={groupedFactions}
-                onFactionClick={handleFactionClick}
-                onImportClick={() => setShowImportModal(true)}
-            />
+            <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '50vh', gap: '2rem' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>Select a faction below to begin building your roster.</p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <CompactFactionSelector
+                        groupedFactions={groupedFactions}
+                        value={globalFactionId}
+                        onChange={setGlobalFactionId}
+                    />
+                    <button
+                        className="btn-primary"
+                        onClick={handleCreateList}
+                        disabled={!globalFactionId}
+                    >
+                        Create List
+                    </button>
+                    <button className="btn-secondary" onClick={() => setShowImportModal(true)}>
+                        Import Code
+                    </button>
+                </div>
+            </div>
 
             <ImportModal
                 isOpen={showImportModal}

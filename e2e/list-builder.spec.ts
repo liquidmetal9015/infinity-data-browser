@@ -21,24 +21,23 @@ test.describe('List Builder – Golden Path', () => {
         // Open the Builder widget via the NavBar tab
         await page.locator('.tab-btn[title*="Builder"]').click();
 
-        // Wait for the database to initialize and faction cards to appear inside the window
-        await expect(page.locator('.window-frame .faction-grid-container')).toBeVisible({ timeout: 15_000 });
+        // Wait for the database to initialize and faction selector to appear inside the window
+        await expect(page.locator('.window-frame .compact-faction-selector')).toBeVisible({ timeout: 15_000 });
     });
 
     test('should display the faction selector on load', async ({ page }) => {
-        // The hero title should be visible
-        await expect(page.locator('.faction-selector-hero h1')).toHaveText('Army Builder');
+        // The compact selector should be visible
+        await expect(page.locator('.compact-faction-selector')).toBeVisible();
 
-        // There should be multiple super-faction cards rendered
-        const factionCards = page.locator('.super-faction-card');
-        await expect(factionCards.first()).toBeVisible();
-        expect(await factionCards.count()).toBeGreaterThan(0);
+        // The create button should be disabled initially
+        const createBtn = page.getByRole('button', { name: 'Create List' });
+        await expect(createBtn).toBeDisabled();
     });
 
     test('should select a faction and show the dashboard', async ({ page }) => {
-        // Click the first available sectorial button (not Vanilla)
-        const firstSectorial = page.locator('.sectorial-btn').first();
-        await firstSectorial.click();
+        // Select the first available sectorial
+        await page.locator('.faction-select').selectOption({ index: 1 });
+        await page.getByRole('button', { name: 'Create List' }).click();
 
         // The dashboard should appear with the unit roster panel
         await expect(page.locator('.roster-panel')).toBeVisible({ timeout: 10_000 });
@@ -47,7 +46,8 @@ test.describe('List Builder – Golden Path', () => {
 
     test('should search and add a unit to the list', async ({ page }) => {
         // Select the first available faction
-        await page.locator('.sectorial-btn').first().click();
+        await page.locator('.faction-select').selectOption({ index: 1 });
+        await page.getByRole('button', { name: 'Create List' }).click();
         await expect(page.locator('.roster-panel')).toBeVisible({ timeout: 10_000 });
 
         // Record the initial points value
@@ -90,7 +90,8 @@ test.describe('List Builder – Golden Path', () => {
 
     test('should persist the army list across page reloads (Zustand persist)', async ({ page }) => {
         // Start a list and add something
-        await page.locator('.sectorial-btn').first().click();
+        await page.locator('.faction-select').selectOption({ index: 1 });
+        await page.getByRole('button', { name: 'Create List' }).click();
         await expect(page.locator('.roster-panel')).toBeVisible();
 
         const pointsValue = page.locator('.summary-bar .stat .value').first();

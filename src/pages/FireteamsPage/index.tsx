@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useDatabase } from '../../context/DatabaseContext';
 import { Layers, Shield, Users, Info, Calculator } from 'lucide-react';
+import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
+import { CompactFactionSelector } from '../../components/shared/CompactFactionSelector';
 import { FireteamListView } from './FireteamListView';
 import { UnitPerspectiveView } from './UnitPerspectiveView';
 import { FireteamBuilder } from './FireteamBuilder';
@@ -8,7 +10,7 @@ import './FireteamsPage.css';
 
 export function FireteamsPage() {
     const db = useDatabase();
-    const [selectedFactionId, setSelectedFactionId] = useState<number | null>(null);
+    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const [viewMode, setViewMode] = useState<'teams' | 'units' | 'builder'>('builder');
 
     // Get all factions with fireteam data, grouped by super-faction
@@ -25,19 +27,18 @@ export function FireteamsPage() {
     }, [db]);
 
     const fireteamChart = useMemo(() => {
-        if (!selectedFactionId) return null;
-        return db.getFireteamChart(selectedFactionId);
-    }, [selectedFactionId, db]);
+        if (!globalFactionId) return null;
+        return db.getFireteamChart(globalFactionId);
+    }, [globalFactionId, db]);
 
     const activeFaction = useMemo(() => {
-        if (!selectedFactionId) return null;
-        return db.getFactionInfo(selectedFactionId);
-    }, [selectedFactionId, db]);
+        if (!globalFactionId) return null;
+        return db.getFactionInfo(globalFactionId);
+    }, [globalFactionId, db]);
 
-    const handleSelectFaction = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const id = Number(e.target.value);
-        if (id) {
-            setSelectedFactionId(id);
+    const handleSelectFaction = (factionId: number) => {
+        if (factionId) {
+            setGlobalFactionId(factionId);
             // Reset view mode to builder when changing faction
             setViewMode('builder');
         }
@@ -45,31 +46,13 @@ export function FireteamsPage() {
 
     return (
         <div className="page-container fireteams-page">
-            <div className="header-section">
-                <h2>Fireteam Reference</h2>
-                <p>Browse Fireteam composition rules, unit availability, and build your teams.</p>
-            </div>
-
             <div className="controls-section">
                 <div className="selector-container">
-                    <label>Select Sectorial:</label>
-                    <select
-                        value={selectedFactionId || ''}
+                    <CompactFactionSelector
+                        groupedFactions={groupedOptions}
+                        value={globalFactionId}
                         onChange={handleSelectFaction}
-                        className="faction-select"
-                    >
-                        <option value="">-- Choose Sectorial --</option>
-                        {groupedOptions.map(group => (
-                            <optgroup key={group.id} label={group.name}>
-                                {group.vanilla && (
-                                    <option value={group.vanilla.id}>{group.vanilla.name}</option>
-                                )}
-                                {group.sectorials.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
-                                ))}
-                            </optgroup>
-                        ))}
-                    </select>
+                    />
                 </div>
 
                 {fireteamChart && (
@@ -99,7 +82,7 @@ export function FireteamsPage() {
                 )}
             </div>
 
-            {!selectedFactionId ? (
+            {!globalFactionId ? (
                 <div className="empty-state">
                     <Shield size={48} className="text-secondary" />
                     <p>Select a Sectorial Army to view its Fireteams.</p>
@@ -123,8 +106,8 @@ export function FireteamsPage() {
                     </div>
 
                     {viewMode === 'teams' && <FireteamListView chart={fireteamChart} />}
-                    {viewMode === 'units' && <UnitPerspectiveView chart={fireteamChart} db={db} factionId={selectedFactionId} />}
-                    {viewMode === 'builder' && <FireteamBuilder key={selectedFactionId} chart={fireteamChart} />}
+                    {viewMode === 'units' && <UnitPerspectiveView chart={fireteamChart} db={db} factionId={globalFactionId} />}
+                    {viewMode === 'builder' && <FireteamBuilder key={globalFactionId} chart={fireteamChart} />}
                 </div>
             )}
         </div>

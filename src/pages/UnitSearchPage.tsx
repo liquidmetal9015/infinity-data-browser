@@ -29,7 +29,7 @@ export function UnitSearchPage() {
     return (
         <div className="page-container">
             <div className="search-header">
-                <h1>Unit Directory</h1>
+
                 <div className="simple-search-bar">
                     <Search className="search-icon" size={20} />
                     <input

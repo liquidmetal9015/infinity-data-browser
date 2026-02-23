@@ -1,31 +1,31 @@
 import { useMemo } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
-import { FactionSelector } from '../components/ListBuilder/FactionSelector';
+import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
+import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { ClassifiedItem } from '../components/Classifieds/ClassifiedItem';
 import { getClassifiedsForOption, type ClassifiedMatch } from '../../shared/classifieds';
 import type { Unit, Profile, Option } from '../../shared/types';
 import { useClassifiedsStore } from '../stores/useClassifiedsStore';
-import { ChevronLeft } from 'lucide-react';
 
 export function ClassifiedsPage() {
     const db = useDatabase();
+    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const {
-        selectedFactionId, selectedClassified, selectedUnitISC, selectedProfileId,
-        setSelectedFactionId, setSelectedClassified, setSelectedUnitISC, setSelectedProfileId,
-        resetAll,
+        selectedClassified, selectedUnitISC, selectedProfileId,
+        setSelectedClassified, setSelectedUnitISC, setSelectedProfileId,
     } = useClassifiedsStore();
 
     // Filter units for the selected faction
     const factionUnits = useMemo(() => {
-        if (!selectedFactionId) return [];
+        if (!globalFactionId) return [];
         return db.units
-            .filter(u => u.factions.includes(selectedFactionId))
+            .filter(u => u.factions.includes(globalFactionId))
             .sort((a, b) => a.name.localeCompare(b.name));
-    }, [db.units, selectedFactionId]);
+    }, [db.units, globalFactionId]);
 
     // Pre-calculate matches for all units and profiles
     const unitMatches = useMemo(() => {
-        if (!selectedFactionId || !db.classifieds.length) return null;
+        if (!globalFactionId || !db.classifieds.length) return null;
 
         const metadata = {
             skills: db.skillMap,
@@ -83,36 +83,34 @@ export function ClassifiedsPage() {
     }, [db.classifieds, factionUnits, db.skillMap, db.equipmentMap]);
 
 
-    if (!selectedFactionId) {
+    if (!globalFactionId) {
         return (
             <div className="page-container">
-                <FactionSelector
-                    groupedFactions={db.getGroupedFactions()}
-                    onFactionClick={setSelectedFactionId}
-                    title="Classifieds Analysis"
-                    subtitle="Select a faction to view which units can complete which classified objectives."
-                />
+                <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '50vh', gap: '2rem' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Classifieds Analysis</h2>
+                        <p style={{ color: 'var(--text-secondary)' }}>Select a faction to view which units can complete which classified objectives.</p>
+                    </div>
+
+                    <CompactFactionSelector
+                        groupedFactions={db.getGroupedFactions()}
+                        value={globalFactionId}
+                        onChange={setGlobalFactionId}
+                    />
+                </div>
             </div>
         );
     }
-
-    const factionName = db.getFactionName(selectedFactionId);
 
     return (
         <div className="page-container">
             {/* Header */}
             <div className="search-header flex-row items-center border-b border-border pb-4 mb-6">
-                <button
-                    onClick={() => resetAll()}
-                    className="mr-4 p-2 bg-bg-surface hover:bg-surface-hover border border-border text-text-muted hover:text-text-primary rounded-xl transition-colors"
-                    title="Change Faction"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <div>
-                    <h1 className="text-2xl font-bold text-text-primary m-0">Classifieds Analysis</h1>
-                    <p className="text-sm text-text-secondary m-0">{factionName}</p>
-                </div>
+                <CompactFactionSelector
+                    groupedFactions={db.getGroupedFactions()}
+                    value={globalFactionId}
+                    onChange={setGlobalFactionId}
+                />
             </div>
 
             {/* Main Content Grid */}
