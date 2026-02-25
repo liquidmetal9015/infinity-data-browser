@@ -3,12 +3,7 @@ import { ChevronDown, ChevronRight, Check, X } from 'lucide-react';
 import type { SuperFaction, FactionInfo } from '../utils/factions';
 import { useMemo, useState } from 'react';
 import { clsx } from 'clsx';
-
-const getSafeLogo = (path?: string | null) => {
-    if (!path) return undefined;
-    if (path.startsWith('http')) return path;
-    return `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
-};
+import { getSafeLogo } from '../utils/assets';
 
 interface MultiFactionSelectorProps {
     value: number[];

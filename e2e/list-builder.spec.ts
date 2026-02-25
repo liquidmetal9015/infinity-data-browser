@@ -72,6 +72,10 @@ test.describe('List Builder – Golden Path', () => {
             await page.waitForTimeout(200);
         }
 
+        // Dismiss the suggestions dropdown so it doesn't intercept clicks
+        await searchInput.press('Escape');
+        await page.waitForTimeout(200);
+
         // Click the first unit card header to expand it
         await page.locator('.roster-list > div').first().click();
         await page.waitForTimeout(200);

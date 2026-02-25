@@ -6,6 +6,7 @@ import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';
 import type { Unit, Option } from '../../types';
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
+import { getSafeLogo } from '../../utils/assets';
 
 interface ExpandableUnitCardProps {
     unit: Unit;
@@ -29,14 +30,7 @@ const ATTRIBUTES = [
     { key: 's', label: 'S' },
 ];
 
-function getLogoLocalPath(remoteUrl?: string): string | undefined {
-    if (!remoteUrl) return undefined;
-    if (remoteUrl.startsWith('http')) {
-        const filename = remoteUrl.split('/').pop();
-        return `${import.meta.env.BASE_URL}logos/units/${filename}`;
-    }
-    return remoteUrl;
-}
+
 
 export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery, activeFilters = [] }: ExpandableUnitCardProps) {
     const db = useDatabase();
@@ -54,7 +48,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
     };
 
     const logoUrl = unit.raw.logo || unit.raw.profileGroups?.[0]?.profiles?.[0]?.logo;
-    const logoPath = getLogoLocalPath(logoUrl);
+    const logoPath = getSafeLogo(logoUrl);
 
     return (
         <div className={`overflow-hidden rounded-lg border text-sm transition-all duration-200 ${isExpanded ? 'border-blue-500/50 bg-[#0f172a]' : 'border-white/5 bg-[#162032] hover:border-white/20'}`}>

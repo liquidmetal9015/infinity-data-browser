@@ -4,6 +4,7 @@ import { useModal } from '../context/ModalContext';
 import { Users, Check, Layers } from 'lucide-react';
 import { useCompareStore } from '../stores/useCompareStore';
 import { MultiFactionSelector } from '../components/MultiFactionSelector';
+import { getSafeLogo } from '../utils/assets';
 import './ComparePage.css';
 
 export function ComparePage() {
@@ -11,11 +12,7 @@ export function ComparePage() {
     const { openUnitModal } = useModal();
     const { selectedFactionIds, setFactions, addMultipleFactions, clearAll } = useCompareStore();
 
-    const getLogoUrl = (logo: string | undefined | null) => {
-        if (!logo) return null;
-        if (logo.startsWith('http')) return logo;
-        return `${import.meta.env.BASE_URL}${logo.replace(/^\//, '')}`;
-    };
+    const getLogoUrl = (logo: string | undefined | null) => getSafeLogo(logo);
 
     // Get all factions
     const allFactions = useMemo(() => {
