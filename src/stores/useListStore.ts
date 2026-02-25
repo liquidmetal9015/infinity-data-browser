@@ -23,7 +23,8 @@ interface ListStore extends ListState {
     assignToFireteam: (groupIndex: number, unitIds: string[], fireteamId: string, color: string, notes?: string) => void;
     removeFromFireteam: (groupIndex: number, unitIds: string[]) => void;
     clearFireteam: (groupIndex: number, fireteamId: string) => void;
-    addFireteamDef: (groupIndex: number, id: string, color: string, notes?: string) => void;
+    addFireteamDef: (groupIndex: number, id: string, color: string, notes?: string, selectedTeamName?: string, selectedTeamType?: string) => void;
+    updateFireteamDef: (groupIndex: number, fireteamId: string, updates: Partial<import('../../shared/listTypes.js').FireteamDef>) => void;
     removeFireteamDef: (groupIndex: number, fireteamId: string) => void;
     moveFireteam: (fromGroupIndex: number, toGroupIndex: number, fireteamId: string, toIndex?: number) => void;
     updateListName: (name: string) => void;
@@ -81,8 +82,11 @@ export const useListStore = create<ListStore>()(
             clearFireteam: (groupIndex, fireteamId) =>
                 set(s => dispatch(s, { type: 'CLEAR_FIRETEAM', groupIndex, fireteamId })),
 
-            addFireteamDef: (groupIndex, id, color, notes) =>
-                set(s => dispatch(s, { type: 'ADD_FIRETEAM_DEF', groupIndex, id, color, notes })),
+            addFireteamDef: (groupIndex, id, color, notes, selectedTeamName, selectedTeamType) =>
+                set(s => dispatch(s, { type: 'ADD_FIRETEAM_DEF', groupIndex, id, color, notes, selectedTeamName, selectedTeamType })),
+
+            updateFireteamDef: (groupIndex, fireteamId, updates) =>
+                set(s => dispatch(s, { type: 'UPDATE_FIRETEAM_DEF', groupIndex, fireteamId, updates })),
 
             removeFireteamDef: (groupIndex, fireteamId) =>
                 set(s => dispatch(s, { type: 'REMOVE_FIRETEAM_DEF', groupIndex, fireteamId })),

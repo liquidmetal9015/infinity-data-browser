@@ -27,7 +27,8 @@ export type ListAction =
     | { type: 'ASSIGN_TO_FIRETEAM'; groupIndex: number; unitIds: string[]; fireteamId: string; color: string; notes?: string }
     | { type: 'REMOVE_FROM_FIRETEAM'; groupIndex: number; unitIds: string[] }
     | { type: 'CLEAR_FIRETEAM'; groupIndex: number; fireteamId: string }
-    | { type: 'ADD_FIRETEAM_DEF'; groupIndex: number; id: string; color: string; notes?: string }
+    | { type: 'ADD_FIRETEAM_DEF'; groupIndex: number; id: string; color: string; notes?: string; selectedTeamName?: string; selectedTeamType?: string }
+    | { type: 'UPDATE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string; updates: Partial<import('./listTypes.js').FireteamDef> }
     | { type: 'REMOVE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string }
     | { type: 'MOVE_FIRETEAM'; fromGroupIndex: number; toGroupIndex: number; fireteamId: string; toIndex?: number }
     | { type: 'RESET_LIST' };
@@ -246,14 +247,40 @@ export function listReducer(state: ListState, action: ListAction): ListState {
         case 'ADD_FIRETEAM_DEF': {
             if (!state.currentList) return state;
 
-            const { groupIndex, id, color, notes } = action;
+            const { groupIndex, id, color, notes, selectedTeamName, selectedTeamType } = action;
             const newGroups = [...state.currentList.groups];
 
             if (groupIndex >= 0 && groupIndex < newGroups.length) {
                 const group = newGroups[groupIndex];
                 newGroups[groupIndex] = {
                     ...group,
-                    fireteams: [...(group.fireteams || []), { id, color, notes }],
+                    fireteams: [...(group.fireteams || []), { id, color, notes, selectedTeamName, selectedTeamType }],
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'UPDATE_FIRETEAM_DEF': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, fireteamId, updates } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                const group = newGroups[groupIndex];
+                newGroups[groupIndex] = {
+                    ...group,
+                    fireteams: (group.fireteams || []).map(ft =>
+                        ft.id === fireteamId ? { ...ft, ...updates } : ft
+                    ),
                 };
             }
 

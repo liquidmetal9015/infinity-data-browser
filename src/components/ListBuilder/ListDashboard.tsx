@@ -23,6 +23,7 @@ import { useListStore } from '../../stores/useListStore';
 import { useContextMenu } from '../../context/ContextMenuContext';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '../../types/list';
 import { Plus, Trash2, Eye, GripVertical, Settings2, Users } from 'lucide-react';
+import { getPossibleFireteams } from '../../utils/fireteams';
 import type { Unit } from '../../types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -165,79 +166,74 @@ function DroppableCombatGroup({
     );
 }
 
-// Sortable nested card container for Fireteams
-function SortableFireteamContainer({
-    groupIndex,
-    fireteamId,
-    color,
-    notes,
-    children,
-    onRemove
-}: {
-    groupIndex: number;
-    fireteamId: string;
-    color: string;
-    notes?: string;
-    children: React.ReactNode;
-    onRemove: () => void;
-}) {
-    // We use useSortable instead of useDroppable here 
-    const { setNodeRef, isOver, attributes, listeners, transform, transition, isDragging } = useSortable({
-        id: `fireteam-${fireteamId}`,
-        data: { type: 'fireteam-container', groupIndex, fireteamId, color, notes },
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-        borderLeftColor: color,
-        backgroundColor: 'var(--bg-tertiary)',
-        borderTop: `1px solid var(--border)`,
-        borderRight: `1px solid var(--border)`,
-        borderBottom: `1px solid var(--border)`,
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-    };
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`fireteam-container mt-3 mb-3 mx-2 rounded-lg overflow-hidden transition-colors border-l-4 ${isOver ? 'ring-2 ring-blue-400 bg-white/10' : ''}`}
-            style={style}
-        >
-            <div
-                className="flex items-center justify-between px-4 py-3 text-sm font-bold tracking-wider border-b cursor-grab active:cursor-grabbing shadow-sm"
-                style={{ backgroundColor: `${color}15`, color, borderColor: `${color}30` }}
-                {...attributes}
-                {...listeners}
-            >
-                <div className="flex items-center gap-2 uppercase">
-                    <GripVertical size={16} className="text-white/50" />
-                    <Users size={16} /> {notes || 'Fireteam'}
-                </div>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="hover:text-red-400 p-1 pointer-events-auto"
-                >
-                    <Trash2 size={12} />
-                </button>
-            </div>
-            <div className="min-h-[40px] w-full p-1 bg-black/20">
-                {children}
-                {React.Children.count(children) === 0 && (
-                    <div className="flex items-center justify-center py-4 text-xs text-white/30 italic dashed border border-dashed border-white/10 m-2 rounded bg-black/40">
-                        Drag units here to form a team
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+import { SortableFireteamContainer } from './SortableFireteamContainer';
 
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
     const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam, addFireteamDef, removeFireteamDef, moveFireteam } = useListStore();
+
+    // Hover state for highlighting
+    const [hoveredFireteamId, setHoveredFireteamId] = useState<string | null>(null);
+    const [hoveredUnitISC, setHoveredUnitISC] = useState<string | null>(null);
+
+    const hoveredFireteamData = useMemo(() => {
+        if (!hoveredFireteamId) return null;
+        for (const g of list.groups) {
+            const ft = g.fireteams?.find(f => f.id === hoveredFireteamId);
+            if (ft) {
+                const members = g.units.filter(u => u.fireteamId === ft.id).map(lu => ({ name: lu.unit.isc, comment: '' }));
+                const chart = db.getFireteamChart(list.factionId);
+                const possibleTeams = chart ? getPossibleFireteams(chart, members) : [];
+                const activeTeamDef = ft.selectedTeamName
+                    ? chart?.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)))
+                    : (possibleTeams.length === 1 && members.length > 0 ? possibleTeams[0] : null);
+
+                return { activeTeamDef, members };
+            }
+        }
+        return null;
+    }, [hoveredFireteamId, list, db]);
+
+    const validISCsForHoveredFireteam = useMemo(() => {
+        if (!hoveredFireteamData?.activeTeamDef || !db.units.length) return new Set<string>();
+        const iscs = new Set<string>();
+        for (const u of db.units) {
+            if (u.factions.includes(list.factionId)) {
+                const testMembers = [...hoveredFireteamData.members, { name: u.isc, comment: '' }];
+                const dummyChart = { teams: [hoveredFireteamData.activeTeamDef] };
+                const possible = getPossibleFireteams(dummyChart as any, testMembers);
+                if (possible.length > 0) iscs.add(u.isc);
+            }
+        }
+        return iscs;
+    }, [hoveredFireteamData, db.units, list.factionId]);
+
+    const validFireteamIdsForHoveredUnit = useMemo(() => {
+        if (!hoveredUnitISC) return new Set<string>();
+        const chart = db.getFireteamChart(list.factionId);
+        if (!chart) return new Set<string>();
+
+        const validIds = new Set<string>();
+
+        for (const g of list.groups) {
+            for (const ft of g.fireteams || []) {
+                const members = g.units.filter(u => u.fireteamId === ft.id).map(lu => ({ name: lu.unit.isc, comment: '' }));
+                const testMembers = [...members, { name: hoveredUnitISC, comment: '' }];
+
+                if (ft.selectedTeamName) {
+                    const activeTeamDef = chart.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)));
+                    if (activeTeamDef) {
+                        const possible = getPossibleFireteams({ teams: [activeTeamDef] } as any, testMembers);
+                        if (possible.length > 0) validIds.add(ft.id);
+                    }
+                } else {
+                    const possible = getPossibleFireteams(chart, testMembers);
+                    if (possible.length > 0) validIds.add(ft.id);
+                }
+            }
+        }
+        return validIds;
+    }, [hoveredUnitISC, list, db]);
 
     // Toggleable unit expanded states
     const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
@@ -304,6 +300,31 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
         return results;
     }, [factionUnits, rosterQuery, rosterTextQuery, db]);
+
+    const fireteamCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        const chart = db.getFireteamChart(list.factionId);
+        if (!chart) return counts;
+
+        for (const g of list.groups) {
+            for (const ft of g.fireteams || []) {
+                const members = g.units.filter(u => u.fireteamId === ft.id).map(lu => ({ name: lu.unit.isc, comment: '' }));
+                let activeType = ft.selectedTeamType;
+
+                if (!activeType) {
+                    const possible = getPossibleFireteams(chart, members);
+                    if (possible.length === 1 && possible[0].type.length === 1) {
+                        activeType = possible[0].type[0];
+                    }
+                }
+
+                if (activeType) {
+                    counts[activeType] = (counts[activeType] || 0) + 1;
+                }
+            }
+        }
+        return counts;
+    }, [list, db]);
 
     const totalPoints = calculateListPoints(list);
     const totalSWC = calculateListSWC(list);
@@ -481,6 +502,9 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                             onToggle={() => toggleExpand(unit.id)}
                             searchQuery={rosterTextQuery.trim()}
                             activeFilters={rosterQuery.filters}
+                            isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
+                            onMouseEnter={() => setHoveredUnitISC(unit.isc)}
+                            onMouseLeave={() => setHoveredUnitISC(null)}
                             onAddUnit={(unit, pgId, pId, oId) => {
                                 addUnit(unit, targetGroupIndex, pgId, pId, oId);
                             }}
@@ -503,9 +527,19 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                         <span className="value">{totalSWC.toFixed(1)} / {list.swcLimit}</span>
                     </div>
                     <div className="stat">
-                        <span className="label">Units</span>
+                        <span className="label flex items-center gap-1"><Users size={12} /> Units</span>
                         <span className="value">{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
                     </div>
+                    {db.getFireteamChart(list.factionId)?.spec && Object.entries(db.getFireteamChart(list.factionId)!.spec).map(([type, limit]) => {
+                        if (limit >= 256) return null; // Don't show unlimited like DUO usually is
+                        const count = fireteamCounts[type] || 0;
+                        return (
+                            <div key={type} className={`stat ${count > limit ? 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded' : ''}`}>
+                                <span className="label text-gray-400 uppercase text-[10px]">{type} LIMIT</span>
+                                <span className="value">{count} / {limit}</span>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 <DndContext
@@ -624,27 +658,37 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                         <>
                                                             <SortableContext items={fireteamItems.map(f => `fireteam-${f.ft.id}`)} strategy={verticalListSortingStrategy}>
                                                                 {fireteamItems.map(item => (
-                                                                    <SortableFireteamContainer
+                                                                    <div
                                                                         key={item.ft.id}
-                                                                        groupIndex={groupIndex}
-                                                                        fireteamId={item.ft.id}
-                                                                        color={item.ft.color}
-                                                                        notes={item.ft.notes}
-                                                                        onRemove={() => removeFireteamDef(groupIndex, item.ft.id)}
+                                                                        onMouseEnter={() => setHoveredFireteamId(item.ft.id)}
+                                                                        onMouseLeave={() => setHoveredFireteamId(null)}
                                                                     >
-                                                                        <SortableContext items={item.members.map(u => u.id)} strategy={verticalListSortingStrategy}>
-                                                                            {item.members.map((u: ListUnit) => (
-                                                                                <DraggableUnitRow
-                                                                                    key={u.id}
-                                                                                    listUnit={u}
-                                                                                    groupIndex={groupIndex}
-                                                                                    onViewUnit={onViewUnit}
-                                                                                    onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                                    db={db}
-                                                                                />
-                                                                            ))}
-                                                                        </SortableContext>
-                                                                    </SortableFireteamContainer>
+                                                                        <SortableFireteamContainer
+                                                                            groupIndex={groupIndex}
+                                                                            fireteamId={item.ft.id}
+                                                                            color={item.ft.color}
+                                                                            notes={item.ft.notes}
+                                                                            selectedTeamName={item.ft.selectedTeamName}
+                                                                            selectedTeamType={item.ft.selectedTeamType}
+                                                                            isHighlighted={validFireteamIdsForHoveredUnit.has(item.ft.id)}
+                                                                            listUnits={item.members}
+                                                                            factionId={list.factionId}
+                                                                            onRemove={() => removeFireteamDef(groupIndex, item.ft.id)}
+                                                                        >
+                                                                            <SortableContext items={item.members.map(u => u.id)} strategy={verticalListSortingStrategy}>
+                                                                                {item.members.map((u: ListUnit) => (
+                                                                                    <DraggableUnitRow
+                                                                                        key={u.id}
+                                                                                        listUnit={u}
+                                                                                        groupIndex={groupIndex}
+                                                                                        onViewUnit={onViewUnit}
+                                                                                        onRemove={() => removeUnit(groupIndex, u.id)}
+                                                                                        db={db}
+                                                                                    />
+                                                                                ))}
+                                                                            </SortableContext>
+                                                                        </SortableFireteamContainer>
+                                                                    </div>
                                                                 ))}
                                                             </SortableContext>
 

@@ -32,8 +32,14 @@ describe('getUnitTags', () => {
 });
 
 describe('calculateFireteamLevel', () => {
+    const mockFusilierTeam: Fireteam = {
+        name: 'Fusilier Fireteam',
+        type: ['CORE'],
+        units: [{ name: 'Fusilier', slug: 'fusilier', min: 0, max: 5 }],
+    };
+
     it('returns 0 for empty team', () => {
-        const level = calculateFireteamLevel('Fusilier Fireteam', []);
+        const level = calculateFireteamLevel(mockFusilierTeam, []);
         expect(level).toBe(0);
     });
 
@@ -43,7 +49,7 @@ describe('calculateFireteamLevel', () => {
             { name: 'Fusilier' },
             { name: 'Fusilier' },
         ];
-        const level = calculateFireteamLevel('Fusilier Fireteam', members);
+        const level = calculateFireteamLevel(mockFusilierTeam, members);
         expect(level).toBe(3);
     });
 
@@ -52,7 +58,7 @@ describe('calculateFireteamLevel', () => {
             { name: 'Fusilier' },
             { name: 'Some Wildcard', comment: 'Wildcard' },
         ];
-        const level = calculateFireteamLevel('Fusilier Fireteam', members);
+        const level = calculateFireteamLevel(mockFusilierTeam, members);
         expect(level).toBe(2);
     });
 
@@ -61,8 +67,8 @@ describe('calculateFireteamLevel', () => {
             { name: 'Fusilier' },
             { name: 'Some Other Unit' },
         ];
-        const level = calculateFireteamLevel('Fusilier Fireteam', members);
-        expect(level).toBe(1);
+        const level = calculateFireteamLevel(mockFusilierTeam, members);
+        expect(level).toBe(0);
     });
 });
 
@@ -119,5 +125,63 @@ describe('getFireteamBonuses', () => {
     it('level 5 bonus grants Sixth Sense', () => {
         const bonuses = getFireteamBonuses(mockCoreTeam, []);
         expect(bonuses[4].description).toContain('Sixth Sense');
+    });
+});
+
+describe('Integration Scenarios', () => {
+    const mockFennecTeam: Fireteam = {
+        name: 'FENNECS Fireteam',
+        type: ['HARIS', 'CORE'],
+        units: [
+            { min: 1, max: 5, name: 'FENNEC', slug: 'fennec-fusiliers' },
+            { min: 0, max: 1, name: 'MAGISTRATE', slug: 'bca-magistrates' }
+        ]
+    };
+
+    const mockColcorpTeam: Fireteam = {
+        name: 'COLCORP Fireteams',
+        type: ['DUO', 'HARIS'],
+        units: [
+            { min: 1, max: 2, name: 'MAGISTRATE', slug: 'bca-magistrates', comment: '(ColCorp)' },
+            { min: 0, max: 2, name: 'JACKAL FTO', slug: 'minescorp-jackals', comment: '(ColCorp)' }
+        ]
+    };
+
+    it('forms a valid ColCorp Haris of Level 3', () => {
+        const members = [
+            { name: 'BCA Magistrates', slug: 'bca-magistrates' },
+            { name: 'Minescorp Jackals', slug: 'minescorp-jackals' },
+            { name: 'Minescorp Jackals', slug: 'minescorp-jackals' }
+        ];
+
+        const bonuses = getFireteamBonuses(mockColcorpTeam, members);
+        expect(bonuses[1].isActive).toBe(true); // Level 2 Bonus (Size 3)
+
+        const level = calculateFireteamLevel(mockColcorpTeam, members);
+        expect(level).toBe(3); // All 3 have ColCorp
+    });
+
+    it('forms a Fennec Haris with a universal wildcard', () => {
+        const members = [
+            { name: 'Fennec Fusiliers', slug: 'fennec-fusiliers' },
+            { name: 'Fennec Fusiliers', slug: 'fennec-fusiliers' },
+            { name: 'Crux Knight', slug: 'team-crux-father-knights', comment: 'wildcard' }
+        ];
+
+        const bonuses = getFireteamBonuses(mockFennecTeam, members);
+        expect(bonuses[1].isActive).toBe(true); // Formed Size 3
+
+        const level = calculateFireteamLevel(mockFennecTeam, members);
+        expect(level).toBe(3); // Wildcard counts towards level
+    });
+
+    it('rejects a 2-man Fennec team since Fennec type is Haris/Core only', () => {
+        const members = [
+            { name: 'Fennec Fusiliers', slug: 'fennec-fusiliers' },
+            { name: 'Fennec Fusiliers', slug: 'fennec-fusiliers' }
+        ];
+
+        const bonuses = getFireteamBonuses(mockFennecTeam, members);
+        expect(bonuses[0].isActive).toBe(false); // Not formed, size minimum is 3 for Haris/Core
     });
 });

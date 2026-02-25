@@ -6,10 +6,14 @@ export {
     calculateFireteamLevel,
     getFireteamBonuses,
     analyzeUnitForTeam,
+    getPossibleFireteams,
+    assignMembersToSlots,
+    getMemberWithChartData,
 } from '../../shared/fireteams';
 
 export type {
     UnitFireteamAnalysis,
+    SlotAssignment,
 } from '../../shared/fireteams';
 
 export type {

@@ -16,6 +16,9 @@ interface ExpandableUnitCardProps {
     onViewUnit?: (unit: Unit) => void;
     searchQuery?: string;
     activeFilters?: QueryFilter[];
+    isHighlighted?: boolean;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
 const ATTRIBUTES = [
@@ -32,7 +35,7 @@ const ATTRIBUTES = [
 
 
 
-export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery, activeFilters = [] }: ExpandableUnitCardProps) {
+export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery, activeFilters = [], isHighlighted, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
     const db = useDatabase();
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
@@ -51,7 +54,11 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
     const logoPath = getSafeLogo(logoUrl);
 
     return (
-        <div className={`overflow-hidden rounded-lg border text-sm transition-all duration-200 ${isExpanded ? 'border-blue-500/50 bg-[#0f172a]' : 'border-white/5 bg-[#162032] hover:border-white/20'}`}>
+        <div
+            className={`overflow-hidden rounded-lg border text-sm transition-all duration-200 ${isExpanded ? 'border-blue-500/50 bg-[#0f172a]' : 'border-white/5 bg-[#162032] hover:border-white/20'} ${isHighlighted ? 'ring-2 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.2)]' : ''}`}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
             {/* Header (Always Visible) */}
             <div
                 className={`flex items-center justify-between px-4 py-3.5 cursor-pointer ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}

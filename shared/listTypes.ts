@@ -36,6 +36,8 @@ export interface FireteamDef {
     id: string;
     color: string;
     notes?: string;
+    selectedTeamName?: string;
+    selectedTeamType?: string;
 }
 
 /**

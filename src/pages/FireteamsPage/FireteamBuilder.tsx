@@ -3,7 +3,7 @@ import { Plus, X, Check, Info, Calculator } from 'lucide-react';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useModal } from '../../context/ModalContext';
 import type { Fireteam, FireteamUnit, FireteamChart } from '../../types';
-import { getFireteamBonuses, getUnitTags, calculateFireteamLevel } from '../../utils/fireteams';
+import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '../../utils/fireteams';
 
 interface FireteamBuilderProps {
     chart: FireteamChart;
@@ -50,11 +50,15 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
         setTeamMembers(newMembers);
     };
 
+    const mappedTeamMembers = useMemo(() => {
+        return teamMembers.map(u => getMemberWithChartData(chart, u.name, u.slug));
+    }, [teamMembers, chart]);
+
     // Calculate Bonuses
     const bonuses = useMemo(() => {
         if (!selectedTeam) return [];
-        return getFireteamBonuses(selectedTeam, teamMembers);
-    }, [selectedTeam, teamMembers]);
+        return getFireteamBonuses(selectedTeam, mappedTeamMembers);
+    }, [selectedTeam, mappedTeamMembers]);
 
     return (
         <div className="builder-container">
@@ -139,9 +143,10 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                             const strictMode = missingRequirements;
 
                             // Helper to check if unit raises level
-                            const currentLevel = calculateFireteamLevel(selectedTeam.name, teamMembers);
+                            const currentLevel = calculateFireteamLevel(selectedTeam, mappedTeamMembers);
                             const simulatesLevelUp = (u: FireteamUnit) => {
-                                const newLevel = calculateFireteamLevel(selectedTeam.name, [...teamMembers, u]);
+                                const mappedU = getMemberWithChartData(chart, u.name, u.slug);
+                                const newLevel = calculateFireteamLevel(selectedTeam, [...mappedTeamMembers, mappedU]);
                                 return newLevel > currentLevel;
                             };
 
