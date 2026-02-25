@@ -24,6 +24,11 @@ export type ListAction =
     | { type: 'REMOVE_COMBAT_GROUP'; groupIndex: number }
     | { type: 'UPDATE_LIST_NAME'; name: string }
     | { type: 'UPDATE_POINTS_LIMIT'; pointsLimit: number }
+    | { type: 'ASSIGN_TO_FIRETEAM'; groupIndex: number; unitIds: string[]; fireteamId: string; color: string; notes?: string }
+    | { type: 'REMOVE_FROM_FIRETEAM'; groupIndex: number; unitIds: string[] }
+    | { type: 'CLEAR_FIRETEAM'; groupIndex: number; fireteamId: string }
+    | { type: 'ADD_FIRETEAM_DEF'; groupIndex: number; id: string; color: string; notes?: string }
+    | { type: 'REMOVE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string }
     | { type: 'RESET_LIST' };
 
 export const initialState: ListState = {
@@ -49,6 +54,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                         id: generateId(),
                         name: 'Combat Group 1',
                         units: [],
+                        fireteams: [],
                     },
                 ],
                 createdAt: Date.now(),
@@ -179,6 +185,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 id: generateId(),
                 name: `Combat Group ${state.currentList.groups.length + 1}`,
                 units: [],
+                fireteams: [],
             };
 
             return {
@@ -230,6 +237,148 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                     ...state.currentList,
                     pointsLimit: action.pointsLimit,
                     swcLimit: action.pointsLimit / 50,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'ADD_FIRETEAM_DEF': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, id, color, notes } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                const group = newGroups[groupIndex];
+                newGroups[groupIndex] = {
+                    ...group,
+                    fireteams: [...(group.fireteams || []), { id, color, notes }],
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'REMOVE_FIRETEAM_DEF': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, fireteamId } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                const group = newGroups[groupIndex];
+
+                // Remove the definition and also strip the id from units
+                newGroups[groupIndex] = {
+                    ...group,
+                    fireteams: (group.fireteams || []).filter(ft => ft.id !== fireteamId),
+                    units: group.units.map(u => {
+                        if (u.fireteamId === fireteamId) {
+                            const { fireteamId: _fid, fireteamColor: _fc, fireteamNotes: _fn, ...rest } = u;
+                            return rest as ListUnit;
+                        }
+                        return u;
+                    }),
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'ASSIGN_TO_FIRETEAM': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, unitIds, fireteamId, color, notes } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                newGroups[groupIndex] = {
+                    ...newGroups[groupIndex],
+                    units: newGroups[groupIndex].units.map((u) =>
+                        unitIds.includes(u.id)
+                            ? { ...u, fireteamId, fireteamColor: color, fireteamNotes: notes }
+                            : u
+                    ),
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'REMOVE_FROM_FIRETEAM': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, unitIds } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                newGroups[groupIndex] = {
+                    ...newGroups[groupIndex],
+                    units: newGroups[groupIndex].units.map((u) => {
+                        if (unitIds.includes(u.id)) {
+                            const { fireteamId, fireteamColor, fireteamNotes, ...rest } = u;
+                            return rest as ListUnit;
+                        }
+                        return u;
+                    }),
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'CLEAR_FIRETEAM': {
+            if (!state.currentList) return state;
+
+            const { groupIndex, fireteamId } = action;
+            const newGroups = [...state.currentList.groups];
+
+            if (groupIndex >= 0 && groupIndex < newGroups.length) {
+                newGroups[groupIndex] = {
+                    ...newGroups[groupIndex],
+                    units: newGroups[groupIndex].units.map((u) => {
+                        if (u.fireteamId === fireteamId) {
+                            const { fireteamId: _fid, fireteamColor: _fc, fireteamNotes: _fn, ...rest } = u;
+                            return rest as ListUnit;
+                        }
+                        return u;
+                    }),
+                };
+            }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
                     updatedAt: Date.now(),
                 },
             };

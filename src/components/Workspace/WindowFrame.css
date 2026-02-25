@@ -119,22 +119,84 @@
     position: relative;
 }
 
-/* Resize Handle */
+/* Resize Handles */
 .window-resize-handle {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
-    cursor: nwse-resize;
     z-index: 10;
 }
 
-.window-resize-handle::after {
+/* Edges */
+.resize-edge-top {
+    top: -4px;
+    left: 10px;
+    right: 10px;
+    height: 8px;
+    cursor: ns-resize;
+}
+
+.resize-edge-bottom {
+    bottom: -4px;
+    left: 10px;
+    right: 10px;
+    height: 8px;
+    cursor: ns-resize;
+}
+
+.resize-edge-left {
+    left: -4px;
+    top: 10px;
+    bottom: 10px;
+    width: 8px;
+    cursor: ew-resize;
+}
+
+.resize-edge-right {
+    right: -4px;
+    top: 10px;
+    bottom: 10px;
+    width: 8px;
+    cursor: ew-resize;
+}
+
+/* Corners */
+.resize-corner-tl {
+    top: -4px;
+    left: -4px;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+}
+
+.resize-corner-tr {
+    top: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    cursor: nesw-resize;
+}
+
+.resize-corner-bl {
+    bottom: -4px;
+    left: -4px;
+    width: 14px;
+    height: 14px;
+    cursor: nesw-resize;
+}
+
+.resize-corner-br {
+    bottom: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+}
+
+/* Visual indicator for bottom-right corner to match old style */
+.resize-corner-br::after {
     content: '';
     position: absolute;
-    bottom: 3px;
-    right: 3px;
+    bottom: 7px;
+    right: 7px;
     width: 8px;
     height: 8px;
     border-right: 2px solid var(--text-secondary, #64748b);
@@ -143,7 +205,7 @@
     transition: opacity 0.15s;
 }
 
-.window-resize-handle:hover::after {
+.resize-corner-br:hover::after {
     opacity: 0.8;
 }
 

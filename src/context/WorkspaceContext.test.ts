@@ -15,7 +15,7 @@ describe('workspaceReducer', () => {
             expect(result.windows[0].isMinimized).toBe(false);
             expect(result.windows[0].zIndex).toBe(1);
             expect(result.windows[0].size.width).toBe(550);
-            expect(result.windows[0].size.height).toBe(700);
+            expect(result.windows[0].size.height).toBe(668);
             expect(result.nextZIndex).toBe(2);
         });
 
@@ -37,12 +37,11 @@ describe('workspaceReducer', () => {
             expect(result.windows[0].props).toEqual(props);
         });
 
-        it('allows opening multiple windows of the same type', () => {
+        it('prevents opening multiple windows of the same type, focusing existing instead', () => {
             let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
 
-            expect(state.windows).toHaveLength(2);
-            expect(state.windows[0].id).not.toBe(state.windows[1].id);
+            expect(state.windows).toHaveLength(1);
         });
     });
 

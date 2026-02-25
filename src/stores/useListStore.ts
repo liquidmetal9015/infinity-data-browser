@@ -20,6 +20,11 @@ interface ListStore extends ListState {
     removeCombatGroup: (groupIndex: number) => void;
     reorderUnit: (groupIndex: number, fromIndex: number, toIndex: number) => void;
     moveUnitToGroup: (fromGroupIndex: number, toGroupIndex: number, unitId: string, toIndex?: number) => void;
+    assignToFireteam: (groupIndex: number, unitIds: string[], fireteamId: string, color: string, notes?: string) => void;
+    removeFromFireteam: (groupIndex: number, unitIds: string[]) => void;
+    clearFireteam: (groupIndex: number, fireteamId: string) => void;
+    addFireteamDef: (groupIndex: number, id: string, color: string, notes?: string) => void;
+    removeFireteamDef: (groupIndex: number, fireteamId: string) => void;
     updateListName: (name: string) => void;
     updatePointsLimit: (pointsLimit: number) => void;
     resetList: () => void;
@@ -65,6 +70,21 @@ export const useListStore = create<ListStore>()(
 
             moveUnitToGroup: (fromGroupIndex, toGroupIndex, unitId, toIndex) =>
                 set(s => dispatch(s, { type: 'MOVE_UNIT_TO_GROUP', fromGroupIndex, toGroupIndex, unitId, toIndex })),
+
+            assignToFireteam: (groupIndex, unitIds, fireteamId, color, notes) =>
+                set(s => dispatch(s, { type: 'ASSIGN_TO_FIRETEAM', groupIndex, unitIds, fireteamId, color, notes })),
+
+            removeFromFireteam: (groupIndex, unitIds) =>
+                set(s => dispatch(s, { type: 'REMOVE_FROM_FIRETEAM', groupIndex, unitIds })),
+
+            clearFireteam: (groupIndex, fireteamId) =>
+                set(s => dispatch(s, { type: 'CLEAR_FIRETEAM', groupIndex, fireteamId })),
+
+            addFireteamDef: (groupIndex, id, color, notes) =>
+                set(s => dispatch(s, { type: 'ADD_FIRETEAM_DEF', groupIndex, id, color, notes })),
+
+            removeFireteamDef: (groupIndex, fireteamId) =>
+                set(s => dispatch(s, { type: 'REMOVE_FIRETEAM_DEF', groupIndex, fireteamId })),
 
             updateListName: (name) =>
                 set(s => dispatch(s, { type: 'UPDATE_LIST_NAME', name })),

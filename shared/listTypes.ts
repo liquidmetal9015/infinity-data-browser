@@ -21,6 +21,21 @@ export interface ListUnit {
     points: number;
     /** Cached SWC cost for this specific option */
     swc: number;
+    /** The ID of the fireteam this unit belongs to, if any */
+    fireteamId?: string;
+    /** A color assigned to the fireteam to visually group them */
+    fireteamColor?: string;
+    /** Notes indicating fireteam type (e.g., Core, Haris) or role */
+    fireteamNotes?: string;
+}
+
+/**
+ * Represents a single fireteam container within a combat group.
+ */
+export interface FireteamDef {
+    id: string;
+    color: string;
+    notes?: string;
 }
 
 /**
@@ -33,6 +48,8 @@ export interface CombatGroup {
     name: string;
     /** Units in this combat group */
     units: ListUnit[];
+    /** Explicit fireteams defined in this group (can be empty) */
+    fireteams?: FireteamDef[];
 }
 
 /**

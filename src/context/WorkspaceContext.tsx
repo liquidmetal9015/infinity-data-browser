@@ -8,7 +8,7 @@ import type {
     WindowPosition,
     WindowSize,
 } from '../types/workspace';
-import { DEFAULT_SIZES, WIDGET_LABELS } from '../types/workspace';
+import { DEFAULT_SIZES, WIDGET_LABELS, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../types/workspace';
 
 // ============================================================================
 // Constants
@@ -32,6 +32,40 @@ function getCascadePosition(existingWindows: WindowState[]): WindowPosition {
     return {
         x: baseX + (offset % 300),
         y: baseY + (offset % 200),
+    };
+}
+
+function getInitialPlacement(windows: WindowState[], type: WidgetType): { position: WindowPosition, size: WindowSize } {
+    const defaultSize = DEFAULT_SIZES[type];
+
+    if (typeof window === 'undefined') {
+        return { position: getCascadePosition(windows), size: { ...defaultSize } };
+    }
+
+    // Bounds check to ensure it fits on screen (leave room for launcher/padding)
+    const maxWidth = Math.max(MIN_WINDOW_WIDTH, window.innerWidth - 40);
+    const maxHeight = Math.max(MIN_WINDOW_HEIGHT, window.innerHeight - 100);
+
+    const size = {
+        width: Math.min(defaultSize.width, maxWidth),
+        height: Math.min(defaultSize.height, maxHeight)
+    };
+
+    if (windows.length === 0) {
+        // First window: Center it
+        return {
+            position: {
+                x: Math.max(0, (window.innerWidth - size.width) / 2),
+                y: Math.max(0, (window.innerHeight - size.height) / 2 - 30) // slightly higher than true center
+            },
+            size
+        };
+    }
+
+    // Fallback to cascade
+    return {
+        position: getCascadePosition(windows),
+        size
     };
 }
 
@@ -74,12 +108,13 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
             }
 
             // Otherwise, open a new instance (there shouldn't be multiple instances anymore)
+            const placement = getInitialPlacement(state.windows, action.widgetType);
             const newWindow: WindowState = {
                 id: generateId(),
                 type: action.widgetType,
                 title: WIDGET_LABELS[action.widgetType],
-                position: getCascadePosition(state.windows),
-                size: { ...DEFAULT_SIZES[action.widgetType] },
+                position: placement.position,
+                size: placement.size,
                 zIndex: state.nextZIndex,
                 isMinimized: false,
                 props: action.props,
@@ -164,7 +199,7 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
             return {
                 ...state,
                 windows: state.windows.map(w =>
-                    w.id === action.windowId ? { ...w, size: action.size } : w
+                    w.id === action.windowId ? { ...w, size: action.size, position: action.position ?? w.position } : w
                 ),
             };
         }
@@ -214,6 +249,36 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                     };
                 }
             }
+        }
+
+        case 'SNAP_WINDOW': {
+            if (typeof window === 'undefined') return state;
+
+            return {
+                ...state,
+                windows: state.windows.map(w => {
+                    if (w.id !== action.windowId) return w;
+
+                    const halfWidth = window.innerWidth / 2;
+                    const availableHeight = window.innerHeight - 60; // Leave room for launcher
+
+                    return {
+                        ...w,
+                        size: {
+                            width: halfWidth,
+                            height: availableHeight
+                        },
+                        position: {
+                            x: action.position === 'left' ? 0 : halfWidth,
+                            y: 0
+                        },
+                        isMinimized: false,
+                        zIndex: state.nextZIndex
+                    };
+                }),
+                nextZIndex: state.nextZIndex + 1,
+                maximizedWindowId: state.layoutMode === 'tabbed' ? action.windowId : state.maximizedWindowId,
+            };
         }
 
         default:
@@ -266,9 +331,10 @@ interface WorkspaceContextValue {
     minimizeWindow: (windowId: string) => void;
     restoreWindow: (windowId: string) => void;
     moveWindow: (windowId: string, position: WindowPosition) => void;
-    resizeWindow: (windowId: string, size: WindowSize) => void;
+    resizeWindow: (windowId: string, size: WindowSize, position?: WindowPosition) => void;
     setLayoutMode: (mode: 'multi-window' | 'tabbed') => void;
     toggleMaximize: (windowId: string) => void;
+    snapWindow: (windowId: string, position: 'left' | 'right') => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -311,8 +377,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'MOVE_WINDOW', windowId, position });
     }, []);
 
-    const resizeWindow = useCallback((windowId: string, size: WindowSize) => {
-        dispatch({ type: 'RESIZE_WINDOW', windowId, size });
+    const resizeWindow = useCallback((windowId: string, size: WindowSize, position?: WindowPosition) => {
+        dispatch({ type: 'RESIZE_WINDOW', windowId, size, position });
     }, []);
 
     const setLayoutMode = useCallback((mode: 'multi-window' | 'tabbed') => {
@@ -321,6 +387,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     const toggleMaximize = useCallback((windowId: string) => {
         dispatch({ type: 'TOGGLE_MAXIMIZE', windowId });
+    }, []);
+
+    const snapWindow = useCallback((windowId: string, position: 'left' | 'right') => {
+        dispatch({ type: 'SNAP_WINDOW', windowId, position });
     }, []);
 
     return (
@@ -336,6 +406,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             resizeWindow,
             setLayoutMode,
             toggleMaximize,
+            snapWindow,
         }}>
             {children}
         </WorkspaceContext.Provider>

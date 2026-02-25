@@ -45,10 +45,11 @@ export type WorkspaceAction =
     | { type: 'MINIMIZE_WINDOW'; windowId: string }
     | { type: 'RESTORE_WINDOW'; windowId: string }
     | { type: 'MOVE_WINDOW'; windowId: string; position: WindowPosition }
-    | { type: 'RESIZE_WINDOW'; windowId: string; size: WindowSize }
+    | { type: 'RESIZE_WINDOW'; windowId: string; size: WindowSize; position?: WindowPosition }
     | { type: 'RESTORE_STATE'; state: WorkspaceState }
     | { type: 'SET_LAYOUT_MODE'; mode: 'multi-window' | 'tabbed' }
-    | { type: 'TOGGLE_MAXIMIZE'; windowId: string };
+    | { type: 'TOGGLE_MAXIMIZE'; windowId: string }
+    | { type: 'SNAP_WINDOW'; windowId: string; position: 'left' | 'right' };
 
 // Default sizes for each widget type
 export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {

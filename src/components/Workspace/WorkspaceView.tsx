@@ -2,12 +2,14 @@
 import { useEffect } from 'react';
 import { Layout as LayoutIcon } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useContextMenu } from '../../context/ContextMenuContext';
 import { WindowFrame } from './WindowFrame';
 import { widgetRegistry } from './widgetRegistry';
 import './WorkspaceView.css';
 
 export function WorkspaceView() {
-    const { state } = useWorkspace();
+    const { state, closeWindow } = useWorkspace();
+    const { showMenu } = useContextMenu();
 
     // Lock page scroll while workspace is active — the canvas manages its own layout
     useEffect(() => {
@@ -29,7 +31,17 @@ export function WorkspaceView() {
     return (
         <div className="workspace-view">
             {/* Background canvas */}
-            <div className="workspace-canvas" />
+            <div
+                className="workspace-canvas"
+                onContextMenu={(e) => {
+                    e.preventDefault();
+                    showMenu(e.clientX, e.clientY, [
+                        { label: 'Force Reload App', action: () => window.location.reload(), icon: <span className="text-lg">↻</span> },
+                        { divider: true, action: () => { } },
+                        { label: 'Close All Windows', action: () => state.windows.forEach(w => closeWindow(w.id)), destructive: true },
+                    ]);
+                }}
+            />
 
             {/* Empty state */}
             {state.windows.length === 0 && (

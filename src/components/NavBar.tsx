@@ -14,9 +14,9 @@ export function NavBar() {
     const activeWindow = state.windows.find(w => w.zIndex === topZIndex && !w.isMinimized);
     const activeWidgetType = activeWindow?.type;
 
-    const handleClearData = () => {
+    const handleClearData = async () => {
         if (window.confirm('Clear all saved data? This will reset your army lists, calculator settings, and workspace layout. The page will reload.')) {
-            clearAllDataAndReload();
+            await clearAllDataAndReload();
         }
     };
 

@@ -14,19 +14,44 @@ const STORE_KEYS = [
  * Clears all persisted application state from localStorage.
  * After calling this, you should reload the page to reset in-memory store state.
  */
-export function clearAllPersistedState(): void {
-    STORE_KEYS.forEach(key => {
-        localStorage.removeItem(key);
-    });
+export async function clearAllPersistedState(): Promise<void> {
+    // 1. Clear all localStorage for this origin (ignoring specific keys to be fully comprehensive)
+    localStorage.clear();
+
+    // 2. Clear all sessionStorage just in case
+    sessionStorage.clear();
+
+    // 3. Attempt to clear all IndexedDB databases
+    if (window.indexedDB && window.indexedDB.databases) {
+        try {
+            const dbs = await window.indexedDB.databases();
+            const promises = dbs.map(db => {
+                if (db.name) {
+                    return new Promise<void>((resolve, reject) => {
+                        const req = window.indexedDB.deleteDatabase(db.name!);
+                        req.onsuccess = () => resolve();
+                        req.onerror = () => reject(req.error);
+                        req.onblocked = () => resolve(); // continue even if blocked
+                    });
+                }
+                return Promise.resolve();
+            });
+            await Promise.all(promises);
+        } catch (err) {
+            console.error("Could not clear IndexedDB:", err);
+        }
+    }
 }
 
 /**
- * Clears all persisted state and reloads the page.
+ * Clears all persisted state and navigates back to the root, reloading everything.
  * This is the user-facing action — it's immediate and complete.
  */
-export function clearAllDataAndReload(): void {
-    clearAllPersistedState();
-    window.location.reload();
+export async function clearAllDataAndReload(): Promise<void> {
+    await clearAllPersistedState();
+
+    // Clear URL hashes or query params to avoid reopening a saved state
+    window.location.href = window.location.origin + window.location.pathname;
 }
 
 /**

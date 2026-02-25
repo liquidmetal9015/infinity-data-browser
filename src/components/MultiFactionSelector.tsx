@@ -25,7 +25,7 @@ export function MultiFactionSelector({
     filterFn,
     className = ''
 }: MultiFactionSelectorProps) {
-    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(() => new Set(groupedFactions.map(g => g.id)));
 
     const toggleGroup = (groupId: number, e: React.MouseEvent) => {
         e.preventDefault();
