@@ -25,6 +25,7 @@ interface ListStore extends ListState {
     clearFireteam: (groupIndex: number, fireteamId: string) => void;
     addFireteamDef: (groupIndex: number, id: string, color: string, notes?: string) => void;
     removeFireteamDef: (groupIndex: number, fireteamId: string) => void;
+    moveFireteam: (fromGroupIndex: number, toGroupIndex: number, fireteamId: string, toIndex?: number) => void;
     updateListName: (name: string) => void;
     updatePointsLimit: (pointsLimit: number) => void;
     resetList: () => void;
@@ -85,6 +86,9 @@ export const useListStore = create<ListStore>()(
 
             removeFireteamDef: (groupIndex, fireteamId) =>
                 set(s => dispatch(s, { type: 'REMOVE_FIRETEAM_DEF', groupIndex, fireteamId })),
+
+            moveFireteam: (fromGroupIndex, toGroupIndex, fireteamId, toIndex) =>
+                set(s => dispatch(s, { type: 'MOVE_FIRETEAM', fromGroupIndex, toGroupIndex, fireteamId, toIndex })),
 
             updateListName: (name) =>
                 set(s => dispatch(s, { type: 'UPDATE_LIST_NAME', name })),

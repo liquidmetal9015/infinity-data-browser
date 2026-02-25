@@ -40,24 +40,18 @@ function DraggableUnitRow({
     groupIndex,
     onViewUnit,
     onRemove,
-    db,
-    isSelectable,
-    isSelected,
-    onSelect
+    db
 }: {
     listUnit: ListUnit;
     groupIndex: number;
     onViewUnit: (unit: Unit) => void;
     onRemove: () => void;
     db: ReturnType<typeof useDatabase>;
-    isSelectable?: boolean;
-    isSelected?: boolean;
-    onSelect?: () => void;
 }) {
     const { showMenu } = useContextMenu();
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: listUnit.id,
-        data: { groupIndex, listUnit },
+        data: { type: 'unit', groupIndex, listUnit },
     });
 
     const style = {
@@ -78,13 +72,11 @@ function DraggableUnitRow({
         <div
             ref={setNodeRef}
             style={style}
-            {...(isSelectable ? {} : attributes)}
-            {...(isSelectable ? {} : listeners)}
-            className={`unit-row ${isDragging ? 'dragging' : ''} ${isSelectable ? 'cursor-pointer hover:bg-blue-900/20' : 'cursor-grab active:cursor-grabbing'}`}
-            onClick={isSelectable ? onSelect : undefined}
+            {...attributes}
+            {...listeners}
+            className={`unit-row ${isDragging ? 'dragging' : ''} cursor-grab active:cursor-grabbing`}
             onContextMenu={(e) => {
                 e.preventDefault();
-                if (isSelectable) return; // Don't show menu when forming fireteam
                 showMenu(e.clientX, e.clientY, [
                     { label: 'View Attributes & Rules', action: () => onViewUnit(listUnit.unit), icon: <Eye size={14} /> },
                     { divider: true, action: () => { } },
@@ -93,20 +85,11 @@ function DraggableUnitRow({
             }}
         >
             <div className="drag-handle col-drag flex items-center justify-center">
-                {isSelectable ? (
-                    <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={onSelect}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-3.5 h-3.5 cursor-pointer accent-blue-500"
-                    />
-                ) : (
-                    <div className="text-gray-400 p-1">
-                        <GripVertical size={14} />
-                    </div>
-                )}
+                <div className="text-gray-400 p-1">
+                    <GripVertical size={14} />
+                </div>
             </div>
+
             <div className="unit-orders col-orders">
                 <div className="flex items-center justify-center">
                     {orders.map((o, i) => <OrderIcon key={i} type={o} size={16} className={i > 0 ? "-ml-1.5" : ""} />)}
@@ -182,8 +165,8 @@ function DroppableCombatGroup({
     );
 }
 
-// Droppable container for empty fireteams
-function DroppableFireteamContainer({
+// Sortable nested card container for Fireteams
+function SortableFireteamContainer({
     groupIndex,
     fireteamId,
     color,
@@ -198,32 +181,53 @@ function DroppableFireteamContainer({
     children: React.ReactNode;
     onRemove: () => void;
 }) {
-    const { setNodeRef, isOver } = useDroppable({
+    // We use useSortable instead of useDroppable here 
+    const { setNodeRef, isOver, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: `fireteam-${fireteamId}`,
-        data: { type: 'fireteam', groupIndex, fireteamId, color, notes },
+        data: { type: 'fireteam-container', groupIndex, fireteamId, color, notes },
     });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        borderLeftColor: color,
+        backgroundColor: 'var(--bg-tertiary)',
+        borderTop: `1px solid var(--border)`,
+        borderRight: `1px solid var(--border)`,
+        borderBottom: `1px solid var(--border)`,
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+    };
 
     return (
         <div
             ref={setNodeRef}
-            className={`fireteam-container mt-2 mb-2 rounded-md overflow-hidden transition-colors ${isOver ? 'ring-2 ring-blue-400 bg-white/10' : ''}`}
-            style={{
-                borderLeft: `4px solid ${color}`,
-                backgroundColor: `${color}10`,
-                borderTop: `1px solid ${color}30`,
-                borderRight: `1px solid ${color}30`,
-                borderBottom: `1px solid ${color}30`
-            }}
+            className={`fireteam-container mt-3 mb-3 mx-2 rounded-lg overflow-hidden transition-colors border-l-4 ${isOver ? 'ring-2 ring-blue-400 bg-white/10' : ''}`}
+            style={style}
         >
-            <div className="flex items-center justify-between px-2.5 py-1.5 text-xs font-bold tracking-wider" style={{ backgroundColor: `${color}25`, color }}>
-                <div className="flex items-center gap-1.5"><Users size={12} /> {notes ? `Fireteam - ${notes}` : 'Fireteam'}</div>
-                <button onClick={onRemove} className="hover:text-red-400 p-1"><Trash2 size={12} /></button>
+            <div
+                className="flex items-center justify-between px-4 py-3 text-sm font-bold tracking-wider border-b cursor-grab active:cursor-grabbing shadow-sm"
+                style={{ backgroundColor: `${color}15`, color, borderColor: `${color}30` }}
+                {...attributes}
+                {...listeners}
+            >
+                <div className="flex items-center gap-2 uppercase">
+                    <GripVertical size={16} className="text-white/50" />
+                    <Users size={16} /> {notes || 'Fireteam'}
+                </div>
+                <button
+                    onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="hover:text-red-400 p-1 pointer-events-auto"
+                >
+                    <Trash2 size={12} />
+                </button>
             </div>
-            <div className="min-h-[30px] w-full">
+            <div className="min-h-[40px] w-full p-1 bg-black/20">
                 {children}
                 {React.Children.count(children) === 0 && (
-                    <div className="flex items-center justify-center py-2 text-xs text-white/30 italic">
-                        Drag units here
+                    <div className="flex items-center justify-center py-4 text-xs text-white/30 italic dashed border border-dashed border-white/10 m-2 rounded bg-black/40">
+                        Drag units here to form a team
                     </div>
                 )}
             </div>
@@ -233,7 +237,7 @@ function DroppableFireteamContainer({
 
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
-    const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam, addFireteamDef, removeFireteamDef } = useListStore();
+    const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam, addFireteamDef, removeFireteamDef, moveFireteam } = useListStore();
 
     // Toggleable unit expanded states
     const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
@@ -242,11 +246,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const [targetGroupIndex, setTargetGroupIndex] = useState(0);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState<ListUnit | null>(null);
-
-    // Fireteam state
-    const [formingFireteamGroupIndex, setFormingFireteamGroupIndex] = useState<number | null>(null);
-    const [selectedUnitIdsForFireteam, setSelectedUnitIdsForFireteam] = useState<Set<string>>(new Set());
-    const [fireteamNotes, setFireteamNotes] = useState<string>('');
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -327,9 +326,14 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     };
 
     const handleDragStart = (event: DragStartEvent) => {
-        setActiveId(event.active.id as string);
-        const data = event.active.data.current as { groupIndex: number; listUnit: ListUnit };
-        setActiveUnit(data?.listUnit || null);
+        const { active } = event;
+        setActiveId(active.id as string);
+        const data = active.data.current as { type?: string; listUnit?: ListUnit; groupIndex?: number; fireteamId?: string } | undefined;
+        if (data?.type === 'unit' && data.listUnit) {
+            setActiveUnit(data.listUnit);
+        } else {
+            setActiveUnit(null);
+        }
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -339,115 +343,105 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
         if (!over || active.id === over.id) return;
 
-        const activeData = active.data.current as { groupIndex: number; listUnit: ListUnit };
-        const overData = over.data.current;
+        const activeData = active.data.current as any;
+        const overData = over.data.current as any;
 
         if (!activeData) return;
 
         const fromGroupIndex = activeData.groupIndex;
         let toGroupIndex = fromGroupIndex;
-        let toIndex = -1; // -1 means append
-        let targetFireteamId: string | null = null;
-        let dropType: 'group' | 'fireteam' | 'unit' = 'unit';
 
-        if (overData && overData.type === 'combat-group') {
-            toGroupIndex = overData.groupIndex;
-            toIndex = list.groups[toGroupIndex].units.length; // append to end
-            dropType = 'group';
-        } else if (overData && overData.type === 'fireteam') {
-            toGroupIndex = overData.groupIndex;
-            targetFireteamId = overData.fireteamId;
-            toIndex = list.groups[toGroupIndex].units.length; // append to end for now
-            dropType = 'fireteam';
-        } else if (overData) {
-            toGroupIndex = overData.groupIndex;
-            // over a specific unit
-            const targetGroup = list.groups[toGroupIndex];
-            toIndex = targetGroup.units.findIndex(u => u.id === over.id);
-            // If dropping on a unit inside a fireteam, inherit its fireteam
-            const targetUnit = targetGroup.units[toIndex];
-            if (targetUnit && targetUnit.fireteamId) {
-                targetFireteamId = targetUnit.fireteamId;
-            }
-        }
+        // CASE 1: Moving a Fireteam Container
+        if (activeData.type === 'fireteam-container') {
+            const fireteamId = activeData.fireteamId as string;
+            let targetIndex = list.groups[toGroupIndex].fireteams?.length || 0;
 
-        if (fromGroupIndex === toGroupIndex) {
-            // Reorder within same group
-            if (toIndex !== -1) {
-                const group = list.groups[fromGroupIndex];
-                const fromIndex = group.units.findIndex(u => u.id === active.id);
-                if (fromIndex !== -1 && toIndex !== -1) {
-                    reorderUnit(fromGroupIndex, fromIndex, toIndex);
+            if (overData) {
+                toGroupIndex = overData.groupIndex;
+                if (overData.type === 'fireteam-container') {
+                    const overFtId = overData.fireteamId;
+                    const overIndex = list.groups[toGroupIndex].fireteams?.findIndex(ft => ft.id === overFtId) ?? -1;
+                    if (overIndex !== -1) {
+                        targetIndex = overIndex;
+                    }
                 }
             }
-        } else {
-            // Move to different group
-            moveUnitToGroup(
+
+            moveFireteam(
                 fromGroupIndex,
                 toGroupIndex,
-                active.id as string,
-                toIndex === -1 ? list.groups[toGroupIndex].units.length : toIndex
+                fireteamId,
+                targetIndex
             );
+            return;
         }
 
-        // Fireteam logic
-        if (dropType === 'fireteam' && targetFireteamId) {
-            assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, overData?.color || '', overData?.notes || '');
-        } else if (dropType === 'group' || (dropType === 'unit' && !targetFireteamId)) {
-            // If dropped into the generic group area or onto a standalone unit, remove from fireteam
-            if (activeData.listUnit.fireteamId) {
-                removeFromFireteam(toGroupIndex, [active.id as string]);
+        // CASE 2: Moving a Unit
+        if (activeData.type === 'unit') {
+            let toIndex = -1; // -1 means append
+            let targetFireteamId: string | null = null;
+            let dropType: 'group' | 'fireteam' | 'unit' = 'unit';
+
+            if (overData && overData.type === 'combat-group') {
+                toGroupIndex = overData.groupIndex;
+                toIndex = list.groups[toGroupIndex].units.length; // append to end
+                dropType = 'group';
+            } else if (overData && overData.type === 'fireteam-container') {
+                toGroupIndex = overData.groupIndex;
+                targetFireteamId = overData.fireteamId;
+                toIndex = list.groups[toGroupIndex].units.length; // append to end for now
+                dropType = 'fireteam';
+            } else if (overData) {
+                toGroupIndex = overData.groupIndex;
+                // over a specific unit
+                const targetGroup = list.groups[toGroupIndex];
+                toIndex = targetGroup.units.findIndex(u => u.id === over.id);
+                // If dropping on a unit inside a fireteam, inherit its fireteam
+                const targetUnit = targetGroup.units[toIndex];
+                if (targetUnit && targetUnit.fireteamId) {
+                    targetFireteamId = targetUnit.fireteamId;
+                }
             }
-        } else if (targetFireteamId && targetFireteamId !== activeData.listUnit.fireteamId) {
-            // Dropped onto a unit in a different fireteam
-            const ftDef = list.groups[toGroupIndex].fireteams?.find(f => f.id === targetFireteamId);
-            if (ftDef) {
-                assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, ftDef.color, ftDef.notes || '');
-            } else if (overData?.listUnit) {
-                assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, overData.listUnit.fireteamColor || '', overData.listUnit.fireteamNotes || '');
-            }
-        }
-    };
 
-    const handleSaveFireteam = () => {
-        if (formingFireteamGroupIndex === null) return;
-
-        const id = `ft-${Date.now()}`;
-        // Generate a vibrant color for the fireteam
-        const hue = Math.floor(Math.random() * 360);
-        const color = `hsl(${hue}, 80%, 65%)`;
-
-        addFireteamDef(formingFireteamGroupIndex, id, color, fireteamNotes);
-
-        if (selectedUnitIdsForFireteam.size > 0) {
-            assignToFireteam(
-                formingFireteamGroupIndex,
-                Array.from(selectedUnitIdsForFireteam),
-                id,
-                color,
-                fireteamNotes
-            );
-        }
-
-        setFormingFireteamGroupIndex(null);
-        setSelectedUnitIdsForFireteam(new Set());
-        setFireteamNotes('');
-    };
-
-    const toggleFireteamSelect = (unitId: string) => {
-        setSelectedUnitIdsForFireteam(prev => {
-            const next = new Set(prev);
-            if (next.has(unitId)) {
-                next.delete(unitId);
+            // Move the unit in the list order
+            if (fromGroupIndex === toGroupIndex) {
+                if (toIndex !== -1) {
+                    const group = list.groups[fromGroupIndex];
+                    const fromIndex = group.units.findIndex(u => u.id === active.id);
+                    if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+                        reorderUnit(fromGroupIndex, fromIndex, toIndex);
+                    }
+                }
             } else {
-                next.add(unitId);
+                moveUnitToGroup(
+                    fromGroupIndex,
+                    toGroupIndex,
+                    active.id as string,
+                    toIndex === -1 ? list.groups[toGroupIndex].units.length : toIndex
+                );
             }
-            return next;
-        });
+
+            // Assign fireteam state for the unit
+            if (dropType === 'fireteam' && targetFireteamId) {
+                assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, overData?.color || '', overData?.notes || '');
+            } else if (dropType === 'group' || (dropType === 'unit' && !targetFireteamId)) {
+                // If dropped into the generic group area or onto a standalone unit, remove from fireteam
+                if (activeData.listUnit?.fireteamId) {
+                    removeFromFireteam(toGroupIndex, [active.id as string]);
+                }
+            } else if (targetFireteamId && targetFireteamId !== activeData.listUnit?.fireteamId) {
+                // Dropped onto a unit in a different fireteam
+                const ftDef = list.groups[toGroupIndex].fireteams?.find(f => f.id === targetFireteamId);
+                if (ftDef) {
+                    assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, ftDef.color, ftDef.notes || '');
+                } else if (overData?.listUnit) {
+                    assignToFireteam(toGroupIndex, [active.id as string], targetFireteamId, overData.listUnit.fireteamColor || '', overData.listUnit.fireteamNotes || '');
+                }
+            }
+        }
     };
 
-    // Collect all unit IDs for sortable context
-    const allUnitIds = list.groups.flatMap(g => g.units.map(u => u.id));
+
 
     return (
         <div className="list-dashboard-dense">
@@ -520,7 +514,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    <SortableContext items={allUnitIds} strategy={verticalListSortingStrategy}>
+                    <div className="combat-groups-container">
                         {/* Combat Groups */}
                         {list.groups.map((group, groupIndex) => {
                             const groupOrders = countGroupOrders(
@@ -554,9 +548,10 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                     className="target-btn group-ft-btn mr-1"
                                                     title="Add a fireteam container"
                                                     onClick={() => {
-                                                        setFormingFireteamGroupIndex(groupIndex);
-                                                        setSelectedUnitIdsForFireteam(new Set());
-                                                        setFireteamNotes('');
+                                                        const id = `ft-${Date.now()}`;
+                                                        const hue = Math.floor(Math.random() * 360);
+                                                        const color = `hsl(${hue}, 80%, 65%)`;
+                                                        addFireteamDef(groupIndex, id, color, '');
                                                     }}
                                                 >
                                                     <Users size={12} className="inline mr-1" /> Add Fireteam
@@ -581,36 +576,13 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                         </div>
                                     </div>
 
-                                    {group.units.length === 0 ? (
+                                    {group.units.length === 0 && (!group.fireteams || group.fireteams.length === 0) ? (
                                         <div className="empty-group">
                                             Click a unit from the roster to add it here
                                         </div>
                                     ) : (
                                         <div className="units-table relative">
-                                            {formingFireteamGroupIndex === groupIndex && (
-                                                <div className="fireteam-creator-bar p-2.5 bg-blue-900/40 border-b border-blue-500/30 flex items-center justify-between z-10 sticky top-0 backdrop-blur-md">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-sm text-blue-300 font-bold flex items-center gap-1.5"><Users size={14} /> FORM FIRETEAM</span>
-                                                        <span className="text-xs text-blue-200 bg-blue-950/50 px-2 py-0.5 rounded border border-blue-500/20">{selectedUnitIdsForFireteam.size} units selected</span>
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Type (e.g. Core, Haris)"
-                                                            value={fireteamNotes}
-                                                            onChange={e => setFireteamNotes(e.target.value)}
-                                                            className="ml-2 bg-black/40 border border-blue-500/40 focus:border-blue-400 focus:outline-none text-white text-xs px-2.5 py-1.5 rounded w-48 transition-colors"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button onClick={() => { setFormingFireteamGroupIndex(null); setSelectedUnitIdsForFireteam(new Set()); }} className="text-xs px-3 py-1.5 text-gray-300 bg-white/5 hover:bg-white/10 hover:text-white rounded border border-white/5 transition-colors">Cancel</button>
-                                                        <button
-                                                            onClick={handleSaveFireteam}
-                                                            className="text-xs px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded font-bold transition-colors shadow-lg shadow-blue-500/20"
-                                                        >
-                                                            Create Team
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
+
                                             <div className="units-thead flex items-center">
                                                 <div className="col-drag"></div>
                                                 <div className="col-orders text-center">Ord</div>
@@ -622,81 +594,74 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                             </div>
                                             <div className="units-tbody">
                                                 {(() => {
-                                                    const items: any[] = [];
+                                                    const fireteamItems: { ft: any, members: ListUnit[] }[] = [];
                                                     const seenFireteams = new Set<string>();
 
                                                     // Map explicitly defined fireteams
                                                     const fireteamDefs = group.fireteams || [];
                                                     fireteamDefs.forEach(ft => {
                                                         const members = group.units.filter(u => u.fireteamId === ft.id);
-                                                        items.push({
-                                                            type: 'fireteam',
-                                                            id: ft.id,
-                                                            color: ft.color,
-                                                            notes: ft.notes,
-                                                            members
-                                                        });
+                                                        fireteamItems.push({ ft, members });
                                                         seenFireteams.add(ft.id);
                                                     });
 
-                                                    // Then map unbound units and implicitly grouped units (for backwards compatibility)
+                                                    // Then map implicit fireteams for backwards compatibility
                                                     group.units.forEach(u => {
                                                         if (u.fireteamId) {
                                                             if (!seenFireteams.has(u.fireteamId)) {
                                                                 seenFireteams.add(u.fireteamId);
-                                                                items.push({
-                                                                    type: 'fireteam',
-                                                                    id: u.fireteamId,
-                                                                    color: u.fireteamColor || '#3b82f6',
-                                                                    notes: u.fireteamNotes,
+                                                                fireteamItems.push({
+                                                                    ft: { id: u.fireteamId, color: u.fireteamColor || '#3b82f6', notes: u.fireteamNotes },
                                                                     members: group.units.filter(member => member.fireteamId === u.fireteamId)
                                                                 });
                                                             }
-                                                        } else {
-                                                            items.push({ type: 'single', unit: u });
                                                         }
                                                     });
 
-                                                    return items.map(item => {
-                                                        if (item.type === 'single') {
-                                                            return <DraggableUnitRow
-                                                                key={item.unit.id}
-                                                                listUnit={item.unit}
-                                                                groupIndex={groupIndex}
-                                                                onViewUnit={onViewUnit}
-                                                                onRemove={() => removeUnit(groupIndex, item.unit.id)}
-                                                                db={db}
-                                                                isSelectable={formingFireteamGroupIndex === groupIndex}
-                                                                isSelected={selectedUnitIdsForFireteam.has(item.unit.id)}
-                                                                onSelect={() => toggleFireteamSelect(item.unit.id)}
-                                                            />;
-                                                        } else {
-                                                            return (
-                                                                <DroppableFireteamContainer
-                                                                    key={item.id}
-                                                                    groupIndex={groupIndex}
-                                                                    fireteamId={item.id}
-                                                                    color={item.color}
-                                                                    notes={item.notes}
-                                                                    onRemove={() => removeFireteamDef(groupIndex, item.id)}
-                                                                >
-                                                                    {item.members.map((u: ListUnit) => (
-                                                                        <DraggableUnitRow
-                                                                            key={u.id}
-                                                                            listUnit={u}
-                                                                            groupIndex={groupIndex}
-                                                                            onViewUnit={onViewUnit}
-                                                                            onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                            db={db}
-                                                                            isSelectable={formingFireteamGroupIndex === groupIndex}
-                                                                            isSelected={selectedUnitIdsForFireteam.has(u.id)}
-                                                                            onSelect={() => toggleFireteamSelect(u.id)}
-                                                                        />
-                                                                    ))}
-                                                                </DroppableFireteamContainer>
-                                                            );
-                                                        }
-                                                    });
+                                                    const unboundUnits = group.units.filter(u => !u.fireteamId);
+
+                                                    return (
+                                                        <>
+                                                            <SortableContext items={fireteamItems.map(f => `fireteam-${f.ft.id}`)} strategy={verticalListSortingStrategy}>
+                                                                {fireteamItems.map(item => (
+                                                                    <SortableFireteamContainer
+                                                                        key={item.ft.id}
+                                                                        groupIndex={groupIndex}
+                                                                        fireteamId={item.ft.id}
+                                                                        color={item.ft.color}
+                                                                        notes={item.ft.notes}
+                                                                        onRemove={() => removeFireteamDef(groupIndex, item.ft.id)}
+                                                                    >
+                                                                        <SortableContext items={item.members.map(u => u.id)} strategy={verticalListSortingStrategy}>
+                                                                            {item.members.map((u: ListUnit) => (
+                                                                                <DraggableUnitRow
+                                                                                    key={u.id}
+                                                                                    listUnit={u}
+                                                                                    groupIndex={groupIndex}
+                                                                                    onViewUnit={onViewUnit}
+                                                                                    onRemove={() => removeUnit(groupIndex, u.id)}
+                                                                                    db={db}
+                                                                                />
+                                                                            ))}
+                                                                        </SortableContext>
+                                                                    </SortableFireteamContainer>
+                                                                ))}
+                                                            </SortableContext>
+
+                                                            <SortableContext items={unboundUnits.map(u => u.id)} strategy={verticalListSortingStrategy}>
+                                                                {unboundUnits.map(u => (
+                                                                    <DraggableUnitRow
+                                                                        key={u.id}
+                                                                        listUnit={u}
+                                                                        groupIndex={groupIndex}
+                                                                        onViewUnit={onViewUnit}
+                                                                        onRemove={() => removeUnit(groupIndex, u.id)}
+                                                                        db={db}
+                                                                    />
+                                                                ))}
+                                                            </SortableContext>
+                                                        </>
+                                                    );
                                                 })()}
                                             </div>
                                         </div>
@@ -704,7 +669,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                 </DroppableCombatGroup>
                             );
                         })}
-                    </SortableContext>
+                    </div>
 
                     <DragOverlay>
                         {activeId && activeUnit ? (

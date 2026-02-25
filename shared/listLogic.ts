@@ -29,6 +29,7 @@ export type ListAction =
     | { type: 'CLEAR_FIRETEAM'; groupIndex: number; fireteamId: string }
     | { type: 'ADD_FIRETEAM_DEF'; groupIndex: number; id: string; color: string; notes?: string }
     | { type: 'REMOVE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string }
+    | { type: 'MOVE_FIRETEAM'; fromGroupIndex: number; toGroupIndex: number; fireteamId: string; toIndex?: number }
     | { type: 'RESET_LIST' };
 
 export const initialState: ListState = {
@@ -288,6 +289,66 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                     }),
                 };
             }
+
+            return {
+                ...state,
+                currentList: {
+                    ...state.currentList,
+                    groups: newGroups,
+                    updatedAt: Date.now(),
+                },
+            };
+        }
+
+        case 'MOVE_FIRETEAM': {
+            if (!state.currentList) return state;
+
+            const { fromGroupIndex, toGroupIndex, fireteamId, toIndex } = action;
+            const newGroups = [...state.currentList.groups];
+
+            // Get source group
+            if (fromGroupIndex < 0 || fromGroupIndex >= newGroups.length) return state;
+
+            // Extract the fireteam def
+            const sourceGroup = newGroups[fromGroupIndex];
+            const ftDefIndex = (sourceGroup.fireteams || []).findIndex(ft => ft.id === fireteamId);
+            if (ftDefIndex === -1) return state;
+
+            const [ftDef] = sourceGroup.fireteams!.splice(ftDefIndex, 1);
+
+            // Extract all units belonging to the fireteam
+            const ftUnits = sourceGroup.units.filter(u => u.fireteamId === fireteamId);
+            sourceGroup.units = sourceGroup.units.filter(u => u.fireteamId !== fireteamId);
+
+            newGroups[fromGroupIndex] = { ...sourceGroup };
+
+            // Insert into target group
+            if (toGroupIndex < 0 || toGroupIndex >= newGroups.length) return state;
+            const targetGroup = newGroups[toGroupIndex];
+
+            targetGroup.fireteams = [...(targetGroup.fireteams || [])];
+
+            // Insert the definition
+            // To maintain visual ordering of fireteam blocks, we could insert the def at a specific index,
+            // but the `units` array order is what dnd-kit uses for absolute positional tracking of elements
+            // Actually, since Fireteam Cards are mapped out based on `fireteams` order before standalone units,
+            // we should reorder the `fireteams` array itself if moving within the same group, or append if moving groups
+
+            if (fromGroupIndex === toGroupIndex) {
+                // Reordering within the same group
+                const insertIndex = toIndex !== undefined ? toIndex : targetGroup.fireteams.length;
+                targetGroup.fireteams.splice(insertIndex, 0, ftDef);
+
+                // We don't necessarily need to change `units` array order since they render mapped through the `fireteams` array
+                targetGroup.units = [...targetGroup.units, ...ftUnits];
+            } else {
+                // Moving to a new group entirely
+                const insertIndex = toIndex !== undefined ? toIndex : targetGroup.fireteams.length;
+                targetGroup.fireteams.splice(insertIndex, 0, ftDef);
+                targetGroup.units = [...targetGroup.units, ...ftUnits];
+            }
+
+            newGroups[toGroupIndex] = { ...targetGroup };
 
             return {
                 ...state,
