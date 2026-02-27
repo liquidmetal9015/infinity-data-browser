@@ -27,6 +27,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -42,6 +43,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -57,6 +59,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -74,6 +77,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={onPointsLimitChange}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -91,6 +95,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -106,6 +111,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -122,6 +128,7 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={onCopyCode}
                     onReset={vi.fn()}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
@@ -139,11 +146,30 @@ describe('ListBuilder Components', () => {
                     onPointsLimitChange={vi.fn()}
                     onCopyCode={vi.fn()}
                     onReset={onReset}
+                    onOpenInArmy={vi.fn()}
                 />
             );
 
             fireEvent.click(screen.getByText('Start Over'));
             expect(onReset).toHaveBeenCalled();
+        });
+
+        it('calls onOpenInArmy when Open in Infinity Army button clicked', () => {
+            const onOpenInArmy = vi.fn();
+            render(
+                <ListHeader
+                    list={mockList}
+                    factionName="PanOceania"
+                    codeCopied={false}
+                    onPointsLimitChange={vi.fn()}
+                    onCopyCode={vi.fn()}
+                    onReset={vi.fn()}
+                    onOpenInArmy={onOpenInArmy}
+                />
+            );
+
+            fireEvent.click(screen.getByText('Open in Infinity Army'));
+            expect(onOpenInArmy).toHaveBeenCalled();
         });
     });
 });

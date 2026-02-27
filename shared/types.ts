@@ -49,6 +49,7 @@ export interface Option {
     skills: { id: number; extra?: number[] }[];
     equip: { id: number; extra?: number[] }[];
     weapons: { id: number; extra?: number[] }[];
+    orders?: { type: string; list?: number; total?: number }[];
 }
 
 export interface UnitRaw {

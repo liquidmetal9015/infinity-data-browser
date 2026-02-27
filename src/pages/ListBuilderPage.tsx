@@ -89,6 +89,22 @@ export function ListBuilderPage() {
         setTimeout(() => setCodeCopied(false), 2000);
     };
 
+    const handleOpenInArmy = () => {
+        if (!currentList) return;
+
+        // Get faction info to get the slug (official format uses slug)
+        const faction = db.getFactionInfo(currentList.factionId);
+        const factionSlug = faction?.slug || 'unknown';
+
+        const code = encodeArmyList(
+            currentList,
+            factionSlug,
+            (unit) => unit.idArmy || unit.id
+        );
+
+        window.open(`https://infinitytheuniverse.com/army/list/${code}`, '_blank');
+    };
+
     // If a list exists, show the Dashboard
     if (currentList) {
         return (
@@ -99,6 +115,7 @@ export function ListBuilderPage() {
                     codeCopied={codeCopied}
                     onPointsLimitChange={updatePointsLimit}
                     onCopyCode={handleCopyCode}
+                    onOpenInArmy={handleOpenInArmy}
                     onReset={resetList}
                 />
 

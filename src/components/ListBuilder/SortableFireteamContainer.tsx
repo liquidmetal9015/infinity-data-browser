@@ -129,7 +129,7 @@ export function SortableFireteamContainer({
 
     const contributorNames = Array.from(contributingMemberIndices).map(idx => listUnits[idx].unit.name).join(', ');
 
-    const isInvalid = activeTeamDef ? (assignments === null) : false;
+    const isInvalid = activeTeamDef ? (assignments === null) : (members.length > 0 && possibleTeams.length === 0);
     const isFormed = bonuses.some(b => b.isActive);
     const isIncomplete = activeTeamDef && !isInvalid && !isFormed;
 

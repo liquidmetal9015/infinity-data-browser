@@ -1,5 +1,5 @@
 // List Header with controls Component
-import { Trash2, Copy, Check } from 'lucide-react';
+import { Trash2, Copy, Check, ExternalLink } from 'lucide-react';
 import type { ArmyList } from '../../../shared/listTypes';
 
 interface ListHeaderProps {
@@ -9,6 +9,7 @@ interface ListHeaderProps {
     onPointsLimitChange: (limit: number) => void;
     onCopyCode: () => void;
     onReset: () => void;
+    onOpenInArmy: () => void;
 }
 
 export function ListHeader({
@@ -17,7 +18,8 @@ export function ListHeader({
     codeCopied,
     onPointsLimitChange,
     onCopyCode,
-    onReset
+    onReset,
+    onOpenInArmy
 }: ListHeaderProps) {
     return (
         <div className="list-header">
@@ -41,6 +43,10 @@ export function ListHeader({
                         <option value={400}>400</option>
                     </select>
                 </div>
+                <button className="code-button" onClick={onOpenInArmy} title="Open list in official Infinity Army app">
+                    <ExternalLink size={16} />
+                    Open in Infinity Army
+                </button>
                 <button className="code-button" onClick={onCopyCode}>
                     {codeCopied ? <Check size={16} /> : <Copy size={16} />}
                     {codeCopied ? 'Copied!' : 'Copy Code'}

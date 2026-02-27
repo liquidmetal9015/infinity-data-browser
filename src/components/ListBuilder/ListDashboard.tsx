@@ -67,7 +67,18 @@ function DraggableUnitRow({
 
     const weapons = option?.weapons?.map(w => db.weaponMap.get(w.id) || 'Unknown').join(', ') || '—';
     const equipment = option?.equip?.map(e => db.equipmentMap.get(e.id) || 'Unknown').join(', ') || '';
-    const displayName = profileGroup?.isco || listUnit.unit.isc;
+
+    const optionModsAndSkills = [
+        ...(option?.skills || []).map(s => {
+            const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
+            return `${db.skillMap.get(s.id) || `Skill ${s.id}`}${mods}`;
+        })
+    ];
+    let displayName = profileGroup?.isco || listUnit.unit.isc;
+    if (optionModsAndSkills.length > 0) {
+        displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
+    }
+
 
     return (
         <div
@@ -130,7 +141,20 @@ function DraggableUnitRow({
 function DragOverlayUnit({ listUnit }: { listUnit: ListUnit }) {
     const profileGroup = listUnit.unit.raw.profileGroups.find(g => g.id === listUnit.profileGroupId);
     const { option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
-    const displayName = profileGroup?.isco || listUnit.unit.isc;
+
+    // We need db to get skill names for DragOverlayUnit. It's not passed but we can import useDatabase here.
+    const db = useDatabase();
+
+    const optionModsAndSkills = [
+        ...(option?.skills || []).map(s => {
+            const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
+            return `${db.skillMap.get(s.id) || `Skill ${s.id}`}${mods}`;
+        })
+    ];
+    let displayName = profileGroup?.isco || listUnit.unit.isc;
+    if (optionModsAndSkills.length > 0) {
+        displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
+    }
 
     return (
         <div className="drag-overlay-unit">

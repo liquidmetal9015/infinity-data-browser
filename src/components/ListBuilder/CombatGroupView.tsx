@@ -49,12 +49,21 @@ export function CombatGroupView({
 
             <div className="unit-list">
                 {group.units.map((listUnit) => {
-                    // Get profile and option details
                     const profileGroup = listUnit.unit.raw.profileGroups.find(
                         pg => pg.id === listUnit.profileGroupId
                     );
-                    const profile = profileGroup?.profiles.find(p => p.id === listUnit.profileId);
                     const option = profileGroup?.options.find(o => o.id === listUnit.optionId);
+
+                    const optionModsAndSkills = [
+                        ...(option?.skills || []).map(s => {
+                            const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
+                            return `${db.skillMap.get(s.id) || `Skill ${s.id}`}${mods}`;
+                        })
+                    ];
+                    let displayName = profileGroup?.isco || listUnit.unit.isc;
+                    if (optionModsAndSkills.length > 0) {
+                        displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
+                    }
 
                     // Build weapons string
                     const weapons = option?.weapons?.map(w => db.weaponMap.get(w.id) || 'Unknown').join(', ') || '';
@@ -62,10 +71,7 @@ export function CombatGroupView({
                     return (
                         <div key={listUnit.id} className="unit-row">
                             <div className="unit-info">
-                                <span className="unit-name">{listUnit.unit.isc}</span>
-                                {profile && profile.name !== listUnit.unit.isc && (
-                                    <span className="profile-name">({profile.name})</span>
-                                )}
+                                <span className="unit-name">{displayName}</span>
                                 <span className="unit-weapons">{weapons}</span>
                             </div>
                             <div className="unit-cost">
