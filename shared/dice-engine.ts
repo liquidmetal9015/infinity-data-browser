@@ -252,14 +252,12 @@ export function calculateExpectedWounds(
             continue;
         }
 
-        let autoWounds = 0;
         let normalSaves = hits * ammoMult;
 
         const hasCrit = (winner === 'active' ? ev.aCrit : ev.bCrit);
 
         if (hasCrit && !critImmune) {
-            autoWounds = 1;
-            normalSaves -= 1;
+            normalSaves += 1;
         }
 
         let dist = getTotalWoundsDist(normalSaves, armorSave, damage, cont);
@@ -267,14 +265,6 @@ export function calculateExpectedWounds(
         if (plasma) {
             const plasmaDist = getTotalWoundsDist(normalSaves, btsSave, 1, false);
             dist = convolve(dist, plasmaDist);
-        }
-
-        if (autoWounds > 0) {
-            const shifted = new Map<number, number>();
-            for (const [w, p] of dist.entries()) {
-                shifted.set(w + autoWounds, p);
-            }
-            dist = shifted;
         }
 
         const targetMap = (winner === 'active') ? wRes.active : wRes.reactive;

@@ -45,15 +45,17 @@ describe('Infinity N5 Dice Engine', () => {
 
         // Die A (SV 13): P(miss)=7/20=0.35, P(hit non-crit)=12/20=0.6, P(crit)=1/20=0.05
         // Die B has burst 0, so B max is always 0 → active wins on any hit
-        // Non-crit wins: 1 hit, 1 save roll. P(fail save)=0.2. So P(wound)=0.6*0.2=0.12
-        // Crit wins: 1 auto-wound (no save). P=0.05
-        // P(active,1 wound) = 0.12 + 0.05 = 0.17
-        // P(active,0 wounds) = 0.6*0.8 = 0.48
+        // Non-crit wins (P=0.6): 1 save roll. P(save)=0.8, P(fail)=0.2.
+        // Crit wins (P=0.05): 2 save rolls. 
+        // P(0 wounds) = 0.6 * 0.8 + 0.05 * (0.8 * 0.8) = 0.48 + 0.032 = 0.512
+        // P(1 wound) = 0.6 * 0.2 + 0.05 * (2 * 0.8 * 0.2) = 0.12 + 0.016 = 0.136
+        // P(2 wounds) = 0.05 * (0.2 * 0.2) = 0.002
 
         const expected = {
             'active': {
-                1: 0.17 * totalRolls,
-                0: 0.48 * totalRolls
+                2: 0.002 * totalRolls,
+                1: 0.136 * totalRolls,
+                0: 0.512 * totalRolls
             }
         };
 
