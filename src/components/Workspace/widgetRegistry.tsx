@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
     Search, Library, Activity, Users, Layers,
-    ClipboardList, Calculator, Target
+    ClipboardList, Calculator, Target, BarChart
 } from 'lucide-react';
 import type { WidgetType, WindowSize } from '../../types/workspace';
 import { DEFAULT_SIZES, WIDGET_LABELS } from '../../types/workspace';
@@ -16,6 +16,7 @@ import { ComparePage } from '../../pages/ComparePage';
 import { FireteamsPage } from '../../pages/FireteamsPage';
 import { ListBuilderPage } from '../../pages/ListBuilderPage';
 import { DiceCalculatorPage } from '../../pages/DiceCalculatorPage';
+import { DiceAnalyticsPage } from '../../pages/DiceAnalyticsPage';
 import { ClassifiedsPage } from '../../pages/ClassifiedsPage';
 
 export interface WidgetRegistryEntry {
@@ -68,6 +69,12 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
         icon: Calculator,
         defaultSize: DEFAULT_SIZES.DICE_CALCULATOR,
     },
+    DICE_ANALYTICS: {
+        component: DiceAnalyticsPage,
+        label: WIDGET_LABELS.DICE_ANALYTICS,
+        icon: BarChart,
+        defaultSize: DEFAULT_SIZES.DICE_ANALYTICS,
+    },
     CLASSIFIEDS: {
         component: ClassifiedsPage,
         label: WIDGET_LABELS.CLASSIFIEDS,
@@ -80,6 +87,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
 export const LAUNCHER_WIDGETS: WidgetType[] = [
     'LIST_BUILDER',
     'DICE_CALCULATOR',
+    'DICE_ANALYTICS',
     'CLASSIFIEDS',
     'FIRETEAMS',
     'RANGES',

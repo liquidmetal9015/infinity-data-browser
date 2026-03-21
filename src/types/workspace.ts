@@ -3,6 +3,7 @@
 export type WidgetType =
     | 'LIST_BUILDER'
     | 'DICE_CALCULATOR'
+    | 'DICE_ANALYTICS'
     | 'CLASSIFIEDS'
     | 'FIRETEAMS'
     | 'RANGES'
@@ -55,6 +56,7 @@ export type WorkspaceAction =
 export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
     LIST_BUILDER: { width: 700, height: 750 },
     DICE_CALCULATOR: { width: 550, height: 700 },
+    DICE_ANALYTICS: { width: 800, height: 750 },
     CLASSIFIEDS: { width: 900, height: 700 },
     FIRETEAMS: { width: 800, height: 600 },
     RANGES: { width: 900, height: 650 },
@@ -67,6 +69,7 @@ export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
 export const WIDGET_LABELS: Record<WidgetType, string> = {
     LIST_BUILDER: 'List Builder',
     DICE_CALCULATOR: 'Dice Calculator',
+    DICE_ANALYTICS: 'Dice Analytics',
     CLASSIFIEDS: 'Classifieds',
     FIRETEAMS: 'Fireteams',
     RANGES: 'Weapons',
