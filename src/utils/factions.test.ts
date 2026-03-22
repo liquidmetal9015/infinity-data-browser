@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { FactionRegistry } from './factions';
+import { FactionRegistry } from '@shared/factions';
 
 // Mock faction data similar to what the app receives
 const mockFactions = [

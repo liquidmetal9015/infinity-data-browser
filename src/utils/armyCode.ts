@@ -1,20 +1,6 @@
-// Re-export army code utilities from shared module
-// Plus browser-specific helpers that remain in the frontend
+// Browser-specific army code utility - kept in frontend only
+// For encoding/decoding logic, import from '@shared/armyCode'
 
-export {
-    decodeArmyCode,
-    encodeArmyList,
-    isValidArmyCode,
-} from '../../shared/armyCode';
-
-export type {
-    DecodedArmyList,
-    DecodedCombatGroup,
-    DecodedMember,
-    EncodableArmyList,
-} from '../../shared/armyCode';
-
-// Browser-specific helper - kept in frontend only
 /**
  * Copy army code to clipboard.
  */

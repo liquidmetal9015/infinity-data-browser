@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useUnitSearch } from './useUnitSearch';
 import type { IDatabase } from '../services/Database';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 import type { StatFilter } from '../components/shared/UnifiedSearchBar';
 
 // Mock Database

@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import { Search, ChevronDown } from 'lucide-react';
 import type { ParsedWeapon } from '../../../shared/types';
 import type { WeaponProfile } from './types';

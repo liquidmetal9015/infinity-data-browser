@@ -1,5 +1,5 @@
-// Workspace Context - manages open windows, positions, z-index, persistence
-import { createContext, useContext, useReducer, useCallback, useEffect, type ReactNode } from 'react';
+// Workspace Zustand Store - manages open windows, positions, z-index, persistence
+import { create } from 'zustand';
 import type {
     WidgetType,
     WindowState,
@@ -7,6 +7,7 @@ import type {
     WorkspaceAction,
     WindowPosition,
     WindowSize,
+    AnyWidgetProps,
 } from '../types/workspace';
 import { DEFAULT_SIZES, WIDGET_LABELS, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../types/workspace';
 
@@ -42,7 +43,6 @@ function getInitialPlacement(windows: WindowState[], type: WidgetType): { positi
         return { position: getCascadePosition(windows), size: { ...defaultSize } };
     }
 
-    // Bounds check to ensure it fits on screen (leave room for launcher/padding)
     const maxWidth = Math.max(MIN_WINDOW_WIDTH, window.innerWidth - 40);
     const maxHeight = Math.max(MIN_WINDOW_HEIGHT, window.innerHeight - 100);
 
@@ -52,21 +52,16 @@ function getInitialPlacement(windows: WindowState[], type: WidgetType): { positi
     };
 
     if (windows.length === 0) {
-        // First window: Center it
         return {
             position: {
                 x: Math.max(0, (window.innerWidth - size.width) / 2),
-                y: Math.max(0, (window.innerHeight - size.height) / 2 - 30) // slightly higher than true center
+                y: Math.max(0, (window.innerHeight - size.height) / 2 - 30)
             },
             size
         };
     }
 
-    // Fallback to cascade
-    return {
-        position: getCascadePosition(windows),
-        size
-    };
+    return { position: getCascadePosition(windows), size };
 }
 
 // ============================================================================
@@ -83,10 +78,8 @@ export const initialState: WorkspaceState = {
 export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
     switch (action.type) {
         case 'OPEN_WINDOW': {
-            // Check if a window of this type already exists. If so, just focus and restore it.
             const existingWindow = state.windows.find(w => w.type === action.widgetType);
             if (existingWindow) {
-                // If it's already focused and not minimized (and properly maximized if in tabbed mode), do nothing
                 if (
                     existingWindow.zIndex === state.nextZIndex - 1 &&
                     !existingWindow.isMinimized &&
@@ -107,7 +100,6 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                 };
             }
 
-            // Otherwise, open a new instance (there shouldn't be multiple instances anymore)
             const placement = getInitialPlacement(state.windows, action.widgetType);
             const newWindow: WindowState = {
                 id: generateId(),
@@ -138,17 +130,12 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                     nextMaximized = null;
                 }
             }
-            return {
-                ...state,
-                windows: newWindows,
-                maximizedWindowId: nextMaximized,
-            };
+            return { ...state, windows: newWindows, maximizedWindowId: nextMaximized };
         }
 
         case 'FOCUS_WINDOW': {
             const targetWindow = state.windows.find(w => w.id === action.windowId);
             if (!targetWindow) return state;
-            // Skip if already on top and not minimized, unless in tabbed mode and it's not maximized
             if (targetWindow.zIndex === state.nextZIndex - 1 && !targetWindow.isMinimized && !(state.layoutMode === 'tabbed' && state.maximizedWindowId !== action.windowId)) {
                 return state;
             }
@@ -231,11 +218,7 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                 };
             } else {
                 if (state.maximizedWindowId === action.windowId) {
-                    return {
-                        ...state,
-                        layoutMode: 'multi-window',
-                        maximizedWindowId: null,
-                    };
+                    return { ...state, layoutMode: 'multi-window', maximizedWindowId: null };
                 } else {
                     return {
                         ...state,
@@ -258,20 +241,12 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                 ...state,
                 windows: state.windows.map(w => {
                     if (w.id !== action.windowId) return w;
-
                     const halfWidth = window.innerWidth / 2;
-                    const availableHeight = window.innerHeight - 60; // Leave room for launcher
-
+                    const availableHeight = window.innerHeight - 60;
                     return {
                         ...w,
-                        size: {
-                            width: halfWidth,
-                            height: availableHeight
-                        },
-                        position: {
-                            x: action.position === 'left' ? 0 : halfWidth,
-                            y: 0
-                        },
+                        size: { width: halfWidth, height: availableHeight },
+                        position: { x: action.position === 'left' ? 0 : halfWidth, y: 0 },
                         isMinimized: false,
                         zIndex: state.nextZIndex
                     };
@@ -303,7 +278,6 @@ function loadFromStorage(): WorkspaceState | null {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        // Basic shape validation
         if (parsed && Array.isArray(parsed.windows) && typeof parsed.nextZIndex === 'number') {
             const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
             return {
@@ -319,13 +293,11 @@ function loadFromStorage(): WorkspaceState | null {
 }
 
 // ============================================================================
-// Context
+// Store
 // ============================================================================
 
-interface WorkspaceContextValue {
-    state: WorkspaceState;
-    dispatch: React.Dispatch<WorkspaceAction>;
-    openWindow: (widgetType: WidgetType, props?: Record<string, any>) => void;
+interface WorkspaceStore extends WorkspaceState {
+    openWindow: (widgetType: WidgetType, props?: AnyWidgetProps) => void;
     closeWindow: (windowId: string) => void;
     focusWindow: (windowId: string) => void;
     minimizeWindow: (windowId: string) => void;
@@ -337,90 +309,36 @@ interface WorkspaceContextValue {
     snapWindow: (windowId: string, position: 'left' | 'right') => void;
 }
 
-const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
-
-// ============================================================================
-// Provider
-// ============================================================================
-
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-    const [state, dispatch] = useReducer(workspaceReducer, initialState, () => {
-        return loadFromStorage() || initialState;
-    });
-
-    // Persist to localStorage on every change
-    useEffect(() => {
-        saveToStorage(state);
-    }, [state]);
-
-    const openWindow = useCallback((widgetType: WidgetType, props?: Record<string, any>) => {
-        dispatch({ type: 'OPEN_WINDOW', widgetType, props });
-    }, []);
-
-    const closeWindow = useCallback((windowId: string) => {
-        dispatch({ type: 'CLOSE_WINDOW', windowId });
-    }, []);
-
-    const focusWindow = useCallback((windowId: string) => {
-        dispatch({ type: 'FOCUS_WINDOW', windowId });
-    }, []);
-
-    const minimizeWindow = useCallback((windowId: string) => {
-        dispatch({ type: 'MINIMIZE_WINDOW', windowId });
-    }, []);
-
-    const restoreWindow = useCallback((windowId: string) => {
-        dispatch({ type: 'RESTORE_WINDOW', windowId });
-    }, []);
-
-    const moveWindow = useCallback((windowId: string, position: WindowPosition) => {
-        dispatch({ type: 'MOVE_WINDOW', windowId, position });
-    }, []);
-
-    const resizeWindow = useCallback((windowId: string, size: WindowSize, position?: WindowPosition) => {
-        dispatch({ type: 'RESIZE_WINDOW', windowId, size, position });
-    }, []);
-
-    const setLayoutMode = useCallback((mode: 'multi-window' | 'tabbed') => {
-        dispatch({ type: 'SET_LAYOUT_MODE', mode });
-    }, []);
-
-    const toggleMaximize = useCallback((windowId: string) => {
-        dispatch({ type: 'TOGGLE_MAXIMIZE', windowId });
-    }, []);
-
-    const snapWindow = useCallback((windowId: string, position: 'left' | 'right') => {
-        dispatch({ type: 'SNAP_WINDOW', windowId, position });
-    }, []);
-
-    return (
-        <WorkspaceContext.Provider value={{
-            state,
-            dispatch,
-            openWindow,
-            closeWindow,
-            focusWindow,
-            minimizeWindow,
-            restoreWindow,
-            moveWindow,
-            resizeWindow,
-            setLayoutMode,
-            toggleMaximize,
-            snapWindow,
-        }}>
-            {children}
-        </WorkspaceContext.Provider>
+function applyAction(state: WorkspaceStore, action: WorkspaceAction): WorkspaceState {
+    return workspaceReducer(
+        { windows: state.windows, nextZIndex: state.nextZIndex, layoutMode: state.layoutMode, maximizedWindowId: state.maximizedWindowId },
+        action
     );
 }
 
-// ============================================================================
-// Hook
-// ============================================================================
+export const useWorkspaceStore = create<WorkspaceStore>()((set) => ({
+    // Initial state from localStorage or defaults
+    ...(loadFromStorage() || initialState),
 
-export function useWorkspace(): WorkspaceContextValue {
-    const context = useContext(WorkspaceContext);
-    if (!context) {
-        throw new Error('useWorkspace must be used within a WorkspaceProvider');
-    }
-    return context;
-}
+    // Actions
+    openWindow: (widgetType, props?) => set(s => applyAction(s, { type: 'OPEN_WINDOW', widgetType, props })),
+    closeWindow: (windowId) => set(s => applyAction(s, { type: 'CLOSE_WINDOW', windowId })),
+    focusWindow: (windowId) => set(s => applyAction(s, { type: 'FOCUS_WINDOW', windowId })),
+    minimizeWindow: (windowId) => set(s => applyAction(s, { type: 'MINIMIZE_WINDOW', windowId })),
+    restoreWindow: (windowId) => set(s => applyAction(s, { type: 'RESTORE_WINDOW', windowId })),
+    moveWindow: (windowId, position) => set(s => applyAction(s, { type: 'MOVE_WINDOW', windowId, position })),
+    resizeWindow: (windowId, size, position?) => set(s => applyAction(s, { type: 'RESIZE_WINDOW', windowId, size, position })),
+    setLayoutMode: (mode) => set(s => applyAction(s, { type: 'SET_LAYOUT_MODE', mode })),
+    toggleMaximize: (windowId) => set(s => applyAction(s, { type: 'TOGGLE_MAXIMIZE', windowId })),
+    snapWindow: (windowId, position) => set(s => applyAction(s, { type: 'SNAP_WINDOW', windowId, position })),
+}));
+
+// Persist to localStorage on every state change
+useWorkspaceStore.subscribe((state) => {
+    saveToStorage({
+        windows: state.windows,
+        nextZIndex: state.nextZIndex,
+        layoutMode: state.layoutMode,
+        maximizedWindowId: state.maximizedWindowId,
+    });
+});

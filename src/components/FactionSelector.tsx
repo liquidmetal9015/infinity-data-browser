@@ -1,6 +1,6 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { ChevronDown, ChevronRight, Check } from 'lucide-react';
-import type { SuperFaction, FactionInfo } from '../utils/factions';
+import type { SuperFaction, FactionInfo } from '@shared/types';
 import { useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 

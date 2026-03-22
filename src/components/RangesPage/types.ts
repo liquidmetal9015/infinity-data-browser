@@ -1,4 +1,5 @@
 // Types for Ranges/Weapons Page
+import type { ParsedWeapon } from '../../../shared/types';
 export type { RangeBand, ParsedWeapon } from '../../../shared/types';
 
 // Standard range bands in inches

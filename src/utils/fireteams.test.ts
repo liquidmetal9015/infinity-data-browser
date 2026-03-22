@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getUnitTags, calculateFireteamLevel, getFireteamBonuses } from './fireteams';
-import type { Fireteam } from '../types';
+import { getUnitTags, calculateFireteamLevel, getFireteamBonuses } from '@shared/fireteams';
+import type { Fireteam } from '@shared/types';
 
 describe('getUnitTags', () => {
     it('always includes the unit name in lowercase', () => {

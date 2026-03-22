@@ -1,17 +1,16 @@
 // Ranges/Weapons Page - Main component with D3 visualization
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useDatabase } from '../context/DatabaseContext';
-import { useModal } from '../context/ModalContext';
+import { useDatabase } from '../hooks/useDatabase';
+import { useModal } from '../hooks/useModal';
 import { Info } from 'lucide-react';
 import * as d3 from 'd3';
 import {
     WeaponSidebar,
     WeaponTable,
     BestWeaponsBar,
-    RANGE_BANDS,
-    type BestWeaponInfo
 } from '../components/RangesPage';
 import { useRangesStore } from '../stores/useRangesStore';
+import { useBestWeapons } from '../hooks/useBestWeapons';
 import type { ParsedWeapon } from '../../shared/types';
 import './RangesPage.css';
 
@@ -87,38 +86,7 @@ export function RangesPage() {
         }
     };
 
-    // Calculate Best Weapons per Band
-    const bestWeapons = useMemo((): (BestWeaponInfo | null)[] => {
-        if (selectedWeapons.length === 0) return [];
-
-        return RANGE_BANDS.map(band => {
-            let bestWeapon: ParsedWeapon | null = null;
-            let bestMod = -Infinity;
-            let secondBestMod = -Infinity;
-
-            selectedWeapons.forEach(w => {
-                const samplePoint = band.start + 1;
-                const bandMod = w.bands.find(b => b.start < samplePoint && b.end >= samplePoint)?.mod ?? -Infinity;
-
-                if (bandMod > bestMod) {
-                    secondBestMod = bestMod;
-                    bestMod = bandMod;
-                    bestWeapon = w;
-                } else if (bandMod > secondBestMod) {
-                    secondBestMod = bandMod;
-                }
-            });
-
-            if (bestMod <= -100) return null;
-
-            return {
-                band,
-                weapon: bestWeapon,
-                mod: bestMod,
-                diff: secondBestMod > -Infinity ? bestMod - secondBestMod : 0
-            };
-        });
-    }, [selectedWeapons]);
+    const bestWeapons = useBestWeapons(selectedWeapons);
 
     // D3 Chart Drawing Effect
     useEffect(() => {

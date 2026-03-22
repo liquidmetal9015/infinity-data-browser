@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Unit } from '@shared/types';
-import { listReducer, initialState, type ListState, type ListAction } from '../logic/ListLogic';
+import { listReducer, initialState, type ListState, type ListAction } from '@shared/listLogic';
 
 // ============================================================================
 // Store Interface

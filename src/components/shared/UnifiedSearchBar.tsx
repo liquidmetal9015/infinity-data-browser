@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import type { SearchSuggestion } from '@shared/types';
 
 export interface ItemFilter {

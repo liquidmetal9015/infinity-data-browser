@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { useContextMenu } from '../context/ContextMenuContext';
+import { useContextMenuStore as useContextMenu } from '../stores/useContextMenuStore';
 
 export const ContextMenu: React.FC = () => {
     const { isOpen, position, items, hideMenu } = useContextMenu();

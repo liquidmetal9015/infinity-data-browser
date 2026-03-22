@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import { Layers, Shield, Users, Info, Calculator } from 'lucide-react';
 import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../../components/shared/CompactFactionSelector';

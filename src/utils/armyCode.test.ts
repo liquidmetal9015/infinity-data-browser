@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { decodeArmyCode, encodeArmyList } from './armyCode';
-import type { ArmyList } from '../types/list';
-import type { Unit } from '../types';
+import { decodeArmyCode, encodeArmyList } from '@shared/armyCode';
+import type { ArmyList } from '@shared/listTypes';
+import type { Unit } from '@shared/types';
 
 describe('armyCode.ts', () => {
     describe('VLI Encoding/Decoding', () => {

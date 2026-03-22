@@ -6,7 +6,7 @@ import { FactionView } from '../components/FactionView'
 import { BubbleChart } from '../components/BubbleChart'
 import { ExpandableUnitCard } from '../components/shared/ExpandableUnitCard'
 import { LayoutGrid, List, Circle } from 'lucide-react'
-import { useDatabase } from '../context/DatabaseContext'
+import { useDatabase } from '../hooks/useDatabase'
 import { useUnitSearch } from '../hooks/useUnitSearch'
 
 type ViewMode = 'list' | 'faction' | 'bubble';

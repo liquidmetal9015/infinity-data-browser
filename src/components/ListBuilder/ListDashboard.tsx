@@ -14,155 +14,25 @@ import {
 import {
     SortableContext,
     sortableKeyboardCoordinates,
-    useSortable,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { useContextMenu } from '../../context/ContextMenuContext';
-import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '../../types/list';
-import { Plus, Trash2, Eye, GripVertical, Settings2, Users } from 'lucide-react';
-import { getPossibleFireteams } from '../../utils/fireteams';
+import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '@shared/listTypes';
+import { Plus, Trash2, Users } from 'lucide-react';
+import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
-import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { OrderIcon } from '../shared/OrderIcon';
-import { countGroupOrders, getProfileOrders } from '../../utils/orderUtils';
-import { UnifiedSearchBar, type QueryState } from '../shared/UnifiedSearchBar';
+import { countGroupOrders } from '../../utils/orderUtils';
+import { SortableFireteamContainer } from './SortableFireteamContainer';
+import { DraggableUnitRow } from './DraggableUnitRow';
+import { DragOverlayUnit } from './DragOverlayUnit';
+import { ListSearchPanel } from './ListSearchPanel';
+import './ListDashboard.css';
 
 interface ListDashboardProps {
     list: ArmyList;
     onViewUnit: (unit: Unit) => void;
-}
-
-// Draggable unit row component
-function DraggableUnitRow({
-    listUnit,
-    groupIndex,
-    onViewUnit,
-    onRemove,
-    db
-}: {
-    listUnit: ListUnit;
-    groupIndex: number;
-    onViewUnit: (unit: Unit) => void;
-    onRemove: () => void;
-    db: ReturnType<typeof useDatabase>;
-}) {
-    const { showMenu } = useContextMenu();
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: listUnit.id,
-        data: { type: 'unit', groupIndex, listUnit },
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-    };
-
-    const profileGroup = listUnit.unit.raw.profileGroups.find(g => g.id === listUnit.profileGroupId);
-    const { profile, option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
-    const orders = getProfileOrders(profile, option);
-
-    const weapons = option?.weapons?.map(w => db.weaponMap.get(w.id) || 'Unknown').join(', ') || '—';
-    const equipment = option?.equip?.map(e => db.equipmentMap.get(e.id) || 'Unknown').join(', ') || '';
-
-    const optionModsAndSkills = [
-        ...(option?.skills || []).map(s => {
-            const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
-            return `${db.skillMap.get(s.id) || `Skill ${s.id}`}${mods}`;
-        })
-    ];
-    let displayName = profileGroup?.isco || listUnit.unit.isc;
-    if (optionModsAndSkills.length > 0) {
-        displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
-    }
-
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-            className={`unit-row ${isDragging ? 'dragging' : ''} cursor-grab active:cursor-grabbing`}
-            onContextMenu={(e) => {
-                e.preventDefault();
-                showMenu(e.clientX, e.clientY, [
-                    { label: 'View Attributes & Rules', action: () => onViewUnit(listUnit.unit), icon: <Eye size={14} /> },
-                    { divider: true, action: () => { } },
-                    { label: 'Remove Unit', action: onRemove, icon: <Trash2 size={14} />, destructive: true }
-                ]);
-            }}
-        >
-            <div className="drag-handle col-drag flex items-center justify-center">
-                <div className="text-gray-400 p-1">
-                    <GripVertical size={14} />
-                </div>
-            </div>
-
-            <div className="unit-orders col-orders">
-                <div className="flex items-center justify-center">
-                    {orders.map((o, i) => <OrderIcon key={i} type={o} size={16} className={i > 0 ? "-ml-1.5" : ""} />)}
-                </div>
-            </div>
-            <div className="unit-name col-name">
-                <span className="name" title={displayName}>{displayName}</span>
-            </div>
-            <div className="unit-weapons col-weapons">
-                <span className="weapons" title={weapons}>{weapons}</span>
-                {equipment && <span className="equipment" title={equipment}>{equipment}</span>}
-            </div>
-            <div className="unit-swc col-swc">{option?.swc || 0}</div>
-            <div className="unit-pts col-pts">{option?.points || 0}</div>
-            <div className="unit-actions col-actions">
-                <button
-                    onClick={(e) => { e.stopPropagation(); onViewUnit(listUnit.unit); }}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    title="View unit"
-                >
-                    <Eye size={14} />
-                </button>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    title="Remove"
-                    className="delete"
-                >
-                    <Trash2 size={14} />
-                </button>
-            </div>
-        </div>
-    );
-}
-
-// Overlay component shown while dragging
-function DragOverlayUnit({ listUnit }: { listUnit: ListUnit }) {
-    const profileGroup = listUnit.unit.raw.profileGroups.find(g => g.id === listUnit.profileGroupId);
-    const { option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
-
-    // We need db to get skill names for DragOverlayUnit. It's not passed but we can import useDatabase here.
-    const db = useDatabase();
-
-    const optionModsAndSkills = [
-        ...(option?.skills || []).map(s => {
-            const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
-            return `${db.skillMap.get(s.id) || `Skill ${s.id}`}${mods}`;
-        })
-    ];
-    let displayName = profileGroup?.isco || listUnit.unit.isc;
-    if (optionModsAndSkills.length > 0) {
-        displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
-    }
-
-    return (
-        <div className="drag-overlay-unit">
-            <GripVertical size={14} />
-            <span className="name">{displayName}</span>
-            <span className="pts">{option?.points || 0} pts</span>
-        </div>
-    );
 }
 
 // Droppable container for empty groups or the whole group area
@@ -189,8 +59,6 @@ function DroppableCombatGroup({
         </div>
     );
 }
-
-import { SortableFireteamContainer } from './SortableFireteamContainer';
 
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
@@ -259,10 +127,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
         return validIds;
     }, [hoveredUnitISC, list, db]);
 
-    // Toggleable unit expanded states
-    const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
-    const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
-
     const [targetGroupIndex, setTargetGroupIndex] = useState(0);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState<ListUnit | null>(null);
@@ -271,59 +135,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
-
-    // Search state for UnifiedSearchBar
-    const [rosterQuery, setRosterQuery] = useState<QueryState>({ filters: [], operator: 'or' });
-    const [rosterTextQuery, setRosterTextQuery] = useState('');
-
-    // Get roster for this faction
-    const factionUnits = useMemo(() => {
-        return db.units.filter(unit => unit.factions.includes(list.factionId));
-    }, [db.units, list.factionId]);
-
-    // Filter roster by search (text + query filters)
-    const filteredRoster = useMemo(() => {
-        let results = factionUnits;
-
-        // Apply item filters from UnifiedSearchBar
-        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat') as any[];
-        if (itemFilters.length > 0) {
-            const searched = db.searchWithModifiers(
-                itemFilters.map((f: any) => ({
-                    type: f.type,
-                    baseId: f.baseId,
-                    modifiers: f.modifiers,
-                    matchAnyModifier: f.matchAnyModifier
-                })),
-                rosterQuery.operator
-            );
-            const searchedIds = new Set(searched.map(u => u.id));
-            results = results.filter(u => searchedIds.has(u.id));
-        }
-
-        // Apply text query
-        if (rosterTextQuery.trim()) {
-            const q = rosterTextQuery.trim().toLowerCase();
-            results = results.filter(unit => {
-                if (unit.isc.toLowerCase().includes(q) || unit.name?.toLowerCase().includes(q)) return true;
-                for (const group of unit.raw.profileGroups) {
-                    for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
-                        if (profile.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
-                    }
-                    for (const opt of group.options) {
-                        if (opt.weapons?.some(w => db.weaponMap.get(w.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.name?.toLowerCase().includes(q) || group.isco?.toLowerCase().includes(q)) return true;
-                    }
-                }
-                return false;
-            });
-        }
-
-        return results;
-    }, [factionUnits, rosterQuery, rosterTextQuery, db]);
 
     const fireteamCounts = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -354,21 +165,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const totalSWC = calculateListSWC(list);
     const pointsOver = totalPoints > list.pointsLimit;
     const swcOver = totalSWC > list.swcLimit;
-
-    const toggleExpand = (unitId: number) => {
-        setExpandedUnitIds(prev => {
-            const next = new Set(prev);
-            if (next.has(unitId)) {
-                next.delete(unitId);
-            } else {
-                if (expandMode === 'single') {
-                    next.clear();
-                }
-                next.add(unitId);
-            }
-            return next;
-        });
-    };
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
@@ -491,52 +287,13 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     return (
         <div className="list-dashboard-dense">
             {/* Left Column - Unit Roster */}
-            <div className="roster-panel">
-                <div className="roster-header">
-                    <h3>Unit Roster</h3>
-                    <div className="flex items-center gap-2">
-                        <button
-                            className={`p-1 rounded transition-colors ${expandMode === 'multiple' ? 'bg-blue-500/20 text-blue-400' : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/10'}`}
-                            onClick={() => setExpandMode(m => m === 'single' ? 'multiple' : 'single')}
-                            title={expandMode === 'single' ? 'Enable Multiple Expansion' : 'Enable Single Expansion'}
-                        >
-                            <Settings2 size={16} />
-                        </button>
-                        <span className="roster-count">{factionUnits.length}</span>
-                    </div>
-                </div>
-
-                <div className="roster-search border-b border-[#1e293b]">
-                    <UnifiedSearchBar
-                        query={rosterQuery}
-                        setQuery={setRosterQuery}
-                        textQuery={rosterTextQuery}
-                        setTextQuery={setRosterTextQuery}
-                        placeholder="Search roster..."
-                        className="bg-transparent"
-                    />
-                </div>
-
-                <div className="roster-list p-2 space-y-1.5 overflow-y-auto">
-                    {filteredRoster.map(unit => (
-                        <ExpandableUnitCard
-                            key={unit.id}
-                            unit={unit}
-                            isExpanded={expandedUnitIds.has(unit.id)}
-                            onToggle={() => toggleExpand(unit.id)}
-                            searchQuery={rosterTextQuery.trim()}
-                            activeFilters={rosterQuery.filters}
-                            isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
-                            onMouseEnter={() => setHoveredUnitISC(unit.isc)}
-                            onMouseLeave={() => setHoveredUnitISC(null)}
-                            onAddUnit={(unit, pgId, pId, oId) => {
-                                addUnit(unit, targetGroupIndex, pgId, pId, oId);
-                            }}
-                            onViewUnit={onViewUnit}
-                        />
-                    ))}
-                </div>
-            </div>
+            <ListSearchPanel
+                list={list}
+                onAddUnit={(unit, pgId, pId, oId) => addUnit(unit, targetGroupIndex, pgId, pId, oId)}
+                onViewUnit={onViewUnit}
+                validISCsForHoveredFireteam={validISCsForHoveredFireteam}
+                onUnitHover={setHoveredUnitISC}
+            />
 
             {/* Right Column - Army List Table */}
             <div className="list-panel">
@@ -753,378 +510,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     </button>
                 )}
             </div>
-
-            <style>{`
-                .list-dashboard-dense {
-                    display: grid;
-                    grid-template-columns: 420px 1fr;
-                    gap: 1rem;
-                    min-height: 400px;
-                    height: calc(100vh - 100px);
-                }
-
-                /* Roster Panel */
-                .roster-panel {
-                    background: #0d1117;
-                    border: 1px solid #1e293b;
-                    border-radius: 8px;
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    height: 100%;
-                }
-
-                .roster-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.75rem 1rem;
-                    background: #161b22;
-                    border-bottom: 1px solid #1e293b;
-                }
-                .roster-header h3 {
-                    margin: 0;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    color: #94a3b8;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .roster-count {
-                    font-size: 0.75rem;
-                    color: #64748b;
-                    background: #1e293b;
-                    padding: 0.125rem 0.5rem;
-                    border-radius: 4px;
-                }
-
-                .roster-search {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.5rem 0.75rem;
-                    background: #0d1117;
-                    border-bottom: 1px solid #1e293b;
-                    color: #64748b;
-                }
-                .roster-search input {
-                    flex: 1;
-                    background: transparent;
-                    border: none;
-                    color: #f1f5f9;
-                    font-size: 0.8rem;
-                    outline: none;
-                }
-
-                .roster-list {
-                    flex: 1;
-                    overflow-y: auto;
-                    scrollbar-width: thin;
-                    scrollbar-color: #334155 transparent;
-                }
-
-                /* List Panel */
-                .list-panel {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.75rem;
-                    overflow-y: auto;
-                    padding-right: 0.5rem;
-                }
-
-                .summary-bar {
-                    display: flex;
-                    gap: 1.5rem;
-                    padding: 0.75rem 1rem;
-                    background: #0d1117;
-                    border: 1px solid #1e293b;
-                    border-radius: 8px;
-                    position: sticky;
-                    top: 0;
-                    z-index: 10;
-                }
-                .summary-bar .stat {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-                .summary-bar .label {
-                    font-size: 0.7rem;
-                    color: #64748b;
-                    text-transform: uppercase;
-                }
-                .summary-bar .value {
-                    font-size: 0.9rem;
-                    font-weight: 700;
-                    color: #22c55e;
-                }
-                .summary-bar .stat.over .value {
-                    color: #ef4444;
-                }
-
-                /* Combat Groups */
-                .combat-group {
-                    background: #0d1117;
-                    border: 1px solid #1e293b;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    margin-bottom: 0.75rem;
-                    transition: all 0.2s ease;
-                }
-                .combat-group.is-target {
-                    border-color: #3b82f6;
-                    box-shadow: 0 0 0 1px #3b82f6;
-                }
-                .combat-group.is-target .group-header {
-                    background: linear-gradient(90deg, #1e3a8a 0%, #0d1117 100%);
-                    border-bottom-color: #2563eb;
-                }
-                .combat-group.is-drag-over {
-                    border-color: #10b981;
-                    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
-                }
-
-                .group-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.75rem 1rem;
-                    background: linear-gradient(90deg, #1a365d 0%, #0d1117 100%);
-                    border-bottom: 1px solid #1e4a7d;
-                    transition: all 0.2s ease;
-                }
-                .group-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                }
-                .group-name {
-                    font-size: 0.9rem;
-                    font-weight: 700;
-                    color: #60a5fa;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .group-count {
-                    font-size: 0.75rem;
-                    color: #64748b;
-                }
-                .group-actions {
-                    display: flex;
-                    gap: 0.5rem;
-                    align-items: center;
-                }
-                .group-actions button {
-                    padding: 0.35rem;
-                    background: transparent;
-                    border: 1px solid transparent;
-                    border-radius: 4px;
-                    color: #64748b;
-                    cursor: pointer;
-                    transition: all 0.1s;
-                }
-                .group-actions button:hover {
-                    background: #1e293b;
-                    color: #f1f5f9;
-                }
-                .target-btn {
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    padding: 0.25rem 0.5rem !important;
-                    background: rgba(59, 130, 246, 0.1) !important;
-                    color: #60a5fa !important;
-                    border: 1px solid rgba(59, 130, 246, 0.2) !important;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .target-btn:hover {
-                    background: rgba(59, 130, 246, 0.2) !important;
-                    border-color: rgba(59, 130, 246, 0.4) !important;
-                    color: #93c5fd !important;
-                }
-                .target-btn.active {
-                    background: #3b82f6 !important;
-                    color: #ffffff !important;
-                    border-color: #2563eb !important;
-                    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-                }
-                .group-actions .delete-btn:hover {
-                    background: rgba(127, 29, 29, 0.4);
-                    color: #fca5a5;
-                }
-
-                .empty-group {
-                    padding: 1.5rem;
-                    text-align: center;
-                    color: #475569;
-                    font-size: 0.8rem;
-                    font-style: italic;
-                }
-
-                /* Units Table styles adapted for Grid/Flex */
-                .units-table {
-                    width: 100%;
-                    display: flex;
-                    flex-direction: column;
-                }
-                .units-thead {
-                    padding: 0.5rem;
-                    font-size: 0.65rem;
-                    font-weight: 600;
-                    color: #475569;
-                    text-transform: uppercase;
-                    background: #161b22;
-                    border-bottom: 1px solid #1e293b;
-                }
-                
-                .col-drag { width: 30px; flex-shrink: 0; }
-                .col-orders { width: 50px; flex-shrink: 0; display: flex; justify-content: center; }
-                .col-name { width: 200px; flex-shrink: 0; }
-                .col-weapons { flex: 1; min-width: 0; }
-                .col-swc { width: 50px; flex-shrink: 0; text-align: right; }
-                .col-pts { width: 50px; flex-shrink: 0; text-align: right; }
-                .col-actions { width: 80px; flex-shrink: 0; display: flex; justify-content: flex-end; }
-
-                .unit-row {
-                    display: flex;
-                    align-items: center;
-                    padding: 0.5rem;
-                    background: #0d1117;
-                    border-bottom: 1px solid #1e293b;
-                    transition: background 0.1s;
-                }
-                .unit-row:hover {
-                    background: #1e293b;
-                }
-                .unit-row.dragging {
-                    background: #1e3a5f;
-                    opacity: 0.8 !important;
-                }
-
-                .drag-handle {
-                    cursor: grab;
-                    color: #475569;
-                }
-                .drag-handle:active {
-                    cursor: grabbing;
-                }
-
-                .unit-name .name {
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                    color: #e2e8f0;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    display: block;
-                }
-
-                .unit-weapons {
-                    font-size: 0.75rem;
-                    color: #94a3b8;
-                }
-                .unit-weapons .weapons {
-                    display: block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .unit-weapons .equipment {
-                    display: block;
-                    color: #64748b;
-                    font-style: italic;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .unit-swc {
-                    font-size: 0.8rem;
-                    color: #f59e0b;
-                    font-weight: 500;
-                }
-
-                .unit-pts {
-                    font-size: 0.9rem;
-                    color: #3b82f6;
-                    font-weight: 700;
-                }
-
-                .unit-actions {
-                    display: flex;
-                    gap: 0.25rem;
-                    justify-content: flex-end;
-                }
-                .unit-actions button {
-                    padding: 0.35rem;
-                    background: transparent;
-                    border: 1px solid transparent;
-                    border-radius: 4px;
-                    color: #64748b;
-                    cursor: pointer;
-                    transition: all 0.1s;
-                }
-                .unit-actions button:hover {
-                    background: #3b82f6;
-                    color: #f1f5f9;
-                }
-                .unit-actions button.delete:hover {
-                    background: #7f1d1d;
-                    color: #fca5a5;
-                }
-
-                .add-group-btn {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem;
-                    background: #0d1117;
-                    border: 2px dashed #1e293b;
-                    border-radius: 8px;
-                    color: #64748b;
-                    font-size: 0.8rem;
-                    cursor: pointer;
-                    transition: all 0.15s;
-                }
-                .add-group-btn:hover {
-                    border-color: #3b82f6;
-                    color: #3b82f6;
-                    background: rgba(59, 130, 246, 0.05);
-                }
-
-                /* Drag Overlay */
-                .drag-overlay-unit {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    padding: 0.5rem 1rem;
-                    background: #1e3a5f;
-                    border: 1px solid #3b82f6;
-                    border-radius: 4px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    color: #e2e8f0;
-                }
-                .drag-overlay-unit .name {
-                    font-weight: 600;
-                    font-size: 0.85rem;
-                }
-                .drag-overlay-unit .pts {
-                    font-size: 0.75rem;
-                    color: #3b82f6;
-                }
-
-                @media (max-width: 900px) {
-                    .list-dashboard-dense {
-                        grid-template-columns: 1fr;
-                        height: auto;
-                    }
-                    .roster-panel {
-                        position: static;
-                        max-height: 400px;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

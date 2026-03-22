@@ -1,5 +1,5 @@
 import { Plus, Trash2, Info, Users } from 'lucide-react';
-import type { CombatGroup } from '../../types/list';
+import type { CombatGroup } from '@shared/listTypes';
 import type { Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
 

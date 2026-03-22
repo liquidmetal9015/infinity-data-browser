@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Shield, Crosshair, Zap, Activity, CheckCircle } from 'lucide-react';
-import { useModal } from '../context/ModalContext';
-import { useDatabase } from '../context/DatabaseContext';
+import { useModal } from '../hooks/useModal';
+import { useDatabase } from '../hooks/useDatabase';
 import { formatMove } from '../utils/conversions';
 import type { Unit } from '@shared/types';
 

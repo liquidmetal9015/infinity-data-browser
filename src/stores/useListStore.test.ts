@@ -1,7 +1,7 @@
 // Tests for the Zustand list store
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useListStore } from './useListStore';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 
 // ============================================================================
 // Helpers

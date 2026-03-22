@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import { formatMove } from '../../utils/conversions';
 import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';

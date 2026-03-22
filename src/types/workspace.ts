@@ -21,6 +21,20 @@ export interface WindowSize {
     height: number;
 }
 
+// Per-widget props types — extend this map when a widget needs typed props
+export type WidgetPropsMap = {
+    DICE_CALCULATOR: { unitSlug?: string };
+    LIST_BUILDER: never;
+    DICE_ANALYTICS: never;
+    CLASSIFIEDS: never;
+    FIRETEAMS: never;
+    RANGES: never;
+    COMPARE: never;
+    SEARCH: never;
+    REFERENCE: never;
+};
+export type AnyWidgetProps = WidgetPropsMap[WidgetType]; // { unitSlug?: string }
+
 export interface WindowState {
     id: string;
     type: WidgetType;
@@ -29,7 +43,7 @@ export interface WindowState {
     size: WindowSize;
     zIndex: number;
     isMinimized: boolean;
-    props?: Record<string, any>;
+    props?: AnyWidgetProps;
 }
 
 export interface WorkspaceState {
@@ -40,7 +54,7 @@ export interface WorkspaceState {
 }
 
 export type WorkspaceAction =
-    | { type: 'OPEN_WINDOW'; widgetType: WidgetType; props?: Record<string, any> }
+    | { type: 'OPEN_WINDOW'; widgetType: WidgetType; props?: AnyWidgetProps }
     | { type: 'CLOSE_WINDOW'; windowId: string }
     | { type: 'FOCUS_WINDOW'; windowId: string }
     | { type: 'MINIMIZE_WINDOW'; windowId: string }

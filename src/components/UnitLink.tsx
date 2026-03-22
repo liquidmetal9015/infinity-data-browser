@@ -1,5 +1,5 @@
-import { useDatabase } from '../context/DatabaseContext';
-import { useModal } from '../context/ModalContext';
+import { useDatabase } from '../hooks/useDatabase';
+import { useModal } from '../hooks/useModal';
 
 export function UnitLink({ name, className = '' }: { name: string, className?: string }) {
     const db = useDatabase();

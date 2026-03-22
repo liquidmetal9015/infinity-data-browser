@@ -1,6 +1,6 @@
 // WorkspaceContext Reducer Unit Tests
 import { describe, it, expect } from 'vitest';
-import { workspaceReducer, initialState } from './WorkspaceContext';
+import { workspaceReducer, initialState } from '../stores/useWorkspaceStore';
 import type { WorkspaceState, WorkspaceAction } from '../types/workspace';
 
 describe('workspaceReducer', () => {

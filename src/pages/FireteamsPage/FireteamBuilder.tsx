@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Plus, X, Check, Info, Calculator } from 'lucide-react';
-import { useDatabase } from '../../context/DatabaseContext';
-import { useModal } from '../../context/ModalContext';
+import { useDatabase } from '../../hooks/useDatabase';
+import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
-import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '../../utils/fireteams';
+import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '@shared/fireteams';
 
 interface FireteamBuilderProps {
     chart: FireteamChart;

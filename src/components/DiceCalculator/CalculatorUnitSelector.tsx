@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import type { Unit } from '../../../shared/types';
 import { Search } from 'lucide-react';
 import './CalculatorUnitSelector.css';

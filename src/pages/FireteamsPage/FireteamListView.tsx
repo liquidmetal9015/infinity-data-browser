@@ -1,6 +1,6 @@
 import { Info } from 'lucide-react';
-import { useDatabase } from '../../context/DatabaseContext';
-import { useModal } from '../../context/ModalContext';
+import { useDatabase } from '../../hooks/useDatabase';
+import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
 
 interface FireteamListViewProps {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DatabaseImplementation } from './Database';
-import type { UnitRaw, DatabaseMetadata } from '../types';
+import type { UnitRaw, DatabaseMetadata } from '@shared/types';
 
 // Mock data
 const mockMetadata: DatabaseMetadata = {

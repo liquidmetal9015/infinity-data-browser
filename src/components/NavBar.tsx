@@ -1,17 +1,17 @@
 import { Trash2, AppWindow, Maximize } from 'lucide-react';
-import { useDatabase } from '../context/DatabaseContext';
-import { useWorkspace } from '../context/WorkspaceContext';
+import { useDatabase } from '../hooks/useDatabase';
+import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { clearAllDataAndReload } from '../utils/clearData';
 import { widgetRegistry, LAUNCHER_WIDGETS } from './Workspace/widgetRegistry';
 import type { WidgetType } from '../types/workspace';
 
 export function NavBar() {
     const db = useDatabase();
-    const { state, setLayoutMode, openWindow, focusWindow } = useWorkspace();
+    const { windows, layoutMode, setLayoutMode, openWindow, focusWindow } = useWorkspaceStore();
 
     // Determine the currently active (focused) window
-    const topZIndex = state.windows.length > 0 ? Math.max(...state.windows.map(w => w.zIndex)) : 0;
-    const activeWindow = state.windows.find(w => w.zIndex === topZIndex && !w.isMinimized);
+    const topZIndex = windows.length > 0 ? Math.max(...windows.map(w => w.zIndex)) : 0;
+    const activeWindow = windows.find(w => w.zIndex === topZIndex && !w.isMinimized);
     const activeWidgetType = activeWindow?.type;
 
     const handleClearData = async () => {
@@ -33,7 +33,7 @@ export function NavBar() {
                     {LAUNCHER_WIDGETS.map((widgetType: WidgetType) => {
                         const entry = widgetRegistry[widgetType];
                         const IconComponent = entry.icon;
-                        const windowInstance = state.windows.find(w => w.type === widgetType);
+                        const windowInstance = windows.find(w => w.type === widgetType);
                         const isOpen = !!windowInstance;
                         const isActive = activeWidgetType === widgetType;
 
@@ -61,7 +61,7 @@ export function NavBar() {
                 <div className="main-nav controls-nav">
                     <div className="layout-segmented-control" role="group" aria-label="Layout Mode">
                         <button
-                            className={`segmented-btn ${state.layoutMode === 'tabbed' ? 'active' : ''}`}
+                            className={`segmented-btn ${layoutMode === 'tabbed' ? 'active' : ''}`}
                             onClick={() => setLayoutMode('tabbed')}
                             title="Maximized (Tabbed) Mode"
                         >
@@ -69,7 +69,7 @@ export function NavBar() {
                             <span className="layout-label">Maximized</span>
                         </button>
                         <button
-                            className={`segmented-btn ${state.layoutMode === 'multi-window' ? 'active' : ''}`}
+                            className={`segmented-btn ${layoutMode === 'multi-window' ? 'active' : ''}`}
                             onClick={() => setLayoutMode('multi-window')}
                             title="Multi-Window Mode"
                         >

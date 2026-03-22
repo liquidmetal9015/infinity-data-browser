@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useDatabase } from '../context/DatabaseContext';
+import { useDatabase } from '../hooks/useDatabase';
 import { Search, ExternalLink, Shield, Zap, Crosshair, Atom } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UnitLink } from '../components/UnitLink';
@@ -25,25 +25,21 @@ export function ReferencePage() {
     const [sortDesc, setSortDesc] = useState(false);
     const [showModifiers, setShowModifiers] = useState(true);
 
-    // Aggregate data
-    const data = useMemo(() => {
+    // Aggregate all rows (expensive — only reruns when db or modifier toggle changes)
+    const allRows = useMemo(() => {
         const rows = new Map<string, ReferenceRow>();
 
         db.units.forEach(unit => {
             unit.allItemsWithMods.forEach(item => {
-                // Generate key based on modifier preference
                 const modKey = showModifiers ? item.modifiers.sort().join(',') : '';
                 const key = `${item.type}-${item.id}-[${modKey}]`;
 
                 if (!rows.has(key)) {
-                    // Get wiki link if available from metadata
                     let wiki: string | undefined;
                     if (item.type === 'skill') wiki = db.metadata?.skills.find(s => s.id === item.id)?.wiki;
                     else if (item.type === 'weapon') wiki = db.metadata?.weapons.find(w => w.id === item.id)?.wiki;
                     else if (item.type === 'equipment') wiki = db.metadata?.equips.find(e => e.id === item.id)?.wiki;
-                    // Note: ammunition is not currently in allItemsWithMods, might need separate handling if requested
 
-                    // Format Display Name
                     let displayName = item.name;
                     if (showModifiers && item.modifiers.length > 0) {
                         const modString = item.modifiers.map(m => {
@@ -68,18 +64,23 @@ export function ReferencePage() {
 
                 const row = rows.get(key)!;
                 row.count++;
-                // Keep unique examples, capped at 5
                 if (row.examples.length < 5 && !row.examples.includes(unit.name)) {
                     row.examples.push(unit.name);
                 }
             });
         });
 
-        // Convert to array and filter
-        return Array.from(rows.values())
+        return Array.from(rows.values());
+    }, [db.units, db.metadata, db.extrasMap, showModifiers]);
+
+    // Filter and sort (cheap — reruns on search/sort changes without rebuilding full dataset)
+    const data = useMemo(() => {
+        const lowerSearch = search.toLowerCase();
+        return allRows
             .filter(row =>
-                row.displayName.toLowerCase().includes(search.toLowerCase()) ||
-                row.type.toLowerCase().includes(search.toLowerCase())
+                !lowerSearch ||
+                row.displayName.toLowerCase().includes(lowerSearch) ||
+                row.type.toLowerCase().includes(lowerSearch)
             )
             .sort((a, b) => {
                 const modifier = sortDesc ? -1 : 1;
@@ -87,7 +88,7 @@ export function ReferencePage() {
                 if (sortField === 'type') return a.type.localeCompare(b.type) * modifier;
                 return a.displayName.localeCompare(b.displayName) * modifier;
             });
-    }, [db.units, db.metadata, db.extrasMap, search, sortField, sortDesc, showModifiers]);
+    }, [allRows, search, sortField, sortDesc]);
 
 
     const handleSort = (field: typeof sortField) => {
@@ -169,7 +170,6 @@ export function ReferencePage() {
                                 key={row.id}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                layout
                                 className={`row-${row.type}`}
                             >
                                 <td className="type-cell">

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Info } from 'lucide-react';
-import { useModal } from '../../context/ModalContext';
+import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart, Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
-import { getUnitTags } from '../../utils/fireteams';
+import { getUnitTags } from '@shared/fireteams';
 
 interface UnitPerspectiveViewProps {
     chart: FireteamChart;

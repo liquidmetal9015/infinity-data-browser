@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useDatabase } from '../context/DatabaseContext';
-import { useModal } from '../context/ModalContext';
+import { useDatabase } from '../hooks/useDatabase';
+import { useModal } from '../hooks/useModal';
 import { Users, Check, Layers } from 'lucide-react';
 import { useCompareStore } from '../stores/useCompareStore';
 import { MultiFactionSelector } from '../components/MultiFactionSelector';
 import { getSafeLogo } from '../utils/assets';
+import { useFactionsComparison } from '../hooks/useFactionsComparison';
 import './ComparePage.css';
 
 export function ComparePage() {
@@ -32,86 +33,7 @@ export function ComparePage() {
         return selectedFactionIds.map(id => allFactions.find(f => f.id === id)).filter(Boolean) as typeof allFactions;
     }, [selectedFactionIds, allFactions]);
 
-    const analysis = useMemo(() => {
-        if (selectedFactionIds.length < 2) return null;
-
-        // Map faction ID -> Set of Unit IDs
-        const factionUnitMap = new Map<number, Set<number>>();
-
-        selectedFactionIds.forEach(fid => {
-            const unitIds = new Set<number>();
-            db.units.forEach(u => {
-                if (u.factions.includes(fid)) {
-                    unitIds.add(u.id);
-                }
-            });
-            factionUnitMap.set(fid, unitIds);
-        });
-
-        // Determine buckets
-        const universal: number[] = [];
-        const shared: { unitId: number; factionIds: number[] }[] = [];
-        const unique: Record<number, number[]> = {}; // factionId -> unitIds[]
-
-        // Initialize unique buckets
-        selectedFactionIds.forEach(fid => unique[fid] = []);
-
-        // Iterate all unique units involved in any selected faction
-        const allInvolvedUnitIds = new Set<number>();
-        factionUnitMap.forEach(set => set.forEach(uid => allInvolvedUnitIds.add(uid)));
-
-        allInvolvedUnitIds.forEach(uid => {
-            const presentInFactions: number[] = [];
-            selectedFactionIds.forEach(fid => {
-                if (factionUnitMap.get(fid)?.has(uid)) {
-                    presentInFactions.push(fid);
-                }
-            });
-
-            if (presentInFactions.length === selectedFactionIds.length) {
-                universal.push(uid);
-            } else if (presentInFactions.length === 1) {
-                unique[presentInFactions[0]].push(uid);
-            } else if (presentInFactions.length > 1) {
-                shared.push({ unitId: uid, factionIds: presentInFactions });
-            }
-        });
-
-        // Sort data for display
-        const getUnit = (id: number) => db.units.find(u => u.id === id);
-        const sortUnits = (ids: number[]) => ids
-            .map(id => getUnit(id))
-            .filter(u => u !== undefined)
-            .sort((a, b) => (a!.name || a!.isc || '').localeCompare(b!.name || b!.isc || ''))
-            .map(u => u!);
-
-        // Group shared units by faction combination
-        const sharedGroupsMap = new Map<string, { factions: number[], units: number[] }>();
-
-        shared.forEach(item => {
-            const key = item.factionIds.sort((a, b) => a - b).join(',');
-            if (!sharedGroupsMap.has(key)) {
-                sharedGroupsMap.set(key, { factions: item.factionIds, units: [] });
-            }
-            sharedGroupsMap.get(key)!.units.push(item.unitId);
-        });
-
-        const sharedGroups = Array.from(sharedGroupsMap.values()).map(group => ({
-            factions: group.factions.map(fid => allFactions.find(f => f.id === fid)).filter(f => f !== undefined) as typeof allFactions,
-            units: sortUnits(group.units)
-        })).filter(g => g.factions.length > 1) // Ensure we have valid groups
-            .sort((a, b) => b.factions.length - a.factions.length); // Sort by most overlapping first
-
-        return {
-            universal: sortUnits(universal),
-            sharedGroups,
-            unique: Object.entries(unique).reduce((acc, [fid, uids]) => {
-                acc[Number(fid)] = sortUnits(uids);
-                return acc;
-            }, {} as Record<number, typeof db.units>)
-        };
-
-    }, [selectedFactionIds, allFactions, db]);
+    const analysis = useFactionsComparison(selectedFactionIds, allFactions, db.units);
 
     const addSuperFaction = (superId: number) => {
         const superFaction = groupedFactions.find(sf => sf.id === superId);

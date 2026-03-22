@@ -1,7 +1,7 @@
 // WindowFrame - Draggable, resizable window with title bar controls
 import { useRef, useCallback, type ReactNode } from 'react';
 import { Minus, X, Maximize, Minimize, PanelLeft, PanelRight } from 'lucide-react';
-import { useWorkspace } from '../../context/WorkspaceContext';
+import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import type { WindowState } from '../../types/workspace';
 import { MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../../types/workspace';
 import './WindowFrame.css';
@@ -14,14 +14,14 @@ interface WindowFrameProps {
 }
 
 export function WindowFrame({ window: win, icon, isFocused, children }: WindowFrameProps) {
-    const { state, focusWindow, minimizeWindow, closeWindow, moveWindow, resizeWindow, toggleMaximize, snapWindow } = useWorkspace();
+    const { layoutMode, maximizedWindowId, focusWindow, minimizeWindow, closeWindow, moveWindow, resizeWindow, toggleMaximize, snapWindow } = useWorkspaceStore();
     const frameRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
     const isResizing = useRef(false);
     const dragOffset = useRef({ x: 0, y: 0 });
 
-    const isTabbed = state.layoutMode === 'tabbed';
-    const isMaximized = isTabbed && state.maximizedWindowId === win.id;
+    const isTabbed = layoutMode === 'tabbed';
+    const isMaximized = isTabbed && maximizedWindowId === win.id;
     const isHidden = isTabbed && !isMaximized;
 
     // ── Drag logic ──────────────────────────────────────────────────────
@@ -31,28 +31,41 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
         // Don't drag if clicking on a button
         if ((e.target as HTMLElement).closest('button')) return;
 
+        e.preventDefault(); // Prevent text selection and native browser drag
         isDragging.current = true;
-        dragOffset.current = {
-            x: e.clientX - win.position.x,
-            y: e.clientY - win.position.y,
-        };
+        document.body.style.userSelect = 'none';
+
+        const startPosX = win.position.x;
+        const startPosY = win.position.y;
+        const startClientX = e.clientX;
+        const startClientY = e.clientY;
 
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging.current) return;
-            const newX = Math.max(0, e.clientX - dragOffset.current.x);
-            const newY = Math.max(0, e.clientY - dragOffset.current.y);
-            moveWindow(win.id, { x: newX, y: newY });
+            const newX = Math.max(0, startPosX + (e.clientX - startClientX));
+            const newY = Math.max(0, startPosY + (e.clientY - startClientY));
+            // Directly manipulate DOM — avoids store updates and re-renders during drag
+            if (frameRef.current) {
+                frameRef.current.style.left = `${newX}px`;
+                frameRef.current.style.top = `${newY}px`;
+            }
+            dragOffset.current = { x: newX, y: newY };
         };
 
-        const handleMouseUp = () => {
+        const handleMouseUp = (e: MouseEvent) => {
             isDragging.current = false;
+            document.body.style.userSelect = '';
+            // Commit final position to store (single update)
+            const newX = Math.max(0, startPosX + (e.clientX - startClientX));
+            const newY = Math.max(0, startPosY + (e.clientY - startClientY));
+            moveWindow(win.id, { x: newX, y: newY });
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
-    }, [win.id, win.position.x, win.position.y, moveWindow]);
+    }, [win.id, win.position.x, win.position.y, moveWindow, isMaximized]);
 
     // ── Resize logic ────────────────────────────────────────────────────
     const handleResizeStart = useCallback((e: React.MouseEvent, direction: string) => {
@@ -60,6 +73,7 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
         e.preventDefault();
         e.stopPropagation();
         isResizing.current = true;
+        document.body.style.userSelect = 'none';
 
         const startX = e.clientX;
         const startY = e.clientY;
@@ -81,36 +95,58 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
 
             // Horizontal calculations
             if (direction.includes('e')) {
-                // Resize from right edge
                 newWidth = Math.max(MIN_WINDOW_WIDTH, startWidth + deltaX);
             } else if (direction.includes('w')) {
-                // Resize from left edge
                 newWidth = Math.max(MIN_WINDOW_WIDTH, startWidth - deltaX);
-                // Adjust X position based on how much width ACTUALLY changed
                 newX = startPosX + (startWidth - newWidth);
             }
 
             // Vertical calculations
             if (direction.includes('s')) {
-                // Resize from bottom edge
                 newHeight = Math.max(MIN_WINDOW_HEIGHT, startHeight + deltaY);
             } else if (direction.includes('n')) {
-                // Resize from top edge
                 newHeight = Math.max(MIN_WINDOW_HEIGHT, startHeight - deltaY);
-                // Adjust Y position based on how much height ACTUALLY changed
                 newY = startPosY + (startHeight - newHeight);
             }
 
-            // If we moved the origin, we send size and position. If only bottom/right, size is enough.
+            // Directly manipulate DOM — avoids store updates and re-renders during resize
+            if (frameRef.current) {
+                frameRef.current.style.width = `${newWidth}px`;
+                frameRef.current.style.height = `${newHeight}px`;
+                if (direction.includes('n') || direction.includes('w')) {
+                    frameRef.current.style.left = `${newX}px`;
+                    frameRef.current.style.top = `${newY}px`;
+                }
+            }
+        };
+
+        const handleMouseUp = (e: MouseEvent) => {
+            isResizing.current = false;
+            document.body.style.userSelect = '';
+            // Compute final dimensions and commit to store (single update)
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newX = startPosX;
+            let newY = startPosY;
+            if (direction.includes('e')) {
+                newWidth = Math.max(MIN_WINDOW_WIDTH, startWidth + deltaX);
+            } else if (direction.includes('w')) {
+                newWidth = Math.max(MIN_WINDOW_WIDTH, startWidth - deltaX);
+                newX = startPosX + (startWidth - newWidth);
+            }
+            if (direction.includes('s')) {
+                newHeight = Math.max(MIN_WINDOW_HEIGHT, startHeight + deltaY);
+            } else if (direction.includes('n')) {
+                newHeight = Math.max(MIN_WINDOW_HEIGHT, startHeight - deltaY);
+                newY = startPosY + (startHeight - newHeight);
+            }
             if (direction.includes('n') || direction.includes('w')) {
                 resizeWindow(win.id, { width: newWidth, height: newHeight }, { x: newX, y: newY });
             } else {
                 resizeWindow(win.id, { width: newWidth, height: newHeight });
             }
-        };
-
-        const handleMouseUp = () => {
-            isResizing.current = false;
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };

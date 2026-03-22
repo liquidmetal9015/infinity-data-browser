@@ -1,10 +1,3 @@
-import { useContext } from 'react';
-import { DatabaseContext } from '../context/DatabaseContext';
+import { useDatabaseStore } from '../stores/useDatabaseStore';
 
-export const useDatabase = () => {
-    const context = useContext(DatabaseContext);
-    if (!context) {
-        throw new Error('useDatabase must be used within a DatabaseProvider');
-    }
-    return context;
-};
+export const useDatabase = () => useDatabaseStore(s => s.db);

@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Users, Trash2, Check, ShieldCheck, Shield } from 'lucide-react';
-import { useDatabase } from '../../context/DatabaseContext';
+import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { getPossibleFireteams, getFireteamBonuses, calculateFireteamLevel, assignMembersToSlots, getMemberWithChartData, type SlotAssignment } from '../../utils/fireteams';
-import type { ListUnit } from '../../types/list';
+import { getPossibleFireteams, getFireteamBonuses, calculateFireteamLevel, assignMembersToSlots, getMemberWithChartData, type SlotAssignment } from '@shared/fireteams';
+import type { ListUnit } from '@shared/listTypes';
 import type { Fireteam } from '@shared/types';
 
 export interface SortableFireteamContainerProps {

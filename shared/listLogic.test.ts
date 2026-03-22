@@ -1,9 +1,9 @@
 // Tests for shared/listLogic.ts - Army list reducer logic
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { listReducer, initialState, type ListState, type ListAction } from '../../shared/listLogic';
-import { calculateListPoints, calculateListSWC, getUnitDetails } from '../../shared/listTypes';
-import type { Unit, UnitRaw } from '../../shared/types';
+import { listReducer, initialState, type ListState, type ListAction } from './listLogic';
+import { calculateListPoints, calculateListSWC, getUnitDetails } from './listTypes';
+import type { Unit, UnitRaw } from './types';
 
 // Mock unit factory
 function createMockUnit(overrides: Partial<UnitRaw> = {}): Unit {

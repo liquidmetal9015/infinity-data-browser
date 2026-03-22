@@ -1,20 +1,20 @@
 import { WorkspaceView } from './components/Workspace/WorkspaceView';
-import { ModalProvider, useModal } from './context/ModalContext';
+import { useModalStore } from './stores/useModalStore';
+import { useContextMenuStore } from './stores/useContextMenuStore';
 import { UnitStatsModal } from './components/UnitStatsModal';
 import { NavBar } from './components/NavBar';
-import { ContextMenuProvider, useContextMenu } from './context/ContextMenuContext';
 import { ContextMenu } from './components/ContextMenu';
 
-// Wrapper to access modal context for the key prop
+// Wrapper to access modal store for the key prop
 function ModalWithKey() {
-  const { selectedUnit } = useModal();
+  const selectedUnit = useModalStore(s => s.selectedUnit);
   // Key forces remount when unit changes, resetting all internal state
   return <UnitStatsModal key={selectedUnit?.id ?? 'none'} />;
 }
 
 // Global App Event Handler
 function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
-  const { showMenu } = useContextMenu();
+  const showMenu = useContextMenuStore(s => s.showMenu);
 
   return (
     <div
@@ -38,20 +38,15 @@ function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <ContextMenuProvider>
-      <GlobalContextMenuHandler>
-        <ModalProvider>
-          <div className="app-container">
-            <NavBar />
-            <WorkspaceView />
-          </div>
-          <ModalWithKey />
-        </ModalProvider>
-        <ContextMenu />
-      </GlobalContextMenuHandler>
-    </ContextMenuProvider>
+    <GlobalContextMenuHandler>
+      <div className="app-container">
+        <NavBar />
+        <WorkspaceView />
+      </div>
+      <ModalWithKey />
+      <ContextMenu />
+    </GlobalContextMenuHandler>
   );
 }
 
 export default App;
-
