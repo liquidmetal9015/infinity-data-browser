@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
+import { cmToInches } from '../utils/conversions';
 import type { IDatabase } from '../services/Database';
 import type { QueryState } from '../components/shared/UnifiedSearchBar';
 import type { FiltersState } from '../components/FilterBar';
@@ -34,22 +35,21 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
                 // Handle MOV array [6-4]
                 // Convert to total inches
                 if (Array.isArray(profile.move) && profile.move.length === 2) {
-                    const totalCm = profile.move[0] + profile.move[1];
-                    statVal = Math.round(totalCm * 0.4); // Convert to inches
+                    statVal = Math.round(cmToInches(profile.move[0] + profile.move[1]));
                 } else {
                     return false;
                 }
                 break;
             case 'MOV-1':
                 if (Array.isArray(profile.move) && profile.move.length >= 1) {
-                    statVal = Math.round(profile.move[0] * 0.4);
+                    statVal = Math.round(cmToInches(profile.move[0]));
                 } else {
                     return false;
                 }
                 break;
             case 'MOV-2':
                 if (Array.isArray(profile.move) && profile.move.length >= 2) {
-                    statVal = Math.round(profile.move[1] * 0.4);
+                    statVal = Math.round(cmToInches(profile.move[1]));
                 } else {
                     return false;
                 }

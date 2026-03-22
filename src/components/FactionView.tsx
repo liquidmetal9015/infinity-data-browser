@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, List, Users } from 'lucide-react';
 import { Database } from '../services/Database';
 import { UnitLink } from './UnitLink';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 
 interface FactionViewProps {
     units: Unit[];

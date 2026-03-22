@@ -4,7 +4,7 @@ import { useDatabase } from '../../context/DatabaseContext';
 import { formatMove } from '../../utils/conversions';
 import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';
-import type { Unit, Option } from '../../types';
+import type { Unit, Option } from '@shared/types';
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 import { getSafeLogo } from '../../utils/assets';
 

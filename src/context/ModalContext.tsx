@@ -1,5 +1,5 @@
 import { createContext, useState, type ReactNode } from 'react';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 
 interface ModalContextType {
     openUnitModal: (unit: Unit) => void;

@@ -4,7 +4,7 @@ import { X, Shield, Crosshair, Zap, Activity, CheckCircle } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import { useDatabase } from '../context/DatabaseContext';
 import { formatMove } from '../utils/conversions';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 
 const ATTRIBUTES = [
     { key: 'move', label: 'MOV', icon: <Activity size={14} /> },

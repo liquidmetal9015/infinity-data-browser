@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Plus, X, Check, Info, Calculator } from 'lucide-react';
 import { useDatabase } from '../../context/DatabaseContext';
 import { useModal } from '../../context/ModalContext';
-import type { Fireteam, FireteamUnit, FireteamChart } from '../../types';
+import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
 import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '../../utils/fireteams';
 
 interface FireteamBuilderProps {

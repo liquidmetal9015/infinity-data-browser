@@ -3,7 +3,9 @@
 ## Data Files Location
 - Source: `data/` directory (46 files, ~45MB total)
 - Served via: `public/data/` symlink
-- Loaded at: App startup in `Database.init()`
+- Web app: Loaded at startup in `src/services/Database.ts` → `Database.init()`
+- MCP server: Loaded via `mcp-server/DatabaseAdapter.ts` (reads files from disk)
+- Shared types: `shared/types.ts` defines the common data interfaces
 
 ## metadata.json Structure
 Global lookup tables for all game items:

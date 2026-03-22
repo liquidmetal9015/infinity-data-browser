@@ -87,7 +87,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
 export const LAUNCHER_WIDGETS: WidgetType[] = [
     'LIST_BUILDER',
     'DICE_CALCULATOR',
-    'DICE_ANALYTICS',
+    // 'DICE_ANALYTICS', // Disabled: heavy synchronous computation (400 solveF2F calls) causes UI lag
     'CLASSIFIEDS',
     'FIRETEAMS',
     'RANGES',

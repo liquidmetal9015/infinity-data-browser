@@ -1,5 +1,5 @@
 import { DatabaseAdapter } from './DatabaseAdapter.js';
-import type { DecodedArmyList, DecodedMember } from './army-utils.js';
+import type { DecodedArmyList, DecodedMember } from '../shared/armyCode.js';
 import type { HydratedList, HydratedGroup, HydratedUnit, HydratedItem, Profile, Option, Unit } from './types.js';
 
 export function hydrateList(decoded: DecodedArmyList): HydratedList {

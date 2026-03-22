@@ -1,6 +1,6 @@
 
 import { DatabaseAdapter } from './DatabaseAdapter.js';
-import { decodeArmyCode } from './army-utils.js';
+import { decodeArmyCode } from '../shared/armyCode.js';
 import { hydrateList } from './list-utils.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';

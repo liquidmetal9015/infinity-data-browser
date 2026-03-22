@@ -24,7 +24,7 @@ import { useContextMenu } from '../../context/ContextMenuContext';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '../../types/list';
 import { Plus, Trash2, Eye, GripVertical, Settings2, Users } from 'lucide-react';
 import { getPossibleFireteams } from '../../utils/fireteams';
-import type { Unit } from '../../types';
+import type { Unit } from '@shared/types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { OrderIcon } from '../shared/OrderIcon';
 import { countGroupOrders, getProfileOrders } from '../../utils/orderUtils';

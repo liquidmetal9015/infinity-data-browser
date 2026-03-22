@@ -1,23 +1,5 @@
 // Types for Ranges/Weapons Page
-
-export interface RangeBand {
-    start: number;
-    end: number;
-    mod: number;
-}
-
-export interface ParsedWeapon {
-    id: number;
-    name: string;
-    bands: RangeBand[];
-    burst: string;
-    damage: string;
-    saving: string;
-    savingNum: string;
-    ammunition: string;
-    properties: string[];
-    templateType?: 'small' | 'large' | 'none';
-}
+export type { RangeBand, ParsedWeapon } from '../../../shared/types';
 
 // Standard range bands in inches
 export const RANGE_BANDS = [

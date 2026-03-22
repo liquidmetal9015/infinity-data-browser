@@ -10,7 +10,7 @@ import {
 } from '../components/ListBuilder';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { encodeArmyList, copyArmyCodeToClipboard, decodeArmyCode } from '../utils/armyCode';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 import './ListBuilderPage.css';
 
 export function ListBuilderPage() {

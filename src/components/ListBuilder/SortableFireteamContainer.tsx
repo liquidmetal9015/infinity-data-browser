@@ -6,7 +6,7 @@ import { useDatabase } from '../../context/DatabaseContext';
 import { useListStore } from '../../stores/useListStore';
 import { getPossibleFireteams, getFireteamBonuses, calculateFireteamLevel, assignMembersToSlots, getMemberWithChartData, type SlotAssignment } from '../../utils/fireteams';
 import type { ListUnit } from '../../types/list';
-import type { Fireteam } from '../../types';
+import type { Fireteam } from '@shared/types';
 
 export interface SortableFireteamContainerProps {
     groupIndex: number;
@@ -86,6 +86,16 @@ export function SortableFireteamContainer({
         updateFireteamDef(groupIndex, fireteamId, { selectedTeamName: tName, selectedTeamType: tType });
     };
 
+    // Filter team types by whether the current member count is valid for that type
+    function getValidTypes(team: Fireteam, memberCount: number): string[] {
+        return team.type.filter(type => {
+            if (type === 'DUO') return memberCount === 2;
+            if (type === 'HARIS') return memberCount === 3;
+            if (type === 'CORE') return memberCount >= 3 && memberCount <= 5;
+            return true;
+        });
+    }
+
     // Determine current display
     let displayType = selectedTeamType || 'Fireteam';
     let displayTitle = selectedTeamName || notes || 'Fireteam';
@@ -93,8 +103,9 @@ export function SortableFireteamContainer({
     // Auto-deduce if unambiguous and nothing selected
     if (!selectedTeamName && possibleTeams.length === 1 && members.length > 0) {
         displayTitle = possibleTeams[0].name;
-        if (possibleTeams[0].type.length === 1) {
-            displayType = possibleTeams[0].type[0];
+        const validTypes = getValidTypes(possibleTeams[0], members.length);
+        if (validTypes.length === 1) {
+            displayType = validTypes[0];
         }
     }
 
@@ -171,7 +182,7 @@ export function SortableFireteamContainer({
                         >
                             <option value="">Auto-deduce team...</option>
                             {possibleTeams.map((pt: Fireteam) => (
-                                pt.type.map((type: string) => (
+                                getValidTypes(pt, members.length).map((type: string) => (
                                     <option key={`${pt.name}|${type}`} value={`${pt.name}|${type}`}>
                                         {pt.name} ({type})
                                     </option>

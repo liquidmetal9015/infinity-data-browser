@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { Users, Grid3X3 } from 'lucide-react';
 import { Database } from '../services/Database';
-import type { Unit } from '../types';
+import type { Unit } from '@shared/types';
 
 interface BubbleChartProps {
     units: Unit[];

@@ -1,45 +1,34 @@
 import type { Profile, Option } from '../../shared/types';
 
-export const ORDER_SKILLS = {
-    REGULAR: 258,
-    IMPETUOUS: 256,
-    LIEUTENANT: 119,
-    TACTICAL_AWARENESS: 213,
-    NCO: 211,
-};
-
 export type OrderType = 'regular' | 'irregular' | 'impetuous' | 'lieutenant' | 'tactical-awareness';
 
+// Maps the order type strings from the army data to our internal OrderType
+const ORDER_TYPE_MAP: Record<string, OrderType> = {
+    'REGULAR': 'regular',
+    'IRREGULAR': 'irregular',
+    'IMPETUOUS': 'impetuous',
+    'LIEUTENANT': 'lieutenant',
+    'TACTICAL': 'tactical-awareness',
+};
+
 /**
- * Extracts the explicit and implicit order types a profile/option provides.
+ * Extracts the order types a profile/option provides from the option's orders array.
  */
-export function getProfileOrders(profile?: Profile, option?: Option): OrderType[] {
+export function getProfileOrders(_profile?: Profile, option?: Option): OrderType[] {
+    if (!option?.orders?.length) return [];
+
     const orders: OrderType[] = [];
 
-    if (!profile || !option) return orders;
-
-    // Combine skills from both base profile and specific option
-    const allSkills = [...profile.skills, ...option.skills];
-
-    const hasSkill = (id: number) => allSkills.some(s => s.id === id);
-
-    // Regular / Irregular determination
-    if (hasSkill(ORDER_SKILLS.REGULAR)) {
-        orders.push('regular');
-    } else {
-        orders.push('irregular');
+    for (const order of option.orders) {
+        const mapped = ORDER_TYPE_MAP[order.type];
+        if (mapped) {
+            orders.push(mapped);
+        }
     }
 
-    if (hasSkill(ORDER_SKILLS.IMPETUOUS)) {
-        orders.push('impetuous');
-    }
-
-    if (hasSkill(ORDER_SKILLS.LIEUTENANT)) {
-        orders.push('lieutenant');
-    }
-
-    if (hasSkill(ORDER_SKILLS.TACTICAL_AWARENESS)) {
-        orders.push('tactical-awareness');
+    // If no regular/irregular order was found, default to regular
+    if (!orders.includes('regular') && !orders.includes('irregular')) {
+        orders.unshift('regular');
     }
 
     return orders;

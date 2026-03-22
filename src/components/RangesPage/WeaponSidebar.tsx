@@ -1,7 +1,7 @@
 // Weapon Selection Sidebar Component
 import { Search, Info } from 'lucide-react';
 import type { ParsedWeapon } from './types';
-import type { Unit } from '../../types';
+import type { Unit } from '@shared/types';
 
 interface WeaponSidebarProps {
     weaponSearch: string;

@@ -1,6 +1,6 @@
 import { Plus, Trash2, Info, Users } from 'lucide-react';
 import type { CombatGroup } from '../../types/list';
-import type { Unit } from '../../types';
+import type { Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
 
 interface CombatGroupViewProps {

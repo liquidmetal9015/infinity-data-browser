@@ -1,4 +1,4 @@
-import type { SuperFaction } from '../../types';
+import type { SuperFaction } from '@shared/types';
 import { FactionSelector } from '../FactionSelector';
 
 interface CompactFactionSelectorProps {

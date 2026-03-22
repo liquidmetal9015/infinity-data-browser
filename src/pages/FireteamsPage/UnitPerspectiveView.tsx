@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Info } from 'lucide-react';
 import { useModal } from '../../context/ModalContext';
-import type { Fireteam, FireteamUnit, FireteamChart, Unit } from '../../types';
+import type { Fireteam, FireteamUnit, FireteamChart, Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
 import { getUnitTags } from '../../utils/fireteams';
 

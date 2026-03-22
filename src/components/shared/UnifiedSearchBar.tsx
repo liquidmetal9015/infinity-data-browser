@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
 import { useDatabase } from '../../context/DatabaseContext';
-import type { SearchSuggestion } from '../../types';
+import type { SearchSuggestion } from '@shared/types';
 
 export interface ItemFilter {
     id: string;

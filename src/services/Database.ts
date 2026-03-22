@@ -1,7 +1,7 @@
 // FetchDatabase - Browser implementation using fetch()
 // Extends BaseDatabase with browser-specific data loading
 
-import type { DatabaseMetadata, FireteamChart, FactionInfo, SuperFaction, SearchSuggestion, Unit } from '../types';
+import type { DatabaseMetadata, FireteamChart, FactionInfo, SuperFaction, SearchSuggestion, Unit } from '@shared/types';
 import { BaseDatabase, type FactionDataFile, type SearchFilter } from '../../shared/BaseDatabase';
 import type { ParsedWeapon } from '../../shared/types';
 import type { ClassifiedObjective } from '../../shared/classifieds';

@@ -43,6 +43,11 @@ coverage/
 
 # Scratch / AI working directories
 ai-tmp/
+example_code/
+
+# Playwright
+playwright-report/
+test-results/
 
 # Windows artifacts
 *:Zone.Identifier

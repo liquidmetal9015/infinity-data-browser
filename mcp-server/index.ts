@@ -626,7 +626,7 @@ server.tool(
         if (!db.metadata) await db.init();
 
         // Dynamic import to avoid initialization issues if modules depend on DB
-        const { decodeArmyCode } = await import('./army-utils.js');
+        const { decodeArmyCode } = await import('../shared/armyCode.js');
         const { hydrateList } = await import('./list-utils.js');
 
         try {
@@ -704,7 +704,7 @@ server.tool(
         let units: Array<{ name: string; isc: string; skills: string[]; equipment: string[] }> = [];
 
         if (armyCode) {
-            const { decodeArmyCode } = await import('./army-utils.js');
+            const { decodeArmyCode } = await import('../shared/armyCode.js');
             const { hydrateList } = await import('./list-utils.js');
 
             try {
@@ -915,7 +915,7 @@ server.tool(
         let unitsToAnalyze: Array<{ unit: typeof db.units[0]; profile: { bs: number; cc: number; ph: number; wip: number; arm: number; bts: number; w: number; s: number; move: number[]; type?: number; skills: { id: number }[]; equip: { id: number }[]; weapons?: { id: number }[]; name: string }; option: { name: string; points: number; swc?: number; skills: { id: number }[]; equip: { id: number }[]; weapons: { id: number }[] } }> = [];
 
         if (armyCode) {
-            const { decodeArmyCode } = await import('./army-utils.js');
+            const { decodeArmyCode } = await import('../shared/armyCode.js');
             const { hydrateList } = await import('./list-utils.js');
 
             try {
@@ -1159,7 +1159,7 @@ server.tool(
     async ({ list1Code, list2Code, list1Name, list2Name }) => {
         if (!db.metadata) await db.init();
 
-        const { decodeArmyCode } = await import('./army-utils.js');
+        const { decodeArmyCode } = await import('../shared/armyCode.js');
         const { hydrateList } = await import('./list-utils.js');
 
         let list1Info, list2Info;
