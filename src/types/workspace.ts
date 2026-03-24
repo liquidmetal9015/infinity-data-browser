@@ -87,9 +87,9 @@ export const WIDGET_LABELS: Record<WidgetType, string> = {
     CLASSIFIEDS: 'Classifieds',
     FIRETEAMS: 'Fireteams',
     RANGES: 'Weapons',
-    COMPARE: 'Compare',
-    SEARCH: 'Search',
-    REFERENCE: 'Reference',
+    COMPARE: 'Factions',
+    SEARCH: 'Units',
+    REFERENCE: 'Skills & Equipment',
 };
 
 export const MIN_WINDOW_WIDTH = 300;

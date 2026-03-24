@@ -7,6 +7,7 @@ import { OrderIcon } from './OrderIcon';
 import type { Unit, Option } from '@shared/types';
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 import { getSafeLogo } from '../../utils/assets';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, isPeripheralGroup } from '../../utils/classifications';
 
 interface ExpandableUnitCardProps {
     unit: Unit;
@@ -75,7 +76,21 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                         </div>
                     )}
                     <div>
-                        <div className="font-bold text-base text-gray-100 tracking-wide leading-tight">{unit.isc}</div>
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-base text-gray-100 tracking-wide leading-tight">{unit.isc}</span>
+                            {activeProfile?.type != null && CLASSIFICATION_LABELS[activeProfile.type] && (
+                                <span
+                                    className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                    style={{
+                                        color: CLASSIFICATION_COLORS[activeProfile.type],
+                                        background: `${CLASSIFICATION_COLORS[activeProfile.type]}15`,
+                                        border: `1px solid ${CLASSIFICATION_COLORS[activeProfile.type]}30`
+                                    }}
+                                >
+                                    {CLASSIFICATION_LABELS[activeProfile.type]}
+                                </span>
+                            )}
+                        </div>
                         <div className="font-mono text-sm text-blue-400 mt-0.5">
                             {unit.pointsRange[0] === unit.pointsRange[1] ? `${unit.pointsRange[0]} pts` : `${unit.pointsRange[0]} - ${unit.pointsRange[1]} pts`}
                         </div>
@@ -219,11 +234,11 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                                 <OrderIcon key={i} type={o} size={16} className={i > 0 ? "-ml-1" : ""} />
                                             ))}
                                         </div>
-                                        <div className="flex-1 p-2.5 flex flex-col justify-center">
-                                            <div className="font-bold text-gray-300 text-xs mb-0.5">{optName.toUpperCase()}</div>
-                                            <div className="text-gray-500 text-[11px] leading-tight">
-                                                {weapsAndEq.join(', ') || 'No weapons/equipment'}
-                                            </div>
+                                        <div className="flex-1 px-2.5 py-2 flex items-center gap-2 min-w-0">
+                                            <span className="font-bold text-gray-300 text-xs whitespace-nowrap">{optName.toUpperCase()}</span>
+                                            <span className="text-gray-400 text-[11px] truncate">
+                                                {weapsAndEq.join(', ') || '—'}
+                                            </span>
                                         </div>
                                         <div className="flex flex-col items-center justify-center p-2 border-l border-white/5 bg-black/10 min-w-[50px]">
                                             <div className="text-[10px] text-gray-500 font-bold">SWC</div>
@@ -248,6 +263,39 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                 );
                             })}
                         </div>
+
+                        {/* Peripheral Units (e.g., Crabbot, Auxbot) */}
+                        {profileGroups.map((pg, idx) => {
+                            if (!isPeripheralGroup(unit, idx)) return null;
+                            const pProfile = pg.profiles[0];
+                            const pOption = pg.options[0];
+                            if (!pProfile || !pOption) return null;
+                            return (
+                                <div key={pg.id} className="mt-2 p-2.5 bg-black/15 border border-white/5 rounded-md">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                            style={{ color: CLASSIFICATION_COLORS[5], background: `${CLASSIFICATION_COLORS[5]}15`, border: `1px solid ${CLASSIFICATION_COLORS[5]}30` }}>
+                                            REM
+                                        </span>
+                                        <span className="text-xs font-bold text-gray-400">{pg.isc || pg.isco || pProfile.name}</span>
+                                        <span className="text-[10px] text-gray-500">Attached</span>
+                                    </div>
+                                    <div className="flex gap-3 text-[10px]">
+                                        {ATTRIBUTES.map((attr) => {
+                                            const rec = pProfile as unknown as Record<string, unknown>;
+                                            let val: string | number | undefined = rec[attr.key] as string | number | undefined;
+                                            if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
+                                            return (
+                                                <div key={attr.key} className="flex flex-col items-center">
+                                                    <div className="font-bold text-gray-600">{attr.label}</div>
+                                                    <div className="font-mono text-gray-400">{val ?? '-'}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

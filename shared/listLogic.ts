@@ -108,13 +108,42 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 swc: Number(option.swc || 0),
             };
 
-            return withGroup(state, groupIndex, g => ({ ...g, units: [...g.units, newUnit] }));
+            // Auto-attach peripheral units (e.g., Crabbots for TAGs)
+            const peripherals: ListUnit[] = [];
+            for (let i = 1; i < unit.raw.profileGroups.length; i++) {
+                const pg = unit.raw.profileGroups[i];
+                const pProfile = pg.profiles?.[0];
+                const pOption = pg.options?.[0];
+                // Peripheral heuristic: secondary group, type=5 (REM), single low-cost option
+                if (pProfile?.type === 5 && pg.options?.length === 1 && (pOption?.points ?? 999) <= 5) {
+                    peripherals.push({
+                        id: generateId(),
+                        unit,
+                        profileGroupId: pg.id,
+                        profileId: pProfile.id,
+                        optionId: pOption.id,
+                        points: Number(pOption.points || 0),
+                        swc: Number(pOption.swc || 0),
+                        parentId: newUnit.id,
+                        isPeripheral: true,
+                    });
+                }
+            }
+
+            return withGroup(state, groupIndex, g => ({
+                ...g,
+                units: [...g.units, newUnit, ...peripherals]
+            }));
         }
 
         case 'REMOVE_UNIT': {
             if (!state.currentList) return state;
             const { groupIndex, unitId } = action;
-            return withGroup(state, groupIndex, g => ({ ...g, units: g.units.filter(u => u.id !== unitId) }));
+            // Also remove any peripheral children attached to this unit
+            return withGroup(state, groupIndex, g => ({
+                ...g,
+                units: g.units.filter(u => u.id !== unitId && u.parentId !== unitId)
+            }));
         }
 
         case 'REORDER_UNIT': {
@@ -134,18 +163,21 @@ export function listReducer(state: ListState, action: ListAction): ListState {
             const { fromGroupIndex, toGroupIndex, unitId, toIndex } = action;
             const newGroups = [...state.currentList.groups];
 
-            // Find and remove from source group
+            // Find and remove from source group (including peripherals)
             const sourceUnits = [...newGroups[fromGroupIndex].units];
             const unitIndex = sourceUnits.findIndex(u => u.id === unitId);
             if (unitIndex === -1) return state;
 
             const [movedUnit] = sourceUnits.splice(unitIndex, 1);
-            newGroups[fromGroupIndex] = { ...newGroups[fromGroupIndex], units: sourceUnits };
+            // Also extract any peripheral children
+            const peripherals = sourceUnits.filter(u => u.parentId === unitId);
+            const remainingSource = sourceUnits.filter(u => u.parentId !== unitId);
+            newGroups[fromGroupIndex] = { ...newGroups[fromGroupIndex], units: remainingSource };
 
             // Add to target group
             const targetUnits = [...newGroups[toGroupIndex].units];
             const insertIndex = toIndex !== undefined ? toIndex : targetUnits.length;
-            targetUnits.splice(insertIndex, 0, movedUnit);
+            targetUnits.splice(insertIndex, 0, movedUnit, ...peripherals);
             newGroups[toGroupIndex] = { ...newGroups[toGroupIndex], units: targetUnits };
 
             return {

@@ -5,15 +5,16 @@ import { FilterBar } from '../components/FilterBar'
 import { FactionView } from '../components/FactionView'
 import { BubbleChart } from '../components/BubbleChart'
 import { ExpandableUnitCard } from '../components/shared/ExpandableUnitCard'
-import { LayoutGrid, List, Circle } from 'lucide-react'
+import { LayoutGrid, List, Circle, AlignJustify } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { useUnitSearch } from '../hooks/useUnitSearch'
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../utils/classifications'
 
-type ViewMode = 'list' | 'faction' | 'bubble';
+type ViewMode = 'compact' | 'list' | 'faction' | 'bubble';
 
 export function SearchPage() {
     const db = useDatabase();
-    const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [viewMode, setViewMode] = useState<ViewMode>('compact');
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
     // Use the custom hook for search logic
@@ -37,14 +38,14 @@ export function SearchPage() {
         });
     };
 
-    // Auto-expand units when searching
+    // Auto-expand only when few results
     useEffect(() => {
-        if (textQuery.trim().length > 1 || query.filters.length > 0) {
+        if (filteredUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
             setExpandedIds(new Set(filteredUnits.map(u => u.id)));
         } else {
             setExpandedIds(new Set());
         }
-    }, [textQuery, query.filters.length, filteredUnits]);
+    }, [textQuery, query.filters.length, filteredUnits.length]);
 
     return (
         <div className="search-page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1.5rem' }}>
@@ -74,11 +75,18 @@ export function SearchPage() {
                     <div className="view-controls flex justify-between items-end border-b border-white/10 pb-4 mb-6">
                         <div className="view-toggle flex gap-2">
                             <button
+                                onClick={() => setViewMode('compact')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'compact' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
+                            >
+                                <AlignJustify size={16} />
+                                <span>Compact</span>
+                            </button>
+                            <button
                                 onClick={() => setViewMode('list')}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
                                 <List size={16} />
-                                <span>List</span>
+                                <span>Detail</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('faction')}
@@ -149,6 +157,87 @@ export function SearchPage() {
                     ) : viewMode === 'faction' ? (
                         <motion.div key="faction-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                             <FactionView units={filteredUnits} />
+                        </motion.div>
+                    ) : viewMode === 'compact' ? (
+                        <motion.div
+                            key="compact-view"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <div className="bg-[#0d1117] border border-[#1e293b] rounded-lg overflow-hidden">
+                                {/* Compact table header */}
+                                <div className="flex items-center px-3 py-2 bg-[#161b22] border-b border-[#1e293b] text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                    <div className="w-[50px]">Type</div>
+                                    <div className="flex-1 min-w-0">Unit</div>
+                                    <div className="w-[200px] text-right">Factions</div>
+                                    <div className="w-[80px] text-right">Points</div>
+                                </div>
+                                {/* Compact rows */}
+                                {filteredUnits.slice(0, 200).map(unit => {
+                                    const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.type ?? 0;
+                                    const factionNames = unit.factions
+                                        .map(fid => db.factionMap.get(fid))
+                                        .filter(Boolean)
+                                        .slice(0, 3);
+                                    const isExpanded = expandedIds.has(unit.id);
+
+                                    return (
+                                        <div key={unit.id}>
+                                            <div
+                                                className="flex items-center px-3 py-2 border-b border-[#1e293b]/50 hover:bg-[#1e293b] cursor-pointer transition-colors"
+                                                onClick={() => toggleExpand(unit.id)}
+                                            >
+                                                <div className="w-[50px]">
+                                                    {primaryType > 0 && CLASSIFICATION_LABELS[primaryType] && (
+                                                        <span
+                                                            className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase"
+                                                            style={{
+                                                                color: CLASSIFICATION_COLORS[primaryType],
+                                                                background: `${CLASSIFICATION_COLORS[primaryType]}15`,
+                                                            }}
+                                                        >
+                                                            {CLASSIFICATION_LABELS[primaryType]}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-sm font-semibold text-gray-200">{unit.isc}</span>
+                                                </div>
+                                                <div className="w-[200px] text-right">
+                                                    <span className="text-xs text-gray-500 truncate">
+                                                        {factionNames.join(', ')}
+                                                        {unit.factions.length > 3 && ` +${unit.factions.length - 3}`}
+                                                    </span>
+                                                </div>
+                                                <div className="w-[80px] text-right">
+                                                    <span className="text-xs font-mono text-blue-400">
+                                                        {unit.pointsRange[0] === unit.pointsRange[1]
+                                                            ? `${unit.pointsRange[0]}`
+                                                            : `${unit.pointsRange[0]}-${unit.pointsRange[1]}`}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {isExpanded && (
+                                                <div className="border-b border-[#1e293b] bg-[#0a0f18] px-2 py-2">
+                                                    <ExpandableUnitCard
+                                                        unit={unit}
+                                                        isExpanded={true}
+                                                        onToggle={() => toggleExpand(unit.id)}
+                                                        searchQuery={textQuery.trim()}
+                                                        activeFilters={query.filters}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {filteredUnits.length > 200 && (
+                                <div className="text-center text-gray-500 py-6 border border-dashed border-white/10 rounded-xl mt-4">
+                                    Displaying first 200 of {filteredUnits.length} results. Please refine your search.
+                                </div>
+                            )}
                         </motion.div>
                     ) : (
                         <motion.div

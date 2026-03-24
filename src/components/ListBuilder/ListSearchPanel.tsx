@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { type ArmyList } from '@shared/listTypes';
-import { Settings2 } from 'lucide-react';
+import { Settings2, ChevronDown } from 'lucide-react';
 import type { Unit } from '@shared/types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { UnifiedSearchBar, type QueryState } from '../shared/UnifiedSearchBar';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } from '../../utils/classifications';
 
 interface ListSearchPanelProps {
     list: ArmyList;
@@ -27,6 +28,7 @@ export function ListSearchPanel({
     const [rosterTextQuery, setRosterTextQuery] = useState('');
     const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
     const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
+    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
 
     const factionUnits = useMemo(() => {
         return db.units.filter(unit => unit.factions.includes(list.factionId));
@@ -73,6 +75,28 @@ export function ListSearchPanel({
         return results;
     }, [factionUnits, rosterQuery, rosterTextQuery, db]);
 
+    const isSearchActive = rosterTextQuery.trim().length > 0 || rosterQuery.filters.length > 0;
+
+    const groupedRoster = useMemo(() => {
+        if (isSearchActive) return null; // flat list when searching
+
+        const groups = new Map<number, Unit[]>();
+        for (const unit of filteredRoster) {
+            const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.type ?? 0;
+            if (!groups.has(primaryType)) groups.set(primaryType, []);
+            groups.get(primaryType)!.push(unit);
+        }
+
+        return CLASSIFICATION_ORDER
+            .filter(t => groups.has(t))
+            .map(t => ({
+                type: t,
+                label: CLASSIFICATION_LABELS[t] || `Type ${t}`,
+                color: CLASSIFICATION_COLORS[t] || '#94a3b8',
+                units: groups.get(t)!,
+            }));
+    }, [filteredRoster, isSearchActive]);
+
     const toggleExpand = (unitId: number) => {
         setExpandedUnitIds(prev => {
             const next = new Set(prev);
@@ -87,6 +111,33 @@ export function ListSearchPanel({
             return next;
         });
     };
+
+    const toggleGroupCollapse = (type: number) => {
+        setCollapsedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(type)) next.delete(type);
+            else next.add(type);
+            return next;
+        });
+    };
+
+    const renderUnitCard = (unit: Unit) => (
+        <ExpandableUnitCard
+            key={unit.id}
+            unit={unit}
+            isExpanded={expandedUnitIds.has(unit.id)}
+            onToggle={() => toggleExpand(unit.id)}
+            searchQuery={rosterTextQuery.trim()}
+            activeFilters={rosterQuery.filters}
+            isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
+            onMouseEnter={() => onUnitHover(unit.isc)}
+            onMouseLeave={() => onUnitHover(null)}
+            onAddUnit={(unit, pgId, pId, oId) => {
+                onAddUnit(unit, pgId, pId, oId);
+            }}
+            onViewUnit={onViewUnit}
+        />
+    );
 
     return (
         <div className="roster-panel">
@@ -110,29 +161,51 @@ export function ListSearchPanel({
                     setQuery={setRosterQuery}
                     textQuery={rosterTextQuery}
                     setTextQuery={setRosterTextQuery}
-                    placeholder="Search roster..."
+                    placeholder="Search by name, weapon, skill, equipment..."
                     className="bg-transparent"
                 />
             </div>
 
-            <div className="roster-list p-2 space-y-1.5 overflow-y-auto">
-                {filteredRoster.map(unit => (
-                    <ExpandableUnitCard
-                        key={unit.id}
-                        unit={unit}
-                        isExpanded={expandedUnitIds.has(unit.id)}
-                        onToggle={() => toggleExpand(unit.id)}
-                        searchQuery={rosterTextQuery.trim()}
-                        activeFilters={rosterQuery.filters}
-                        isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
-                        onMouseEnter={() => onUnitHover(unit.isc)}
-                        onMouseLeave={() => onUnitHover(null)}
-                        onAddUnit={(unit, pgId, pId, oId) => {
-                            onAddUnit(unit, pgId, pId, oId);
-                        }}
-                        onViewUnit={onViewUnit}
-                    />
-                ))}
+            <div className="roster-list overflow-y-auto">
+                {groupedRoster ? (
+                    // Grouped view (no active search)
+                    groupedRoster.map(group => (
+                        <div key={group.type}>
+                            <button
+                                className="w-full flex items-center justify-between px-3 py-2 bg-[#161b22] border-b border-[#1e293b] sticky top-0 z-10 cursor-pointer hover:bg-[#1e293b] transition-colors"
+                                onClick={() => toggleGroupCollapse(group.type)}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className="text-[11px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                        style={{
+                                            color: group.color,
+                                            background: `${group.color}15`,
+                                            border: `1px solid ${group.color}30`
+                                        }}
+                                    >
+                                        {group.label}
+                                    </span>
+                                    <span className="text-xs text-gray-500">{group.units.length}</span>
+                                </div>
+                                <ChevronDown
+                                    size={14}
+                                    className={`text-gray-500 transition-transform ${collapsedGroups.has(group.type) ? '-rotate-90' : ''}`}
+                                />
+                            </button>
+                            {!collapsedGroups.has(group.type) && (
+                                <div className="p-2 space-y-1.5">
+                                    {group.units.map(renderUnitCard)}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    // Flat view (search active)
+                    <div className="p-2 space-y-1.5">
+                        {filteredRoster.map(renderUnitCard)}
+                    </div>
+                )}
             </div>
         </div>
     );

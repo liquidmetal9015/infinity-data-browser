@@ -346,7 +346,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-3">
                                                     <span className="group-name">{group.name}</span>
-                                                    <span className="group-count">{group.units.length} units</span>
+                                                    <span className="group-count">{group.units.filter(u => !u.isPeripheral).length} units</span>
                                                 </div>
                                                 <div className="flex gap-2.5 mt-1.5">
                                                     {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
@@ -433,12 +433,46 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                         }
                                                     });
 
-                                                    const unboundUnits = group.units.filter(u => !u.fireteamId);
+                                                    // Separate peripherals from regular unbound units
+                                                    const peripheralIds = new Set(group.units.filter(u => u.isPeripheral).map(u => u.id));
+                                                    const unboundUnits = group.units.filter(u => !u.fireteamId && !u.isPeripheral);
+                                                    const peripheralsMap = new Map<string, ListUnit[]>();
+                                                    for (const u of group.units) {
+                                                        if (u.isPeripheral && u.parentId) {
+                                                            if (!peripheralsMap.has(u.parentId)) peripheralsMap.set(u.parentId, []);
+                                                            peripheralsMap.get(u.parentId)!.push(u);
+                                                        }
+                                                    }
+
+                                                    // Helper to render a unit + its peripherals
+                                                    const renderUnitWithPeripherals = (u: ListUnit) => (
+                                                        <React.Fragment key={u.id}>
+                                                            <DraggableUnitRow
+                                                                listUnit={u}
+                                                                groupIndex={groupIndex}
+                                                                onViewUnit={onViewUnit}
+                                                                onRemove={() => removeUnit(groupIndex, u.id)}
+                                                                db={db}
+                                                            />
+                                                            {peripheralsMap.get(u.id)?.map(p => (
+                                                                <DraggableUnitRow
+                                                                    key={p.id}
+                                                                    listUnit={p}
+                                                                    groupIndex={groupIndex}
+                                                                    onViewUnit={onViewUnit}
+                                                                    onRemove={() => {}}
+                                                                    db={db}
+                                                                />
+                                                            ))}
+                                                        </React.Fragment>
+                                                    );
 
                                                     return (
                                                         <>
                                                             <SortableContext items={fireteamItems.map(f => `fireteam-${f.ft.id}`)} strategy={verticalListSortingStrategy}>
-                                                                {fireteamItems.map(item => (
+                                                                {fireteamItems.map(item => {
+                                                                    const nonPeripheralMembers = item.members.filter(u => !u.isPeripheral);
+                                                                    return (
                                                                     <div
                                                                         key={item.ft.id}
                                                                         onMouseEnter={() => setHoveredFireteamId(item.ft.id)}
@@ -452,38 +486,21 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                                             selectedTeamName={item.ft.selectedTeamName}
                                                                             selectedTeamType={item.ft.selectedTeamType}
                                                                             isHighlighted={validFireteamIdsForHoveredUnit.has(item.ft.id)}
-                                                                            listUnits={item.members}
+                                                                            listUnits={nonPeripheralMembers}
                                                                             factionId={list.factionId}
                                                                             onRemove={() => removeFireteamDef(groupIndex, item.ft.id)}
                                                                         >
-                                                                            <SortableContext items={item.members.map(u => u.id)} strategy={verticalListSortingStrategy}>
-                                                                                {item.members.map((u: ListUnit) => (
-                                                                                    <DraggableUnitRow
-                                                                                        key={u.id}
-                                                                                        listUnit={u}
-                                                                                        groupIndex={groupIndex}
-                                                                                        onViewUnit={onViewUnit}
-                                                                                        onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                                        db={db}
-                                                                                    />
-                                                                                ))}
+                                                                            <SortableContext items={nonPeripheralMembers.map(u => u.id)} strategy={verticalListSortingStrategy}>
+                                                                                {nonPeripheralMembers.map(u => renderUnitWithPeripherals(u))}
                                                                             </SortableContext>
                                                                         </SortableFireteamContainer>
                                                                     </div>
-                                                                ))}
+                                                                    );
+                                                                })}
                                                             </SortableContext>
 
                                                             <SortableContext items={unboundUnits.map(u => u.id)} strategy={verticalListSortingStrategy}>
-                                                                {unboundUnits.map(u => (
-                                                                    <DraggableUnitRow
-                                                                        key={u.id}
-                                                                        listUnit={u}
-                                                                        groupIndex={groupIndex}
-                                                                        onViewUnit={onViewUnit}
-                                                                        onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                        db={db}
-                                                                    />
-                                                                ))}
+                                                                {unboundUnits.map(u => renderUnitWithPeripherals(u))}
                                                             </SortableContext>
                                                         </>
                                                     );

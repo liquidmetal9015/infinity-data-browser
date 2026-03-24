@@ -24,8 +24,8 @@
 
   /* Text Colors */
   --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  --text-secondary: #b4b4be;
+  --text-muted: #8a8a94;
   --text-disabled: #52525b;
 
   /* Accent Colors */
@@ -87,7 +87,7 @@
 }
 
 html {
-  font-size: 14px;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

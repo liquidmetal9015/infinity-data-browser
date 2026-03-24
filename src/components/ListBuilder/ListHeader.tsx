@@ -23,8 +23,9 @@ export function ListHeader({
 }: ListHeaderProps) {
     return (
         <div className="list-header">
-            <div className="list-info">
+            <div className="list-info" style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                 <h2>{list.name}</h2>
+                <span style={{ color: '#475569', fontSize: '1rem' }}>|</span>
                 <span className="faction-label">{factionName}</span>
             </div>
             <div className="header-actions">

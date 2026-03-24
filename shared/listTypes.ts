@@ -27,6 +27,10 @@ export interface ListUnit {
     fireteamColor?: string;
     /** Notes indicating fireteam type (e.g., Core, Haris) or role */
     fireteamNotes?: string;
+    /** ID of parent unit (for peripheral/attached units like Crabbots) */
+    parentId?: string;
+    /** True for auto-attached peripheral entries (points don't count toward list total) */
+    isPeripheral?: boolean;
 }
 
 /**
@@ -81,7 +85,7 @@ export interface ArmyList {
  */
 export function calculateListPoints(list: ArmyList): number {
     return list.groups.reduce((total, group) =>
-        total + group.units.reduce((groupTotal, unit) => groupTotal + Number(unit.points || 0), 0), 0);
+        total + group.units.filter(u => !u.isPeripheral).reduce((groupTotal, unit) => groupTotal + Number(unit.points || 0), 0), 0);
 }
 
 /**
@@ -89,7 +93,7 @@ export function calculateListPoints(list: ArmyList): number {
  */
 export function calculateListSWC(list: ArmyList): number {
     return list.groups.reduce((total, group) =>
-        total + group.units.reduce((groupTotal, unit) => groupTotal + Number(unit.swc || 0), 0), 0);
+        total + group.units.filter(u => !u.isPeripheral).reduce((groupTotal, unit) => groupTotal + Number(unit.swc || 0), 0), 0);
 }
 
 /**
