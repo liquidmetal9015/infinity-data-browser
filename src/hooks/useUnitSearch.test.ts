@@ -83,6 +83,7 @@ const mockDb: IDatabase = {
     getGroupedFactions: () => [],
     factionHasData: () => true,
     getSuggestions: () => [],
+    factionMap: new Map(),
     extrasMap: new Map(),
     weaponMap: new Map(),
     skillMap: new Map(),

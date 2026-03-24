@@ -39,6 +39,9 @@ test.describe('List Builder – Golden Path', () => {
         // Select the first available sectorial
         await page.getByRole('button', { name: '— Select Faction —' }).click();
         await page.waitForTimeout(150);
+        // Groups are collapsed by default — expand the first one before selecting
+        await page.locator('[role="listbox"] button').first().click();
+        await page.waitForTimeout(150);
         await page.locator('[role="option"]').first().click();
         await page.getByRole('button', { name: 'Create List' }).click();
 
@@ -50,6 +53,9 @@ test.describe('List Builder – Golden Path', () => {
     test('should search and add a unit to the list', async ({ page }) => {
         // Select the first available faction
         await page.getByRole('button', { name: '— Select Faction —' }).click();
+        await page.waitForTimeout(150);
+        // Groups are collapsed by default — expand the first one before selecting
+        await page.locator('[role="listbox"] button').first().click();
         await page.waitForTimeout(150);
         await page.locator('[role="option"]').first().click();
         await page.getByRole('button', { name: 'Create List' }).click();
@@ -96,6 +102,9 @@ test.describe('List Builder – Golden Path', () => {
     test('should persist the army list across page reloads (Zustand persist)', async ({ page }) => {
         // Start a list and add something
         await page.getByRole('button', { name: '— Select Faction —' }).click();
+        await page.waitForTimeout(150);
+        // Groups are collapsed by default — expand the first one before selecting
+        await page.locator('[role="listbox"] button').first().click();
         await page.waitForTimeout(150);
         await page.locator('[role="option"]').first().click();
         await page.getByRole('button', { name: 'Create List' }).click();

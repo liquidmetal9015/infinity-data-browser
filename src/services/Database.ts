@@ -19,6 +19,7 @@ export interface IDatabase {
     getGroupedFactions(): SuperFaction[];
     factionHasData(id: number): boolean;
     getSuggestions(query: string): SearchSuggestion[];
+    factionMap: Map<number, string>;
     extrasMap: Map<number, string>;
     weaponMap: Map<number, string>;
     skillMap: Map<number, string>;

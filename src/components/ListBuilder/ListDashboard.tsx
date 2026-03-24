@@ -434,7 +434,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                     });
 
                                                     // Separate peripherals from regular unbound units
-                                                    const peripheralIds = new Set(group.units.filter(u => u.isPeripheral).map(u => u.id));
                                                     const unboundUnits = group.units.filter(u => !u.fireteamId && !u.isPeripheral);
                                                     const peripheralsMap = new Map<string, ListUnit[]>();
                                                     for (const u of group.units) {
