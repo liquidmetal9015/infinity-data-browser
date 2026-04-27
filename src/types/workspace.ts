@@ -9,7 +9,10 @@ export type WidgetType =
     | 'RANGES'
     | 'COMPARE'
     | 'SEARCH'
-    | 'REFERENCE';
+    | 'REFERENCE'
+    | 'UNIT_ROSTER'
+    | 'UNIT_DETAIL'
+    | 'ARMY_LIST';
 
 export interface WindowPosition {
     x: number;
@@ -32,6 +35,9 @@ export type WidgetPropsMap = {
     COMPARE: never;
     SEARCH: never;
     REFERENCE: never;
+    UNIT_ROSTER: never;
+    UNIT_DETAIL: never;
+    ARMY_LIST: never;
 };
 export type AnyWidgetProps = WidgetPropsMap[WidgetType]; // { unitSlug?: string }
 
@@ -77,6 +83,9 @@ export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
     COMPARE: { width: 800, height: 600 },
     SEARCH: { width: 600, height: 500 },
     REFERENCE: { width: 700, height: 600 },
+    UNIT_ROSTER: { width: 400, height: 700 },
+    UNIT_DETAIL: { width: 500, height: 700 },
+    ARMY_LIST: { width: 600, height: 750 },
 };
 
 // Display labels for widget types
@@ -90,6 +99,9 @@ export const WIDGET_LABELS: Record<WidgetType, string> = {
     COMPARE: 'Factions',
     SEARCH: 'Units',
     REFERENCE: 'Skills & Equipment',
+    UNIT_ROSTER: 'Roster',
+    UNIT_DETAIL: 'Unit Detail',
+    ARMY_LIST: 'Army List',
 };
 
 export const MIN_WINDOW_WIDTH = 300;

@@ -15,6 +15,8 @@ interface ExpandableUnitCardProps {
     onToggle: () => void;
     onAddUnit?: (unit: Unit, profileGroupId: number, profileId: number, optionId: number) => void;
     onViewUnit?: (unit: Unit) => void;
+    /** When true, clicking the card header selects the unit for detail view instead of expanding inline */
+    detailMode?: boolean;
     searchQuery?: string;
     activeFilters?: QueryFilter[];
     isHighlighted?: boolean;
@@ -36,7 +38,7 @@ const ATTRIBUTES = [
 
 
 
-export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, searchQuery, activeFilters = [], isHighlighted, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
+export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
     const db = useDatabase();
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
@@ -62,8 +64,8 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
         >
             {/* Header (Always Visible) */}
             <div
-                className={`flex items-center justify-between px-4 py-3.5 cursor-pointer ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
-                onClick={onToggle}
+                className={`flex items-center justify-between px-4 py-3.5 cursor-pointer ${detailMode && onViewUnit ? 'hover:bg-white/5' : ''} ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
+                onClick={detailMode && onViewUnit ? () => onViewUnit(unit) : onToggle}
             >
                 <div className="flex items-center gap-4">
                     {logoPath ? (
@@ -97,7 +99,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                     </div>
                 </div>
                 <div className="text-gray-500">
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    {detailMode ? <Eye size={16} /> : (isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />)}
                 </div>
             </div>
 

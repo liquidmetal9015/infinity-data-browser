@@ -3,12 +3,18 @@ import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
     Search, Library, Activity, Users, Layers,
-    ClipboardList, Calculator, Target, BarChart
+    ClipboardList, Calculator, Target, BarChart,
+    Info,
 } from 'lucide-react';
 import type { WidgetType, WindowSize } from '../../types/workspace';
 import { DEFAULT_SIZES, WIDGET_LABELS } from '../../types/workspace';
 
-// Lazy imports for page components
+// Active panel imports
+import { UnitRosterPanel } from '../Panels/UnitRosterPanel';
+import { UnitDetailPanel } from '../Panels/UnitDetailPanel';
+import { ArmyListPanel } from '../Panels/ArmyListPanel';
+
+// Legacy imports (disconnected from launcher, kept for reference)
 import { SearchPage } from '../../pages/SearchPage';
 import { ReferencePage } from '../../pages/ReferencePage';
 import { RangesPage } from '../../pages/RangesPage';
@@ -27,6 +33,27 @@ export interface WidgetRegistryEntry {
 }
 
 export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
+    // Active list-builder panels
+    UNIT_ROSTER: {
+        component: UnitRosterPanel,
+        label: WIDGET_LABELS.UNIT_ROSTER,
+        icon: Search,
+        defaultSize: DEFAULT_SIZES.UNIT_ROSTER,
+    },
+    UNIT_DETAIL: {
+        component: UnitDetailPanel,
+        label: WIDGET_LABELS.UNIT_DETAIL,
+        icon: Info,
+        defaultSize: DEFAULT_SIZES.UNIT_DETAIL,
+    },
+    ARMY_LIST: {
+        component: ArmyListPanel,
+        label: WIDGET_LABELS.ARMY_LIST,
+        icon: ClipboardList,
+        defaultSize: DEFAULT_SIZES.ARMY_LIST,
+    },
+
+    // Legacy widgets (disconnected from launcher)
     SEARCH: {
         component: SearchPage,
         label: WIDGET_LABELS.SEARCH,
@@ -85,13 +112,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
 
 // Widget types shown in the launcher (in display order)
 export const LAUNCHER_WIDGETS: WidgetType[] = [
-    'LIST_BUILDER',
-    'DICE_CALCULATOR',
-    // 'DICE_ANALYTICS', // Disabled: heavy synchronous computation (400 solveF2F calls) causes UI lag
-    'CLASSIFIEDS',
-    'FIRETEAMS',
-    'RANGES',
-    'COMPARE',
-    'SEARCH',
-    'REFERENCE',
+    'UNIT_ROSTER',
+    'UNIT_DETAIL',
+    'ARMY_LIST',
 ];

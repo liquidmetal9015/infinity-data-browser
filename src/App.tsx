@@ -1,16 +1,7 @@
 import { WorkspaceView } from './components/Workspace/WorkspaceView';
-import { useModalStore } from './stores/useModalStore';
 import { useContextMenuStore } from './stores/useContextMenuStore';
-import { UnitStatsModal } from './components/UnitStatsModal';
 import { NavBar } from './components/NavBar';
 import { ContextMenu } from './components/ContextMenu';
-
-// Wrapper to access modal store for the key prop
-function ModalWithKey() {
-  const selectedUnit = useModalStore(s => s.selectedUnit);
-  // Key forces remount when unit changes, resetting all internal state
-  return <UnitStatsModal key={selectedUnit?.id ?? 'none'} />;
-}
 
 // Global App Event Handler
 function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
@@ -43,7 +34,6 @@ function App() {
         <NavBar />
         <WorkspaceView />
       </div>
-      <ModalWithKey />
       <ContextMenu />
     </GlobalContextMenuHandler>
   );
