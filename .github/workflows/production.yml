@@ -32,10 +32,11 @@ jobs:
           cache: 'pip'
 
       - name: Setup Cloud SQL Proxy
-        uses: google-github-actions/setup-cloudsql-proxy@v2
-        with:
-          # Automatically connects the proxy based on the authenticated Service Account
-          instances: 'infinity-os-494622:us-central1:infinity-db-instance=tcp:5432'
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          ./cloud-sql-proxy infinity-os-494622:us-central1:infinity-db-instance --port 5432 &
+          sleep 3
           
       - name: Execute Alembic Database Migrations
         working-directory: ./backend
