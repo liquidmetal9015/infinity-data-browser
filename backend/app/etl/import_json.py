@@ -1,19 +1,19 @@
 """ETL: Import Infinity game data from JSON files into PostgreSQL.
 
 Reads the existing data/ directory (metadata.json + faction JSON files)
-and populates all database tables.
+and populates all database tables. Idempotent — truncates existing data first.
 
 Usage:
     cd backend
-    python -m app.etl.import_json
+    PYTHONPATH=/path/to/backend python -m app.etl.import_json
 """
 
 import asyncio
 import json
-import sys
 from pathlib import Path
 
 from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 from app.config import settings
@@ -24,11 +24,38 @@ from app.models.unit import Unit, Profile, Loadout
 from app.models.fireteam import FireteamChart
 
 
+# ---- Type coercion helpers ----
+def _int(v, default=0) -> int:
+    """Safely coerce to int."""
+    try:
+        return int(v) if v is not None else default
+    except (ValueError, TypeError):
+        return default
+
+
+def _float(v, default=0.0) -> float:
+    """Safely coerce to float."""
+    try:
+        return float(v) if v is not None else default
+    except (ValueError, TypeError):
+        return default
+
+
+def _int_or_none(v) -> int | None:
+    """Coerce to int or None (treats 0 and '' as None)."""
+    if v is None:
+        return None
+    try:
+        result = int(v)
+        return result if result != 0 else None
+    except (ValueError, TypeError):
+        return None
+
+
 def resolve_data_dir() -> Path:
-    """Resolve the data directory path."""
-    # Try relative to backend/ first, then absolute
+    """Find the data/ directory containing metadata.json."""
     candidates = [
-        Path(__file__).parent.parent.parent / ".." / "data",  # backend/app/etl/../../data
+        Path(__file__).parent.parent.parent / ".." / "data",
         Path(settings.data_dir),
     ]
     for p in candidates:
@@ -36,108 +63,116 @@ def resolve_data_dir() -> Path:
         if resolved.is_dir() and (resolved / "metadata.json").exists():
             return resolved
     raise FileNotFoundError(
-        f"Could not find data directory with metadata.json. Tried: {[str(c.resolve()) for c in candidates]}"
+        f"Could not find data directory. Tried: {[str(c.resolve()) for c in candidates]}"
     )
 
 
 async def run_import():
     """Main ETL entry point."""
     data_dir = resolve_data_dir()
-    print(f"📂 Data directory: {data_dir}")
+    print(f"Data directory: {data_dir}")
 
     engine = create_async_engine(settings.database_url, echo=False)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with engine.begin() as conn:
-        # Create all tables (idempotent — won't drop existing)
         await conn.run_sync(Base.metadata.create_all)
 
     async with session_factory() as session:
-        # Check if data already exists
-        result = await session.execute(text("SELECT COUNT(*) FROM factions"))
-        count = result.scalar()
-        if count and count > 0:
-            print(f"⚠️  Database already has {count} factions. Clearing for fresh import...")
-            # Clear in dependency order
-            await session.execute(text("DELETE FROM fireteam_charts"))
-            await session.execute(text("DELETE FROM loadouts"))
-            await session.execute(text("DELETE FROM profiles"))
-            await session.execute(text("DELETE FROM unit_factions"))
-            await session.execute(text("DELETE FROM units"))
-            await session.execute(text("DELETE FROM weapons"))
-            await session.execute(text("DELETE FROM skills"))
-            await session.execute(text("DELETE FROM equipment"))
-            await session.execute(text("DELETE FROM ammunitions"))
-            await session.execute(text("DELETE FROM factions"))
-            await session.commit()
+        # Truncate all tables cleanly (TRUNCATE is faster than DELETE and resets seq)
+        print("Truncating existing data...")
+        await session.execute(text(
+            "TRUNCATE fireteam_charts, loadouts, profiles, unit_factions, units, "
+            "weapons, skills, equipment, ammunitions, factions RESTART IDENTITY CASCADE"
+        ))
+        await session.commit()
 
-        # 1. Load metadata
-        print("📋 Loading metadata...")
+        # 1. Load metadata.json
+        print("Loading metadata...")
         metadata = json.loads((data_dir / "metadata.json").read_text())
 
-        # Import factions
-        for f in metadata["factions"]:
-            faction = Faction(
-                id=f["id"],
-                parent_id=f.get("parent", f["id"]),
-                name=f["name"],
-                slug=f["slug"],
-                discontinued=f.get("discontinued", False),
-                logo=f.get("logo", ""),
-            )
-            session.add(faction)
+        # Import factions — use ON CONFLICT DO NOTHING because:
+        # 1. CB data has duplicate slugs (e.g. IDs 998/999 both use 'contracted-back-up')
+        # 2. parent_id is plain int (no FK), so no ordering constraint
+        faction_list = metadata["factions"]
+        insert_faction_sql = text(
+            "INSERT INTO factions (id, parent_id, name, slug, discontinued, logo) "
+            "VALUES (:id, :parent_id, :name, :slug, :discontinued, :logo) "
+            "ON CONFLICT DO NOTHING"
+        )
+        for f in faction_list:
+            await session.execute(insert_faction_sql, {
+                "id": f["id"], "parent_id": _int_or_none(f.get("parent")),
+                "name": f["name"], "slug": f["slug"],
+                "discontinued": bool(f.get("discontinued", False)), "logo": f.get("logo", ""),
+            })
         await session.flush()
-        print(f"  ✓ {len(metadata['factions'])} factions")
+        print(f"  {len(faction_list)} factions")
 
-        # Import weapons
+        # Import weapons — deduplicate by ID (CB data has up to 10 identical entries per ID)
+        seen_weapon_ids: set[int] = set()
         for w in metadata.get("weapons", []):
-            weapon = Weapon(
-                id=w["id"],
-                name=w["name"],
-                wiki_url=w.get("wiki"),
-                weapon_type=w.get("type"),
-                burst=w.get("burst"),
-                damage=w.get("damage"),
-                saving=w.get("saving"),
-                saving_num=w.get("savingNum"),
-                ammunition_id=w.get("ammunition"),
+            if w["id"] in seen_weapon_ids:
+                continue
+            seen_weapon_ids.add(w["id"])
+            session.add(Weapon(
+                id=w["id"], name=w["name"], wiki_url=w.get("wiki"),
+                weapon_type=w.get("type"), burst=w.get("burst"), damage=w.get("damage"),
+                saving=w.get("saving"), saving_num=w.get("savingNum"),
+                ammunition_id=_int_or_none(w.get("ammunition")),
                 properties=w.get("properties"),
                 distance=w.get("distance"),
-            )
-            session.add(weapon)
+            ))
         await session.flush()
-        print(f"  ✓ {len(metadata.get('weapons', []))} weapons")
+        print(f"  {len(seen_weapon_ids)} weapons (unique)")
 
-        # Import skills
+        # Import skills — deduplicate by ID
+        seen_skill_ids: set[int] = set()
         for s in metadata.get("skills", []):
-            skill = Skill(id=s["id"], name=s["name"], wiki_url=s.get("wiki"))
-            session.add(skill)
+            if s["id"] in seen_skill_ids:
+                continue
+            seen_skill_ids.add(s["id"])
+            session.add(Skill(id=s["id"], name=s["name"], wiki_url=s.get("wiki")))
         await session.flush()
-        print(f"  ✓ {len(metadata.get('skills', []))} skills")
+        print(f"  {len(seen_skill_ids)} skills (unique)")
 
-        # Import equipment
+        # Import equipment — deduplicate by ID
+        seen_equip_ids: set[int] = set()
         for e in metadata.get("equips", []):
-            equip = Equipment(id=e["id"], name=e["name"], wiki_url=e.get("wiki"))
-            session.add(equip)
+            if e["id"] in seen_equip_ids:
+                continue
+            seen_equip_ids.add(e["id"])
+            session.add(Equipment(id=e["id"], name=e["name"], wiki_url=e.get("wiki")))
         await session.flush()
-        print(f"  ✓ {len(metadata.get('equips', []))} equipment")
+        print(f"  {len(seen_equip_ids)} equipment (unique)")
 
-        # Import ammunition
+        # Import ammunition — deduplicate by ID
+        seen_ammo_ids: set[int] = set()
         for a in metadata.get("ammunitions", []):
-            ammo = Ammunition(id=a["id"], name=a["name"], wiki_url=a.get("wiki"))
-            session.add(ammo)
+            if a["id"] in seen_ammo_ids:
+                continue
+            seen_ammo_ids.add(a["id"])
+            session.add(Ammunition(id=a["id"], name=a["name"], wiki_url=a.get("wiki")))
         await session.flush()
-        print(f"  ✓ {len(metadata.get('ammunitions', []))} ammunitions")
+        print(f"  {len(seen_ammo_ids)} ammunitions (unique)")
 
-        # 2. Load faction data files
-        print("\n🎖️  Loading faction data...")
-        seen_iscs: dict[str, int] = {}  # ISC → unit DB ID (for dedup)
+        # 2. Load faction data files (units, profiles, loadouts, fireteam charts)
+        print("\nLoading faction unit data...")
+        seen_iscs: dict[str, int] = {}  # ISC -> unit.id (dedup across factions)
         total_units = 0
         total_profiles = 0
         total_loadouts = 0
-        faction_slugs_loaded = 0
+        faction_files_loaded = 0
+
+        # Fetch valid faction IDs that actully made it into the DB
+        valid_faction_ids = {r[0] for r in await session.execute(text("SELECT id FROM factions"))}
 
         for faction_meta in metadata["factions"]:
+            faction_id = faction_meta["id"]
+            if faction_id not in valid_faction_ids:
+                print(f"  Skipping faction {faction_id} - not in DB (likely duplicate slug)")
+                continue
+
             slug = faction_meta["slug"]
             faction_file = data_dir / f"{slug}.json"
             if not faction_file.exists():
@@ -145,109 +180,112 @@ async def run_import():
 
             faction_data = json.loads(faction_file.read_text())
             faction_id = faction_meta["id"]
-            faction_slugs_loaded += 1
+            faction_files_loaded += 1
 
-            # Import fireteam chart
-            if "fireteamChart" in faction_data and faction_data["fireteamChart"]:
-                chart = FireteamChart(
+            # Fireteam chart
+            if faction_data.get("fireteamChart"):
+                session.add(FireteamChart(
                     faction_id=faction_id,
                     chart_json=faction_data["fireteamChart"],
-                )
-                session.add(chart)
+                ))
 
-            # Import units
-            for raw_unit in faction_data.get("units", []):
-                isc = raw_unit["isc"]
-                unit_slug = raw_unit.get("slug", isc.lower().replace(" ", "-"))
+            # Units — must be a list of dicts
+            for raw_unit in (faction_data.get("units") or []):
+                if not isinstance(raw_unit, dict):
+                    continue
+
+                isc = raw_unit.get("isc", "")
+                if not isc:
+                    continue
+
+                unit_slug = raw_unit.get("slug") or isc.lower().replace(" ", "-")
 
                 if isc in seen_iscs:
-                    # Unit already imported from another faction — just add the faction link
-                    existing_unit_id = seen_iscs[isc]
+                    # Already imported — just add faction link
                     await session.execute(
-                        unit_factions.insert().values(
-                            unit_id=existing_unit_id, faction_id=faction_id
-                        ).prefix_with("OR IGNORE")
+                        pg_insert(unit_factions)
+                        .values(unit_id=seen_iscs[isc], faction_id=faction_id)
+                        .on_conflict_do_nothing()
                     )
                     continue
 
-                # Create new unit
+                # New unit
                 unit = Unit(
                     id=raw_unit["id"],
-                    id_army=raw_unit.get("idArmy"),
+                    id_army=_int_or_none(raw_unit.get("idArmy")),
                     isc=isc,
-                    name=raw_unit["name"],
+                    name=raw_unit.get("name") or isc,
                     slug=unit_slug,
                     logo=raw_unit.get("logo"),
                     raw_json=raw_unit,
                 )
                 session.add(unit)
-                await session.flush()  # Get the ID
+                await session.flush()
 
                 seen_iscs[isc] = unit.id
                 total_units += 1
 
-                # Link to faction
                 await session.execute(
-                    unit_factions.insert().values(
-                        unit_id=unit.id, faction_id=faction_id
-                    )
+                    pg_insert(unit_factions).values(unit_id=unit.id, faction_id=faction_id)
+                    .on_conflict_do_nothing()
                 )
 
-                # Import profiles and loadouts from profile groups
-                for pg in raw_unit.get("profileGroups", []):
-                    pg_id = pg["id"]
+                # Profiles and loadouts
+                for pg in (raw_unit.get("profileGroups") or []):
+                    if not isinstance(pg, dict):
+                        continue
+                    pg_id = _int(pg.get("id", 0))
 
-                    for p in pg.get("profiles", []):
-                        move = p.get("move", [0, 0])
-                        profile = Profile(
+                    for p in (pg.get("profiles") or []):
+                        if not isinstance(p, dict):
+                            continue
+                        move = p.get("move") or [0, 0]
+                        if not isinstance(move, list):
+                            move = [0, 0]
+                        session.add(Profile(
                             unit_id=unit.id,
                             profile_group_id=pg_id,
-                            name=p.get("name", isc),
-                            mov_1=move[0] if len(move) > 0 else 0,
-                            mov_2=move[1] if len(move) > 1 else 0,
-                            cc=p.get("cc", 0),
-                            bs=p.get("bs", 0),
-                            ph=p.get("ph", 0),
-                            wip=p.get("wip", 0),
-                            arm=p.get("arm", 0),
-                            bts=p.get("bts", 0),
-                            wounds=p.get("w", 0),
-                            silhouette=p.get("s", 0),
-                            is_structure=p.get("str", False),
-                            unit_type=p.get("type"),
-                            skills_json=p.get("skills", []),
-                            equipment_json=p.get("equip", []),
-                            weapons_json=p.get("weapons", []),
-                        )
-                        session.add(profile)
+                            name=p.get("name") or isc,
+                            mov_1=_int(move[0] if len(move) > 0 else 0),
+                            mov_2=_int(move[1] if len(move) > 1 else 0),
+                            cc=_int(p.get("cc")), bs=_int(p.get("bs")),
+                            ph=_int(p.get("ph")), wip=_int(p.get("wip")),
+                            arm=_int(p.get("arm")), bts=_int(p.get("bts")),
+                            wounds=_int(p.get("w")), silhouette=_int(p.get("s")),
+                            is_structure=bool(p.get("str", False)),
+                            unit_type=_int_or_none(p.get("type")),
+                            skills_json=p.get("skills") or [],
+                            equipment_json=p.get("equip") or [],
+                            weapons_json=p.get("weapons") or [],
+                        ))
                         total_profiles += 1
 
-                    for o in pg.get("options", []):
-                        loadout = Loadout(
+                    for o in (pg.get("options") or []):
+                        if not isinstance(o, dict):
+                            continue
+                        session.add(Loadout(
                             unit_id=unit.id,
                             profile_group_id=pg_id,
-                            option_id=o["id"],
-                            name=o.get("name", ""),
-                            points=o.get("points", 0),
-                            swc=o.get("swc", 0),
-                            skills_json=o.get("skills", []),
-                            equipment_json=o.get("equip", []),
-                            weapons_json=o.get("weapons", []),
+                            option_id=_int(o.get("id", 0)),
+                            name=o.get("name") or "",
+                            points=_int(o.get("points")),
+                            swc=_float(o.get("swc")),  # CB stores swc as string in some entries
+                            skills_json=o.get("skills") or [],
+                            equipment_json=o.get("equip") or [],
+                            weapons_json=o.get("weapons") or [],
                             orders_json=o.get("orders"),
-                        )
-                        session.add(loadout)
+                        ))
                         total_loadouts += 1
 
-            # Flush per-faction to keep memory manageable
             await session.flush()
 
         await session.commit()
 
-        print(f"\n✅ Import complete!")
-        print(f"   {faction_slugs_loaded} factions loaded")
-        print(f"   {total_units} unique units")
-        print(f"   {total_profiles} profiles")
-        print(f"   {total_loadouts} loadouts")
+    print(f"\nImport complete:")
+    print(f"  {faction_files_loaded} faction files")
+    print(f"  {total_units} unique units")
+    print(f"  {total_profiles} profiles")
+    print(f"  {total_loadouts} loadouts")
 
     await engine.dispose()
 

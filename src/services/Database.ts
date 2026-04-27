@@ -7,6 +7,8 @@ import type { ParsedWeapon } from '../../shared/types';
 import type { ClassifiedObjective } from '../../shared/classifieds';
 
 // Re-export interface for backwards compatibility
+import api from './api';
+
 export interface IDatabase {
     units: Unit[];
     metadata: DatabaseMetadata | null;
@@ -60,11 +62,20 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     // ========================================================================
 
     protected async loadMetadata(): Promise<DatabaseMetadata> {
-        const res = await fetch(import.meta.env.BASE_URL + 'data/metadata.json');
-        if (!res.ok) {
-            throw new Error(`Failed to load metadata: ${res.status}`);
+        try {
+            const [metaRes, facRes] = await Promise.all([
+                api.get('/api/metadata'),
+                api.get('/api/factions')
+            ]);
+
+            return {
+                ...metaRes.data,
+                factions: facRes.data,
+                equips: metaRes.data.equipment
+            };
+        } catch (e) {
+            throw new Error(`Failed to load metadata from API: ${e}`);
         }
-        return res.json();
     }
 
     protected async loadClassifieds(): Promise<ClassifiedObjective[]> {
@@ -78,11 +89,9 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     }
 
     protected async loadFactionData(slug: string): Promise<FactionDataFile | null> {
-        const filename = `${import.meta.env.BASE_URL}data/${slug}.json`;
         try {
-            const res = await fetch(filename);
-            if (!res.ok) return null;
-            return res.json();
+            const res = await api.get(`/api/factions/${slug}/legacy`);
+            return res.data;
         } catch {
             return null;
         }

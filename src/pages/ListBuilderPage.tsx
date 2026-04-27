@@ -9,11 +9,17 @@ import {
 } from '../components/ListBuilder';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { useArmyListImportExport } from '../hooks/useArmyListImportExport';
+import { calculateListPoints, calculateListSWC } from '@shared/listTypes';
+import { useAuth } from '../contexts/AuthContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 import type { Unit } from '@shared/types';
 import './ListBuilderPage.css';
 
 export function ListBuilderPage() {
     const db = useDatabase();
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
     const { currentList, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useListStore();
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const { openUnitModal } = useModal();
@@ -36,6 +42,31 @@ export function ListBuilderPage() {
         createList(globalFactionId, factionName, 300);
     };
 
+    const saveListMutation = useMutation({
+        mutationFn: async () => {
+            if (!currentList) return;
+            const payload = {
+                name: currentList.name,
+                faction_id: currentList.factionId,
+                points: calculateListPoints(currentList),
+                swc: calculateListSWC(currentList),
+                units_json: currentList
+            };
+            const res = await api.post('/api/lists', payload);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+            alert("Army List saved to cloud!");
+        },
+        onError: (e) => {
+            console.error("Save error", e);
+            alert("Failed to save the Army List.");
+        }
+    });
+
+    const handleSaveList = user ? () => saveListMutation.mutate() : undefined;
+
     // If a list exists, show the Dashboard
     if (currentList) {
         return (
@@ -44,10 +75,12 @@ export function ListBuilderPage() {
                     list={currentList}
                     factionName={db.getFactionName(currentList.factionId)}
                     codeCopied={codeCopied}
+                    isSaving={saveListMutation.status === 'pending'}
                     onPointsLimitChange={updatePointsLimit}
                     onCopyCode={handleCopyCode}
                     onOpenInArmy={handleOpenInArmy}
                     onReset={resetList}
+                    onSaveList={handleSaveList}
                 />
 
                 <ListDashboard

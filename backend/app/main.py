@@ -1,12 +1,15 @@
 """FastAPI application entry point."""
 
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
-from app.routers import factions, units, search, metadata
+from app.routers import factions, units, search, metadata, lists
 
 
 @asynccontextmanager
@@ -39,9 +42,32 @@ app.include_router(factions.router)
 app.include_router(units.router)
 app.include_router(search.router)
 app.include_router(metadata.router)
+app.include_router(lists.router)
 
 
 @app.get("/api/health")
 async def health():
     """Health check endpoint."""
     return {"status": "ok", "version": settings.app_version}
+
+
+# Serve standalone React `dist/` compilation files natively
+if os.path.isdir("dist/assets"):
+    app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    """Fallback handler for React single-page application routing."""
+    
+    # If the file exists directly in dist/ (like favicon.ico)
+    if full_path:
+        dist_path = os.path.join("dist", full_path)
+        if os.path.isfile(dist_path):
+            return FileResponse(dist_path)
+            
+    # For all other routes, default to the index.html SPA entrypoint
+    index_path = os.path.join("dist", "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
+        
+    return {"error": "Production SPA files not found. Did you run `npm run build`?"}

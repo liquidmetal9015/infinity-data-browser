@@ -1,6 +1,6 @@
 """Faction models."""
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Table, Column
+from sqlalchemy import Boolean, Integer, String, Table, Column, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -18,24 +18,20 @@ class Faction(Base):
     __tablename__ = "factions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    parent_id: Mapped[int] = mapped_column(Integer, ForeignKey("factions.id"), nullable=True)
+    # parent_id is NOT a FK — CB data has phantom parent IDs that don't exist in
+    # the factions table (e.g. faction 199 has parent=191, but 191 is not in metadata).
+    # We store it as a plain nullable int and use it for grouping in application code only.
+    parent_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     slug: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     discontinued: Mapped[bool] = mapped_column(Boolean, default=False)
     logo: Mapped[str] = mapped_column(String, default="")
 
-    # Relationships
-    parent: Mapped["Faction | None"] = relationship(
-        "Faction", remote_side="Faction.id", back_populates="children",
-    )
-    children: Mapped[list["Faction"]] = relationship(
-        "Faction", back_populates="parent",
-    )
     units: Mapped[list["Unit"]] = relationship(  # noqa: F821
         secondary=unit_factions, back_populates="factions",
     )
 
     @property
     def is_vanilla(self) -> bool:
-        """A vanilla / super-faction has parent_id == id."""
-        return self.parent_id == self.id or self.parent_id is None
+        """A vanilla / super-faction has parent_id == id (or no parent)."""
+        return self.parent_id is None or self.parent_id == self.id

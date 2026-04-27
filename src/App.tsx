@@ -2,6 +2,8 @@ import { WorkspaceView } from './components/Workspace/WorkspaceView';
 import { useContextMenuStore } from './stores/useContextMenuStore';
 import { NavBar } from './components/NavBar';
 import { ContextMenu } from './components/ContextMenu';
+import { Routes, Route } from 'react-router-dom';
+import { MyLists } from './pages/MyLists';
 
 // Global App Event Handler
 function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
@@ -30,9 +32,12 @@ function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <GlobalContextMenuHandler>
-      <div className="app-container">
+      <div className="app-container flex flex-col h-screen">
         <NavBar />
-        <WorkspaceView />
+        <Routes>
+          <Route path="/" element={<WorkspaceView />} />
+          <Route path="/lists" element={<MyLists />} />
+        </Routes>
       </div>
       <ContextMenu />
     </GlobalContextMenuHandler>

@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from app.database import get_session
 from app.models.faction import Faction, unit_factions
 from app.models.fireteam import FireteamChart
+from app.models.unit import Unit
 from app.schemas.faction import FactionDetailResponse, FactionSummary, SuperFactionResponse
 
 router = APIRouter(prefix="/api/factions", tags=["factions"])
@@ -95,3 +96,29 @@ async def get_faction(slug: str, session: AsyncSession = Depends(get_session)):
         fireteam_chart=chart.chart_json if chart else None,
         unit_count=unit_count,
     )
+
+@router.get("/{slug}/legacy")
+async def get_faction_legacy(slug: str, session: AsyncSession = Depends(get_session)):
+    """Return raw JSON blob exactly matching frontend legacy layout."""
+    result = await session.execute(select(Faction).where(Faction.slug == slug))
+    faction = result.scalar_one_or_none()
+    if not faction:
+        raise HTTPException(status_code=404, detail="Faction not found")
+        
+    units_result = await session.execute(
+        select(Unit.raw_json)
+        .join(unit_factions)
+        .where(unit_factions.c.faction_id == faction.id)
+    )
+    units_json = units_result.scalars().all()
+    
+    chart_result = await session.execute(
+        select(FireteamChart.chart_json).where(FireteamChart.faction_id == faction.id)
+    )
+    chart_json = chart_result.scalar_one_or_none()
+    
+    return {
+        "version": "1.0",
+        "units": units_json,
+        "fireteamChart": chart_json
+    }

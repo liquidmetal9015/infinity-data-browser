@@ -4,10 +4,14 @@ import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { clearAllDataAndReload } from '../utils/clearData';
 import { widgetRegistry, LAUNCHER_WIDGETS } from './Workspace/widgetRegistry';
 import type { WidgetType } from '../types/workspace';
+import { useAuth } from '../contexts/AuthContext';
+import { Link, useLocation } from 'react-router-dom';
 
 export function NavBar() {
     const db = useDatabase();
     const { windows, layoutMode, setLayoutMode, openWindow, focusWindow } = useWorkspaceStore();
+    const { user, login, logout, loading } = useAuth();
+    const location = useLocation();
 
     // Determine the currently active (focused) window
     const topZIndex = windows.length > 0 ? Math.max(...windows.map(w => w.zIndex)) : 0;
@@ -28,35 +32,36 @@ export function NavBar() {
                     <span className="unit-count">{db.units.length} units</span>
                 </div>
 
-                {/* Central Tab Navigation */}
-                <nav className="workspace-tabs">
-                    {LAUNCHER_WIDGETS.map((widgetType: WidgetType) => {
-                        const entry = widgetRegistry[widgetType];
-                        const IconComponent = entry.icon;
-                        const windowInstance = windows.find(w => w.type === widgetType);
-                        const isOpen = !!windowInstance;
-                        const isActive = activeWidgetType === widgetType;
+                {location.pathname === '/' && (
+                    <nav className="workspace-tabs">
+                        {LAUNCHER_WIDGETS.map((widgetType: WidgetType) => {
+                            const entry = widgetRegistry[widgetType];
+                            const IconComponent = entry.icon;
+                            const windowInstance = windows.find(w => w.type === widgetType);
+                            const isOpen = !!windowInstance;
+                            const isActive = activeWidgetType === widgetType;
 
-                        return (
-                            <button
-                                key={widgetType}
-                                className={`tab-btn ${isOpen ? 'open' : ''} ${isActive ? 'active' : ''}`}
-                                onClick={() => {
-                                    if (windowInstance) {
-                                        focusWindow(windowInstance.id);
-                                    } else {
-                                        openWindow(widgetType);
-                                    }
-                                }}
-                                title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
-                            >
-                                <IconComponent size={16} />
-                                <span className="tab-label">{entry.label}</span>
-                                {isOpen && <div className="tab-indicator" />}
-                            </button>
-                        );
-                    })}
-                </nav>
+                            return (
+                                <button
+                                    key={widgetType}
+                                    className={`tab-btn ${isOpen ? 'open' : ''} ${isActive ? 'active' : ''}`}
+                                    onClick={() => {
+                                        if (windowInstance) {
+                                            focusWindow(windowInstance.id);
+                                        } else {
+                                            openWindow(widgetType);
+                                        }
+                                    }}
+                                    title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
+                                >
+                                    <IconComponent size={16} />
+                                    <span className="tab-label">{entry.label}</span>
+                                    {isOpen && <div className="tab-indicator" />}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                )}
 
                 <div className="main-nav controls-nav">
                     <div className="layout-segmented-control" role="group" aria-label="Layout Mode">
@@ -77,6 +82,17 @@ export function NavBar() {
                             <span className="layout-label">Windows</span>
                         </button>
                     </div>
+                    <div className="nav-divider" />
+
+                    {user ? (
+                        <>
+                            <Link to="/lists" className="nav-link" style={{ color: 'var(--accent)' }}>My Lists</Link>
+                            <button className="nav-link" onClick={logout} title="Sign Out">Sign Out</button>
+                        </>
+                    ) : (
+                        <button className="nav-link" onClick={login} disabled={loading}>Sign In with Google</button>
+                    )}
+
                     <div className="nav-divider" />
                     <button className="nav-link clear-data-btn" onClick={handleClearData} title="Clear all saved data">
                         <Trash2 size={16} />

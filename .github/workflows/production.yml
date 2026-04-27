@@ -1,0 +1,59 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+# Required for Workload Identity Federation
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
+jobs:
+  deploy:
+    name: CI/CD - Build, Migrate, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/562594391181/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+          service_account: 'github-actions-sa@infinity-os-494622.iam.gserviceaccount.com'
+
+      - name: Set up Python for Database Operations
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Setup Cloud SQL Proxy
+        uses: google-github-actions/setup-cloudsql-proxy@v2
+        with:
+          # Automatically connects the proxy based on the authenticated Service Account
+          instances: 'infinity-os-494622:us-central1:infinity-db-instance=tcp:5432'
+          
+      - name: Execute Alembic Database Migrations
+        working-directory: ./backend
+        env:
+          # The database URL targets the localhost Cloud SQL proxy tunnel securely
+          DATABASE_URL: 'postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/infinity'
+        run: |
+          pip install -r requirements.txt
+          PYTHONPATH=. alembic upgrade head
+          
+      - name: Deploy Unified Container to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: 'infinity-data-explorer'
+          region: 'us-central1'
+          source: '.' # Uploads everything and triggers the Multi-stage Docker build remotely via Cloud Build
+          env_vars: |
+            DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/infinity?host=/cloudsql/infinity-os-494622:us-central1:infinity-db-instance
+            CORS_ORIGINS=["*"]
+          secrets: |
+            FIREBASE_ADMIN_CREDENTIALS=firebase-admin-key:latest

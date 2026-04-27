@@ -51,3 +51,16 @@ test-results/
 
 # Windows artifacts
 *:Zone.Identifier
+
+# Secrets & Local Binaries
+*firebase-admin*.json
+cloud-sql-proxy
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
