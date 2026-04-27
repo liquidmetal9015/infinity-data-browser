@@ -1,9 +1,9 @@
 import axios from "axios";
 import { auth } from "./firebase";
 
-// Configure base URL from Vite env or fallback to local proxy assumption
+// Configure base URL from Vite env or fallback to local vs relative path
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+    baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:8000" : ""),
 });
 
 // Interceptor to inject Firebase token automatically
