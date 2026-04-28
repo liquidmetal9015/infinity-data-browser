@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class FactionSummary(BaseModel):
     """Lightweight faction info for list views."""
+
     id: int
     name: str
     slug: str
@@ -18,6 +19,7 @@ class FactionSummary(BaseModel):
 
 class SuperFactionResponse(BaseModel):
     """Grouped faction: a super-faction with its sectorials."""
+
     id: int
     name: str
     vanilla: FactionSummary | None
@@ -26,5 +28,6 @@ class SuperFactionResponse(BaseModel):
 
 class FactionDetailResponse(FactionSummary):
     """Full faction detail including fireteam chart."""
+
     fireteam_chart: dict | None = None
     unit_count: int = 0

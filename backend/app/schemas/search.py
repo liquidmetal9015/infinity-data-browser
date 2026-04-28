@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class SearchParams(BaseModel):
     """Query parameters for unit search."""
+
     q: str | None = None
     faction: str | None = None
     has_weapon: str | None = None

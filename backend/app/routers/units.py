@@ -1,14 +1,14 @@
 """Unit API routes."""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_session
-from app.models.faction import Faction, unit_factions
-from app.models.unit import Unit, Profile, Loadout
-from app.models.item import Weapon, Skill, Equipment
+from app.models.faction import Faction
+from app.models.item import Equipment, Skill, Weapon
+from app.models.unit import Loadout, Profile, Unit
 from app.schemas.unit import (
     ItemRef,
     LoadoutResponse,
@@ -34,7 +34,9 @@ def _resolve_items(
         extra_display = []
         if extras_map and extra:
             extra_display = [extras_map.get(e, str(e)) for e in extra]
-        result.append(ItemRef(id=item_id, name=name, extra=extra, extra_display=extra_display))
+        result.append(
+            ItemRef(id=item_id, name=name, extra=extra, extra_display=extra_display)
+        )
     return result
 
 
@@ -42,22 +44,33 @@ async def _get_catalogs(session: AsyncSession) -> tuple[dict, dict, dict, dict]:
     """Load item catalogs for name resolution."""
     weapons = {w.id: w.name for w in (await session.execute(select(Weapon))).scalars()}
     skills = {s.id: s.name for s in (await session.execute(select(Skill))).scalars()}
-    equips = {e.id: e.name for e in (await session.execute(select(Equipment))).scalars()}
+    equips = {
+        e.id: e.name for e in (await session.execute(select(Equipment))).scalars()
+    }
     # TODO: load extras_map from a dedicated table or cache
     return weapons, skills, equips, {}
 
 
 def _build_profile_response(
     p: Profile,
-    weapon_map: dict, skill_map: dict, equip_map: dict, extras_map: dict,
+    weapon_map: dict,
+    skill_map: dict,
+    equip_map: dict,
+    extras_map: dict,
 ) -> ProfileResponse:
     return ProfileResponse(
         id=p.id,
         profile_group_id=p.profile_group_id,
         name=p.name,
         mov=f"{p.mov_1}-{p.mov_2}",
-        cc=p.cc, bs=p.bs, ph=p.ph, wip=p.wip,
-        arm=p.arm, bts=p.bts, wounds=p.wounds, silhouette=p.silhouette,
+        cc=p.cc,
+        bs=p.bs,
+        ph=p.ph,
+        wip=p.wip,
+        arm=p.arm,
+        bts=p.bts,
+        wounds=p.wounds,
+        silhouette=p.silhouette,
         is_structure=p.is_structure,
         unit_type=p.unit_type,
         skills=_resolve_items(p.skills_json or [], skill_map, extras_map),
@@ -68,7 +81,10 @@ def _build_profile_response(
 
 def _build_loadout_response(
     lo: Loadout,
-    weapon_map: dict, skill_map: dict, equip_map: dict, extras_map: dict,
+    weapon_map: dict,
+    skill_map: dict,
+    equip_map: dict,
+    extras_map: dict,
 ) -> LoadoutResponse:
     return LoadoutResponse(
         id=lo.id,
@@ -91,7 +107,9 @@ async def list_units(
     session: AsyncSession = Depends(get_session),
 ):
     """List units with optional faction filter."""
-    query = select(Unit).options(selectinload(Unit.factions), selectinload(Unit.loadouts))
+    query = select(Unit).options(
+        selectinload(Unit.factions), selectinload(Unit.loadouts)
+    )
 
     if faction:
         query = query.join(Unit.factions).where(Faction.slug == faction)
@@ -144,6 +162,8 @@ async def get_unit(slug: str, session: AsyncSession = Depends(get_session)):
         ],
         loadouts=[
             _build_loadout_response(lo, weapon_map, skill_map, equip_map, extras_map)
-            for lo in sorted(unit.loadouts, key=lambda lo: (lo.profile_group_id, lo.option_id))
+            for lo in sorted(
+                unit.loadouts, key=lambda lo: (lo.profile_group_id, lo.option_id)
+            )
         ],
     )

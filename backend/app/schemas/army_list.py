@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -7,7 +8,10 @@ class ArmyListBase(BaseModel):
     faction_id: int
     points: int = 0
     swc: float = 0.0
-    units_json: dict = Field(default_factory=dict, description="JSON payload representing the list composition")
+    units_json: dict = Field(
+        default_factory=dict,
+        description="JSON payload representing the list composition",
+    )
 
 
 class ArmyListCreate(ArmyListBase):
@@ -37,6 +41,6 @@ class ArmyListSummaryResponse(BaseModel):
 
 class ArmyListDetailResponse(ArmyListSummaryResponse):
     units_json: dict
-    
+
     class Config:
         from_attributes = True

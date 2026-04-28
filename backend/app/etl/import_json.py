@@ -14,14 +14,14 @@ from pathlib import Path
 
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
 from app.models.base import Base
-from app.models.faction import Faction, unit_factions
-from app.models.item import Weapon, Skill, Equipment, Ammunition
-from app.models.unit import Unit, Profile, Loadout
+from app.models.faction import unit_factions
 from app.models.fireteam import FireteamChart
+from app.models.item import Ammunition, Equipment, Skill, Weapon
+from app.models.unit import Loadout, Profile, Unit
 
 
 # ---- Type coercion helpers ----
@@ -73,7 +73,9 @@ async def run_import():
     print(f"Data directory: {data_dir}")
 
     engine = create_async_engine(settings.database_url, echo=False)
-    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    session_factory = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -81,10 +83,12 @@ async def run_import():
     async with session_factory() as session:
         # Truncate all tables cleanly (TRUNCATE is faster than DELETE and resets seq)
         print("Truncating existing data...")
-        await session.execute(text(
-            "TRUNCATE fireteam_charts, loadouts, profiles, unit_factions, units, "
-            "weapons, skills, equipment, ammunitions, factions RESTART IDENTITY CASCADE"
-        ))
+        await session.execute(
+            text(
+                "TRUNCATE fireteam_charts, loadouts, profiles, unit_factions, units, "
+                "weapons, skills, equipment, ammunitions, factions RESTART IDENTITY CASCADE"
+            )
+        )
         await session.commit()
 
         # 1. Load metadata.json
@@ -101,11 +105,17 @@ async def run_import():
             "ON CONFLICT DO NOTHING"
         )
         for f in faction_list:
-            await session.execute(insert_faction_sql, {
-                "id": f["id"], "parent_id": _int_or_none(f.get("parent")),
-                "name": f["name"], "slug": f["slug"],
-                "discontinued": bool(f.get("discontinued", False)), "logo": f.get("logo", ""),
-            })
+            await session.execute(
+                insert_faction_sql,
+                {
+                    "id": f["id"],
+                    "parent_id": _int_or_none(f.get("parent")),
+                    "name": f["name"],
+                    "slug": f["slug"],
+                    "discontinued": bool(f.get("discontinued", False)),
+                    "logo": f.get("logo", ""),
+                },
+            )
         await session.flush()
         print(f"  {len(faction_list)} factions")
 
@@ -115,14 +125,21 @@ async def run_import():
             if w["id"] in seen_weapon_ids:
                 continue
             seen_weapon_ids.add(w["id"])
-            session.add(Weapon(
-                id=w["id"], name=w["name"], wiki_url=w.get("wiki"),
-                weapon_type=w.get("type"), burst=w.get("burst"), damage=w.get("damage"),
-                saving=w.get("saving"), saving_num=w.get("savingNum"),
-                ammunition_id=_int_or_none(w.get("ammunition")),
-                properties=w.get("properties"),
-                distance=w.get("distance"),
-            ))
+            session.add(
+                Weapon(
+                    id=w["id"],
+                    name=w["name"],
+                    wiki_url=w.get("wiki"),
+                    weapon_type=w.get("type"),
+                    burst=w.get("burst"),
+                    damage=w.get("damage"),
+                    saving=w.get("saving"),
+                    saving_num=w.get("savingNum"),
+                    ammunition_id=_int_or_none(w.get("ammunition")),
+                    properties=w.get("properties"),
+                    distance=w.get("distance"),
+                )
+            )
         await session.flush()
         print(f"  {len(seen_weapon_ids)} weapons (unique)")
 
@@ -165,12 +182,16 @@ async def run_import():
         faction_files_loaded = 0
 
         # Fetch valid faction IDs that actully made it into the DB
-        valid_faction_ids = {r[0] for r in await session.execute(text("SELECT id FROM factions"))}
+        valid_faction_ids = {
+            r[0] for r in await session.execute(text("SELECT id FROM factions"))
+        }
 
         for faction_meta in metadata["factions"]:
             faction_id = faction_meta["id"]
             if faction_id not in valid_faction_ids:
-                print(f"  Skipping faction {faction_id} - not in DB (likely duplicate slug)")
+                print(
+                    f"  Skipping faction {faction_id} - not in DB (likely duplicate slug)"
+                )
                 continue
 
             slug = faction_meta["slug"]
@@ -184,13 +205,15 @@ async def run_import():
 
             # Fireteam chart
             if faction_data.get("fireteamChart"):
-                session.add(FireteamChart(
-                    faction_id=faction_id,
-                    chart_json=faction_data["fireteamChart"],
-                ))
+                session.add(
+                    FireteamChart(
+                        faction_id=faction_id,
+                        chart_json=faction_data["fireteamChart"],
+                    )
+                )
 
             # Units — must be a list of dicts
-            for raw_unit in (faction_data.get("units") or []):
+            for raw_unit in faction_data.get("units") or []:
                 if not isinstance(raw_unit, dict):
                     continue
 
@@ -226,62 +249,73 @@ async def run_import():
                 total_units += 1
 
                 await session.execute(
-                    pg_insert(unit_factions).values(unit_id=unit.id, faction_id=faction_id)
+                    pg_insert(unit_factions)
+                    .values(unit_id=unit.id, faction_id=faction_id)
                     .on_conflict_do_nothing()
                 )
 
                 # Profiles and loadouts
-                for pg in (raw_unit.get("profileGroups") or []):
+                for pg in raw_unit.get("profileGroups") or []:
                     if not isinstance(pg, dict):
                         continue
                     pg_id = _int(pg.get("id", 0))
 
-                    for p in (pg.get("profiles") or []):
+                    for p in pg.get("profiles") or []:
                         if not isinstance(p, dict):
                             continue
                         move = p.get("move") or [0, 0]
                         if not isinstance(move, list):
                             move = [0, 0]
-                        session.add(Profile(
-                            unit_id=unit.id,
-                            profile_group_id=pg_id,
-                            name=p.get("name") or isc,
-                            mov_1=_int(move[0] if len(move) > 0 else 0),
-                            mov_2=_int(move[1] if len(move) > 1 else 0),
-                            cc=_int(p.get("cc")), bs=_int(p.get("bs")),
-                            ph=_int(p.get("ph")), wip=_int(p.get("wip")),
-                            arm=_int(p.get("arm")), bts=_int(p.get("bts")),
-                            wounds=_int(p.get("w")), silhouette=_int(p.get("s")),
-                            is_structure=bool(p.get("str", False)),
-                            unit_type=_int_or_none(p.get("type")),
-                            skills_json=p.get("skills") or [],
-                            equipment_json=p.get("equip") or [],
-                            weapons_json=p.get("weapons") or [],
-                        ))
+                        session.add(
+                            Profile(
+                                unit_id=unit.id,
+                                profile_group_id=pg_id,
+                                name=p.get("name") or isc,
+                                mov_1=_int(move[0] if len(move) > 0 else 0),
+                                mov_2=_int(move[1] if len(move) > 1 else 0),
+                                cc=_int(p.get("cc")),
+                                bs=_int(p.get("bs")),
+                                ph=_int(p.get("ph")),
+                                wip=_int(p.get("wip")),
+                                arm=_int(p.get("arm")),
+                                bts=_int(p.get("bts")),
+                                wounds=_int(p.get("w")),
+                                silhouette=_int(p.get("s")),
+                                is_structure=bool(p.get("str", False)),
+                                unit_type=_int_or_none(p.get("type")),
+                                skills_json=p.get("skills") or [],
+                                equipment_json=p.get("equip") or [],
+                                weapons_json=p.get("weapons") or [],
+                            )
+                        )
                         total_profiles += 1
 
-                    for o in (pg.get("options") or []):
+                    for o in pg.get("options") or []:
                         if not isinstance(o, dict):
                             continue
-                        session.add(Loadout(
-                            unit_id=unit.id,
-                            profile_group_id=pg_id,
-                            option_id=_int(o.get("id", 0)),
-                            name=o.get("name") or "",
-                            points=_int(o.get("points")),
-                            swc=_float(o.get("swc")),  # CB stores swc as string in some entries
-                            skills_json=o.get("skills") or [],
-                            equipment_json=o.get("equip") or [],
-                            weapons_json=o.get("weapons") or [],
-                            orders_json=o.get("orders"),
-                        ))
+                        session.add(
+                            Loadout(
+                                unit_id=unit.id,
+                                profile_group_id=pg_id,
+                                option_id=_int(o.get("id", 0)),
+                                name=o.get("name") or "",
+                                points=_int(o.get("points")),
+                                swc=_float(
+                                    o.get("swc")
+                                ),  # CB stores swc as string in some entries
+                                skills_json=o.get("skills") or [],
+                                equipment_json=o.get("equip") or [],
+                                weapons_json=o.get("weapons") or [],
+                                orders_json=o.get("orders"),
+                            )
+                        )
                         total_loadouts += 1
 
             await session.flush()
 
         await session.commit()
 
-    print(f"\nImport complete:")
+    print("\nImport complete:")
     print(f"  {faction_files_loaded} faction files")
     print(f"  {total_units} unique units")
     print(f"  {total_profiles} profiles")

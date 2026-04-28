@@ -1,12 +1,12 @@
 """Metadata API route — item catalogs (weapons, skills, equipment, ammo)."""
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 
 from app.database import get_session
-from app.models.item import Weapon, Skill, Equipment, Ammunition
+from app.models.item import Ammunition, Equipment, Skill, Weapon
 
 router = APIRouter(prefix="/api/metadata", tags=["metadata"])
 
@@ -60,10 +60,20 @@ class MetadataResponse(BaseModel):
 @router.get("", response_model=MetadataResponse)
 async def get_metadata(session: AsyncSession = Depends(get_session)):
     """Get all item catalogs (weapons, skills, equipment, ammunition)."""
-    weapons = (await session.execute(select(Weapon).order_by(Weapon.name))).scalars().all()
+    weapons = (
+        (await session.execute(select(Weapon).order_by(Weapon.name))).scalars().all()
+    )
     skills = (await session.execute(select(Skill).order_by(Skill.name))).scalars().all()
-    equips = (await session.execute(select(Equipment).order_by(Equipment.name))).scalars().all()
-    ammos = (await session.execute(select(Ammunition).order_by(Ammunition.name))).scalars().all()
+    equips = (
+        (await session.execute(select(Equipment).order_by(Equipment.name)))
+        .scalars()
+        .all()
+    )
+    ammos = (
+        (await session.execute(select(Ammunition).order_by(Ammunition.name)))
+        .scalars()
+        .all()
+    )
 
     return MetadataResponse(
         weapons=[WeaponResponse.model_validate(w) for w in weapons],

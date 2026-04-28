@@ -3,20 +3,21 @@
 import asyncio
 from collections.abc import AsyncGenerator
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.database import get_session
 from app.main import app
 from app.models.base import Base
-from app.database import get_session
 
 # Use a separate test database
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:dev@localhost:5432/infinity_test"
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-test_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+test_session_factory = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 
 
 @pytest_asyncio.fixture(scope="session")

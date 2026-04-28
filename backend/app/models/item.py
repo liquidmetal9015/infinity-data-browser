@@ -4,7 +4,7 @@ These are the reference/lookup tables. The actual assignments of items
 to profiles/loadouts are stored as JSONB arrays on those models.
 """
 
-from sqlalchemy import Integer, String, Float
+from sqlalchemy import Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 

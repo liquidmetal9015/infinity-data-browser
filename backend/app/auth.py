@@ -1,7 +1,7 @@
 import firebase_admin
-from firebase_admin import auth, credentials
-from fastapi import Request, HTTPException, Security, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from firebase_admin import auth
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -22,9 +22,10 @@ except ValueError:
 
 security = HTTPBearer()
 
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(security),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ) -> User:
     """Verifies the Firebase token and returns the current User."""
     token = credentials.credentials
@@ -33,7 +34,9 @@ async def get_current_user(
         # But for typical payloads, it's fast enough.
         decoded_token = auth.verify_id_token(token)
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid authentication token: {str(e)}")
+        raise HTTPException(
+            status_code=401, detail=f"Invalid authentication token: {str(e)}"
+        ) from e
 
     uid = decoded_token.get("uid")
     email = decoded_token.get("email")
@@ -43,7 +46,7 @@ async def get_current_user(
     # Auto-provision user if they don't exist
     result = await db.execute(select(User).where(User.id == uid))
     user = result.scalars().first()
-    
+
     if not user:
         user = User(id=uid, email=email)
         db.add(user)
@@ -52,12 +55,13 @@ async def get_current_user(
             await db.refresh(user)
         except Exception:
             await db.rollback()
-            raise HTTPException(status_code=500, detail="Could not provision user")
+            raise HTTPException(status_code=500, detail="Could not provision user") from None
 
     return user
 
+
 async def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Security(security)
+    credentials: HTTPAuthorizationCredentials = Security(security),
 ) -> str:
     """Fast-path dependency that just extracts the UID without hitting the database."""
     token = credentials.credentials
@@ -68,4 +72,6 @@ async def get_current_user_id(
             raise ValueError("No UID in token")
         return uid
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid authentication token: {str(e)}")
+        raise HTTPException(
+            status_code=401, detail=f"Invalid authentication token: {str(e)}"
+        ) from e

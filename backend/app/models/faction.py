@@ -1,6 +1,6 @@
 """Faction models."""
 
-from sqlalchemy import Boolean, Integer, String, Table, Column, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -9,8 +9,15 @@ from app.models.base import Base
 unit_factions = Table(
     "unit_factions",
     Base.metadata,
-    Column("unit_id", Integer, ForeignKey("units.id", ondelete="CASCADE"), primary_key=True),
-    Column("faction_id", Integer, ForeignKey("factions.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "unit_id", Integer, ForeignKey("units.id", ondelete="CASCADE"), primary_key=True
+    ),
+    Column(
+        "faction_id",
+        Integer,
+        ForeignKey("factions.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 
@@ -28,7 +35,8 @@ class Faction(Base):
     logo: Mapped[str] = mapped_column(String, default="")
 
     units: Mapped[list["Unit"]] = relationship(  # noqa: F821
-        secondary=unit_factions, back_populates="factions",
+        secondary=unit_factions,
+        back_populates="factions",
     )
 
     @property

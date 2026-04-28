@@ -3,10 +3,6 @@
 import pytest
 from httpx import AsyncClient
 
-from app.models.faction import Faction
-from app.models.item import Weapon, Skill
-from app.models.unit import Unit, Profile, Loadout
-
 
 @pytest.mark.asyncio
 async def test_health(client: AsyncClient):

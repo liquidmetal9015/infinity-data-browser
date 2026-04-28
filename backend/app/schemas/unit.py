@@ -1,10 +1,11 @@
 """Pydantic schemas for API responses — unit-related endpoints."""
 
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel
 
 
 class ItemRef(BaseModel):
     """A reference to a weapon/skill/equipment with optional modifiers."""
+
     id: int
     name: str
     extra: list[int] = []
@@ -13,6 +14,7 @@ class ItemRef(BaseModel):
 
 class ProfileResponse(BaseModel):
     """Unit stat line."""
+
     id: int
     profile_group_id: int
     name: str
@@ -36,6 +38,7 @@ class ProfileResponse(BaseModel):
 
 class LoadoutResponse(BaseModel):
     """Equipment option / variant."""
+
     id: int
     option_id: int
     profile_group_id: int
@@ -51,6 +54,7 @@ class LoadoutResponse(BaseModel):
 
 class UnitSummaryResponse(BaseModel):
     """Lightweight unit info for list / search views."""
+
     id: int
     isc: str
     name: str
@@ -64,6 +68,7 @@ class UnitSummaryResponse(BaseModel):
 
 class UnitDetailResponse(BaseModel):
     """Full unit detail with profiles and loadouts."""
+
     id: int
     isc: str
     name: str

@@ -1,6 +1,6 @@
 """Fireteam chart model — stored per-faction."""
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,6 +10,7 @@ from app.models.base import Base
 class FireteamChart(Base):
     """Fireteam chart for a faction. Stored as structured JSONB since the
     schema is complex and variable (spec, teams with nested unit refs)."""
+
     __tablename__ = "fireteam_charts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

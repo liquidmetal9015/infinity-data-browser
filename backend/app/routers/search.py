@@ -1,14 +1,13 @@
 """Search API route — server-side unit search with filtering."""
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, or_, func, cast, String
+from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_session
 from app.models.faction import Faction
-from app.models.unit import Unit, Profile, Loadout
-from app.models.item import Weapon, Skill, Equipment
+from app.models.unit import Loadout, Unit
 from app.schemas.unit import UnitSummaryResponse
 
 router = APIRouter(prefix="/api/search", tags=["search"])
@@ -32,10 +31,14 @@ async def search_units(
     Filters are ANDed together. Text search matches name and ISC (case-insensitive).
     Item filters use the JSONB arrays on profiles and loadouts.
     """
-    query = select(Unit).options(
-        selectinload(Unit.factions),
-        selectinload(Unit.loadouts),
-    ).distinct()
+    query = (
+        select(Unit)
+        .options(
+            selectinload(Unit.factions),
+            selectinload(Unit.loadouts),
+        )
+        .distinct()
+    )
 
     # Text search — case-insensitive ILIKE
     if q:
@@ -55,11 +58,17 @@ async def search_units(
     if has_weapon:
         weapon_filter = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].profiles[*].weapons[*] ? (@.id == {has_weapon})', String),
+            cast(
+                f"$.profileGroups[*].profiles[*].weapons[*] ? (@.id == {has_weapon})",
+                String,
+            ),
         )
         weapon_filter_opts = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].options[*].weapons[*] ? (@.id == {has_weapon})', String),
+            cast(
+                f"$.profileGroups[*].options[*].weapons[*] ? (@.id == {has_weapon})",
+                String,
+            ),
         )
         query = query.where(or_(weapon_filter, weapon_filter_opts))
 
@@ -67,11 +76,17 @@ async def search_units(
     if has_skill:
         skill_filter = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].profiles[*].skills[*] ? (@.id == {has_skill})', String),
+            cast(
+                f"$.profileGroups[*].profiles[*].skills[*] ? (@.id == {has_skill})",
+                String,
+            ),
         )
         skill_filter_opts = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].options[*].skills[*] ? (@.id == {has_skill})', String),
+            cast(
+                f"$.profileGroups[*].options[*].skills[*] ? (@.id == {has_skill})",
+                String,
+            ),
         )
         query = query.where(or_(skill_filter, skill_filter_opts))
 
@@ -79,11 +94,17 @@ async def search_units(
     if has_equipment:
         equip_filter = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].profiles[*].equip[*] ? (@.id == {has_equipment})', String),
+            cast(
+                f"$.profileGroups[*].profiles[*].equip[*] ? (@.id == {has_equipment})",
+                String,
+            ),
         )
         equip_filter_opts = func.jsonb_path_exists(
             Unit.raw_json,
-            cast(f'$.profileGroups[*].options[*].equip[*] ? (@.id == {has_equipment})', String),
+            cast(
+                f"$.profileGroups[*].options[*].equip[*] ? (@.id == {has_equipment})",
+                String,
+            ),
         )
         query = query.where(or_(equip_filter, equip_filter_opts))
 

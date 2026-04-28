@@ -31,22 +31,28 @@ class Unit(Base):
 
     # Relationships
     factions: Mapped[list["Faction"]] = relationship(  # noqa: F821
-        secondary=unit_factions, back_populates="units",
+        secondary=unit_factions,
+        back_populates="units",
     )
     profiles: Mapped[list["Profile"]] = relationship(
-        back_populates="unit", cascade="all, delete-orphan",
+        back_populates="unit",
+        cascade="all, delete-orphan",
     )
     loadouts: Mapped[list["Loadout"]] = relationship(
-        back_populates="unit", cascade="all, delete-orphan",
+        back_populates="unit",
+        cascade="all, delete-orphan",
     )
 
 
 class Profile(Base):
     """A unit's stat line. Units can have multiple profiles (e.g., Transmutation)."""
+
     __tablename__ = "profiles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    unit_id: Mapped[int] = mapped_column(Integer, ForeignKey("units.id", ondelete="CASCADE"))
+    unit_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("units.id", ondelete="CASCADE")
+    )
     profile_group_id: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -75,12 +81,17 @@ class Profile(Base):
 
 class Loadout(Base):
     """A unit's equipment option (loadout / variant). Determines points and SWC."""
+
     __tablename__ = "loadouts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    unit_id: Mapped[int] = mapped_column(Integer, ForeignKey("units.id", ondelete="CASCADE"))
+    unit_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("units.id", ondelete="CASCADE")
+    )
     profile_group_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    option_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Original option ID from CB
+    option_id: Mapped[int] = mapped_column(
+        Integer, nullable=False
+    )  # Original option ID from CB
     name: Mapped[str] = mapped_column(String, nullable=False)
     points: Mapped[int] = mapped_column(Integer, nullable=False)
     swc: Mapped[float] = mapped_column(Float, default=0.0)

@@ -3,13 +3,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.database import get_session
 from app.models.faction import Faction, unit_factions
 from app.models.fireteam import FireteamChart
 from app.models.unit import Unit
-from app.schemas.faction import FactionDetailResponse, FactionSummary, SuperFactionResponse
+from app.schemas.faction import (
+    FactionDetailResponse,
+    FactionSummary,
+    SuperFactionResponse,
+)
 
 router = APIRouter(prefix="/api/factions", tags=["factions"])
 
@@ -17,9 +20,7 @@ router = APIRouter(prefix="/api/factions", tags=["factions"])
 @router.get("", response_model=list[SuperFactionResponse])
 async def list_factions_grouped(session: AsyncSession = Depends(get_session)):
     """Get all factions grouped by super-faction."""
-    result = await session.execute(
-        select(Faction).order_by(Faction.name)
-    )
+    result = await session.execute(select(Faction).order_by(Faction.name))
     all_factions = result.scalars().all()
 
     # Group: super-factions have parent_id == id or parent_id is None
@@ -64,18 +65,16 @@ async def list_factions_grouped(session: AsyncSession = Depends(get_session)):
 @router.get("/{slug}", response_model=FactionDetailResponse)
 async def get_faction(slug: str, session: AsyncSession = Depends(get_session)):
     """Get faction details including unit count and fireteam chart."""
-    result = await session.execute(
-        select(Faction).where(Faction.slug == slug)
-    )
+    result = await session.execute(select(Faction).where(Faction.slug == slug))
     faction = result.scalar_one_or_none()
     if not faction:
         raise HTTPException(status_code=404, detail=f"Faction '{slug}' not found")
 
     # Count units in this faction
     count_result = await session.execute(
-        select(func.count()).select_from(unit_factions).where(
-            unit_factions.c.faction_id == faction.id
-        )
+        select(func.count())
+        .select_from(unit_factions)
+        .where(unit_factions.c.faction_id == faction.id)
     )
     unit_count = count_result.scalar() or 0
 
@@ -97,6 +96,7 @@ async def get_faction(slug: str, session: AsyncSession = Depends(get_session)):
         unit_count=unit_count,
     )
 
+
 @router.get("/{slug}/legacy")
 async def get_faction_legacy(slug: str, session: AsyncSession = Depends(get_session)):
     """Return raw JSON blob exactly matching frontend legacy layout."""
@@ -104,21 +104,17 @@ async def get_faction_legacy(slug: str, session: AsyncSession = Depends(get_sess
     faction = result.scalar_one_or_none()
     if not faction:
         raise HTTPException(status_code=404, detail="Faction not found")
-        
+
     units_result = await session.execute(
         select(Unit.raw_json)
         .join(unit_factions)
         .where(unit_factions.c.faction_id == faction.id)
     )
     units_json = units_result.scalars().all()
-    
+
     chart_result = await session.execute(
         select(FireteamChart.chart_json).where(FireteamChart.faction_id == faction.id)
     )
     chart_json = chart_result.scalar_one_or_none()
-    
-    return {
-        "version": "1.0",
-        "units": units_json,
-        "fireteamChart": chart_json
-    }
+
+    return {"version": "1.0", "units": units_json, "fireteamChart": chart_json}

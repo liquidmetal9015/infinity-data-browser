@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    volumes:
+      - ..:/workspaces:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    links:
+      - "db:db"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/infinity
