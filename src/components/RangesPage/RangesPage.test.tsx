@@ -57,8 +57,8 @@ const mockWeapons: ParsedWeapon[] = [
 ];
 
 const mockUnits = [
-    { id: 1, name: 'Fusilier', allWeaponIds: new Set([1]) } as any,
-    { id: 2, name: 'Swiss Guard', allWeaponIds: new Set([2]) } as any
+    { id: 1, name: 'Fusilier', allWeaponIds: new Set([1]) } as unknown as import('@shared/types').Unit,
+    { id: 2, name: 'Swiss Guard', allWeaponIds: new Set([2]) } as unknown as import('@shared/types').Unit
 ];
 
 describe('RangesPage Components', () => {

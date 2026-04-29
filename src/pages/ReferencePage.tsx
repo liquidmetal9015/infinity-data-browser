@@ -26,6 +26,7 @@ export function ReferencePage() {
     const [showModifiers, setShowModifiers] = useState(true);
 
     // Aggregate all rows (expensive — only reruns when db or modifier toggle changes)
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const allRows = useMemo(() => {
         const rows = new Map<string, ReferenceRow>();
 

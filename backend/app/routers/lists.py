@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -19,14 +18,14 @@ router = APIRouter(prefix="/api/lists", tags=["Lists"])
 @router.get("", response_model=list[ArmyListSummaryResponse])
 async def get_user_lists(
     user_id: str = Depends(get_current_user_id), db: AsyncSession = Depends(get_session)
-):
+) -> list[ArmyListSummaryResponse]:
     """Get all saved army lists for the authenticated user."""
     result = await db.execute(
         select(ArmyList)
         .where(ArmyList.user_id == user_id)
         .order_by(ArmyList.updated_at.desc())
     )
-    return result.scalars().all()
+    return [ArmyListSummaryResponse.model_validate(al) for al in result.scalars().all()]
 
 
 @router.post(
@@ -36,7 +35,7 @@ async def create_list(
     list_in: ArmyListCreate,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_session),
-):
+) -> ArmyListDetailResponse:
     """Create a new army list for the user."""
     new_list = ArmyList(
         user_id=user_id,
@@ -49,7 +48,7 @@ async def create_list(
     db.add(new_list)
     await db.commit()
     await db.refresh(new_list)
-    return new_list
+    return ArmyListDetailResponse.model_validate(new_list)
 
 
 @router.get("/{list_id}", response_model=ArmyListDetailResponse)
@@ -57,7 +56,7 @@ async def get_list(
     list_id: int,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_session),
-):
+) -> ArmyListDetailResponse:
     """Get details of a specific army list."""
     result = await db.execute(
         select(ArmyList)
@@ -67,7 +66,7 @@ async def get_list(
     army_list = result.scalars().first()
     if not army_list:
         raise HTTPException(status_code=404, detail="List not found")
-    return army_list
+    return ArmyListDetailResponse.model_validate(army_list)
 
 
 @router.put("/{list_id}", response_model=ArmyListDetailResponse)
@@ -76,7 +75,7 @@ async def update_list(
     list_in: ArmyListUpdate,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_session),
-):
+) -> ArmyListDetailResponse:
     """Update an existing army list."""
     result = await db.execute(
         select(ArmyList)
@@ -93,7 +92,7 @@ async def update_list(
 
     await db.commit()
     await db.refresh(army_list)
-    return army_list
+    return ArmyListDetailResponse.model_validate(army_list)
 
 
 @router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -101,7 +100,7 @@ async def delete_list(
     list_id: int,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_session),
-):
+) -> None:
     """Delete an army list."""
     result = await db.execute(
         select(ArmyList)

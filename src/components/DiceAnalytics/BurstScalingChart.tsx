@@ -38,7 +38,7 @@ export function BurstScalingChart({ data }: BurstScalingChartProps) {
                             label={{ value: 'Active Win Probability', angle: -90, position: 'insideLeft', offset: -20, fill: '#94a3b8' }}
                         />
                         <Tooltip
-                            formatter={(value: any) => [`${Number(value).toFixed(1)}%`, '']} // Updated formatter
+                            formatter={(value: number | string) => [`${Number(value).toFixed(1)}%`, '']}
                             contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', border: 'none', borderRadius: '4px' }}
                         />
                         <Legend verticalAlign="top" height={36} />

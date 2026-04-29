@@ -1,5 +1,7 @@
 """Metadata API route — item catalogs (weapons, skills, equipment, ammo)."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -20,7 +22,7 @@ class WeaponResponse(BaseModel):
     saving: str | None = None
     saving_num: str | None = None
     properties: list[str] = []
-    distance: dict | None = None
+    distance: dict[str, Any] | None = None
     wiki_url: str | None = None
 
     model_config = {"from_attributes": True}
@@ -58,7 +60,9 @@ class MetadataResponse(BaseModel):
 
 
 @router.get("", response_model=MetadataResponse)
-async def get_metadata(session: AsyncSession = Depends(get_session)):
+async def get_metadata(
+    session: AsyncSession = Depends(get_session),
+) -> MetadataResponse:
     """Get all item catalogs (weapons, skills, equipment, ammunition)."""
     weapons = (
         (await session.execute(select(Weapon).order_by(Weapon.name))).scalars().all()

@@ -493,7 +493,7 @@ export abstract class BaseDatabase {
 
         // Convert distance modifiers from cm to inches
         if (this.distanceExtras.has(id)) {
-            const match = name.match(/^([+\-]?)(\d+\.?\d*)$/);
+            const match = name.match(/^([+-]?)(\d+\.?\d*)$/);
             if (match) {
                 const sign = match[1] || '';
                 const cmValue = parseFloat(match[2]);

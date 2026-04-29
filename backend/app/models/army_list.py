@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB
@@ -18,7 +19,7 @@ class ArmyList(Base):
     swc: Mapped[float] = mapped_column(Float)
 
     # Store the entire frontend Army List JSON here to avoid complex relationships
-    units_json: Mapped[dict] = mapped_column(JSONB, default=dict)
+    units_json: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

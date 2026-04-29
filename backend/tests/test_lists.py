@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 import pytest
 from httpx import AsyncClient
 
@@ -7,16 +9,16 @@ from app.models.user import User
 
 
 # Mock dependencies
-async def mock_get_current_user_id():
+async def mock_get_current_user_id() -> str:
     return "test-user-123"
 
 
-async def mock_get_current_user():
+async def mock_get_current_user() -> User:
     return User(id="test-user-123", email="test@example.com")
 
 
 @pytest.fixture(autouse=True)
-def override_auth_dependencies():
+def override_auth_dependencies() -> Generator[None, None, None]:
     app.dependency_overrides[get_current_user_id] = mock_get_current_user_id
     app.dependency_overrides[get_current_user] = mock_get_current_user
     yield
@@ -24,7 +26,7 @@ def override_auth_dependencies():
 
 
 @pytest.mark.asyncio
-async def test_create_and_get_list(client: AsyncClient, setup_database):
+async def test_create_and_get_list(client: AsyncClient, setup_database: None) -> None:
     # 1. Create a list
     list_payload = {
         "name": "My Competitive List",

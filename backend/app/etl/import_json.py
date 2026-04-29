@@ -11,6 +11,7 @@ Usage:
 import asyncio
 import json
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -25,7 +26,7 @@ from app.models.unit import Loadout, Profile, Unit
 
 
 # ---- Type coercion helpers ----
-def _int(v, default=0) -> int:
+def _int(v: Any, default: int = 0) -> int:
     """Safely coerce to int."""
     try:
         return int(v) if v is not None else default
@@ -33,7 +34,7 @@ def _int(v, default=0) -> int:
         return default
 
 
-def _float(v, default=0.0) -> float:
+def _float(v: Any, default: float = 0.0) -> float:
     """Safely coerce to float."""
     try:
         return float(v) if v is not None else default
@@ -41,7 +42,7 @@ def _float(v, default=0.0) -> float:
         return default
 
 
-def _int_or_none(v) -> int | None:
+def _int_or_none(v: Any) -> int | None:
     """Coerce to int or None (treats 0 and '' as None)."""
     if v is None:
         return None
@@ -67,7 +68,7 @@ def resolve_data_dir() -> Path:
     )
 
 
-async def run_import():
+async def run_import() -> None:
     """Main ETL entry point."""
     data_dir = resolve_data_dir()
     print(f"Data directory: {data_dir}")

@@ -1,6 +1,5 @@
 import { DatabaseAdapter } from './DatabaseAdapter.js';
 import { encodeArmyList } from '../shared/armyCode.js';
-import type { Unit } from '../shared/types.js';
 
 interface UnitEntry {
     unitId: number;
@@ -60,7 +59,7 @@ export class ListBuilder {
         this.state = null;
     }
 
-    addUnit(unitSlug: string, groupNumber: number, optionId?: number, profileId?: number) {
+    addUnit(unitSlug: string, groupNumber: number, optionId?: number, _profileId?: number) {
         if (!this.state) throw new Error("No active list. Use create_list first.");
 
         // Find UInit

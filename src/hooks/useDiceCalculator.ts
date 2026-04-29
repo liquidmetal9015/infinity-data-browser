@@ -16,9 +16,9 @@ export interface PlayerParams {
     cover: boolean;      // Target is in cover (+3 ARM, -3 incoming BS)
     miscMod: number;     // e.g. Mimetism, Range mods
     weaponBands: RangeBand[]; // Range limits and mods
-    selectedUnit?: any;  // The whole Unit object
-    selectedProfile?: any; // The chosen Profile object
-    selectedOption?: any; // To access weapons
+    selectedUnit?: import('../../shared/types').Unit;
+    selectedProfile?: import('../../shared/types').Profile;
+    selectedOption?: import('../../shared/types').Option;
 }
 
 export interface CalculatorResults {
@@ -197,7 +197,7 @@ export function useDiceCalculator(
     externalActive?: PlayerParams,
     externalReactive?: PlayerParams,
     externalDistance?: number
-): any {
+) {
     // Self-contained state (only used when no external params provided)
     const [distance, setDistance] = useState<number>(16);
     const [activeParams, setActiveParams] = useState<PlayerParams>(DEFAULT_PARAMS);

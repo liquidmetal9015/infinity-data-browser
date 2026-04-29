@@ -96,7 +96,7 @@ async function main() {
     const classifiedsText = await fs.readFile(classifiedsPath, 'utf-8');
     const classifieds = JSON.parse(classifiedsText);
 
-    let units: Array<{ name: string; isc: string; skills: string[]; equipment: string[] }> = [];
+    const units: Array<{ name: string; isc: string; skills: string[]; equipment: string[] }> = [];
 
     for (const group of hydrated.groups) {
         for (const unit of group.units) {

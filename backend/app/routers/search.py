@@ -25,7 +25,7 @@ async def search_units(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     session: AsyncSession = Depends(get_session),
-):
+) -> list[UnitSummaryResponse]:
     """Search units with text query and/or attribute filters.
 
     Filters are ANDed together. Text search matches name and ISC (case-insensitive).

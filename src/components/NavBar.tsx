@@ -4,7 +4,7 @@ import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { clearAllDataAndReload } from '../utils/clearData';
 import { widgetRegistry, LAUNCHER_WIDGETS } from './Workspace/widgetRegistry';
 import type { WidgetType } from '../types/workspace';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Link, useLocation } from 'react-router-dom';
 
 export function NavBar() {

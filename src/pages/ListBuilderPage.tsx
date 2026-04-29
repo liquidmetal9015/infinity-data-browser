@@ -10,9 +10,10 @@ import {
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { useArmyListImportExport } from '../hooks/useArmyListImportExport';
 import { calculateListPoints, calculateListSWC } from '@shared/listTypes';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import type { components } from '../types/schema';
 import type { Unit } from '@shared/types';
 import './ListBuilderPage.css';
 
@@ -45,15 +46,16 @@ export function ListBuilderPage() {
     const saveListMutation = useMutation({
         mutationFn: async () => {
             if (!currentList) return;
-            const payload = {
+            const body: components["schemas"]["ArmyListCreate"] = {
                 name: currentList.name,
                 faction_id: currentList.factionId,
                 points: calculateListPoints(currentList),
                 swc: calculateListSWC(currentList),
-                units_json: currentList
+                units_json: currentList as Record<string, unknown>
             };
-            const res = await api.post('/api/lists', payload);
-            return res.data;
+            const { data, error } = await api.POST('/api/lists', { body });
+            if (error) throw error;
+            return data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });

@@ -122,8 +122,8 @@ export const UnifiedSearchBar: React.FC<UnifiedSearchBarProps> = ({
         const newFilter: StatFilter = {
             id: `stat-${statType}-${statOp}-${val}-${Date.now()}`,
             type: 'stat',
-            stat: statType as any,
-            operator: statOp as any,
+            stat: statType as StatFilter['stat'],
+            operator: statOp as StatFilter['operator'],
             value: val
         };
 

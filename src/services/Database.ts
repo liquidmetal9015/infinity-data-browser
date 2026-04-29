@@ -6,8 +6,19 @@ import { BaseDatabase, type FactionDataFile, type SearchFilter } from '../../sha
 import type { ParsedWeapon } from '../../shared/types';
 import type { ClassifiedObjective } from '../../shared/classifieds';
 
-// Re-export interface for backwards compatibility
 import api from './api';
+
+interface BulkFactionEntry extends FactionDataFile {
+    faction: {
+        id: number;
+        name: string;
+        slug: string;
+        parent_id: number | null;
+        is_vanilla: boolean;
+        discontinued: boolean;
+        logo: string;
+    };
+}
 
 export interface IDatabase {
     units: Unit[];
@@ -61,27 +72,39 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     // Platform-specific: Load via fetch()
     // ========================================================================
 
-    protected async loadMetadata(): Promise<DatabaseMetadata> {
-        try {
-            const [metaRes, facRes] = await Promise.all([
-                api.get('/api/metadata'),
-                api.get('/api/factions')
-            ]);
+    private allFactionData: Record<string, FactionDataFile> | null = null;
 
-            return {
-                ...metaRes.data,
-                factions: facRes.data,
-                equips: metaRes.data.equipment
-            };
-        } catch (e) {
-            throw new Error(`Failed to load metadata from API: ${e}`);
-        }
+    protected async loadMetadata(): Promise<DatabaseMetadata> {
+        const [metaRes, bulkJson] = await Promise.all([
+            api.GET('/api/metadata'),
+            fetch('/api/factions/all/legacy').then(r => r.ok ? r.json() as Promise<Record<string, BulkFactionEntry>> : Promise.resolve({} as Record<string, BulkFactionEntry>)),
+        ]);
+
+        if (metaRes.error) throw new Error(`Failed to load metadata: ${metaRes.error}`);
+
+        this.allFactionData = Object.fromEntries(
+            Object.entries(bulkJson).map(([slug, entry]) => [slug, { units: entry.units, fireteamChart: entry.fireteamChart, filters: entry.filters }])
+        );
+
+        const factions: DatabaseMetadata['factions'] = Object.values(bulkJson).map(entry => ({
+            id: entry.faction.id,
+            parent: entry.faction.parent_id ?? entry.faction.id,
+            name: entry.faction.name,
+            slug: entry.faction.slug,
+            discontinued: entry.faction.discontinued,
+            logo: entry.faction.logo,
+        }));
+
+        return {
+            ...metaRes.data,
+            factions,
+            equips: metaRes.data.equipment,
+        };
     }
 
     protected async loadClassifieds(): Promise<ClassifiedObjective[]> {
         const res = await fetch(import.meta.env.BASE_URL + 'data/classifieds.json');
         if (!res.ok) {
-            // fallback or empty if missing
             console.warn(`Failed to load classifieds.json: ${res.status}`);
             return [];
         }
@@ -89,12 +112,7 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     }
 
     protected async loadFactionData(slug: string): Promise<FactionDataFile | null> {
-        try {
-            const res = await api.get(`/api/factions/${slug}/legacy`);
-            return res.data;
-        } catch {
-            return null;
-        }
+        return this.allFactionData?.[slug] ?? null;
     }
 }
 

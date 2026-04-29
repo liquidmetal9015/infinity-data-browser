@@ -1,23 +1,21 @@
-import axios from "axios";
+import createClient from "openapi-fetch";
+import type { paths } from "../types/schema";
 import { auth } from "./firebase";
 
-// Configure base URL from Vite env or fallback to local vs relative path
-const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:8000" : ""),
+const baseURL = import.meta.env.VITE_API_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost");
+
+const client = createClient<paths>({ baseURL });
+
+client.use({
+    async onRequest({ request }) {
+        const user = auth.currentUser;
+        if (user) {
+            const token = await user.getIdToken();
+            request.headers.set("Authorization", `Bearer ${token}`);
+        }
+        return request;
+    },
 });
 
-// Interceptor to inject Firebase token automatically
-api.interceptors.request.use(async (config) => {
-    const user = auth.currentUser;
-
-    if (user) {
-        const token = await user.getIdToken();
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-}, (error) => {
-    return Promise.reject(error);
-});
-
-export default api;
+export default client;

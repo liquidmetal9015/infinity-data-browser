@@ -1,5 +1,7 @@
 """Fireteam chart model — stored per-faction."""
 
+from typing import Any
+
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,6 +21,6 @@ class FireteamChart(Base):
     )
     # The full fireteam chart structure as JSONB
     # {spec: {CORE: 1, ...}, teams: [{name, type, units, obs}, ...]}
-    chart_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    chart_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 
     faction: Mapped["Faction"] = relationship()  # noqa: F821

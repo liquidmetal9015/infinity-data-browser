@@ -5,7 +5,7 @@ import type { WoundResults } from './engine';
 
 function checkResults(
     actual: WoundResults,
-    expected: any,
+    expected: Record<string, Record<string, number>>,
     totalRolls: number,
     tolerance: number = 2.0
 ) {

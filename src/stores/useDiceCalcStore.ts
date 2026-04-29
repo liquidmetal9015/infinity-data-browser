@@ -37,8 +37,8 @@ interface DiceCalcStore {
     setDistance: (distance: number) => void;
     setActiveParams: (params: DiceCalcParams) => void;
     setReactiveParams: (params: DiceCalcParams) => void;
-    updateActive: (field: string, val: any) => void;
-    updateReactive: (field: string, val: any) => void;
+    updateActive: (field: string, val: unknown) => void;
+    updateReactive: (field: string, val: unknown) => void;
     swap: () => void;
 }
 

@@ -200,7 +200,7 @@ export async function loadSkillSummariesFromWiki(wikiDir: string): Promise<Map<s
  * Enrich unit skills with summaries
  * Used by get_unit_profile to add contextual rule explanations
  */
-export function enrichSkillsWithSummaries(skills: Array<{ name: string;[key: string]: any }>): Array<{ name: string; summary?: string;[key: string]: any }> {
+export function enrichSkillsWithSummaries(skills: Array<{ name: string } & Record<string, unknown>>): Array<{ name: string; summary?: string } & Record<string, unknown>> {
     return skills.map(skill => {
         const summary = getSkillSummary(skill.name);
         return summary ? { ...skill, summary } : skill;

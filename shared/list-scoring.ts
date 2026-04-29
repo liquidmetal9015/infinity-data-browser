@@ -178,7 +178,7 @@ export function scoreList(
     // Mobility
     let fastUnitCount = 0;
     let infiltratorCount = 0;
-    let airborneCount = 0;
+    const airborneCount = 0;
 
     for (const u of listUnits) {
         const mov = u.profile.move;

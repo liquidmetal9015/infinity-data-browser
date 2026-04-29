@@ -66,19 +66,20 @@ function downloadFile(url: string, destPath: string): Promise<void> {
     });
 }
 
-function extractLogosFromJson(obj: any, logos: Set<string>) {
-    if (!obj) return;
-    if (typeof obj === 'object') {
-        if (typeof obj.logo === 'string' && obj.logo.endsWith('.svg')) {
-            logos.add(obj.logo);
-        }
-        for (const key in obj) {
-            extractLogosFromJson(obj[key], logos);
-        }
-    } else if (Array.isArray(obj)) {
+function extractLogosFromJson(obj: unknown, logos: Set<string>) {
+    if (!obj || typeof obj !== 'object') return;
+    if (Array.isArray(obj)) {
         for (const item of obj) {
             extractLogosFromJson(item, logos);
         }
+        return;
+    }
+    const record = obj as Record<string, unknown>;
+    if (typeof record.logo === 'string' && record.logo.endsWith('.svg')) {
+        logos.add(record.logo);
+    }
+    for (const key in record) {
+        extractLogosFromJson(record[key], logos);
     }
 }
 
@@ -154,7 +155,7 @@ async function main() {
         try {
             const parsed = JSON.parse(content);
             extractLogosFromJson(parsed, unitLogos);
-        } catch (e) {
+        } catch {
             console.error(`Error parsing ${file}`);
         }
     }

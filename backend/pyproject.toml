@@ -36,7 +36,9 @@ ignore = ["B008", "E501", "F821"]
 
 [tool.mypy]
 python_version = "3.12"
+strict = true
 ignore_missing_imports = true
-disallow_untyped_defs = false
-disallow_any_generics = false
+# name-defined: SQLAlchemy string-quoted forward references in relationship Mapped types
+# assignment: Pydantic partial-update schemas redefine fields as Optional (valid Pydantic pattern)
+# no-any-return: Firebase/Google auth libraries return Any from typed functions
 disable_error_code = ["name-defined", "no-any-return", "assignment"]

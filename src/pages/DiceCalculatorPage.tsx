@@ -146,10 +146,10 @@ export function DiceCalculatorPage() {
         });
     };
 
-    const computeEffectiveSv = (params: any, distanceInches: number, opponentHasCover: boolean) => {
+    const computeEffectiveSv = (params: import('../hooks/useDiceCalculator').PlayerParams, distanceInches: number, opponentHasCover: boolean) => {
         let sv = params.sv;
         if (params.weaponBands && params.weaponBands.length > 0) {
-            const band = params.weaponBands.find((b: any) => distanceInches >= b.start && distanceInches <= b.end);
+            const band = params.weaponBands.find((b) => distanceInches >= b.start && distanceInches <= b.end);
             if (band) {
                 sv += band.mod;
             } else if (distanceInches > params.weaponBands[params.weaponBands.length - 1].end) {
@@ -218,7 +218,7 @@ export function DiceCalculatorPage() {
                                 <CalculatorUnitSelector
                                     onSelect={handleActiveUnitSelect}
                                     placeholder="Search Active Unit..."
-                                    onClear={() => handleActiveUnitSelect(undefined as any)}
+                                    onClear={() => handleActiveUnitSelect(undefined)}
                                 />
                                 {activeUnit && (
                                     <CalculatorProfileSelector
@@ -232,7 +232,7 @@ export function DiceCalculatorPage() {
                                 <WeaponSelector
                                     onSelect={applyWeaponToActive}
                                     placeholder="Execute Attack With..."
-                                    filterOptionIds={activeOption?.weapons.map((w: any) => w.id)}
+                                    filterOptionIds={activeOption?.weapons.map((w) => w.id)}
                                     disabled={!activeProfile}
                                 />
                                 {activeParams.selectedWeapon && (
@@ -297,7 +297,7 @@ export function DiceCalculatorPage() {
                                 <CalculatorUnitSelector
                                     onSelect={handleReactiveUnitSelect}
                                     placeholder="Search Reactive Unit..."
-                                    onClear={() => handleReactiveUnitSelect(undefined as any)}
+                                    onClear={() => handleReactiveUnitSelect(undefined)}
                                 />
                                 {reactiveUnit && (
                                     <CalculatorProfileSelector
@@ -311,7 +311,7 @@ export function DiceCalculatorPage() {
                                 <WeaponSelector
                                     onSelect={applyWeaponToReactive}
                                     placeholder="Execute ARO With..."
-                                    filterOptionIds={reactiveOption?.weapons.map((w: any) => w.id)}
+                                    filterOptionIds={reactiveOption?.weapons.map((w) => w.id)}
                                     disabled={!reactiveProfile}
                                 />
                                 {reactiveParams.selectedWeapon && (

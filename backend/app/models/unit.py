@@ -5,6 +5,8 @@ is preserved as a JSONB column on Unit for fallback/debugging, while
 the structured columns enable efficient querying.
 """
 
+from typing import Any
+
 from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -24,7 +26,7 @@ class Unit(Base):
     logo: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Full raw JSON from Corvus Belli — escape hatch for data we haven't normalized
-    raw_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    raw_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 
     # Fireteam chart data for the unit (if applicable, per-faction)
     # This is denormalized here for convenience; fireteams are faction-specific.
@@ -71,9 +73,9 @@ class Profile(Base):
     unit_type: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Items as JSONB arrays: [{id: 191, extra: [6]}, ...]
-    skills_json: Mapped[list] = mapped_column(JSONB, default=list)
-    equipment_json: Mapped[list] = mapped_column(JSONB, default=list)
-    weapons_json: Mapped[list] = mapped_column(JSONB, default=list)
+    skills_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    equipment_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    weapons_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
 
     # Relationships
     unit: Mapped["Unit"] = relationship(back_populates="profiles")
@@ -97,12 +99,12 @@ class Loadout(Base):
     swc: Mapped[float] = mapped_column(Float, default=0.0)
 
     # Items added/replaced by this loadout
-    skills_json: Mapped[list] = mapped_column(JSONB, default=list)
-    equipment_json: Mapped[list] = mapped_column(JSONB, default=list)
-    weapons_json: Mapped[list] = mapped_column(JSONB, default=list)
+    skills_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    equipment_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+    weapons_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
 
     # Order info (if the loadout provides special orders)
-    orders_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    orders_json: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
 
     # Relationships
     unit: Mapped["Unit"] = relationship(back_populates="loadouts")

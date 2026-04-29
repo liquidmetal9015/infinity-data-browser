@@ -7,6 +7,14 @@ import { resolve } from 'path'
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@shared': resolve(__dirname, 'shared'),

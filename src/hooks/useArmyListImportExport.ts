@@ -10,7 +10,7 @@ interface UseArmyListImportExportArgs {
     createList: (factionId: number, factionName: string, maxPoints: number, armyName?: string) => void;
     setGlobalFactionId: (id: number) => void;
     addCombatGroup: () => void;
-    addUnit: (unit: any, groupIndex: number, groupChoice: any, groupChoice2: any, optionChoice: any) => void;
+    addUnit: (unit: import('@shared/types').Unit, groupIndex: number, profileGroupId: number, profileId: number, optionId: number) => void;
 }
 
 export function useArmyListImportExport({

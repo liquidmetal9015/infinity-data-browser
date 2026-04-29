@@ -7,7 +7,7 @@ interface AmmoSelectorProps {
     continuous: boolean;
     critImmune: boolean;
     cover?: boolean;
-    onUpdate: (field: string, val: any) => void;
+    onUpdate: (field: string, val: unknown) => void;
 }
 
 export const AmmoSelector = ({ ammo, ap, continuous, critImmune, cover, onUpdate }: AmmoSelectorProps) => (

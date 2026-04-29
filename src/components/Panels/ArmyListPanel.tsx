@@ -21,7 +21,7 @@ import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
-import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit } from '@shared/listTypes';
+import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit, type FireteamDef } from '@shared/listTypes';
 import { Plus, Trash2, Users, Copy, Check, ExternalLink } from 'lucide-react';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
@@ -101,7 +101,7 @@ export function ArmyListPanel() {
                 if (ft.selectedTeamName) {
                     const activeTeamDef = chart.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)));
                     if (activeTeamDef) {
-                        const possible = getPossibleFireteams({ teams: [activeTeamDef] } as any, testMembers);
+                        const possible = getPossibleFireteams({ teams: [activeTeamDef], spec: chart.spec }, testMembers);
                         if (possible.length > 0) validIds.add(ft.id);
                     }
                 } else {
@@ -161,8 +161,8 @@ export function ArmyListPanel() {
 
         if (!over || active.id === over.id || !currentList) return;
 
-        const activeData = active.data.current as any;
-        const overData = over.data.current as any;
+        const activeData = active.data.current as Record<string, unknown>;
+        const overData = over.data.current as Record<string, unknown>;
 
         if (!activeData) return;
 
@@ -496,7 +496,7 @@ export function ArmyListPanel() {
                                             </div>
                                             <div className="units-tbody">
                                                 {(() => {
-                                                    const fireteamItems: { ft: any, members: ListUnit[] }[] = [];
+                                                    const fireteamItems: { ft: FireteamDef, members: ListUnit[] }[] = [];
                                                     const seenFireteams = new Set<string>();
 
                                                     const fireteamDefs = group.fireteams || [];

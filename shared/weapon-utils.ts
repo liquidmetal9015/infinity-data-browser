@@ -1,4 +1,4 @@
-import type { RangeBand, ParsedWeapon } from './types';
+import type { RangeBand, ParsedWeapon, DatabaseMetadata } from './types';
 
 // Standard range bands in inches
 export const RANGE_BANDS = [
@@ -15,7 +15,7 @@ export const RANGE_BANDS = [
  * Parses a raw weapon from metadata.json into a rich ParsedWeapon object.
  * Logic extracted from RangesPage.tsx for reuse in MCP/Agents.
  */
-export function parseWeapon(rawWeapon: any, ammunitions: any[]): ParsedWeapon | null {
+export function parseWeapon(rawWeapon: DatabaseMetadata['weapons'][number], ammunitions: DatabaseMetadata['ammunitions']): ParsedWeapon | null {
     const bands: RangeBand[] = [];
     let templateType: 'small' | 'large' | 'none' = 'none';
 
@@ -32,7 +32,7 @@ export function parseWeapon(rawWeapon: any, ammunitions: any[]): ParsedWeapon | 
     if (rawWeapon.distance) {
         const parts = Object.entries(rawWeapon.distance)
             .filter(([, val]) => val !== null)
-            .map(([, val]: [string, any]) => ({
+            .map(([, val]) => ({
                 max: Math.round(val.max * 0.4), // Convert CM to Inches (approx)
                 mod: parseInt(val.mod)
             }))

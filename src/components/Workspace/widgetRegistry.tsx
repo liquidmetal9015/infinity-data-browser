@@ -26,7 +26,7 @@ import { DiceAnalyticsPage } from '../../pages/DiceAnalyticsPage';
 import { ClassifiedsPage } from '../../pages/ClassifiedsPage';
 
 export interface WidgetRegistryEntry {
-    component: ComponentType<any>;
+    component: ComponentType<object>;
     label: string;
     icon: LucideIcon;
     defaultSize: WindowSize;

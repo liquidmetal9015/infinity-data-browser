@@ -9,7 +9,7 @@ import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } fr
 
 interface ListSearchPanelProps {
     list: ArmyList;
-    onAddUnit: (unit: Unit, pgId: any, pId: any, oId: any) => void;
+    onAddUnit: (unit: Unit, pgId: number, pId: number, oId: number) => void;
     onViewUnit: (unit: Unit) => void;
     validISCsForHoveredFireteam: Set<string>;
     onUnitHover: (isc: string | null) => void;
@@ -37,10 +37,10 @@ export function ListSearchPanel({
     const filteredRoster = useMemo(() => {
         let results = factionUnits;
 
-        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat') as any[];
+        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat');
         if (itemFilters.length > 0) {
             const searched = db.searchWithModifiers(
-                itemFilters.map((f: any) => ({
+                itemFilters.map((f) => ({
                     type: f.type,
                     baseId: f.baseId,
                     modifiers: f.modifiers,

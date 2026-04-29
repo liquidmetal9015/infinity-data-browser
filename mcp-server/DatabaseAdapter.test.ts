@@ -1,9 +1,7 @@
 // Tests for MCP server DatabaseAdapter
 // Since MCP tools are thin wrappers, we test the DatabaseAdapter methods directly
 
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
-import path from 'path';
-import fs from 'fs/promises';
+import { describe, it, expect } from 'vitest';
 
 // We'll create a mock DatabaseAdapter for unit testing
 // without requiring actual data files
@@ -392,7 +390,7 @@ describe('Fireteam Validation Logic', () => {
     });
 
     it('validates team member count', () => {
-        const team = mockFireteamChart.teams[0];
+        const _team = mockFireteamChart.teams[0];
         const members = ['Fusilier', 'Fusilier', 'Fusilier'];
 
         const isValidCore = members.length >= 3 && members.length <= 5;

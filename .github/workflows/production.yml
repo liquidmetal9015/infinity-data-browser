@@ -11,8 +11,55 @@ permissions:
   id-token: 'write'
 
 jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install Python dependencies
+        working-directory: ./backend
+        run: uv sync
+
+      - name: Ruff format check
+        working-directory: ./backend
+        run: uv run ruff format --check .
+
+      - name: Ruff lint
+        working-directory: ./backend
+        run: uv run ruff check .
+
+      - name: Mypy strict type check
+        working-directory: ./backend
+        run: uv run mypy .
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
   deploy:
     name: CI/CD - Build, Migrate, and Deploy
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository

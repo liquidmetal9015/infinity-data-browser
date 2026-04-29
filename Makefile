@@ -26,11 +26,15 @@ dev: ## Concurrent launch of the Vite frontend and Uvicorn backend
 		"cd backend && DATABASE_URL='postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity' uv run uvicorn app.main:app --reload --port 8000" \
 		"npm run dev"
 
+seed: ## Import game data JSON files into the local database
+	@echo "$(GREEN)Importing game data into database...$(RESET)"
+	cd backend && DATABASE_URL='postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity' uv run python -m app.etl.import_json
+
 ##@ Verification
 lint: ## Run aggressive linting & type checks across stack
 	@echo "$(YELLOW)Linting Python (ruff/mypy) & Node (eslint)...$(RESET)"
 	cd backend && uv run ruff format . && uv run ruff check --fix .
-	cd backend && uv run mypy .
+	cd backend && uv run mypy .  # strict = true is set in pyproject.toml
 	npm run lint
 
 test: ## Execute complete unit test suites

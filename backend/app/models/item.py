@@ -4,6 +4,8 @@ These are the reference/lookup tables. The actual assignments of items
 to profiles/loadouts are stored as JSONB arrays on those models.
 """
 
+from typing import Any
+
 from sqlalchemy import Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -23,9 +25,9 @@ class Weapon(Base):
     saving: Mapped[str | None] = mapped_column(String, nullable=True)
     saving_num: Mapped[str | None] = mapped_column(String, nullable=True)
     ammunition_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    properties: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    properties: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     # Range bands stored as JSON: {short: {max, mod}, med: {max, mod}, ...}
-    distance: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    distance: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
 
 class Skill(Base):

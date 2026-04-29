@@ -60,7 +60,7 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
                 totalSwc += swcVal;
 
                 return hydrateUnit(db, unit, profile, option, swcVal);
-            } catch (e) {
+            } catch {
                 return createUnknownUnit(member, 'Error Unit');
             }
         }).filter(u => u !== null);

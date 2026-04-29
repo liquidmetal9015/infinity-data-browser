@@ -1,15 +1,11 @@
 
 import { describe, it, expect } from 'vitest';
 
-// Mock Unit type subset
-interface MockUnit {
-    name?: string; // intentionally optional/nullable for test
-    isc?: string;
-}
+type MockUnit = { name: string | null; isc?: string };
 
 describe('Search Units Crash Reproduction', () => {
     it('safely handles missing name or isc using fixed logic', () => {
-        const units: any[] = [
+        const units: MockUnit[] = [
             { name: 'Fusilier', isc: 'Fusilier' },
             { name: null, isc: 'Something' }, // Bad unit
         ];
@@ -25,7 +21,7 @@ describe('Search Units Crash Reproduction', () => {
     });
 
     it('does not crash with safe access', () => {
-        const units: any[] = [
+        const units: MockUnit[] = [
             { name: 'Fusilier', isc: 'Fusilier' },
             { name: null, isc: 'Something' },
             { name: 'Legionnaire', isc: undefined }

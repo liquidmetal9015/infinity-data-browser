@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -8,7 +9,7 @@ class ArmyListBase(BaseModel):
     faction_id: int
     points: int = 0
     swc: float = 0.0
-    units_json: dict = Field(
+    units_json: dict[str, Any] = Field(
         default_factory=dict,
         description="JSON payload representing the list composition",
     )
@@ -23,7 +24,7 @@ class ArmyListUpdate(ArmyListBase):
     faction_id: int | None = None
     points: int | None = None
     swc: float | None = None
-    units_json: dict | None = None
+    units_json: dict[str, Any] | None = None
 
 
 class ArmyListSummaryResponse(BaseModel):
@@ -40,7 +41,7 @@ class ArmyListSummaryResponse(BaseModel):
 
 
 class ArmyListDetailResponse(ArmyListSummaryResponse):
-    units_json: dict
+    units_json: dict[str, Any]
 
     class Config:
         from_attributes = True

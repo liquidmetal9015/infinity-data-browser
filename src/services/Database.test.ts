@@ -1,6 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DatabaseImplementation } from './Database';
 import type { UnitRaw, DatabaseMetadata } from '@shared/types';
+
+// Mock the api module before importing DatabaseImplementation so openapi-fetch
+// never attempts URL construction in the jsdom environment.
+vi.mock('./api', () => ({
+    default: {
+        GET: vi.fn(),
+    },
+}));
+
+import { DatabaseImplementation } from './Database';
+import api from './api';
 
 // Mock data
 const mockMetadata: DatabaseMetadata = {
@@ -60,31 +70,45 @@ describe('DatabaseImplementation', () => {
     let db: DatabaseImplementation;
 
     beforeEach(() => {
-        // Reset singleton (if accessing logic that uses it, though we use instance here)
-        // Since we are unit testing the class, we can instantiate it directly.
-        // However, the class uses a private constructor? No, I allowed public constructor in refactor.
-        // Wait, I kept `private constructor() {}` in existing code?
-        // Let's check. Step 74: `constructor() { }` (public). Good.
         db = new DatabaseImplementation();
 
-        // Mock fetch
-        const mockFetch = vi.fn().mockImplementation((url: string) => {
-            if (url.includes('metadata.json')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve(mockMetadata)
-                });
+        // Wire up the mocked api.GET to return the appropriate fixture data per path.
+        vi.mocked(api.GET).mockImplementation((async (path: string) => {
+            if (path === '/api/metadata') {
+                return {
+                    data: {
+                        weapons: mockMetadata.weapons,
+                        skills: mockMetadata.skills,
+                        equipment: mockMetadata.equips,
+                        ammunitions: mockMetadata.ammunitions,
+                    },
+                    error: undefined,
+                    response: new Response(),
+                };
             }
-            if (url.includes('panoceania.json')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve(mockFactionData)
-                });
+            if (path === '/api/factions') {
+                // Return SuperFactionResponse[] — grouped by super-faction
+                return {
+                    data: [{
+                        id: 1,
+                        name: 'PanOceania',
+                        vanilla: { id: 1, name: 'PanOceania', slug: 'panoceania', parent_id: null, is_vanilla: true, discontinued: false, logo: '' },
+                        sectorials: [{ id: 2, name: 'Varuna', slug: 'varuna', parent_id: 1, is_vanilla: false, discontinued: false, logo: '' }],
+                    }],
+                    error: undefined,
+                    response: new Response(),
+                };
             }
-            return Promise.resolve({ ok: false });
-        });
+            if (path === '/api/factions/{slug}/legacy') {
+                return { data: mockFactionData, error: undefined, response: new Response() };
+            }
+            return { data: undefined, error: 'Not found', response: new Response(null, { status: 404 }) };
+        }) as unknown as typeof api.GET);
 
-        vi.stubGlobal('fetch', mockFetch);
+        // classifieds.json is loaded via plain fetch — stub it to return empty
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+            new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
+        ));
     });
 
     it('initializes correctly', async () => {

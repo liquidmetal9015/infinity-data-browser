@@ -357,7 +357,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 ...g,
                 units: g.units.map(u => {
                     if (!unitIds.includes(u.id)) return u;
-                    const { fireteamId, fireteamColor, fireteamNotes, ...rest } = u;
+                    const { fireteamId: _fid, fireteamColor: _fc, fireteamNotes: _fn, ...rest } = u;
                     return rest as ListUnit;
                 }),
             }));

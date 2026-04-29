@@ -56,7 +56,7 @@ export function F2FHeatmapChart({ data, activeBurst, reactiveBurst }: F2FHeatmap
                         />
                         <Tooltip
                             cursor={{ strokeDasharray: '3 3' }}
-                            formatter={(value: any, name: any) => {
+                            formatter={(value: number | string, name: string) => {
                                 if (name === 'Active Win Prob') return [`${Number(value).toFixed(1)}%`, name];
                                 return [value, name];
                             }}

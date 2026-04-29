@@ -1,5 +1,7 @@
 """Unit API routes."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +23,7 @@ router = APIRouter(prefix="/api/units", tags=["units"])
 
 
 def _resolve_items(
-    items_json: list[dict],
+    items_json: list[dict[str, Any]],
     catalog: dict[int, str],
     extras_map: dict[int, str] | None = None,
 ) -> list[ItemRef]:
@@ -40,7 +42,9 @@ def _resolve_items(
     return result
 
 
-async def _get_catalogs(session: AsyncSession) -> tuple[dict, dict, dict, dict]:
+async def _get_catalogs(
+    session: AsyncSession,
+) -> tuple[dict[int, str], dict[int, str], dict[int, str], dict[int, str]]:
     """Load item catalogs for name resolution."""
     weapons = {w.id: w.name for w in (await session.execute(select(Weapon))).scalars()}
     skills = {s.id: s.name for s in (await session.execute(select(Skill))).scalars()}
@@ -53,10 +57,10 @@ async def _get_catalogs(session: AsyncSession) -> tuple[dict, dict, dict, dict]:
 
 def _build_profile_response(
     p: Profile,
-    weapon_map: dict,
-    skill_map: dict,
-    equip_map: dict,
-    extras_map: dict,
+    weapon_map: dict[int, str],
+    skill_map: dict[int, str],
+    equip_map: dict[int, str],
+    extras_map: dict[int, str],
 ) -> ProfileResponse:
     return ProfileResponse(
         id=p.id,
@@ -81,10 +85,10 @@ def _build_profile_response(
 
 def _build_loadout_response(
     lo: Loadout,
-    weapon_map: dict,
-    skill_map: dict,
-    equip_map: dict,
-    extras_map: dict,
+    weapon_map: dict[int, str],
+    skill_map: dict[int, str],
+    equip_map: dict[int, str],
+    extras_map: dict[int, str],
 ) -> LoadoutResponse:
     return LoadoutResponse(
         id=lo.id,
@@ -105,7 +109,7 @@ async def list_units(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     session: AsyncSession = Depends(get_session),
-):
+) -> list[UnitSummaryResponse]:
     """List units with optional faction filter."""
     query = select(Unit).options(
         selectinload(Unit.factions), selectinload(Unit.loadouts)
@@ -133,7 +137,9 @@ async def list_units(
 
 
 @router.get("/{slug}", response_model=UnitDetailResponse)
-async def get_unit(slug: str, session: AsyncSession = Depends(get_session)):
+async def get_unit(
+    slug: str, session: AsyncSession = Depends(get_session)
+) -> UnitDetailResponse:
     """Get full unit details with profiles and loadouts."""
     result = await session.execute(
         select(Unit)

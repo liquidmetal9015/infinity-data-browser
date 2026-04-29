@@ -59,6 +59,7 @@ export const ContextMenu: React.FC = () => {
                 newY = window.innerHeight - rect.height - buffer;
             }
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setAdjustedPosition({ x: newX, y: newY });
         } else {
             setAdjustedPosition(position);

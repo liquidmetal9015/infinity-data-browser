@@ -103,10 +103,10 @@ export class DatabaseAdapter extends BaseDatabase {
         try {
             const urlObj = new URL(urlOrSlug);
             const pathSlug = urlObj.pathname.split('/').pop() || 'index';
-            const safeSlug = pathSlug.replace(/[^a-zA-Z0-9_\-\.\\(\\)%]/g, '_');
+            const safeSlug = pathSlug.replace(/[^a-zA-Z0-9_\-.()%]/g, '_');
             if (this.wikiPages.has(safeSlug)) return this.wikiPages.get(safeSlug);
         } catch {
-            const safeSlug = urlOrSlug.replace(/[^a-zA-Z0-9_\-\.\\(\\)%]/g, '_');
+            const safeSlug = urlOrSlug.replace(/[^a-zA-Z0-9_\-.()%]/g, '_');
             if (this.wikiPages.has(safeSlug)) return this.wikiPages.get(safeSlug);
         }
         return undefined;

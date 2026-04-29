@@ -27,7 +27,7 @@ async function processArticle(url: string, title: string) {
     const urlSlug = urlObj.pathname.split('/').pop() || 'index';
 
     // Sanitize filename safe
-    const safeFilename = urlSlug.replace(/[^a-zA-Z0-9_\-\.\(\)%]/g, '_');
+    const safeFilename = urlSlug.replace(/[^a-zA-Z0-9_\-.()%]/g, '_');
     const filename = path.join(DATA_DIR, `${safeFilename}.md`);
 
     // Skip if recently cached? For now, overwrite to refresh.

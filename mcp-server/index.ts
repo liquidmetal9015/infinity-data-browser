@@ -6,6 +6,7 @@ import { getFireteamBonuses } from "./utils.js";
 import { hydrateUnit } from "./list-utils.js";
 import { ListBuilder } from "./list-builder.js";
 import { enrichSkillsWithSummaries } from "./skill-summaries.js";
+import type { DatabaseMetadata } from "../shared/types.js";
 
 
 
@@ -55,7 +56,7 @@ server.resource(
                     text: text
                 }]
             };
-        } catch (e) {
+        } catch {
             throw new Error(`Faction file not found: ${slug}`);
         }
     }
@@ -101,7 +102,7 @@ server.resource(
                     text: text
                 }]
             };
-        } catch (e) {
+        } catch {
             return {
                 contents: [{
                     uri: uri.href,
@@ -274,7 +275,7 @@ server.tool(
             };
         }
 
-        const loadouts: any[] = [];
+        const loadouts: Record<string, unknown>[] = [];
 
         for (const pg of unit.raw.profileGroups) {
             // Use heuristics to find the primary profile (usually the first one)
@@ -457,7 +458,7 @@ server.tool(
             content: [{ type: "text", text: JSON.stringify({ error: "Faction not found" }) }]
         };
 
-        const responseData: any = {
+        const responseData: Record<string, unknown> = {
             faction: { id: faction.id, name: faction.name, parentId: faction.parentId }
         };
 
@@ -701,7 +702,7 @@ server.tool(
         }
 
         // Get units to analyze
-        let units: Array<{ name: string; isc: string; skills: string[]; equipment: string[] }> = [];
+        const units: Array<{ name: string; isc: string; skills: string[]; equipment: string[] }> = [];
 
         if (armyCode) {
             const { decodeArmyCode } = await import('../shared/armyCode.js');
@@ -912,7 +913,7 @@ server.tool(
         const metadata = { skills: skillsMap, weapons: weaponsMap, equips: equipsMap };
 
         // Get units to analyze
-        let unitsToAnalyze: Array<{ unit: typeof db.units[0]; profile: { bs: number; cc: number; ph: number; wip: number; arm: number; bts: number; w: number; s: number; move: number[]; type?: number; skills: { id: number }[]; equip: { id: number }[]; weapons?: { id: number }[]; name: string }; option: { name: string; points: number; swc?: number; skills: { id: number }[]; equip: { id: number }[]; weapons: { id: number }[] } }> = [];
+        const unitsToAnalyze: Array<{ unit: typeof db.units[0]; profile: { bs: number; cc: number; ph: number; wip: number; arm: number; bts: number; w: number; s: number; move: number[]; type?: number; skills: { id: number }[]; equip: { id: number }[]; weapons?: { id: number }[]; name: string }; option: { name: string; points: number; swc?: number; skills: { id: number }[]; equip: { id: number }[]; weapons: { id: number }[] } }> = [];
 
         if (armyCode) {
             const { decodeArmyCode } = await import('../shared/armyCode.js');
@@ -960,7 +961,7 @@ server.tool(
         }
 
         // Import classification logic
-        const { classifyUnit, getTopUnitsByRole } = await import('../shared/unit-roles.js');
+        const { classifyUnit } = await import('../shared/unit-roles.js');
 
         // Classify and rank
         const results: Array<{
@@ -975,7 +976,7 @@ server.tool(
         }> = [];
 
         for (const { unit, profile, option } of unitsToAnalyze) {
-            const analysis = classifyUnit(unit as any, profile as any, option as any, metadata as any);
+            const analysis = classifyUnit(unit, profile, option, metadata);
             const roleScore = analysis.roles.find(r => r.role === role);
 
             if (roleScore && roleScore.score > 0) {
@@ -1040,8 +1041,8 @@ server.tool(
         const dPg = defenderUnit.raw.profileGroups[0];
         const aProfile = aPg?.profiles[0];
         const dProfile = dPg?.profiles[0];
-        const aOption = aPg?.options[0];
-        const dOption = dPg?.options[0];
+        const _aOption = aPg?.options[0];
+        const _dOption = dPg?.options[0];
 
         if (!aProfile || !dProfile) {
             return {
@@ -1051,7 +1052,7 @@ server.tool(
 
         // Find best weapon for range
         const rangeCm = range * 2.5; // Convert inches to cm
-        const weaponsMap = new Map<number, any>();
+        const weaponsMap = new Map<number, DatabaseMetadata['weapons'][number]>();
         if (db.metadata?.weapons) {
             for (const w of db.metadata.weapons) {
                 weaponsMap.set(w.id, w);
@@ -1254,8 +1255,8 @@ server.tool(
         try {
             const status = listBuilder.createList(factionSlug, armyName, pointsLimit);
             return { content: [{ type: "text", text: JSON.stringify(status, null, 2) }] };
-        } catch (e: any) {
-            return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+        } catch (e) {
+            return { content: [{ type: "text", text: `Error: ${e instanceof Error ? e.message : String(e)}` }], isError: true };
         }
     }
 );
@@ -1274,8 +1275,8 @@ server.tool(
         try {
             const status = listBuilder.addUnit(unitSlug, groupNumber, optionId, profileId);
             return { content: [{ type: "text", text: JSON.stringify(status, null, 2) }] };
-        } catch (e: any) {
-            return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+        } catch (e) {
+            return { content: [{ type: "text", text: `Error: ${e instanceof Error ? e.message : String(e)}` }], isError: true };
         }
     }
 );
@@ -1292,8 +1293,8 @@ server.tool(
         try {
             const status = listBuilder.removeUnit(groupNumber, slotIndex);
             return { content: [{ type: "text", text: JSON.stringify(status, null, 2) }] };
-        } catch (e: any) {
-            return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+        } catch (e) {
+            return { content: [{ type: "text", text: `Error: ${e instanceof Error ? e.message : String(e)}` }], isError: true };
         }
     }
 );
@@ -1307,8 +1308,8 @@ server.tool(
         try {
             const status = listBuilder.getStatus();
             return { content: [{ type: "text", text: JSON.stringify(status, null, 2) }] };
-        } catch (e: any) {
-            return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+        } catch (e) {
+            return { content: [{ type: "text", text: `Error: ${e instanceof Error ? e.message : String(e)}` }], isError: true };
         }
     }
 );
@@ -1330,8 +1331,8 @@ server.tool(
                     }, null, 2)
                 }]
             };
-        } catch (e: any) {
-            return { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true };
+        } catch (e) {
+            return { content: [{ type: "text", text: `Error: ${e instanceof Error ? e.message : String(e)}` }], isError: true };
         }
     }
 );

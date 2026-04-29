@@ -1,5 +1,7 @@
 """Pydantic schemas for API responses — faction-related endpoints."""
 
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -29,5 +31,5 @@ class SuperFactionResponse(BaseModel):
 class FactionDetailResponse(FactionSummary):
     """Full faction detail including fireteam chart."""
 
-    fireteam_chart: dict | None = None
+    fireteam_chart: dict[str, Any] | None = None
     unit_count: int = 0

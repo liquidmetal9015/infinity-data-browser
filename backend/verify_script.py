@@ -7,11 +7,11 @@ from app.main import app
 from app.models.user import User
 
 
-async def override_get_current_user_id():
+async def override_get_current_user_id() -> str:
     return "test-user-async"
 
 
-async def override_get_current_user():
+async def override_get_current_user() -> User:
     return User(id="test-user-async", email="async@example.com")
 
 
@@ -19,7 +19,7 @@ app.dependency_overrides[get_current_user_id] = override_get_current_user_id
 app.dependency_overrides[get_current_user] = override_get_current_user
 
 
-async def run_verification():
+async def run_verification() -> None:
     from app.database import async_session_factory
 
     print("Pre-provisioning mock user...")

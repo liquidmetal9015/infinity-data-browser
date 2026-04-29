@@ -14,7 +14,7 @@ const mockList = {
     groups: [{ id: '1', units: [] }],
     createdAt: Date.now(),
     updatedAt: Date.now()
-} as any;
+} as unknown as import('@shared/listTypes').ArmyList;
 
 describe('ListBuilder Components', () => {
     describe('ListHeader', () => {

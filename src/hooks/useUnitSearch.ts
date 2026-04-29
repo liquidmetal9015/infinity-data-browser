@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import type { Unit } from '@shared/types';
+import type { Unit, Profile } from '@shared/types';
 import { cmToInches } from '../utils/conversions';
 import type { IDatabase } from '../services/Database';
-import type { QueryState } from '../components/shared/UnifiedSearchBar';
+import type { QueryState, StatFilter } from '../components/shared/UnifiedSearchBar';
 import type { FiltersState } from '../components/FilterBar';
 
 export const useUnitSearch = (db: IDatabase, loading: boolean) => {
@@ -18,7 +18,7 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
     const [textQuery, setTextQuery] = useState('');
 
     // Helper to check if a unit matches ALL stat filters
-    const checkProfileStat = (profile: any, stat: string, operator: string, value: number) => {
+    const checkProfileStat = (profile: Profile, stat: string, operator: string, value: number) => {
         let statVal = 0;
 
         // Handle lookup
@@ -68,7 +68,7 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         }
     };
 
-    const checkUnitStats = (unit: Unit, filter: any) => {
+    const checkUnitStats = (unit: Unit, filter: StatFilter) => {
         const { stat, operator, value } = filter;
 
         // Check all profiles/options in the unit.
@@ -93,30 +93,21 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         return false;
     };
 
-    const checkStatFilters = (unit: Unit, stats: any[]) => {
-        // Implementation detail: How do we check "matches filters" when we have mixed types?
-        // Above in useMemo, for AND:
-        // We already filtered by items. So valid units match all items.
-        // We now just need them to match ALL stats.
-
-        // For OR:
-        // We have item matches. We need to ADD units that match ANY stat filter.
-        // But wait... if we have [Stat A, Stat B] and OR.
-        // Do we want (Stat A OR Stat B)? Yes.
-
+    const checkStatFilters = (unit: Unit, stats: StatFilter[]) => {
         if (query.operator === 'and') {
-            return stats.every((filter: any) => checkUnitStats(unit, filter));
+            return stats.every((filter) => checkUnitStats(unit, filter));
         } else {
-            return stats.some((filter: any) => checkUnitStats(unit, filter));
+            return stats.some((filter) => checkUnitStats(unit, filter));
         }
     };
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const filteredUnits = useMemo(() => {
         if (loading) return [];
 
         // Split filters
-        const itemFilters = query.filters.filter(f => f.type !== 'stat' && f.type !== undefined) as any[]; // Type assertion for now to avoid complexity
-        const statFilters = query.filters.filter(f => f.type === 'stat') as any[];
+        const itemFilters = query.filters.filter(f => f.type !== 'stat');
+        const statFilters = query.filters.filter(f => f.type === 'stat') as StatFilter[];
 
         // First, apply item filters using modifier-aware search
         let results: Unit[];
@@ -132,7 +123,7 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
             }
         } else {
             results = db.searchWithModifiers(
-                itemFilters.map((f: any) => ({
+                itemFilters.map((f) => ({
                     type: f.type,
                     baseId: f.baseId,
                     modifiers: f.modifiers,

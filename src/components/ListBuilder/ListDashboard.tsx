@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit } from '@shared/listTypes';
+import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit, type FireteamDef } from '@shared/listTypes';
 import { Plus, Trash2, Users } from 'lucide-react';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
@@ -68,6 +68,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const [hoveredFireteamId, setHoveredFireteamId] = useState<string | null>(null);
     const [hoveredUnitISC, setHoveredUnitISC] = useState<string | null>(null);
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const hoveredFireteamData = useMemo(() => {
         if (!hoveredFireteamId) return null;
         for (const g of list.groups) {
@@ -93,7 +94,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
             if (u.factions.includes(list.factionId)) {
                 const testMembers = [...hoveredFireteamData.members, { name: u.isc, comment: '' }];
                 const dummyChart = { teams: [hoveredFireteamData.activeTeamDef] };
-                const possible = getPossibleFireteams(dummyChart as any, testMembers);
+                const possible = getPossibleFireteams(dummyChart as Parameters<typeof getPossibleFireteams>[0], testMembers);
                 if (possible.length > 0) iscs.add(u.isc);
             }
         }
@@ -115,7 +116,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 if (ft.selectedTeamName) {
                     const activeTeamDef = chart.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)));
                     if (activeTeamDef) {
-                        const possible = getPossibleFireteams({ teams: [activeTeamDef] } as any, testMembers);
+                        const possible = getPossibleFireteams({ teams: [activeTeamDef], spec: chart.spec }, testMembers);
                         if (possible.length > 0) validIds.add(ft.id);
                     }
                 } else {
@@ -184,8 +185,8 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
         if (!over || active.id === over.id) return;
 
-        const activeData = active.data.current as any;
-        const overData = over.data.current as any;
+        const activeData = active.data.current as Record<string, unknown>;
+        const overData = over.data.current as Record<string, unknown>;
 
         if (!activeData) return;
 
@@ -409,7 +410,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                             </div>
                                             <div className="units-tbody">
                                                 {(() => {
-                                                    const fireteamItems: { ft: any, members: ListUnit[] }[] = [];
+                                                    const fireteamItems: { ft: FireteamDef, members: ListUnit[] }[] = [];
                                                     const seenFireteams = new Set<string>();
 
                                                     // Map explicitly defined fireteams

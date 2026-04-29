@@ -55,7 +55,9 @@ async def get_current_user(
             await db.refresh(user)
         except Exception:
             await db.rollback()
-            raise HTTPException(status_code=500, detail="Could not provision user") from None
+            raise HTTPException(
+                status_code=500, detail="Could not provision user"
+            ) from None
 
     return user
 

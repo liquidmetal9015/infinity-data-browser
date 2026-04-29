@@ -24,6 +24,7 @@ export function UnitRosterPanel() {
     const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
 
     // Compute valid ISCs for hovered fireteam (moved from ListDashboard)
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const hoveredFireteamData = useMemo(() => {
         if (!hoveredFireteamId || !currentList) return null;
         for (const g of currentList.groups) {
@@ -48,7 +49,7 @@ export function UnitRosterPanel() {
             if (u.factions.includes(currentList.factionId)) {
                 const testMembers = [...hoveredFireteamData.members, { name: u.isc, comment: '' }];
                 const dummyChart = { teams: [hoveredFireteamData.activeTeamDef] };
-                const possible = getPossibleFireteams(dummyChart as any, testMembers);
+                const possible = getPossibleFireteams(dummyChart as Parameters<typeof getPossibleFireteams>[0], testMembers);
                 if (possible.length > 0) iscs.add(u.isc);
             }
         }
@@ -63,10 +64,10 @@ export function UnitRosterPanel() {
     const filteredRoster = useMemo(() => {
         let results = factionUnits;
 
-        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat') as any[];
+        const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat');
         if (itemFilters.length > 0) {
             const searched = db.searchWithModifiers(
-                itemFilters.map((f: any) => ({
+                itemFilters.map((f) => ({
                     type: f.type,
                     baseId: f.baseId,
                     modifiers: f.modifiers,

@@ -36,7 +36,7 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as any
+        } as unknown as Unit
     },
     {
         id: 2,
@@ -67,7 +67,7 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as any
+        } as unknown as Unit
     }
 ];
 
@@ -103,7 +103,7 @@ describe('useUnitSearch', () => {
 
     it('applies query filters via database', () => {
         // Setup mock return
-        (mockDb.searchWithModifiers as any).mockReturnValue([mockUnits[0]]);
+        (mockDb.searchWithModifiers as unknown as ReturnType<typeof vi.fn>).mockReturnValue([mockUnits[0]]);
 
         const { result } = renderHook(() => useUnitSearch(mockDb, false));
 
@@ -128,7 +128,7 @@ describe('useUnitSearch', () => {
 
     it('applies additional faction filters', () => {
         // Setup mock return to return both
-        (mockDb.searchWithModifiers as any).mockReturnValue(mockUnits);
+        (mockDb.searchWithModifiers as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockUnits);
 
         const { result } = renderHook(() => useUnitSearch(mockDb, false));
 
@@ -194,7 +194,7 @@ describe('useUnitSearch', () => {
 
     it('combines item and stat filters with AND', () => {
         // Mock DB returns both for the item search
-        (mockDb.searchWithModifiers as any).mockReturnValue(mockUnits);
+        (mockDb.searchWithModifiers as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockUnits);
 
         const { result } = renderHook(() => useUnitSearch(mockDb, false));
 
@@ -215,7 +215,7 @@ describe('useUnitSearch', () => {
 
     it('combines item and stat filters with OR', () => {
         // Mock DB returns Unit A for the item search
-        (mockDb.searchWithModifiers as any).mockReturnValue([mockUnits[0]]);
+        (mockDb.searchWithModifiers as unknown as ReturnType<typeof vi.fn>).mockReturnValue([mockUnits[0]]);
 
         const { result } = renderHook(() => useUnitSearch(mockDb, false));
 

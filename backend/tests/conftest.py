@@ -1,8 +1,9 @@
 """Test configuration — shared fixtures."""
 
 import asyncio
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -20,15 +21,15 @@ test_session_factory = async_sessionmaker(
 )
 
 
-@pytest_asyncio.fixture(scope="session")
-def event_loop():
+@pytest.fixture(scope="session")
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def setup_database():
+async def setup_database() -> AsyncGenerator[None, None]:
     """Create all tables at the start of the test session."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -50,7 +51,7 @@ async def session() -> AsyncGenerator[AsyncSession, None]:
 async def client(session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """HTTP test client with database session override."""
 
-    async def override_get_session():
+    async def override_get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
     app.dependency_overrides[get_session] = override_get_session

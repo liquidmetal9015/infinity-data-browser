@@ -1,17 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import type { components } from '../types/schema';
 
-interface ArmyListSummary {
-    id: number;
-    name: string;
-    faction_id: number;
-    points: number;
-    swc: number;
-    created_at: string;
-    updated_at: string;
-}
+type ArmyListSummary = components["schemas"]["ArmyListSummaryResponse"];
 
 export function MyLists() {
     const { user } = useAuth();
@@ -21,15 +14,17 @@ export function MyLists() {
     const { data: lists, isLoading } = useQuery<ArmyListSummary[]>({
         queryKey: ['my-lists'],
         queryFn: async () => {
-            const res = await api.get('/api/lists');
-            return res.data;
+            const { data, error } = await api.GET('/api/lists');
+            if (error) throw error;
+            return data;
         },
         enabled: !!user,
     });
 
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => {
-            await api.delete(`/api/lists/${id}`);
+            const { error } = await api.DELETE('/api/lists/{list_id}', { params: { path: { list_id: id } } });
+            if (error) throw error;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });
@@ -38,8 +33,8 @@ export function MyLists() {
 
     const handleLoad = async (id: number) => {
         try {
-            const res = await api.get(`/api/lists/${id}`);
-            const listData = res.data;
+            const { data: listData, error } = await api.GET('/api/lists/{list_id}', { params: { path: { list_id: id } } });
+            if (error) throw error;
             if (listData.units_json) {
                 // Restore state into Zustand store 
                 // wait, loadState expects precisely the state structure

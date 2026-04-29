@@ -5,7 +5,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_health(client: AsyncClient):
+async def test_health(client: AsyncClient) -> None:
     """Health endpoint returns 200."""
     response = await client.get("/api/health")
     assert response.status_code == 200
@@ -14,7 +14,7 @@ async def test_health(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_factions_empty(client: AsyncClient):
+async def test_factions_empty(client: AsyncClient) -> None:
     """Factions endpoint returns empty list when no data."""
     response = await client.get("/api/factions")
     assert response.status_code == 200
@@ -22,14 +22,14 @@ async def test_factions_empty(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_unit_not_found(client: AsyncClient):
+async def test_unit_not_found(client: AsyncClient) -> None:
     """Unit detail returns 404 for non-existent slug."""
     response = await client.get("/api/units/nonexistent")
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_metadata_empty(client: AsyncClient):
+async def test_metadata_empty(client: AsyncClient) -> None:
     """Metadata endpoint returns empty catalogs when no data."""
     response = await client.get("/api/metadata")
     assert response.status_code == 200
