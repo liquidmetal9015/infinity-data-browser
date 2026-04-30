@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import ARRAY, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.faction import Faction
+    from app.models.user import User
 
 
 class ArmyList(Base):
@@ -30,8 +36,8 @@ class ArmyList(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    user: Mapped["User"] = relationship(back_populates="lists")
-    faction: Mapped["Faction"] = relationship()
+    user: Mapped[User] = relationship(back_populates="lists")
+    faction: Mapped[Faction] = relationship()
 
     @property
     def unit_count(self) -> int:

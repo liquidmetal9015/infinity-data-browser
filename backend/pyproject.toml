@@ -23,7 +23,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff",
-    "mypy"
+    "mypy",
 ]
 
 [tool.ruff]
@@ -32,24 +32,18 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "C4"]
-ignore = ["B008", "E501", "F821"]
+ignore = ["B008", "E501"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+# firebase_admin and asyncpg do not ship py.typed or stubs
+module = ["firebase_admin", "firebase_admin.*", "asyncpg", "asyncpg.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["app.models.*"]
-# SQLAlchemy string-quoted forward references in relationship() calls trigger name-defined
-disable_error_code = ["name-defined"]
-
-[[tool.mypy.overrides]]
-module = ["app.schemas.*"]
-# Pydantic partial-update schemas intentionally redefine fields as Optional
-disable_error_code = ["assignment"]
-
-[[tool.mypy.overrides]]
 module = ["app.auth"]
-# firebase_admin.auth.verify_id_token() returns Any
+# firebase_admin.auth.verify_id_token() is typed as returning Any
 disable_error_code = ["no-any-return"]

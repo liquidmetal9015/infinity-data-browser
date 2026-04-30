@@ -5,7 +5,9 @@ is preserved as a JSONB column on Unit for fallback/debugging, while
 the structured columns enable efficient querying.
 """
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,6 +15,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 from app.models.faction import unit_factions
+
+if TYPE_CHECKING:
+    from app.models.faction import Faction
 
 
 class Unit(Base):
@@ -32,15 +37,15 @@ class Unit(Base):
     # This is denormalized here for convenience; fireteams are faction-specific.
 
     # Relationships
-    factions: Mapped[list["Faction"]] = relationship(  # noqa: F821
+    factions: Mapped[list[Faction]] = relationship(
         secondary=unit_factions,
         back_populates="units",
     )
-    profiles: Mapped[list["Profile"]] = relationship(
+    profiles: Mapped[list[Profile]] = relationship(
         back_populates="unit",
         cascade="all, delete-orphan",
     )
-    loadouts: Mapped[list["Loadout"]] = relationship(
+    loadouts: Mapped[list[Loadout]] = relationship(
         back_populates="unit",
         cascade="all, delete-orphan",
     )
@@ -78,7 +83,7 @@ class Profile(Base):
     weapons_json: Mapped[list[Any]] = mapped_column(JSONB, default=list)
 
     # Relationships
-    unit: Mapped["Unit"] = relationship(back_populates="profiles")
+    unit: Mapped[Unit] = relationship(back_populates="profiles")
 
 
 class Loadout(Base):
@@ -107,4 +112,4 @@ class Loadout(Base):
     orders_json: Mapped[list[Any] | None] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    unit: Mapped["Unit"] = relationship(back_populates="loadouts")
+    unit: Mapped[Unit] = relationship(back_populates="loadouts")

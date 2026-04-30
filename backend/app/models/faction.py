@@ -1,9 +1,16 @@
 """Faction models."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.unit import Unit
 
 # Association table: which units belong to which factions
 unit_factions = Table(
@@ -34,7 +41,7 @@ class Faction(Base):
     discontinued: Mapped[bool] = mapped_column(Boolean, default=False)
     logo: Mapped[str] = mapped_column(String, default="")
 
-    units: Mapped[list["Unit"]] = relationship(  # noqa: F821
+    units: Mapped[list[Unit]] = relationship(
         secondary=unit_factions,
         back_populates="factions",
     )
