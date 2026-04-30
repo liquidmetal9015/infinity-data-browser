@@ -8,7 +8,6 @@ class ItemRef(BaseModel):
 
     id: int
     name: str
-    extra: list[int] = []
     extra_display: list[str] = []
 
 

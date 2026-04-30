@@ -2,11 +2,10 @@
 FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
-RUN npm install -g pnpm
 
 # Install dependencies and build
-COPY package.json pnpm-lock.yaml* ./
-RUN npm install
+COPY package.json package-lock.json* ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -21,9 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python requirements
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install python dependencies via uv
+RUN pip install --no-cache-dir uv
+COPY backend/pyproject.toml ./backend/
+RUN cd backend && uv sync --no-dev --system
 
 # Copy backend code
 COPY backend/app/ app/

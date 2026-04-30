@@ -25,34 +25,31 @@ router = APIRouter(prefix="/api/units", tags=["units"])
 def _resolve_items(
     items_json: list[dict[str, Any]],
     catalog: dict[int, str],
-    extras_map: dict[int, str] | None = None,
 ) -> list[ItemRef]:
-    """Resolve JSONB item references to ItemRef with names."""
+    """Resolve JSONB item references to ItemRef with names.
+
+    Items are stored as {id, modifiers: [str, ...]} by the ETL pipeline.
+    Modifiers are already display-ready strings (e.g. "-3", "L1").
+    """
     result = []
     for item in items_json:
         item_id = item.get("id", 0)
         name = catalog.get(item_id, f"Unknown ({item_id})")
-        extra = item.get("extra", [])
-        extra_display = []
-        if extras_map and extra:
-            extra_display = [extras_map.get(e, str(e)) for e in extra]
-        result.append(
-            ItemRef(id=item_id, name=name, extra=extra, extra_display=extra_display)
-        )
+        modifiers: list[str] = item.get("modifiers", [])
+        result.append(ItemRef(id=item_id, name=name, extra_display=modifiers))
     return result
 
 
 async def _get_catalogs(
     session: AsyncSession,
-) -> tuple[dict[int, str], dict[int, str], dict[int, str], dict[int, str]]:
+) -> tuple[dict[int, str], dict[int, str], dict[int, str]]:
     """Load item catalogs for name resolution."""
     weapons = {w.id: w.name for w in (await session.execute(select(Weapon))).scalars()}
     skills = {s.id: s.name for s in (await session.execute(select(Skill))).scalars()}
     equips = {
         e.id: e.name for e in (await session.execute(select(Equipment))).scalars()
     }
-    # TODO: load extras_map from a dedicated table or cache
-    return weapons, skills, equips, {}
+    return weapons, skills, equips
 
 
 def _build_profile_response(
@@ -60,7 +57,6 @@ def _build_profile_response(
     weapon_map: dict[int, str],
     skill_map: dict[int, str],
     equip_map: dict[int, str],
-    extras_map: dict[int, str],
 ) -> ProfileResponse:
     return ProfileResponse(
         id=p.id,
@@ -77,9 +73,9 @@ def _build_profile_response(
         silhouette=p.silhouette,
         is_structure=p.is_structure,
         unit_type=p.unit_type,
-        skills=_resolve_items(p.skills_json or [], skill_map, extras_map),
-        equipment=_resolve_items(p.equipment_json or [], equip_map, extras_map),
-        weapons=_resolve_items(p.weapons_json or [], weapon_map, extras_map),
+        skills=_resolve_items(p.skills_json or [], skill_map),
+        equipment=_resolve_items(p.equipment_json or [], equip_map),
+        weapons=_resolve_items(p.weapons_json or [], weapon_map),
     )
 
 
@@ -88,7 +84,6 @@ def _build_loadout_response(
     weapon_map: dict[int, str],
     skill_map: dict[int, str],
     equip_map: dict[int, str],
-    extras_map: dict[int, str],
 ) -> LoadoutResponse:
     return LoadoutResponse(
         id=lo.id,
@@ -97,9 +92,9 @@ def _build_loadout_response(
         name=lo.name,
         points=lo.points,
         swc=lo.swc,
-        skills=_resolve_items(lo.skills_json or [], skill_map, extras_map),
-        equipment=_resolve_items(lo.equipment_json or [], equip_map, extras_map),
-        weapons=_resolve_items(lo.weapons_json or [], weapon_map, extras_map),
+        skills=_resolve_items(lo.skills_json or [], skill_map),
+        equipment=_resolve_items(lo.equipment_json or [], equip_map),
+        weapons=_resolve_items(lo.weapons_json or [], weapon_map),
     )
 
 
@@ -154,7 +149,7 @@ async def get_unit(
     if not unit:
         raise HTTPException(status_code=404, detail=f"Unit '{slug}' not found")
 
-    weapon_map, skill_map, equip_map, extras_map = await _get_catalogs(session)
+    weapon_map, skill_map, equip_map = await _get_catalogs(session)
 
     return UnitDetailResponse(
         id=unit.id,
@@ -163,11 +158,11 @@ async def get_unit(
         slug=unit.slug,
         factions=[f.slug for f in unit.factions],
         profiles=[
-            _build_profile_response(p, weapon_map, skill_map, equip_map, extras_map)
+            _build_profile_response(p, weapon_map, skill_map, equip_map)
             for p in sorted(unit.profiles, key=lambda p: (p.profile_group_id, p.id))
         ],
         loadouts=[
-            _build_loadout_response(lo, weapon_map, skill_map, equip_map, extras_map)
+            _build_loadout_response(lo, weapon_map, skill_map, equip_map)
             for lo in sorted(
                 unit.loadouts, key=lambda lo: (lo.profile_group_id, lo.option_id)
             )

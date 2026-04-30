@@ -76,7 +76,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
+
+      - name: Install uv for migrations
+        uses: astral-sh/setup-uv@v4
 
       - name: Setup Cloud SQL Proxy
         run: |
@@ -91,8 +93,8 @@ jobs:
           # The database URL targets the localhost Cloud SQL proxy tunnel securely
           DATABASE_URL: 'postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/infinity'
         run: |
-          pip install -r requirements.txt
-          PYTHONPATH=. alembic upgrade head
+          uv sync --no-dev
+          uv run alembic upgrade head
           
       - name: Inject Frontend Firebase Configuration
         # Writes client secrets for Vite to bundle into the frontend remotely

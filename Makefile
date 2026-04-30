@@ -1,4 +1,4 @@
-.PHONY: setup dev migrate lint test
+.PHONY: setup dev migrate lint test hooks
 .DEFAULT_GOAL := help
 
 # Colors
@@ -7,6 +7,9 @@ YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 
 ##@ Setup
+hooks: ## Install pre-commit hooks (run once after setup)
+	pre-commit install
+
 setup: ## Fully bootstrap the local development environment
 	@echo "$(GREEN)Starting local databases...$(RESET)"
 	docker compose up -d db

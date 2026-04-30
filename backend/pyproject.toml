@@ -38,7 +38,18 @@ ignore = ["B008", "E501", "F821"]
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true
-# name-defined: SQLAlchemy string-quoted forward references in relationship Mapped types
-# assignment: Pydantic partial-update schemas redefine fields as Optional (valid Pydantic pattern)
-# no-any-return: Firebase/Google auth libraries return Any from typed functions
-disable_error_code = ["name-defined", "no-any-return", "assignment"]
+
+[[tool.mypy.overrides]]
+module = ["app.models.*"]
+# SQLAlchemy string-quoted forward references in relationship() calls trigger name-defined
+disable_error_code = ["name-defined"]
+
+[[tool.mypy.overrides]]
+module = ["app.schemas.*"]
+# Pydantic partial-update schemas intentionally redefine fields as Optional
+disable_error_code = ["assignment"]
+
+[[tool.mypy.overrides]]
+module = ["app.auth"]
+# firebase_admin.auth.verify_id_token() returns Any
+disable_error_code = ["no-any-return"]

@@ -53,7 +53,9 @@ test-results/
 *:Zone.Identifier
 
 # Secrets & Local Binaries
+# Firebase Admin SDK service account keys (must never be committed)
 *firebase-admin*.json
+*firebase-adminsdk*.json
 cloud-sql-proxy
 
 # Terraform
