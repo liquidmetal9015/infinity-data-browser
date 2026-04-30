@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ClassifiedObjective, ClassifiedMatch } from '../../../shared/classifieds';
-import './ClassifiedItem.css';
+import { clsx } from 'clsx';
+import styles from './ClassifiedItem.module.css';
 
 interface ClassifiedItemProps {
     objective: ClassifiedObjective;
@@ -17,34 +18,30 @@ export const ClassifiedItem: React.FC<ClassifiedItemProps> = ({
     isSubdued,
     onClick
 }) => {
-    let className = "classified-item ";
-
-    if (isActive) {
-        className += "active ";
-    } else if (match?.canComplete) {
-        className += "completable ";
-    }
-
-    if (isSubdued) {
-        className += "subdued ";
-    }
-
     return (
-        <div className={className.trim()} onClick={onClick}>
-            <div className="classified-header">
-                <h3 className="classified-title">{objective.name}</h3>
-                <span className="classified-category">{objective.category.split(' ')[0]}</span>
+        <div
+            className={clsx(
+                styles.classifiedItem,
+                isActive && styles.active,
+                !isActive && match?.canComplete && styles.completable,
+                isSubdued && styles.subdued,
+            )}
+            onClick={onClick}
+        >
+            <div className={styles.classifiedHeader}>
+                <h3 className={styles.classifiedTitle}>{objective.name}</h3>
+                <span className={styles.classifiedCategory}>{objective.category.split(' ')[0]}</span>
             </div>
 
-            <p className="classified-desc">{objective.objective}</p>
+            <p className={styles.classifiedDesc}>{objective.objective}</p>
 
-            <div className="classified-designated">
-                <span className="designated-label">Designated:</span> {objective.designatedTroopers.join(', ')}
+            <div className={styles.classifiedDesignated}>
+                <span className={styles.designatedLabel}>Designated:</span> {objective.designatedTroopers.join(', ')}
             </div>
 
             {match && match.canComplete && match.reason && (
-                <div className="classified-match-status">
-                    <span className="match-icon">✓</span> Completable via {match.reason}
+                <div className={styles.classifiedMatchStatus}>
+                    <span className={styles.matchIcon}>✓</span> Completable via {match.reason}
                 </div>
             )}
         </div>

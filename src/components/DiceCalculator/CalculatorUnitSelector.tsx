@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDatabase } from '../../hooks/useDatabase';
 import type { Unit } from '../../../shared/types';
 import { Search } from 'lucide-react';
-import './CalculatorUnitSelector.css';
+import styles from './CalculatorUnitSelector.module.css';
 
 interface CalculatorUnitSelectorProps {
     onSelect: (unit: Unit) => void;
@@ -52,9 +52,9 @@ export function CalculatorUnitSelector({ onSelect, onClear, placeholder = 'Searc
     };
 
     return (
-        <div className="calculator-unit-selector" ref={wrapperRef}>
-            <div className="search-input-wrapper">
-                <Search size={16} className="search-icon" />
+        <div className={styles.calculatorUnitSelector} ref={wrapperRef}>
+            <div className={styles.searchInputWrapper}>
+                <Search size={16} className={styles.searchIcon} />
                 <input
                     type="text"
                     value={searchTerm}
@@ -67,19 +67,19 @@ export function CalculatorUnitSelector({ onSelect, onClear, placeholder = 'Searc
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="unit-search-input"
+                    className={styles.unitSearchInput}
                 />
             </div>
 
             {isOpen && filteredUnits.length > 0 && (
-                <div className="unit-dropdown">
+                <div className={styles.unitDropdown}>
                     {filteredUnits.map(unit => (
                         <div
                             key={unit.id}
-                            className="unit-dropdown-item"
+                            className={styles.unitDropdownItem}
                             onClick={() => handleSelect(unit)}
                         >
-                            <span className="unit-name">{unit.isc || unit.name}</span>
+                            <span className={styles.unitName}>{unit.isc || unit.name}</span>
                         </div>
                     ))}
                 </div>

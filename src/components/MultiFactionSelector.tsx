@@ -80,14 +80,16 @@ export function MultiFactionSelector({
                                             />
                                         )}
                                         <span className="text-sm font-semibold truncate max-w-[120px] pl-0.5">{f.name}</span>
-                                        <button
-                                            type="button"
+                                        <span
+                                            role="button"
+                                            tabIndex={0}
                                             className="cursor-pointer flex items-center justify-center bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-md p-1.5 ml-1 transition-all flex-shrink-0"
                                             onClick={(e) => requestRemove(f.id, e)}
+                                            onKeyDown={(e) => e.key === 'Enter' && requestRemove(f.id, e as unknown as React.MouseEvent)}
                                             title={`Remove ${f.name}`}
                                         >
                                             <X size={14} strokeWidth={2.5} />
-                                        </button>
+                                        </span>
                                     </span>
                                 )
                             })

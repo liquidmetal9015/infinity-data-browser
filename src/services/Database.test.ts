@@ -1,69 +1,74 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { UnitRaw, DatabaseMetadata } from '@shared/types';
-
-// Mock the api module before importing DatabaseImplementation so openapi-fetch
-// never attempts URL construction in the jsdom environment.
-vi.mock('./api', () => ({
-    default: {
-        GET: vi.fn(),
-    },
-}));
+import type { ProcessedMetadataFile, ProcessedFactionsFile, ProcessedFactionFile } from '../../shared/game-model';
 
 import { DatabaseImplementation } from './Database';
-import api from './api';
 
-// Mock data
-const mockMetadata: DatabaseMetadata = {
+const mockMetaFile: ProcessedMetadataFile = {
+    weapons: [{ id: 101, name: 'Combi Rifle', wikiUrl: '', weaponType: '', burst: '3', damage: '13', saving: 'ARM', savingNum: '0', properties: [], distance: null }],
+    skills: [{ id: 201, name: 'Mimetism', wikiUrl: '' }],
+    equipment: [{ id: 301, name: 'Multispectral Visor', wikiUrl: '' }],
+    ammunitions: [{ id: 1, name: 'AP', wikiUrl: '' }],
+};
+
+const mockFactionsFile: ProcessedFactionsFile = {
     factions: [
-        { id: 1, parent: 1, name: "PanOceania", slug: "panoceania", discontinued: false, logo: "" },
-        { id: 2, parent: 1, name: "Varuna", slug: "varuna", discontinued: false, logo: "" }
+        { id: 1, parentId: 1, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '' },
+        { id: 2, parentId: 1, name: 'Varuna', slug: 'varuna', discontinued: false, logo: '' },
     ],
-    weapons: [{ id: 101, name: "Combi Rifle" }],
-    skills: [{ id: 201, name: "Mimetism" }],
-    equips: [{ id: 301, name: "Multispectral Visor" }],
-    ammunitions: [{ id: 1, name: "AP" }]
 };
 
-const mockUnitRaw: UnitRaw = {
-    id: 1,
-    isc: "FUSILIER",
-    name: "Fusilier",
-    factions: [1, 2],
-    profileGroups: [{
+const mockFactionFile: ProcessedFactionFile = {
+    faction: {
         id: 1,
-        profiles: [{
+        slug: 'panoceania',
+        fireteams: { spec: {}, compositions: [] },
+    },
+    units: [{
+        id: 1,
+        isc: 'FUSILIER',
+        name: 'Fusilier',
+        factionIds: [1, 2],
+        slug: 'fusilier',
+        allWeaponIds: [101],
+        allSkillIds: [201],
+        allEquipmentIds: [],
+        pointsRange: [10, 10] as [number, number],
+        hasPeripherals: false,
+        profileGroups: [{
             id: 1,
-            name: "Fusilier",
-            skills: [{ id: 201, extra: [6] }], // Mimetism(-6) essentially
-            equip: [],
-            weapons: [{ id: 101 }],
-            move: [4, 4],
-            cc: 13,
-            bs: 11,
-            ph: 10,
-            wip: 13,
-            arm: 1,
-            bts: 0,
-            w: 1,
-            s: 2
+            isc: 'Fusilier',
+            isPeripheral: false,
+            isFTO: false,
+            profiles: [{
+                id: 1,
+                name: 'Fusilier',
+                unitType: 1,
+                move: [4, 4],
+                cc: 13,
+                bs: 11,
+                ph: 10,
+                wip: 13,
+                arm: 1,
+                bts: 0,
+                w: 1,
+                s: 2,
+                isStructure: false,
+                skills: [{ id: 201, name: 'Mimetism', modifiers: ['-6'], displayName: 'Mimetism(-6)' }],
+                equipment: [],
+                weapons: [],
+            }],
+            options: [{
+                id: 1,
+                name: 'Combi Rifle',
+                points: 10,
+                swc: 0,
+                skills: [],
+                equipment: [],
+                weapons: [{ id: 101, name: 'Combi Rifle', modifiers: [], burst: '3', damage: '13', distance: null }],
+                orders: [],
+            }],
         }],
-        options: [{
-            id: 1,
-            name: "",
-            points: 10,
-            swc: 0,
-            skills: [],
-            equip: [],
-            weapons: []
-        }]
-    }]
-};
-
-const mockFactionData = {
-    units: [mockUnitRaw],
-    filters: {
-        extras: [{ id: 6, name: "-3" }] // Intentionally mapping ID 6 -> "-3" for test check
-    }
+    }],
 };
 
 describe('DatabaseImplementation', () => {
@@ -72,64 +77,42 @@ describe('DatabaseImplementation', () => {
     beforeEach(() => {
         db = new DatabaseImplementation();
 
-        // Wire up the mocked api.GET to return the appropriate fixture data per path.
-        vi.mocked(api.GET).mockImplementation((async (path: string) => {
-            if (path === '/api/metadata') {
-                return {
-                    data: {
-                        weapons: mockMetadata.weapons,
-                        skills: mockMetadata.skills,
-                        equipment: mockMetadata.equips,
-                        ammunitions: mockMetadata.ammunitions,
-                    },
-                    error: undefined,
-                    response: new Response(),
-                };
+        vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => {
+            if (url.includes('metadata.json')) {
+                return new Response(JSON.stringify(mockMetaFile), { status: 200 });
             }
-            if (path === '/api/factions') {
-                // Return SuperFactionResponse[] — grouped by super-faction
-                return {
-                    data: [{
-                        id: 1,
-                        name: 'PanOceania',
-                        vanilla: { id: 1, name: 'PanOceania', slug: 'panoceania', parent_id: null, is_vanilla: true, discontinued: false, logo: '' },
-                        sectorials: [{ id: 2, name: 'Varuna', slug: 'varuna', parent_id: 1, is_vanilla: false, discontinued: false, logo: '' }],
-                    }],
-                    error: undefined,
-                    response: new Response(),
-                };
+            if (url.includes('factions.json')) {
+                return new Response(JSON.stringify(mockFactionsFile), { status: 200 });
             }
-            if (path === '/api/factions/{slug}/legacy') {
-                return { data: mockFactionData, error: undefined, response: new Response() };
+            if (url.includes('panoceania.json') || url.includes('varuna.json')) {
+                return new Response(JSON.stringify(mockFactionFile), { status: 200 });
             }
-            return { data: undefined, error: 'Not found', response: new Response(null, { status: 404 }) };
-        }) as unknown as typeof api.GET);
-
-        // classifieds.json is loaded via plain fetch — stub it to return empty
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-            new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
-        ));
+            if (url.includes('classifieds.json')) {
+                return new Response(JSON.stringify([]), { status: 200 });
+            }
+            return new Response(null, { status: 404 });
+        }));
     });
 
     it('initializes correctly', async () => {
         await db.init();
-        expect(db.units.length).toBe(1);
-        expect(db.getFactionName(1)).toBe("PanOceania");
+        expect(db.units.length).toBeGreaterThan(0);
+        expect(db.getFactionName(1)).toBe('PanOceania');
     });
 
     it('searches with modifiers correctly', async () => {
         await db.init();
 
-        // Search for Mimetism (baseId 201) with modifier 6 (which maps to "-3")
+        // Search for Mimetism (baseId 201) with modifier '-6'
         const results = db.searchWithModifiers([{
             type: 'skill',
             baseId: 201,
-            modifiers: [6],
+            modifiers: ['-6'],
             matchAnyModifier: false
         }], 'or');
 
         expect(results.length).toBe(1);
-        expect(results[0].name).toBe("Fusilier");
+        expect(results[0].name).toBe('Fusilier');
     });
 
     it('searches with matchAnyModifier correctly', async () => {
@@ -138,8 +121,8 @@ describe('DatabaseImplementation', () => {
         const results = db.searchWithModifiers([{
             type: 'skill',
             baseId: 201,
-            modifiers: [999], // Wrong modifier
-            matchAnyModifier: true // But matching any
+            modifiers: ['wrong-modifier'],
+            matchAnyModifier: true
         }], 'or');
 
         expect(results.length).toBe(1);
@@ -151,7 +134,7 @@ describe('DatabaseImplementation', () => {
         const results = db.searchWithModifiers([{
             type: 'skill',
             baseId: 201,
-            modifiers: [999], // Wrong modifier
+            modifiers: ['wrong-modifier'],
             matchAnyModifier: false
         }], 'or');
 
@@ -161,15 +144,10 @@ describe('DatabaseImplementation', () => {
     it('generates suggestions correctly', async () => {
         await db.init();
 
-        db.getSuggestions("Fusilier"); // Matches unit name? 
-        // Logic checks item variants, not unit names. 
-        // Suggestion logic builds from items. "Mimetism".
-
-        const res = db.getSuggestions("Mime");
+        const res = db.getSuggestions('Mime');
         expect(res.length).toBeGreaterThan(0);
-        expect(res[0].name).toBe("Mimetism");
-        // The first result is the "(any)" variant which matches all modifiers
-        expect(res[0].displayName).toBe("Mimetism (any)");
+        expect(res[0].name).toBe('Mimetism');
+        expect(res[0].displayName).toBe('Mimetism (any)');
         expect(res[0].isAnyVariant).toBe(true);
     });
 });

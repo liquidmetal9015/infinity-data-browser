@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import type { Unit, Profile } from '@shared/types';
-import { cmToInches } from '../utils/conversions';
 import type { IDatabase } from '../services/Database';
 import type { QueryState, StatFilter } from '../components/shared/UnifiedSearchBar';
 import type { FiltersState } from '../components/FilterBar';
@@ -32,24 +31,23 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
             case 'W': statVal = profile.w; break;
             case 'S': statVal = profile.s; break;
             case 'MOV':
-                // Handle MOV array [6-4]
-                // Convert to total inches
+                // MOV values are already in inches from ETL processing
                 if (Array.isArray(profile.move) && profile.move.length === 2) {
-                    statVal = Math.round(cmToInches(profile.move[0] + profile.move[1]));
+                    statVal = profile.move[0] + profile.move[1];
                 } else {
                     return false;
                 }
                 break;
             case 'MOV-1':
                 if (Array.isArray(profile.move) && profile.move.length >= 1) {
-                    statVal = Math.round(cmToInches(profile.move[0]));
+                    statVal = profile.move[0];
                 } else {
                     return false;
                 }
                 break;
             case 'MOV-2':
                 if (Array.isArray(profile.move) && profile.move.length >= 2) {
-                    statVal = Math.round(cmToInches(profile.move[1]));
+                    statVal = profile.move[1];
                 } else {
                     return false;
                 }
@@ -172,14 +170,14 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
 
                 for (const group of unit.raw.profileGroups) {
                     for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(lowerTerm))) return true;
-                        if (profile.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(lowerTerm))) return true;
+                        if (profile.skills?.some(s => s.name.toLowerCase().includes(lowerTerm))) return true;
+                        if (profile.equipment?.some(e => e.name.toLowerCase().includes(lowerTerm))) return true;
                     }
                     for (const opt of group.options) {
-                        if (opt.weapons?.some(w => db.weaponMap.get(w.id)?.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.name?.toLowerCase().includes(lowerTerm) || group.isco?.toLowerCase().includes(lowerTerm)) return true;
+                        if (opt.weapons?.some(w => w.name.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.equipment?.some(e => e.name.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.skills?.some(s => s.name.toLowerCase().includes(lowerTerm))) return true;
+                        if (opt.name?.toLowerCase().includes(lowerTerm) || group.isc?.toLowerCase().includes(lowerTerm)) return true;
                     }
                 }
                 return false;

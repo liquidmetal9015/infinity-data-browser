@@ -2,29 +2,23 @@ import { parseWeapon } from './weapon-utils.js';
 import type { ParsedWeapon } from './types.js';
 import type {
     Unit,
-    UnitRaw,
     DatabaseMetadata,
     SearchSuggestion,
     FireteamChart,
+    Fireteam,
     FactionInfo,
     SuperFaction,
     SearchFilter,
     RuleSummariesData,
     RuleSummary,
 } from './types.js';
+import type {
+    ProcessedUnit,
+    ProcessedFactionFile,
+    ProcessedMetadataFile,
+    ProcessedFactionsFile,
+} from './game-model.js';
 import { FactionRegistry } from './factions.js';
-
-// ============================================================================
-// Types for data loading
-// ============================================================================
-
-export interface FactionDataFile {
-    units: UnitRaw[];
-    filters?: {
-        extras?: Array<{ id: number; name: string; type?: string }>;
-    };
-    fireteamChart?: FireteamChart;
-}
 
 // Re-export SearchFilter for convenience
 export type { SearchFilter };
@@ -37,7 +31,7 @@ export abstract class BaseDatabase {
     units: Unit[] = [];
     metadata: DatabaseMetadata | null = null;
 
-    // Maps ID -> Name
+    // Maps ID -> Name (still needed for wiki link lookups)
     factionMap: Map<number, string> = new Map();
     weaponMap: Map<number, string> = new Map();
     skillMap: Map<number, string> = new Map();
@@ -53,10 +47,6 @@ export abstract class BaseDatabase {
 
     // Map Faction ID -> FireteamChart
     fireteamData: Map<number, FireteamChart> = new Map();
-
-    // Extras map: ID -> display string (e.g., 6 -> "-3")
-    extrasMap: Map<number, string> = new Map();
-    protected distanceExtras: Set<number> = new Set();
 
     // Deduplication map: ISC -> Unit
     protected unitsByISC: Map<string, Unit> = new Map();
@@ -81,8 +71,8 @@ export abstract class BaseDatabase {
     // Abstract methods - implemented by platform-specific subclasses
     // ========================================================================
 
-    protected abstract loadMetadata(): Promise<DatabaseMetadata>;
-    protected abstract loadFactionData(slug: string): Promise<FactionDataFile | null>;
+    protected abstract loadMetadataFiles(): Promise<{ meta: ProcessedMetadataFile; factions: ProcessedFactionsFile }>;
+    protected abstract loadFactionData(slug: string): Promise<ProcessedFactionFile | null>;
 
     // ========================================================================
     // Shared initialization logic
@@ -91,20 +81,22 @@ export abstract class BaseDatabase {
     async init(): Promise<void> {
         if (this.metadata) return; // Already initialized
 
-        console.log("Initializing Database...");
+        console.log('Initializing Database...');
 
-        // 1. Load Metadata
+        // 1. Load Metadata + Factions list
+        let metaFiles: { meta: ProcessedMetadataFile; factions: ProcessedFactionsFile };
         try {
-            this.metadata = await this.loadMetadata();
-            this.processMetadata(this.metadata);
+            metaFiles = await this.loadMetadataFiles();
         } catch (e) {
-            console.error("Failed to load metadata", e);
+            console.error('Failed to load metadata', e);
             throw e;
         }
 
-        // 2. Load Army Files
-        if (!this.metadata) return;
+        // Build DatabaseMetadata from processed files
+        this.metadata = this.buildDatabaseMetadata(metaFiles.meta, metaFiles.factions);
+        this.processMetadata(this.metadata);
 
+        // 2. Load Faction Files
         const loadResults = await Promise.all(
             this.metadata.factions.map(async (faction) => {
                 if (!faction.slug) return null;
@@ -112,24 +104,15 @@ export abstract class BaseDatabase {
                     const data = await this.loadFactionData(faction.slug);
                     if (!data) return null;
 
-                    // Load extras mapping
-                    if (data.filters?.extras) {
-                        for (const extra of data.filters.extras) {
-                            if (!this.extrasMap.has(extra.id)) {
-                                this.extrasMap.set(extra.id, extra.name);
-                                if (extra.type === 'DISTANCE') {
-                                    this.distanceExtras.add(extra.id);
-                                }
-                            }
-                        }
+                    // Store fireteam chart (convert FactionFireteamChart → FireteamChart)
+                    if (data.faction.fireteams) {
+                        const chart: FireteamChart = {
+                            spec: data.faction.fireteams.spec,
+                            teams: data.faction.fireteams.compositions as unknown as Fireteam[],
+                        };
+                        this.fireteamData.set(faction.id, chart);
                     }
 
-                    // Store fireteam chart
-                    if (data.fireteamChart) {
-                        this.fireteamData.set(faction.id, data.fireteamChart);
-                    }
-
-                    // Ingest units
                     this.ingestUnits(data.units);
                     return faction.slug;
                 } catch {
@@ -153,6 +136,42 @@ export abstract class BaseDatabase {
     }
 
     // ========================================================================
+    // Adapt processed files → DatabaseMetadata
+    // ========================================================================
+
+    private buildDatabaseMetadata(
+        meta: ProcessedMetadataFile,
+        factionsFile: ProcessedFactionsFile,
+    ): DatabaseMetadata {
+        return {
+            factions: factionsFile.factions.map(f => ({
+                id: f.id,
+                parent: f.parentId ?? f.id, // null parentId means self-parent (vanilla)
+                name: f.name,
+                slug: f.slug,
+                discontinued: f.discontinued,
+                logo: f.logo,
+            })),
+            weapons: meta.weapons.map(w => ({
+                id: w.id,
+                name: w.name,
+                wiki: w.wikiUrl,
+                type: w.weaponType,
+                burst: w.burst,
+                damage: w.damage,
+                saving: w.saving,
+                savingNum: w.savingNum,
+                ammunition: w.ammunition,
+                properties: w.properties,
+                distance: w.distance as DatabaseMetadata['weapons'][number]['distance'],
+            })),
+            skills: meta.skills.map(s => ({ id: s.id, name: s.name, wiki: s.wikiUrl })),
+            equips: meta.equipment.map(e => ({ id: e.id, name: e.name, wiki: e.wikiUrl })),
+            ammunitions: meta.ammunitions.map(a => ({ id: a.id, name: a.name, wiki: a.wikiUrl })),
+        };
+    }
+
+    // ========================================================================
     // Metadata processing
     // ========================================================================
 
@@ -163,7 +182,6 @@ export abstract class BaseDatabase {
             this.weaponMap.set(w.id, w.name);
             if (w.wiki) this.weaponWikiMap.set(w.id, w.wiki);
 
-            // Parse full weapon stats
             const parsed = parseWeapon(w, metadata.ammunitions);
             if (parsed) {
                 this.weaponDetailsMap.set(w.id, parsed);
@@ -180,124 +198,99 @@ export abstract class BaseDatabase {
         });
     }
 
-    // Add Getter for Weapon Details
     getWeaponDetails(id: number): ParsedWeapon | undefined {
         return this.weaponDetailsMap.get(id);
     }
-
-    // ... (rest of methods)
-
 
     // ========================================================================
     // Unit ingestion - shared logic
     // ========================================================================
 
-    protected ingestUnits(rawUnits: UnitRaw[]): void {
-        for (const u of rawUnits) {
+    protected ingestUnits(processedUnits: ProcessedUnit[]): void {
+        for (const u of processedUnits) {
             const existing = this.unitsByISC.get(u.isc);
 
             if (existing) {
                 // Merge faction lists
                 const existingFactions = new Set(existing.factions);
-                u.factions.forEach(fid => existingFactions.add(fid));
+                u.factionIds.forEach(fid => existingFactions.add(fid));
                 existing.factions = Array.from(existingFactions);
-                // Map this ID to the existing unit as well
                 this.unitIdMap.set(u.id, existing);
                 continue;
             }
 
-            // Compute points range
-            let minPts = Infinity;
-            let maxPts = -Infinity;
+            const itemsWithModsMap = new Map<string, { id: number; type: 'skill' | 'equipment' | 'weapon'; name: string; modifiers: string[] }>();
 
-            // Track items with modifiers
-            const itemsWithModsMap = new Map<string, { id: number; type: 'skill' | 'equipment' | 'weapon'; modifiers: number[] }>();
-
-            const addItemWithMod = (id: number, type: 'skill' | 'equipment' | 'weapon', extra?: number[]) => {
-                const mods = extra || [];
-                const key = `${type}-${id}-${mods.join(',')}`;
+            const addItem = (id: number, type: 'skill' | 'equipment' | 'weapon', name: string, modifiers: string[]) => {
+                const key = `${type}-${id}-${modifiers.join(',')}`;
                 if (!itemsWithModsMap.has(key)) {
-                    itemsWithModsMap.set(key, { id, type, modifiers: mods });
+                    itemsWithModsMap.set(key, { id, type, name, modifiers });
                 }
             };
 
             const unit: Unit = {
                 id: u.id,
-                idArmy: u.idArmy,
                 isc: u.isc,
                 name: u.name,
-                factions: u.factions,
+                factions: [...u.factionIds],
                 allWeaponIds: new Set(),
                 allSkillIds: new Set(),
                 allEquipmentIds: new Set(),
                 allItemsWithMods: [],
                 pointsRange: [0, 0],
-                raw: u
+                raw: u,
             };
 
             // Index by slug
-            if (u.slug) {
-                this.unitsBySlug.set(u.slug, unit);
-            }
+            if (u.slug) this.unitsBySlug.set(u.slug, unit);
             this.unitsBySlug.set(u.isc, unit);
             this.unitsBySlug.set(u.isc.toLowerCase().replace(/[^a-z0-9]+/g, '-'), unit);
 
-            // Process profile groups
-            u.profileGroups.forEach(pg => {
-                pg.profiles.forEach(p => {
-                    p.skills?.forEach(s => {
-                        unit.allSkillIds.add(s.id);
-                        addItemWithMod(s.id, 'skill', s.extra);
-                    });
-                    p.equip?.forEach(e => {
-                        unit.allEquipmentIds.add(e.id);
-                        addItemWithMod(e.id, 'equipment', e.extra);
-                    });
-                    p.weapons?.forEach(w => {
-                        unit.allWeaponIds.add(w.id);
-                        addItemWithMod(w.id, 'weapon', w.extra);
-                    });
-                });
-                pg.options.forEach(o => {
-                    o.skills?.forEach((s: { id: number; extra?: number[] }) => {
-                        unit.allSkillIds.add(s.id);
-                        addItemWithMod(s.id, 'skill', s.extra);
-                    });
-                    o.equip?.forEach((e: { id: number; extra?: number[] }) => {
-                        unit.allEquipmentIds.add(e.id);
-                        addItemWithMod(e.id, 'equipment', e.extra);
-                    });
-                    o.weapons?.forEach((w: { id: number; extra?: number[] }) => {
-                        unit.allWeaponIds.add(w.id);
-                        addItemWithMod(w.id, 'weapon', w.extra);
-                    });
+            let minPts = Infinity;
+            let maxPts = -Infinity;
 
-                    if (o.points !== undefined) {
+            for (const pg of u.profileGroups) {
+                for (const p of pg.profiles) {
+                    for (const s of p.skills) {
+                        unit.allSkillIds.add(s.id);
+                        addItem(s.id, 'skill', s.name, s.modifiers);
+                    }
+                    for (const e of p.equipment) {
+                        unit.allEquipmentIds.add(e.id);
+                        addItem(e.id, 'equipment', e.name, e.modifiers);
+                    }
+                    for (const w of p.weapons) {
+                        unit.allWeaponIds.add(w.id);
+                        addItem(w.id, 'weapon', w.name, w.modifiers);
+                    }
+                }
+
+                for (const o of pg.options) {
+                    for (const s of o.skills) {
+                        unit.allSkillIds.add(s.id);
+                        addItem(s.id, 'skill', s.name, s.modifiers);
+                    }
+                    for (const e of o.equipment) {
+                        unit.allEquipmentIds.add(e.id);
+                        addItem(e.id, 'equipment', e.name, e.modifiers);
+                    }
+                    for (const w of o.weapons) {
+                        unit.allWeaponIds.add(w.id);
+                        addItem(w.id, 'weapon', w.name, w.modifiers);
+                    }
+
+                    // Only count non-disabled options toward points range
+                    if (!pg.isPeripheral && !o.disabled && o.points > 0) {
                         if (o.points < minPts) minPts = o.points;
                         if (o.points > maxPts) maxPts = o.points;
                     }
-                });
-            });
-
-            // Populate allItemsWithMods with names
-            for (const item of itemsWithModsMap.values()) {
-                let name = '';
-                switch (item.type) {
-                    case 'skill': name = this.skillMap.get(item.id) || `Skill ${item.id}`; break;
-                    case 'equipment': name = this.equipmentMap.get(item.id) || `Equipment ${item.id}`; break;
-                    case 'weapon': name = this.weaponMap.get(item.id) || `Weapon ${item.id}`; break;
                 }
-                unit.allItemsWithMods.push({
-                    id: item.id,
-                    name,
-                    type: item.type,
-                    modifiers: item.modifiers
-                });
             }
 
+            unit.allItemsWithMods = Array.from(itemsWithModsMap.values());
             unit.pointsRange = [
                 minPts === Infinity ? 0 : minPts,
-                maxPts === -Infinity ? 0 : maxPts
+                maxPts === -Infinity ? 0 : maxPts,
             ];
 
             this.unitsByISC.set(u.isc, unit);
@@ -314,7 +307,6 @@ export abstract class BaseDatabase {
 
         return this.units.filter(unit => {
             const filterResults = filters.map(filter => {
-                // Skip stat filters - they're handled differently
                 if (filter.type === 'stat') return true;
 
                 const matchingItems = unit.allItemsWithMods.filter(item => {
@@ -392,12 +384,7 @@ export abstract class BaseDatabase {
             if (aIsBase && !bIsBase && a.name === b.name) return -1;
             if (!aIsBase && bIsBase && a.name === b.name) return 1;
 
-            const nameCompare = a.name.localeCompare(b.name);
-            if (nameCompare !== 0) return nameCompare;
-
-            const aMod = a.modifiers[0] || 0;
-            const bMod = b.modifiers[0] || 0;
-            return bMod - aMod;
+            return a.name.localeCompare(b.name);
         });
     }
 
@@ -412,20 +399,22 @@ export abstract class BaseDatabase {
                 const key = `${item.type}-${item.id}-${modKey}`;
 
                 if (!variants.has(key)) {
-                    const modDisplay = this.formatModifier(item.modifiers);
+                    const displayName = item.modifiers.length > 0
+                        ? `${item.name}(${item.modifiers.join(', ')})`
+                        : item.name;
                     variants.set(key, {
                         id: item.id,
                         name: item.name,
-                        displayName: modDisplay ? `${item.name}${modDisplay}` : item.name,
+                        displayName,
                         type: item.type,
                         modifiers: item.modifiers,
-                        isAnyVariant: false
+                        isAnyVariant: false,
                     });
                 }
             }
         }
 
-        // Add "any variant" options
+        // Add "any variant" options for items that have modifier variants
         const baseItems = new Map<string, { id: number; name: string; type: 'weapon' | 'skill' | 'equipment'; hasModifiers: boolean }>();
         for (const v of variants.values()) {
             const baseKey = `${v.type}-${v.id}`;
@@ -445,22 +434,13 @@ export abstract class BaseDatabase {
                     displayName: `${item.name} (any)`,
                     type: item.type,
                     modifiers: [],
-                    isAnyVariant: true
+                    isAnyVariant: true,
                 });
             }
         }
 
         this.cachedVariants = Array.from(variants.values());
         return this.cachedVariants;
-    }
-
-    protected formatModifier(mods: number[]): string {
-        if (mods.length === 0) return '';
-        const parts = mods.map(modId => {
-            const displayValue = this.getExtraName(modId);
-            return displayValue ? `(${displayValue})` : `(${modId})`;
-        });
-        return parts.join(' ');
     }
 
     // ========================================================================
@@ -487,22 +467,9 @@ export abstract class BaseDatabase {
         }
     }
 
-    getExtraName(id: number): string | undefined {
-        const name = this.extrasMap.get(id);
-        if (!name) return undefined;
-
-        // Convert distance modifiers from cm to inches
-        if (this.distanceExtras.has(id)) {
-            const match = name.match(/^([+-]?)(\d+\.?\d*)$/);
-            if (match) {
-                const sign = match[1] || '';
-                const cmValue = parseFloat(match[2]);
-                const inchValue = Math.round(cmValue * 0.4);
-                return `${sign}${inchValue}"`;
-            }
-        }
-
-        return name;
+    /** @deprecated Modifiers are now stored as display strings directly on items */
+    getExtraName(_id: number): string | undefined {
+        return undefined;
     }
 
     // ========================================================================
@@ -516,15 +483,10 @@ export abstract class BaseDatabase {
     getRuleSummary(type: 'skill' | 'equipment', id: number): RuleSummary | undefined {
         if (!this.ruleSummaries) return undefined;
         const idStr = String(id);
-        if (type === 'skill') {
-            return this.ruleSummaries.skills[idStr];
-        } else {
-            return this.ruleSummaries.equipment[idStr];
-        }
+        return type === 'skill' ? this.ruleSummaries.skills[idStr] : this.ruleSummaries.equipment[idStr];
     }
 
     hasRuleSummaries(): boolean {
         return this.ruleSummaries !== null;
     }
 }
-

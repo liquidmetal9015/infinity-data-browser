@@ -1,7 +1,8 @@
 // list-scoring.ts - Army list scoring and analysis
 // Evaluates lists on multiple dimensions for MCP tools
 
-import type { Unit, Profile, Option } from './types';
+import type { Unit } from './types';
+import type { Profile, Loadout as Option } from './game-model.js';
 import type { UnitRoleAnalysis, RoleScore } from './unit-roles';
 import { classifyUnit } from './unit-roles';
 import type { ClassifiedObjective } from './classifieds';
@@ -89,19 +90,12 @@ export interface ListAnalysis {
     strengths: string[];
 }
 
-export interface ScoringMetadata {
-    skills: Map<number, string>;
-    weapons: Map<number, { name: string; burst?: string; damage?: string; distance?: { med?: { max: number } } }>;
-    equips: Map<number, string>;
-}
-
 /**
  * Score a list of units on multiple dimensions.
  */
 export function scoreList(
     units: Array<{ unit: Unit; profile: Profile; option: Option }>,
     classifieds: ClassifiedObjective[],
-    metadata: ScoringMetadata,
     _pointsLimit: number = 300
 ): ListScore {
     const listUnits: ScoredListUnit[] = units.map(({ unit, profile, option }) => ({
@@ -109,7 +103,7 @@ export function scoreList(
         profile,
         option,
         isc: unit.isc,
-        roleAnalysis: classifyUnit(unit, profile, option, metadata)
+        roleAnalysis: classifyUnit(unit, profile, option)
     }));
 
     // Calculate basic stats
@@ -118,8 +112,8 @@ export function scoreList(
     const modelCount = listUnits.length;
 
     // Order economy (simplified - assumes 1 order per unit)
-    const regularOrders = listUnits.length; // Simplified
-    const irregularOrders = 0; // Would need to check skills
+    const regularOrders = listUnits.length;
+    const irregularOrders = 0;
     const totalOrders = regularOrders + irregularOrders;
     const orderEfficiency = (totalOrders / totalPoints) * 50;
 
@@ -134,7 +128,6 @@ export function scoreList(
         if (u.roleAnalysis.primaryRole === 'gunfighter') gunfighterCount++;
         if (u.roleAnalysis.primaryRole === 'melee') meleeCount++;
 
-        // Rough burst estimate
         const hasHeavyWeapon = u.roleAnalysis.roles.find((r: RoleScore) => r.role === 'heavy')?.score || 0;
         totalBurst += hasHeavyWeapon > 20 ? 4 : 3;
     }
@@ -193,13 +186,7 @@ export function scoreList(
     const completableClassifieds: string[] = [];
 
     for (const u of listUnits) {
-        const matches = getClassifiedsForOption(
-            u.unit,
-            u.profile,
-            u.option,
-            classifieds,
-            metadata
-        );
+        const matches = getClassifiedsForOption(u.unit, u.profile, u.option, classifieds);
         for (const m of matches) {
             if (m.canComplete) {
                 allClassifiedMatches.add(m.objectiveId);
@@ -277,7 +264,6 @@ export function compareLists(
         units: Array<{ unit: Unit; profile: Profile; option: Option }>;
     },
     classifieds: ClassifiedObjective[],
-    metadata: ScoringMetadata,
     pointsLimit: number = 300
 ): {
     list1: { name: string; score: ListScore };
@@ -291,8 +277,8 @@ export function compareLists(
     }[];
     summary: string;
 } {
-    const score1 = scoreList(list1.units, classifieds, metadata, pointsLimit);
-    const score2 = scoreList(list2.units, classifieds, metadata, pointsLimit);
+    const score1 = scoreList(list1.units, classifieds, pointsLimit);
+    const score2 = scoreList(list2.units, classifieds, pointsLimit);
 
     const comparisons = [
         { dimension: 'Overall', list1Value: score1.overallScore, list2Value: score2.overallScore },

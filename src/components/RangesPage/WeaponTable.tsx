@@ -1,7 +1,9 @@
 // Weapon Stats Table Component
+import { clsx } from 'clsx';
 import * as d3 from 'd3';
 import type { ParsedWeapon } from './types';
 import { RANGE_BANDS } from './types';
+import styles from '../../pages/RangesPage.module.css';
 
 interface WeaponTableProps {
     weapons: ParsedWeapon[];
@@ -12,8 +14,8 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
     if (weapons.length === 0) return null;
 
     return (
-        <div className="stats-section">
-            <table className="weapon-table">
+        <div className={styles.statsSection}>
+            <table className={styles.weaponTable}>
                 <thead>
                     <tr>
                         <th style={{ width: '20%' }}>Name</th>
@@ -32,40 +34,37 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
                         const color = d3.schemeCategory10[i % 10];
                         return (
                             <tr key={w.id}>
-                                <td className="weapon-cell-name">
-                                    <div className="color-indicator" style={{ background: color }}></div>
+                                <td className={styles.weaponCellName}>
+                                    <div className={styles.colorIndicator} style={{ background: color }}></div>
                                     <span style={{ fontWeight: 600 }}>{w.name}</span>
                                 </td>
-                                <td className="weapon-cell-ranges">
-                                    <div className="range-strip-row">
+                                <td>
+                                    <div className={styles.rangeStripRow}>
                                         {RANGE_BANDS.slice(0, 7).map((band, idx) => {
                                             const samplePoint = band.start + 1;
                                             const bandMod = w.bands.find(b => b.start < samplePoint && b.end >= samplePoint)?.mod ?? null;
 
-                                            let modClass = 'mod-0';
+                                            let modClass = styles.mod0;
                                             let content: string | number = '-';
 
-                                            // Template Handling
                                             if (w.templateType && w.templateType !== 'none') {
                                                 const tLen = w.templateType === 'small' ? 8.4 : 10.2;
                                                 if (band.start < tLen) {
-                                                    modClass = 'mod-template';
+                                                    modClass = styles.modTemplate;
                                                     content = 'DT';
                                                 } else {
-                                                    modClass = 'mod-none';
+                                                    modClass = styles.modNone;
                                                     content = '-';
                                                 }
                                             } else {
                                                 if (bandMod === null) {
-                                                    modClass = 'mod-none';
+                                                    modClass = styles.modNone;
                                                     content = '-';
-                                                }
-                                                else if (bandMod > 0) {
-                                                    modClass = 'mod-pos';
+                                                } else if (bandMod > 0) {
+                                                    modClass = styles.modPos;
                                                     content = `+${bandMod}`;
-                                                }
-                                                else if (bandMod < 0) {
-                                                    modClass = 'mod-neg';
+                                                } else if (bandMod < 0) {
+                                                    modClass = styles.modNeg;
                                                     content = bandMod;
                                                 } else {
                                                     content = '0';
@@ -73,10 +72,10 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
                                             }
 
                                             return (
-                                                <div key={idx} className={`range-cell ${modClass}`} title={band.label}>
+                                                <div key={idx} className={clsx(styles.rangeCell, modClass)} title={band.label}>
                                                     {content}
                                                 </div>
-                                            )
+                                            );
                                         })}
                                     </div>
                                 </td>
@@ -85,14 +84,14 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
                                 <td className="text-center text-sm">{w.ammunition}</td>
                                 <td className="text-center text-sm">{w.saving}</td>
                                 <td className="text-center text-sm">{w.savingNum || '-'}</td>
-                                <td className="weapon-cell-traits">
-                                    <div className="traits-list">
-                                        {w.properties.map(p => <span key={p} className="trait-text">{p}</span>)}
+                                <td>
+                                    <div className={styles.traitsList}>
+                                        {w.properties.map(p => <span key={p} className={styles.traitText}>{p}</span>)}
                                     </div>
                                 </td>
                                 <td>
                                     <button
-                                        className="remove-row-btn"
+                                        className={styles.removeRowBtn}
                                         onClick={() => onRemoveWeapon(w.id)}
                                     >×</button>
                                 </td>

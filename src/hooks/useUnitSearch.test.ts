@@ -30,7 +30,7 @@ const mockUnits: Unit[] = [
                             bts: 0,
                             w: 1,
                             s: 2,
-                            move: [10, 10] // 20cm = 8 inches
+                            move: [4, 4] // 4" move values (already in inches)
                         }
                     ],
                     options: []
@@ -61,7 +61,7 @@ const mockUnits: Unit[] = [
                             bts: 0,
                             w: 1,
                             s: 2,
-                            move: [15, 10] // 25cm = 10 inches
+                            move: [6, 4] // 6-4" move values (already in inches)
                         }
                     ],
                     options: []
@@ -84,14 +84,12 @@ const mockDb: IDatabase = {
     factionHasData: () => true,
     getSuggestions: () => [],
     factionMap: new Map(),
-    extrasMap: new Map(),
     weaponMap: new Map(),
     skillMap: new Map(),
     equipmentMap: new Map(),
     getFireteamChart: vi.fn(() => undefined),
     getUnitBySlug: () => undefined,
     getWikiLink: vi.fn(),
-    getExtraName: () => undefined,
     getWeaponDetails: () => undefined
 };
 
@@ -186,8 +184,8 @@ describe('useUnitSearch', () => {
             });
         });
 
-        // Unit A: 20cm = 8 inches. Unit B: 25cm = 10 inches.
-        // Should match Unit B only.
+        // Unit A: MOV [4, 4] total = 8. Unit B: MOV [6, 4] total = 10.
+        // Should match Unit B only (total >= 10).
         expect(result.current.filteredUnits).toHaveLength(1);
         expect(result.current.filteredUnits[0].name).toBe('Unit B');
     });
@@ -254,8 +252,8 @@ describe('useUnitSearch', () => {
             });
         });
 
-        // Unit A: [10, 10]cm -> 4 inches. Unit B: [15, 10]cm -> 6 inches.
-        // MOV-1 > 5 should match Unit B (6").
+        // Unit A: [4, 4]. Unit B: [6, 4].
+        // MOV-1 > 5 should match Unit B (6).
         expect(result.current.filteredUnits).toHaveLength(1);
         expect(result.current.filteredUnits[0].name).toBe('Unit B');
     });
@@ -276,7 +274,7 @@ describe('useUnitSearch', () => {
             });
         });
 
-        // Unit A: [10, 10]cm -> 4 inches. Unit B: [15, 10]cm -> 4 inches.
+        // Unit A: [4, 4]. Unit B: [6, 4].
         // Both match MOV-2 = 4.
         expect(result.current.filteredUnits).toHaveLength(2);
     });

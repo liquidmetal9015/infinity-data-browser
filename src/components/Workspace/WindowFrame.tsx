@@ -4,7 +4,8 @@ import { Minus, X, Maximize, Minimize, PanelLeft, PanelRight } from 'lucide-reac
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import type { WindowState } from '../../types/workspace';
 import { MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../../types/workspace';
-import './WindowFrame.css';
+import { clsx } from 'clsx';
+import styles from './WindowFrame.module.css';
 
 interface WindowFrameProps {
     window: WindowState;
@@ -165,7 +166,13 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
     return (
         <div
             ref={frameRef}
-            className={`window-frame ${isFocused ? 'focused' : ''} ${win.isMinimized ? 'minimized' : ''} ${isMaximized ? 'maximized' : ''} ${isHidden ? 'hidden-tab' : ''}`}
+            className={clsx(
+                styles.windowFrame,
+                isFocused && styles.focused,
+                win.isMinimized && styles.minimized,
+                isMaximized && styles.maximized,
+                isHidden && styles.hiddenTab,
+            )}
             style={{
                 left: win.position.x,
                 top: win.position.y,
@@ -177,40 +184,40 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
         >
             {/* Title Bar - Only show in Multi-Window mode */}
             {!isMaximized && (
-                <div className="window-titlebar" onMouseDown={handleDragStart}>
-                    {icon && <div className="window-titlebar-icon">{icon}</div>}
-                    <div className="window-title">{win.title}</div>
-                    <div className="window-controls">
+                <div className={styles.windowTitlebar} onMouseDown={handleDragStart}>
+                    {icon && <div className={styles.windowTitlebarIcon}>{icon}</div>}
+                    <div className={styles.windowTitle}>{win.title}</div>
+                    <div className={styles.windowControls}>
                         <button
-                            className="window-control-btn snap-left"
+                            className={styles.windowControlBtn}
                             onClick={(e) => { e.stopPropagation(); snapWindow(win.id, 'left'); }}
                             title="Snap Left"
                         >
                             <PanelLeft size={14} />
                         </button>
                         <button
-                            className="window-control-btn snap-right"
+                            className={styles.windowControlBtn}
                             onClick={(e) => { e.stopPropagation(); snapWindow(win.id, 'right'); }}
                             title="Snap Right"
                         >
                             <PanelRight size={14} />
                         </button>
                         <button
-                            className="window-control-btn minimize"
+                            className={styles.windowControlBtn}
                             onClick={(e) => { e.stopPropagation(); minimizeWindow(win.id); }}
                             title="Minimize"
                         >
                             <Minus size={14} />
                         </button>
                         <button
-                            className="window-control-btn maximize"
+                            className={styles.windowControlBtn}
                             onClick={(e) => { e.stopPropagation(); toggleMaximize(win.id); }}
                             title={isMaximized ? "Restore" : "Maximize"}
                         >
                             {isMaximized ? <Minimize size={14} /> : <Maximize size={14} />}
                         </button>
                         <button
-                            className="window-control-btn close"
+                            className={clsx(styles.windowControlBtn, styles.close)}
                             onClick={(e) => { e.stopPropagation(); closeWindow(win.id); }}
                             title="Close"
                         >
@@ -221,7 +228,7 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
             )}
 
             {/* Content */}
-            <div className="window-content">
+            <div className={styles.windowContent}>
                 {children}
             </div>
 
@@ -229,16 +236,16 @@ export function WindowFrame({ window: win, icon, isFocused, children }: WindowFr
             {!isMaximized && (
                 <>
                     {/* Edges */}
-                    <div className="window-resize-handle resize-edge-top" onMouseDown={(e) => handleResizeStart(e, 'n')} />
-                    <div className="window-resize-handle resize-edge-bottom" onMouseDown={(e) => handleResizeStart(e, 's')} />
-                    <div className="window-resize-handle resize-edge-left" onMouseDown={(e) => handleResizeStart(e, 'w')} />
-                    <div className="window-resize-handle resize-edge-right" onMouseDown={(e) => handleResizeStart(e, 'e')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeEdgeTop)} onMouseDown={(e) => handleResizeStart(e, 'n')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeEdgeBottom)} onMouseDown={(e) => handleResizeStart(e, 's')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeEdgeLeft)} onMouseDown={(e) => handleResizeStart(e, 'w')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeEdgeRight)} onMouseDown={(e) => handleResizeStart(e, 'e')} />
 
                     {/* Corners */}
-                    <div className="window-resize-handle resize-corner-tl" onMouseDown={(e) => handleResizeStart(e, 'nw')} />
-                    <div className="window-resize-handle resize-corner-tr" onMouseDown={(e) => handleResizeStart(e, 'ne')} />
-                    <div className="window-resize-handle resize-corner-bl" onMouseDown={(e) => handleResizeStart(e, 'sw')} />
-                    <div className="window-resize-handle resize-corner-br" onMouseDown={(e) => handleResizeStart(e, 'se')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeCornerTl)} onMouseDown={(e) => handleResizeStart(e, 'nw')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeCornerTr)} onMouseDown={(e) => handleResizeStart(e, 'ne')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeCornerBl)} onMouseDown={(e) => handleResizeStart(e, 'sw')} />
+                    <div className={clsx(styles.windowResizeHandle, styles.resizeCornerBr)} onMouseDown={(e) => handleResizeStart(e, 'se')} />
                 </>
             )}
         </div>

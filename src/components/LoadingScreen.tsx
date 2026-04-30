@@ -19,12 +19,6 @@ export const LoadingScreen: React.FC = () => {
             <div className="loading-subtext" style={{ marginTop: '0.5rem', color: 'var(--text-secondary)' }}>
                 Loading unit data
             </div>
-            <style>{`
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
         </div>
     );
 };

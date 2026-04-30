@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Unit } from '@shared/types';
+import type { ArmyList } from '@shared/listTypes';
 import { listReducer, initialState, type ListState, type ListAction } from '@shared/listLogic';
 
 // ============================================================================
@@ -29,7 +30,11 @@ interface ListStore extends ListState {
     moveFireteam: (fromGroupIndex: number, toGroupIndex: number, fireteamId: string, toIndex?: number) => void;
     updateListName: (name: string) => void;
     updatePointsLimit: (pointsLimit: number) => void;
+    updateDescription: (description: string) => void;
+    updateTags: (tags: string[]) => void;
     resetList: () => void;
+    loadList: (list: ArmyList) => void;
+    setServerId: (serverId: number) => void;
 }
 
 // ============================================================================
@@ -100,8 +105,20 @@ export const useListStore = create<ListStore>()(
             updatePointsLimit: (pointsLimit) =>
                 set(s => dispatch(s, { type: 'UPDATE_POINTS_LIMIT', pointsLimit })),
 
+            updateDescription: (description) =>
+                set(s => dispatch(s, { type: 'UPDATE_DESCRIPTION', description })),
+
+            updateTags: (tags) =>
+                set(s => dispatch(s, { type: 'UPDATE_TAGS', tags })),
+
             resetList: () =>
                 set(s => dispatch(s, { type: 'RESET_LIST' })),
+
+            loadList: (list) =>
+                set(s => dispatch(s, { type: 'LOAD_LIST', list })),
+
+            setServerId: (serverId) =>
+                set(s => dispatch(s, { type: 'SET_SERVER_ID', serverId })),
         }),
         {
             name: 'infinity-list-state',

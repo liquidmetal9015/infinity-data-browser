@@ -12,7 +12,8 @@ import {
 import { useRangesStore } from '../stores/useRangesStore';
 import { useBestWeapons } from '../hooks/useBestWeapons';
 import type { ParsedWeapon } from '../../shared/types';
-import './RangesPage.css';
+import { clsx } from 'clsx';
+import styles from './RangesPage.module.css';
 
 export function RangesPage() {
     const db = useDatabase();
@@ -185,8 +186,8 @@ export function RangesPage() {
     // toggleWeapon is now provided by the store
 
     return (
-        <div className="page-container ranges-page">
-            <div className="ranges-layout">
+        <div className={clsx('page-container', styles.rangesPage)}>
+            <div className={styles.rangesLayout}>
                 <WeaponSidebar
                     weaponSearch={weaponSearch}
                     setWeaponSearch={setWeaponSearch}
@@ -200,15 +201,15 @@ export function RangesPage() {
                     onViewUnit={openUnitModal}
                 />
 
-                <div className="chart-area" ref={containerRef}>
+                <div className={styles.chartArea} ref={containerRef}>
                     {selectedWeapons.length === 0 ? (
-                        <div key="empty-chart" className="empty-chart">
+                        <div key="empty-chart" className={styles.emptyChart}>
                             <Info size={48} />
                             <p>Select a unit or weapons to visualize ranges.</p>
                         </div>
                     ) : (
                         <>
-                            <div key="d3-container" className="d3-container" ref={graphRef}></div>
+                            <div key="d3-container" className={styles.d3Container} ref={graphRef}></div>
                             <BestWeaponsBar bestWeapons={bestWeapons} selectedWeapons={selectedWeapons} />
                             <WeaponTable weapons={selectedWeapons} onRemoveWeapon={toggleWeapon} />
                         </>

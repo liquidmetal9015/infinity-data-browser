@@ -1,4 +1,4 @@
-.PHONY: setup dev lint test
+.PHONY: setup dev migrate lint test
 .DEFAULT_GOAL := help
 
 # Colors
@@ -19,7 +19,11 @@ setup: ## Fully bootstrap the local development environment
 	@echo "$(GREEN)Environment flawlessly bootstrapped! 🎉$(RESET)"
 
 ##@ Development
-dev: ## Concurrent launch of the Vite frontend and Uvicorn backend
+migrate: ## Run pending Alembic migrations
+	@echo "$(GREEN)Running database migrations...$(RESET)"
+	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
+
+dev: migrate ## Concurrent launch of the Vite frontend and Uvicorn backend
 	@echo "$(GREEN)Starting Development Servers...$(RESET)"
 	docker compose up -d db
 	npx concurrently -k -c "blue.bold,green.bold" \

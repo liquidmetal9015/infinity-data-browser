@@ -1,6 +1,7 @@
 import { DatabaseAdapter } from './DatabaseAdapter.js';
 import type { DecodedArmyList, DecodedMember } from '../shared/armyCode.js';
-import type { HydratedList, HydratedGroup, HydratedUnit, HydratedItem, Profile, Option, Unit } from './types.js';
+import type { HydratedList, HydratedGroup, HydratedUnit, HydratedItem, Unit } from './types.js';
+import type { Profile, Loadout as Option, SkillInstance, EquipmentInstance, WeaponInstance } from '../shared/game-model.js';
 
 export function hydrateList(decoded: DecodedArmyList): HydratedList {
     const db = DatabaseAdapter.getInstance();
@@ -22,12 +23,6 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
                 // Try to find the specific profile group
                 let profileGroup = unit.raw.profileGroups.find(pg => pg.id === member.groupChoice);
 
-                // If not found (or if we need to search broader due to some legacy/weird code), we can do a broader search later
-                // But for now let's proceed.
-
-                // The army code provides optionChoice (Option ID).
-                // We need to find the specific option. 
-                // If profileGroup failed, we can search all groups.
                 let option;
 
                 if (profileGroup) {
@@ -47,7 +42,6 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
                     return createUnknownUnit(member, `${unit.name} (Option ${member.optionChoice}?)`);
                 }
 
-                // Heuristic: Use first profile in group.
                 const profile = profileGroup.profiles[0];
 
                 if (!profile) {
@@ -55,7 +49,6 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
                 }
 
                 totalPoints += option.points;
-                // Ensure SWC is treated as a number
                 const swcVal = typeof option.swc === 'string' ? parseFloat(option.swc) : (option.swc || 0);
                 totalSwc += swcVal;
 
@@ -78,7 +71,7 @@ export function hydrateList(decoded: DecodedArmyList): HydratedList {
         points: totalPoints,
         maxPoints: decoded.maxPoints,
         swc: totalSwc,
-        maxSwc: decoded.maxPoints / 50, // Standard rule
+        maxSwc: decoded.maxPoints / 50,
         groups
     };
 }
@@ -98,6 +91,42 @@ function createUnknownUnit(member: DecodedMember, name: string = 'Unknown Unit')
     };
 }
 
+function resolveSkill(db: DatabaseAdapter, s: SkillInstance): HydratedItem {
+    const displayName = s.displayName || (s.modifiers?.length ? `${s.name} (${s.modifiers.join(', ')})` : s.name);
+    const wiki = db.metadata?.skills.find(m => m.id === s.id)?.wiki;
+    const ruleSummary = db.getRuleSummary('skill', s.id);
+    return {
+        name: displayName,
+        wiki,
+        modifiers: s.modifiers || [],
+        summary: ruleSummary?.summary,
+    };
+}
+
+function resolveEquipment(db: DatabaseAdapter, e: EquipmentInstance): HydratedItem {
+    const displayName = e.modifiers?.length ? `${e.name} (${e.modifiers.join(', ')})` : e.name;
+    const wiki = db.metadata?.equips.find(m => m.id === e.id)?.wiki;
+    const ruleSummary = db.getRuleSummary('equipment', e.id);
+    return {
+        name: displayName,
+        wiki,
+        modifiers: e.modifiers || [],
+        summary: ruleSummary?.summary,
+    };
+}
+
+function resolveWeapon(db: DatabaseAdapter, w: WeaponInstance): HydratedItem {
+    const displayName = w.modifiers?.length ? `${w.name} (${w.modifiers.join(', ')})` : w.name;
+    const wiki = db.metadata?.weapons.find(m => m.id === w.id)?.wiki;
+    const stats = db.getWeaponDetails(w.id);
+    return {
+        name: displayName,
+        wiki,
+        modifiers: w.modifiers || [],
+        stats,
+    };
+}
+
 export function hydrateUnit(
     db: DatabaseAdapter,
     unit: Unit,
@@ -105,91 +134,12 @@ export function hydrateUnit(
     option: Option,
     overrideSwc?: number
 ): HydratedUnit {
-    // Merge lists from Profile and Option (unit stats + loadout)
     const allWeapons = [...(profile.weapons || []), ...(option.weapons || [])];
     const allSkills = [...(profile.skills || []), ...(option.skills || [])];
-    const allEquip = [...(profile.equip || []), ...(option.equip || [])];
+    const allEquip = [...(profile.equipment || []), ...(option.equipment || [])];
 
-    // Helper to resolve items
-    const resolveItem = (itemRef: { id: number, extra?: number[] }, type: 'weapon' | 'skill' | 'equipment'): HydratedItem => {
-        let name = 'Unknown';
-        let wiki = undefined;
-        let map: Map<number, string>;
-        let metaList: { id: number, name: string, wiki?: string }[] | undefined;
-
-        switch (type) {
-            case 'weapon':
-                map = db.weaponMap;
-                metaList = db.metadata?.weapons;
-                break;
-            case 'skill':
-                map = db.skillMap;
-                metaList = db.metadata?.skills;
-                break;
-            case 'equipment':
-                map = db.equipmentMap;
-                metaList = db.metadata?.equips;
-                break;
-        }
-
-        const baseName = map.get(itemRef.id);
-        if (baseName) name = baseName;
-
-        // Find wiki slug
-        const metaItem = metaList?.find(i => i.id === itemRef.id);
-        if (metaItem?.wiki) wiki = metaItem.wiki;
-
-        // Format modifiers
-        const modifiers: string[] = [];
-        if (itemRef.extra) {
-            itemRef.extra.forEach(modId => {
-                const extraName = db.getExtraName(modId);
-                if (extraName) modifiers.push(extraName);
-            });
-        }
-
-        // Get Rule Summary
-        let summary: string | undefined = undefined;
-        if (type === 'skill' || type === 'equipment') {
-            const ruleSummary = db.getRuleSummary(type, itemRef.id);
-            if (ruleSummary) summary = ruleSummary.summary;
-        }
-
-        // Fancy name composition
-        let displayName = name;
-        if (modifiers.length > 0) {
-            displayName += ` (${modifiers.join(', ')})`;
-        }
-
-        // Resolve Stats for Weapons
-        let stats;
-        if (type === 'weapon') {
-            stats = db.getWeaponDetails(itemRef.id);
-        }
-
-        return {
-            name: displayName,
-            wiki,
-            modifiers,
-            summary,
-            stats
-        };
-    };
-
-    // Format Move
-    const move = profile.move.map(m => {
-        // Assume data is in cm, convert to inches if needed (standard is 4-4 usually which is inches, but data might be cm?)
-        // Let's check a known unit. Fusilier is 4-4 inches.
-        // In database, move is array of numbers.
-        // If it's [10, 10], that's cm. If it's [4, 4], that's inches.
-        // Standard CB API often uses cm.
-        // Let's assume we function same as `getUnitDetails` tool or similar?
-        // `DatabaseAdapter.ts` helper `getExtraName` converts CM to Inches.
-        // Let's assume raw profile data might be CM.
-        // 10cm ~= 4 inches.
-        if (m >= 10) return Math.round(m * 0.4);
-        return m;
-    }).join('-');
+    // Move values are already in inches from ETL processing
+    const move = profile.move.join('-');
 
     return {
         isc: unit.isc,
@@ -197,7 +147,7 @@ export function hydrateUnit(
         points: option.points,
         swc: overrideSwc !== undefined ? overrideSwc : (typeof option.swc === 'string' ? parseFloat(option.swc) : (option.swc || 0)),
         profile: {
-            move: move,
+            move,
             cc: profile.cc,
             bs: profile.bs,
             ph: profile.ph,
@@ -206,10 +156,10 @@ export function hydrateUnit(
             bts: profile.bts,
             w: profile.w,
             s: profile.s,
-            str: profile.str || false
+            str: profile.isStructure || false
         },
-        weapons: allWeapons.map(w => resolveItem(w, 'weapon')),
-        skills: allSkills.map(s => resolveItem(s, 'skill')),
-        equipment: allEquip.map(e => resolveItem(e, 'equipment'))
+        weapons: allWeapons.map(w => resolveWeapon(db, w)),
+        skills: allSkills.map(s => resolveSkill(db, s)),
+        equipment: allEquip.map(e => resolveEquipment(db, e))
     };
 }

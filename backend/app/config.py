@@ -29,5 +29,8 @@ class Settings(BaseSettings):
     # Data directory (where the JSON files live, relative to project root)
     data_dir: str = "../data"
 
+    # Dev auth bypass — skip Firebase token verification in local development
+    dev_auth: bool = False
+
 
 settings = Settings()

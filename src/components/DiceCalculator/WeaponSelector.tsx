@@ -3,7 +3,7 @@ import { useDatabase } from '../../hooks/useDatabase';
 import { Search, ChevronDown } from 'lucide-react';
 import type { ParsedWeapon } from '../../../shared/types';
 import type { WeaponProfile } from './types';
-import './WeaponSelector.css';
+import styles from './WeaponSelector.module.css';
 
 interface WeaponSelectorProps {
     onSelect: (weapon: ParsedWeapon, profile: WeaponProfile) => void;
@@ -57,12 +57,12 @@ export function WeaponSelector({ onSelect, placeholder = "Search weapons...", fi
     };
 
     return (
-        <div className="weapon-selector" ref={wrapperRef}>
-            <div className="search-input-wrapper">
-                <Search className="search-icon" size={16} />
+        <div className={styles.weaponSelector} ref={wrapperRef}>
+            <div className={styles.searchInputWrapper}>
+                <Search className={styles.searchIcon} size={16} />
                 <input
                     type="text"
-                    className="search-input"
+                    className={styles.searchInput}
                     placeholder={placeholder}
                     value={search}
                     onChange={e => {
@@ -73,16 +73,15 @@ export function WeaponSelector({ onSelect, placeholder = "Search weapons...", fi
                     onFocus={() => !disabled && setIsOpen(true)}
                     disabled={disabled}
                 />
-                <ChevronDown className="dropdown-icon" size={16} />
+                <ChevronDown className={styles.dropdownIcon} size={16} />
             </div>
 
             {isOpen && (
-                <div className="dropdown-menu">
+                <div className={styles.dropdownMenu}>
                     {filteredWeapons.length === 0 ? (
-                        <div className="no-results">No weapons found</div>
+                        <div className={styles.noResults}>No weapons found</div>
                     ) : (
                         filteredWeapons.map(weapon => {
-                            // Extract profiles manually from bands since `ParsedWeapon` holds bands for ranges
                             const mockProfile: WeaponProfile = {
                                 burst: parseInt(weapon.burst) || 1,
                                 damage: weapon.damage || '-',
@@ -93,7 +92,7 @@ export function WeaponSelector({ onSelect, placeholder = "Search weapons...", fi
                             return (
                                 <button
                                     key={weapon.id}
-                                    className="weapon-row-btn"
+                                    className={styles.weaponRowBtn}
                                     onClick={() => handleSelect(weapon, mockProfile)}
                                 >
                                     {weapon.name}

@@ -1,7 +1,8 @@
 // List types for army list building
 // Platform-agnostic types used by both frontend and MCP server
 
-import type { Unit, Profile, Option } from './types.js';
+import type { Unit } from './types.js';
+import type { Profile, Loadout } from './game-model.js';
 
 /**
  * Represents a single unit added to an army list.
@@ -66,6 +67,10 @@ export interface ArmyList {
     id: string;
     /** User-defined name for the list */
     name: string;
+    /** Optional description */
+    description?: string;
+    /** User-defined tags for organization */
+    tags: string[];
     /** The faction ID this list is built for */
     factionId: number;
     /** Target points limit (e.g., 300) */
@@ -78,6 +83,8 @@ export interface ArmyList {
     createdAt: number;
     /** Timestamp when last modified */
     updatedAt: number;
+    /** Backend-assigned ID once saved to the server */
+    serverId?: number;
 }
 
 /**
@@ -101,7 +108,7 @@ export function calculateListSWC(list: ArmyList): number {
  */
 export function getUnitDetails(unit: Unit, profileGroupId: number, profileId: number, optionId: number): {
     profile: Profile | undefined;
-    option: Option | undefined;
+    option: Loadout | undefined;
 } {
     const profileGroup = unit.raw.profileGroups.find(pg => pg.id === profileGroupId);
     const profile = profileGroup?.profiles.find(p => p.id === profileId);

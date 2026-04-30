@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
+import { clsx } from 'clsx';
 import { Info } from 'lucide-react';
 import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart, Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
 import { getUnitTags } from '@shared/fireteams';
+import styles from './FireteamsPage.module.css';
 
 interface UnitPerspectiveViewProps {
     chart: FireteamChart;
@@ -58,7 +60,7 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
     }, [chart]);
 
     return (
-        <div className="unit-perspective-list">
+        <div className={styles.unitPerspectiveList}>
             {units.map((unit: Unit) => {
                 const slug = unit.raw.slug || unit.isc.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                 const exactTeams = unitFireteamMap.get(slug) || [];
@@ -69,18 +71,18 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
                 exactTeams.sort((a, b) => a.name.localeCompare(b.name));
 
                 return (
-                    <div key={unit.id} className="unit-perspective-card">
-                        <div className="unit-info" style={{ display: 'flex', alignItems: 'center' }}>
+                    <div key={unit.id} className={styles.unitPerspectiveCard}>
+                        <div className={styles.unitInfo} style={{ display: 'flex', alignItems: 'center' }}>
                             {unit.name}
                             <button
-                                className="info-btn"
+                                className={styles.infoBtn}
                                 onClick={() => openUnitModal(unit)}
                                 title="View Unit Stats"
                             >
                                 <Info size={16} />
                             </button>
                         </div>
-                        <div className="teams-list">
+                        <div className={styles.teamsList}>
                             {exactTeams.map((team: Fireteam, idx) => {
                                 const teamSimple = team.name.toLowerCase();
 
@@ -103,12 +105,12 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
                                 const isNominalMember = countsAsMatch;
 
                                 return (
-                                    <div key={idx} className={`team-tag ${isNominalMember ? 'nominal-member' : ''} `}>
-                                        <div className="team-name">{team.name}</div>
-                                        <div className="team-types">
-                                            {team.type.includes('CORE') && <span className="type-badge core" title="Core">C</span>}
-                                            {team.type.includes('HARIS') && <span className="type-badge haris" title="Haris">H</span>}
-                                            {team.type.includes('DUO') && <span className="type-badge duo" title="Duo">D</span>}
+                                    <div key={idx} className={clsx(styles.teamTag, isNominalMember && styles.nominalMember)}>
+                                        <div className={styles.teamName}>{team.name}</div>
+                                        <div className={styles.teamTypes}>
+                                            {team.type.includes('CORE') && <span className={clsx(styles.typeBadge, styles.core)} title="Core">C</span>}
+                                            {team.type.includes('HARIS') && <span className={clsx(styles.typeBadge, styles.haris)} title="Haris">H</span>}
+                                            {team.type.includes('DUO') && <span className={clsx(styles.typeBadge, styles.duo)} title="Duo">D</span>}
                                         </div>
                                     </div>
                                 );

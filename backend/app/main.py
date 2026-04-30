@@ -17,7 +17,19 @@ from app.routers import factions, lists, metadata, search, units
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Startup / shutdown lifecycle."""
-    # Startup: nothing needed — DB connections are lazy via get_session
+    if settings.dev_auth:
+        from sqlalchemy.future import select
+
+        from app.auth import DEV_EMAIL, DEV_UID
+        from app.database import async_session_factory as AsyncSessionLocal
+        from app.models.user import User
+
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(User).where(User.id == DEV_UID))
+            if not result.scalars().first():
+                session.add(User(id=DEV_UID, email=DEV_EMAIL))
+                await session.commit()
+
     yield
     # Shutdown: dispose engine
     from app.database import engine

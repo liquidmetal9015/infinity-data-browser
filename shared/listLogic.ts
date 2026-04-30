@@ -31,7 +31,11 @@ export type ListAction =
     | { type: 'UPDATE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string; updates: Partial<import('./listTypes.js').FireteamDef> }
     | { type: 'REMOVE_FIRETEAM_DEF'; groupIndex: number; fireteamId: string }
     | { type: 'MOVE_FIRETEAM'; fromGroupIndex: number; toGroupIndex: number; fireteamId: string; toIndex?: number }
-    | { type: 'RESET_LIST' };
+    | { type: 'RESET_LIST' }
+    | { type: 'LOAD_LIST'; list: ArmyList }
+    | { type: 'SET_SERVER_ID'; serverId: number }
+    | { type: 'UPDATE_DESCRIPTION'; description: string }
+    | { type: 'UPDATE_TAGS'; tags: string[] };
 
 export const initialState: ListState = {
     currentList: null,
@@ -73,6 +77,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 factionId: action.factionId,
                 pointsLimit,
                 swcLimit: pointsLimit / 50,
+                tags: [],
                 groups: [
                     {
                         id: generateId(),
@@ -110,12 +115,11 @@ export function listReducer(state: ListState, action: ListAction): ListState {
 
             // Auto-attach peripheral units (e.g., Crabbots for TAGs)
             const peripherals: ListUnit[] = [];
-            for (let i = 1; i < unit.raw.profileGroups.length; i++) {
-                const pg = unit.raw.profileGroups[i];
+            for (const pg of unit.raw.profileGroups) {
+                if (!pg.isPeripheral) continue;
                 const pProfile = pg.profiles?.[0];
                 const pOption = pg.options?.[0];
-                // Peripheral heuristic: secondary group, type=5 (REM), single low-cost option
-                if (pProfile?.type === 5 && pg.options?.length === 1 && (pOption?.points ?? 999) <= 5) {
+                if (pProfile && pOption) {
                     peripherals.push({
                         id: generateId(),
                         unit,
@@ -378,6 +382,25 @@ export function listReducer(state: ListState, action: ListAction): ListState {
 
         case 'RESET_LIST': {
             return { ...state, currentList: null };
+        }
+
+        case 'LOAD_LIST': {
+            return { ...state, currentList: action.list };
+        }
+
+        case 'SET_SERVER_ID': {
+            if (!state.currentList) return state;
+            return { ...state, currentList: { ...state.currentList, serverId: action.serverId } };
+        }
+
+        case 'UPDATE_DESCRIPTION': {
+            if (!state.currentList) return state;
+            return { ...state, currentList: { ...state.currentList, description: action.description } };
+        }
+
+        case 'UPDATE_TAGS': {
+            if (!state.currentList) return state;
+            return { ...state, currentList: { ...state.currentList, tags: action.tags } };
         }
 
         default:

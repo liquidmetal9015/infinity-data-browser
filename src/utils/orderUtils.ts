@@ -1,4 +1,5 @@
-import type { Profile, Option } from '../../shared/types';
+import type { Profile } from '../../shared/types';
+import type { Loadout as Option } from '../../shared/game-model';
 
 export type OrderType = 'regular' | 'irregular' | 'impetuous' | 'lieutenant' | 'tactical-awareness';
 

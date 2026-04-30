@@ -1,0 +1,170 @@
+/* Workspace View - Main canvas and launcher bar */
+
+.workspace-view {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(14, 165, 233, 0.03) 0%, transparent 50%),
+        var(--bg-primary, #0a0a0b);
+}
+
+/* Dot grid background pattern */
+.workspace-canvas {
+    position: absolute;
+    inset: 0;
+    /* Leave room for launcher */
+    background-image: radial-gradient(circle, var(--border, #334155) 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    opacity: 0.4;
+}
+
+/* Windows layer */
+.workspace-windows {
+    position: absolute;
+    inset: 0;
+}
+
+/* Empty state */
+.workspace-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    pointer-events: none;
+}
+
+.workspace-empty-icon {
+    color: var(--text-secondary, #64748b);
+    opacity: 0.3;
+}
+
+.workspace-empty-text {
+    font-size: 1.1rem;
+    color: var(--text-secondary, #64748b);
+    opacity: 0.5;
+    font-weight: 500;
+}
+
+.workspace-empty-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #64748b);
+    opacity: 0.3;
+}
+
+/* ── Columns layout mode ─────────────────────────────────────────────────── */
+
+.workspace-columns {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Desktop: display:contents makes the track invisible to flex layout */
+.workspace-columns-track {
+    display: contents;
+}
+
+.workspace-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* ── Mobile carousel ────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .workspace-columns-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .workspace-column {
+        flex: 0 0 100vw;
+        min-width: 100vw;
+    }
+
+    .column-divider {
+        display: none;
+    }
+
+    .mobile-column-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.2s;
+    }
+
+    .dot-active {
+        background: rgba(255, 255, 255, 0.85);
+    }
+}
+
+.column-divider {
+    width: 5px;
+    flex-shrink: 0;
+    background: var(--border, #334155);
+    cursor: col-resize;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.column-divider:hover,
+.column-divider:active {
+    background: #4f6070;
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-tertiary, #0f172a);
+    border-bottom: 1px solid var(--border, #334155);
+    color: var(--text-secondary, #64748b);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.column-content {
+    flex: 1;
+    min-height: 0;
+    height: 0; /* forces children to derive height from flex, not content */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Stretch the panel component to fill the column */
+.column-content > * {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}

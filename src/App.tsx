@@ -4,6 +4,10 @@ import { NavBar } from './components/NavBar';
 import { ContextMenu } from './components/ContextMenu';
 import { Routes, Route } from 'react-router-dom';
 import { MyLists } from './pages/MyLists';
+import { SearchPage } from './pages/SearchPage';
+import { ReferencePage } from './pages/ReferencePage';
+import { RangesPage } from './pages/RangesPage';
+import { ComparePage } from './pages/ComparePage';
 
 // Global App Event Handler
 function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
@@ -37,6 +41,10 @@ function App() {
         <Routes>
           <Route path="/" element={<WorkspaceView />} />
           <Route path="/lists" element={<MyLists />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/reference" element={<ReferencePage />} />
+          <Route path="/ranges" element={<RangesPage />} />
+          <Route path="/compare" element={<ComparePage />} />
         </Routes>
       </div>
       <ContextMenu />

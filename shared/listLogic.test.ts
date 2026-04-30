@@ -3,11 +3,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { listReducer, initialState, type ListState, type ListAction } from './listLogic';
 import { calculateListPoints, calculateListSWC, getUnitDetails } from './listTypes';
-import type { Unit, UnitRaw } from './types';
+import type { Unit } from './types';
+import type { ProcessedUnit } from './game-model.js';
 
 // Mock unit factory
-function createMockUnit(overrides: Partial<UnitRaw> = {}): Unit {
-    const raw: UnitRaw = {
+function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
+    const raw: ProcessedUnit = {
         id: 1,
         isc: 'Test Unit',
         name: 'Test Unit',
@@ -15,12 +16,16 @@ function createMockUnit(overrides: Partial<UnitRaw> = {}): Unit {
         profileGroups: [
             {
                 id: 1,
+                isc: 'Test Unit',
+                isPeripheral: false,
+                isFTO: false,
                 profiles: [
                     {
                         id: 1,
                         name: 'Profile 1',
+                        unitType: 1,
                         skills: [],
-                        equip: [],
+                        equipment: [],
                         weapons: [],
                         move: [4, 4],
                         cc: 13,
@@ -31,11 +36,12 @@ function createMockUnit(overrides: Partial<UnitRaw> = {}): Unit {
                         bts: 0,
                         w: 1,
                         s: 2,
+                        isStructure: false,
                     }
                 ],
                 options: [
-                    { id: 1, name: 'Combi Rifle', points: 25, swc: 0, skills: [], equip: [], weapons: [] },
-                    { id: 2, name: 'HMG', points: 35, swc: 1.5, skills: [], equip: [], weapons: [] },
+                    { id: 1, name: 'Combi Rifle', points: 25, swc: 0, skills: [], equipment: [], weapons: [], orders: [] },
+                    { id: 2, name: 'HMG', points: 35, swc: 1.5, skills: [], equipment: [], weapons: [], orders: [] },
                 ]
             }
         ],

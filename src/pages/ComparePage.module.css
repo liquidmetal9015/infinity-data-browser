@@ -339,7 +339,7 @@
     color: var(--text-secondary);
 }
 
-.column-content {
+.compare-column-content {
     padding: 1rem;
     flex: 1;
     max-height: 500px;

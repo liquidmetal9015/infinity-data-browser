@@ -1,0 +1,178 @@
+.combat-group {
+    background: var(--surface-elevated);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--surface-base);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.group-title h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.unit-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.remove-group-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.remove-group-btn:hover {
+    color: var(--color-error);
+    background: rgba(var(--color-error-rgb), 0.1);
+}
+
+.unit-list {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-height: 100px;
+}
+
+.unit-row {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface-base);
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+}
+
+.unit-row.empty {
+    opacity: 0.3;
+    border-style: dashed;
+}
+
+.empty-slot {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.unit-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.unit-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.profile-name {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.unit-weapons {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.unit-cost {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+    padding-left: 1rem;
+}
+
+.points {
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.swc {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.unit-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: 0.75rem;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn.info {
+    color: var(--text-secondary);
+}
+
+.action-btn.info:hover {
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.action-btn.remove {
+    color: var(--text-secondary);
+}
+
+.action-btn.remove:hover {
+    color: var(--color-error);
+    background: rgba(var(--color-error-rgb), 0.1);
+}
+
+.add-unit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--surface-base);
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.add-unit-btn:hover:not(.disabled) {
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.add-unit-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--text-secondary);
+}

@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
+import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { Search, ExternalLink, Shield, Zap, Crosshair, Atom } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UnitLink } from '../components/UnitLink';
+import styles from './ReferencePage.module.css';
 
 type ItemType = 'skill' | 'weapon' | 'equipment';
 
@@ -15,7 +17,7 @@ interface ReferenceRow {
     count: number;
     examples: string[]; // List of unit names
     wiki?: string;
-    modifiers: number[];
+    modifiers: string[];
 }
 
 export function ReferencePage() {
@@ -26,7 +28,7 @@ export function ReferencePage() {
     const [showModifiers, setShowModifiers] = useState(true);
 
     // Aggregate all rows (expensive — only reruns when db or modifier toggle changes)
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+
     const allRows = useMemo(() => {
         const rows = new Map<string, ReferenceRow>();
 
@@ -43,11 +45,7 @@ export function ReferencePage() {
 
                     let displayName = item.name;
                     if (showModifiers && item.modifiers.length > 0) {
-                        const modString = item.modifiers.map(m => {
-                            const val = db.getExtraName(m);
-                            return val ? `(${val})` : ``;
-                        }).join(' ');
-                        displayName = `${item.name} ${modString}`;
+                        displayName = `${item.name} (${item.modifiers.join(', ')})`;
                     }
 
                     rows.set(key, {
@@ -72,7 +70,7 @@ export function ReferencePage() {
         });
 
         return Array.from(rows.values());
-    }, [db.units, db.metadata, db.extrasMap, showModifiers]);
+    }, [db.units, db.metadata, showModifiers]);
 
     // Filter and sort (cheap — reruns on search/sort changes without rebuilding full dataset)
     const data = useMemo(() => {
@@ -120,28 +118,28 @@ export function ReferencePage() {
     };
 
     return (
-        <div className="page-container reference-page">
-            <div className="page-header">
-                <div className="search-wrapper">
-                    <Search className="search-icon" size={24} />
+        <div className={clsx('page-container', styles.referencePage)}>
+            <div className={styles.pageHeader}>
+                <div className={styles.searchWrapper}>
+                    <Search className={styles.searchIcon} size={24} />
                     <input
                         type="text"
                         placeholder="Search reference library..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="search-input"
+                        className={styles.searchInput}
                     />
                 </div>
 
-                <div className="toggle-wrapper">
+                <div className={styles.toggleWrapper}>
                     <button
-                        className={`toggle-btn ${showModifiers ? 'active' : ''}`}
+                        className={clsx(styles.toggleBtn, showModifiers && styles.active)}
                         onClick={() => setShowModifiers(true)}
                     >
                         With Modifiers
                     </button>
                     <button
-                        className={`toggle-btn ${!showModifiers ? 'active' : ''}`}
+                        className={clsx(styles.toggleBtn, !showModifiers && styles.active)}
                         onClick={() => setShowModifiers(false)}
                     >
                         Without Modifiers
@@ -149,20 +147,20 @@ export function ReferencePage() {
                 </div>
             </div>
 
-            <div className="table-container">
-                <table className="reference-table">
+            <div className={styles.tableContainer}>
+                <table className={styles.referenceTable}>
                     <thead>
                         <tr>
-                            <th onClick={() => handleSort('type')} className="type-col sortable">
+                            <th onClick={() => handleSort('type')} className={clsx(styles.typeCol, styles.sortable)}>
                                 Type {sortField === 'type' && (sortDesc ? '↓' : '↑')}
                             </th>
-                            <th onClick={() => handleSort('name')} className="name-col sortable">
+                            <th onClick={() => handleSort('name')} className={clsx(styles.nameCol, styles.sortable)}>
                                 Name {sortField === 'name' && (sortDesc ? '↓' : '↑')}
                             </th>
-                            <th onClick={() => handleSort('count')} className="count-col sortable">
+                            <th onClick={() => handleSort('count')} className={clsx(styles.countCol, styles.sortable)}>
                                 Count {sortField === 'count' && (sortDesc ? '↓' : '↑')}
                             </th>
-                            <th className="examples-col">Example Units</th>
+                            <th className={styles.examplesCol}>Example Units</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -173,9 +171,9 @@ export function ReferencePage() {
                                 animate={{ opacity: 1 }}
                                 className={`row-${row.type}`}
                             >
-                                <td className="type-cell">
+                                <td className={styles.typeCell}>
                                     <span
-                                        className="type-badge"
+                                        className={styles.typeBadge}
                                         style={{
                                             color: getTypeColor(row.type),
                                             borderColor: getTypeColor(row.type),
@@ -186,15 +184,15 @@ export function ReferencePage() {
                                         {row.type}
                                     </span>
                                 </td>
-                                <td className="name-cell">
-                                    <div className="name-wrapper">
-                                        <span className="entry-name">{row.displayName}</span>
+                                <td className={styles.nameCell}>
+                                    <div className={styles.nameWrapper}>
+                                        <span className={styles.entryName}>{row.displayName}</span>
                                         {row.wiki && (
                                             <a
                                                 href={row.wiki}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="wiki-link"
+                                                className={styles.wikiLink}
                                                 title="Open Wiki"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
@@ -203,19 +201,19 @@ export function ReferencePage() {
                                         )}
                                     </div>
                                 </td>
-                                <td className="count-cell">
-                                    <span className="count-badge">{row.count}</span>
+                                <td className={styles.countCell}>
+                                    <span className={styles.countBadge}>{row.count}</span>
                                 </td>
-                                <td className="examples-cell">
-                                    <div className="examples-list">
+                                <td className={styles.examplesCell}>
+                                    <div className={styles.examplesList}>
                                         {row.examples.map((ex, i) => (
                                             <UnitLink
                                                 key={i}
                                                 name={ex}
-                                                className="example-tag hover:border-accent hover:text-accent"
+                                                className={clsx(styles.exampleTag, 'hover:border-accent', 'hover:text-accent')}
                                             />
                                         ))}
-                                        {row.count > 5 && <span className="more-tag">+{row.count - 5} more</span>}
+                                        {row.count > 5 && <span className={styles.moreTag}>+{row.count - 5} more</span>}
                                     </div>
                                 </td>
                             </motion.tr>
@@ -223,190 +221,9 @@ export function ReferencePage() {
                     </tbody>
                 </table>
                 {data.length === 0 && (
-                    <div className="empty-state">No entries found matching your search.</div>
+                    <div className={styles.emptyState}>No entries found matching your search.</div>
                 )}
             </div>
-
-            <style>{`
-                .reference-page {
-                    max-width: 1400px;
-                    margin: 0 auto;
-                    padding: 2rem;
-                }
-                .page-header {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 1rem;
-                    margin-bottom: 2rem;
-                }
-
-                .search-wrapper {
-                    position: relative;
-                    width: 100%;
-                    max-width: 600px;
-                }
-                .search-icon {
-                    position: absolute;
-                    left: 16px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: var(--text-secondary);
-                }
-                .search-input {
-                    width: 100%;
-                    padding: 1rem 1.5rem 1rem 3.5rem;
-                    border-radius: 12px;
-                    font-size: 1.1rem;
-                    border: 1px solid var(--border-color);
-                    background: var(--bg-secondary);
-                    color: var(--text-primary);
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                    transition: all 0.2s;
-                }
-                .search-input:focus {
-                    outline: none;
-                    border-color: var(--color-primary);
-                    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 59, 130, 246), 0.15);
-                }
-
-                .toggle-wrapper {
-                    display: flex;
-                    background: var(--bg-secondary);
-                    padding: 4px;
-                    border-radius: 9999px; /* Pill-shaped */
-                    border: 1px solid var(--border-color);
-                }
-
-                .toggle-btn {
-                    padding: 0.4rem 1rem;
-                    border-radius: 9999px; /* Pill-shaped */
-                    border: none;
-                    background: transparent;
-                    color: var(--text-secondary);
-                    font-size: 0.85rem;
-                    font-weight: 500;
-                    white-space: nowrap; /* Keep text on one line */
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .toggle-btn:hover {
-                    color: var(--text-primary);
-                }
-
-                .toggle-btn.active {
-                    background: var(--bg-primary);
-                    color: var(--color-primary);
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-
-                .table-container {
-                    background: var(--bg-secondary);
-                    border-radius: 12px;
-                    border: 1px solid var(--border-color);
-                    overflow: hidden;
-                }
-                .reference-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    text-align: left;
-                }
-                .reference-table th {
-                    padding: 1rem;
-                    background: var(--bg-primary);
-                    border-bottom: 1px solid var(--border-color);
-                    color: var(--text-secondary);
-                    font-weight: 600;
-                    user-select: none;
-                }
-                .reference-table th.sortable {
-                    cursor: pointer;
-                }
-                .reference-table th.sortable:hover {
-                    color: var(--text-primary);
-                }
-                .reference-table td {
-                    padding: 0.75rem 1rem;
-                    border-bottom: 1px solid var(--border-color);
-                    color: var(--text-primary);
-                }
-                .reference-table tr:last-child td {
-                    border-bottom: none;
-                }
-                .reference-table tr:hover {
-                    background: var(--bg-hover);
-                }
-
-                /* Type Column */
-                .type-badge {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.4rem;
-                    padding: 0.25rem 0.6rem;
-                    border-radius: 100px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    border: 1px solid;
-                }
-
-                /* Name Column */
-                .name-wrapper {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-                .entry-name {
-                    font-weight: 500;
-                }
-                .wiki-link {
-                    color: var(--text-secondary);
-                    opacity: 0.5;
-                    transition: all 0.2s;
-                }
-                .wiki-link:hover {
-                    color: var(--color-primary);
-                    opacity: 1;
-                }
-
-                /* Count Column */
-                .count-badge {
-                    background: var(--bg-primary);
-                    padding: 0.2rem 0.6rem;
-                    border-radius: 4px;
-                    font-size: 0.9rem;
-                    font-family: monospace;
-                    border: 1px solid var(--border-color);
-                }
-
-                /* Examples Column */
-                .examples-list {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 0.4rem;
-                }
-                .example-tag {
-                    font-size: 0.8rem;
-                    color: var(--text-secondary);
-                    background: var(--bg-primary);
-                    padding: 0.1rem 0.4rem;
-                    border-radius: 4px;
-                    border: 1px solid var(--border-color);
-                }
-                .more-tag {
-                    font-size: 0.8rem;
-                    color: var(--text-muted);
-                    font-style: italic;
-                    margin-left: 0.2rem;
-                }
-
-                .empty-state {
-                    padding: 3rem;
-                    text-align: center;
-                    color: var(--text-secondary);
-                }
-            `}</style>
-        </div >
+        </div>
     );
 }

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { getClassifiedsForOption, type ClassifiedMatch } from '../../shared/classifieds';
-import type { Unit, Profile, Option } from '../../shared/types';
+import type { Unit, Profile } from '../../shared/types';
+import type { Loadout } from '../../shared/game-model';
 import type { IDatabase } from '../services/Database';
 
 interface ClassifiedMatchEntry {
@@ -8,7 +9,7 @@ interface ClassifiedMatchEntry {
     completableClassifieds: Set<number>;
     profileMatches: {
         profile: Profile;
-        option: Option;
+        option: Loadout;
         matches: ClassifiedMatch[];
     }[];
 }
@@ -19,11 +20,6 @@ export function useClassifiedMatches(
 ): Map<string, ClassifiedMatchEntry> | null {
     return useMemo(() => {
         if (!db.classifieds.length) return null;
-
-        const metadata = {
-            skills: db.skillMap,
-            equips: db.equipmentMap,
-        };
 
         const matches = new Map<string, ClassifiedMatchEntry>();
 
@@ -42,7 +38,6 @@ export function useClassifiedMatches(
                             profile,
                             option,
                             db.classifieds,
-                            metadata
                         );
 
                         const validMatches = optionMatches.filter(m => m.canComplete);
@@ -60,5 +55,5 @@ export function useClassifiedMatches(
         });
 
         return matches;
-    }, [db.classifieds, factionUnits, db.skillMap, db.equipmentMap]);
+    }, [db.classifieds, factionUnits]);
 }

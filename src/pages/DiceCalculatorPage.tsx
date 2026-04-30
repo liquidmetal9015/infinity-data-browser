@@ -2,6 +2,7 @@
 // State is managed by useDiceCalcStore (Zustand) for persistence
 // Computation logic from useDiceCalculator hook
 import { useState } from 'react';
+import { clsx } from 'clsx';
 import { useDiceCalculator, type PlayerParams } from '../hooks/useDiceCalculator';
 import { Swords, Shield, ArrowLeftRight } from 'lucide-react';
 import {
@@ -16,9 +17,10 @@ import {
     CalculatorProfileSelector
 } from '../components/DiceCalculator';
 import type { WeaponProfile } from '../components/DiceCalculator/types';
-import type { ParsedWeapon, Unit, Profile, Option } from '../../shared/types';
+import type { ParsedWeapon, Unit, Profile } from '../../shared/types';
+import type { Loadout as Option } from '../../shared/game-model';
 import { useDiceCalcStore } from '../stores/useDiceCalcStore';
-import './DiceCalculatorPage.css';
+import styles from './DiceCalculatorPage.module.css';
 
 export function DiceCalculatorPage() {
     // Persisted state from Zustand store
@@ -167,17 +169,17 @@ export function DiceCalculatorPage() {
     const reactiveEffectiveSv = computeEffectiveSv(reactiveParams, distance, activeParams.cover);
 
     return (
-        <div className="dice-calculator-page">
-            <div className="page-header">
-                <div className="mode-toggle">
+        <div className={styles.diceCalculatorPage}>
+            <div className={styles.pageHeader}>
+                <div className={styles.modeToggle}>
                     <button
-                        className={`mode-btn ${mode === 'freeform' ? 'active' : ''}`}
+                        className={clsx(styles.modeBtn, mode === 'freeform' && styles.active)}
                         onClick={() => setMode('freeform')}
                     >
                         Freeform
                     </button>
                     <button
-                        className={`mode-btn ${mode === 'simulator' ? 'active' : ''}`}
+                        className={clsx(styles.modeBtn, mode === 'simulator' && styles.active)}
                         onClick={() => setMode('simulator')}
                     >
                         Matchup Simulator
@@ -186,14 +188,14 @@ export function DiceCalculatorPage() {
             </div>
 
             {mode === 'simulator' && (
-                <div className="global-controls">
-                    <div className="distance-control">
+                <div className={styles.globalControls}>
+                    <div className={styles.distanceControl}>
                         <label>Engagement Distance</label>
-                        <div className="range-pills">
+                        <div className={styles.rangePills}>
                             {RANGE_BANDS.map(band => (
                                 <button
                                     key={band.label}
-                                    className={`range-pill ${distance === band.value ? 'active' : ''}`}
+                                    className={clsx(styles.rangePill, distance === band.value && styles.active)}
                                     onClick={() => setDistance(band.value)}
                                 >
                                     {band.label}
@@ -205,16 +207,16 @@ export function DiceCalculatorPage() {
             )}
 
             {/* Input Panels */}
-            <div className="input-panels">
+            <div className={styles.inputPanels}>
                 {/* Active Panel */}
-                <div className="input-panel active-panel">
-                    <div className="panel-header">
+                <div className={clsx(styles.inputPanel, styles.activePanel)}>
+                    <div className={styles.panelHeader}>
                         <Swords size={18} /> <span>Active</span>
                     </div>
 
                     {mode === 'simulator' && (
                         <>
-                            <div className="panel-section">
+                            <div className={styles.panelSection}>
                                 <CalculatorUnitSelector
                                     onSelect={handleActiveUnitSelect}
                                     placeholder="Search Active Unit..."
@@ -228,7 +230,7 @@ export function DiceCalculatorPage() {
                                 )}
                             </div>
 
-                            <div className="panel-section">
+                            <div className={styles.panelSection}>
                                 <WeaponSelector
                                     onSelect={applyWeaponToActive}
                                     placeholder="Execute Attack With..."
@@ -236,7 +238,7 @@ export function DiceCalculatorPage() {
                                     disabled={!activeProfile}
                                 />
                                 {activeParams.selectedWeapon && (
-                                    <div className="selected-weapon-indicator">
+                                    <div className={styles.selectedWeaponIndicator}>
                                         {activeParams.selectedWeapon}
                                     </div>
                                 )}
@@ -244,8 +246,8 @@ export function DiceCalculatorPage() {
                         </>
                     )}
 
-                    <div className="panel-row">
-                        <div className="sv-group">
+                    <div className={styles.panelRow}>
+                        <div className={styles.svGroup}>
                             <CompactNumber
                                 label={mode === 'freeform' ? 'SV' : 'Base SV'}
                                 value={activeParams.sv}
@@ -253,7 +255,7 @@ export function DiceCalculatorPage() {
                                 readOnly={mode === 'simulator'}
                             />
                             {mode === 'simulator' && (
-                                <div className="effective-sv">
+                                <div className={styles.effectiveSv}>
                                     Final SV: <strong>{activeEffectiveSv}</strong>
                                 </div>
                             )}
@@ -281,19 +283,19 @@ export function DiceCalculatorPage() {
                     />
                 </div>
 
-                <button className="swap-btn" onClick={swap} title="Swap">
+                <button className={styles.swapBtn} onClick={swap} title="Swap">
                     <ArrowLeftRight size={18} />
                 </button>
 
                 {/* Reactive Panel */}
-                <div className="input-panel reactive-panel">
-                    <div className="panel-header">
+                <div className={clsx(styles.inputPanel, styles.reactivePanel)}>
+                    <div className={styles.panelHeader}>
                         <Shield size={18} /> <span>Reactive</span>
                     </div>
 
                     {mode === 'simulator' && (
                         <>
-                            <div className="panel-section">
+                            <div className={styles.panelSection}>
                                 <CalculatorUnitSelector
                                     onSelect={handleReactiveUnitSelect}
                                     placeholder="Search Reactive Unit..."
@@ -307,7 +309,7 @@ export function DiceCalculatorPage() {
                                 )}
                             </div>
 
-                            <div className="panel-section">
+                            <div className={styles.panelSection}>
                                 <WeaponSelector
                                     onSelect={applyWeaponToReactive}
                                     placeholder="Execute ARO With..."
@@ -315,7 +317,7 @@ export function DiceCalculatorPage() {
                                     disabled={!reactiveProfile}
                                 />
                                 {reactiveParams.selectedWeapon && (
-                                    <div className="selected-weapon-indicator">
+                                    <div className={styles.selectedWeaponIndicator}>
                                         {reactiveParams.selectedWeapon}
                                     </div>
                                 )}
@@ -323,8 +325,8 @@ export function DiceCalculatorPage() {
                         </>
                     )}
 
-                    <div className="panel-row">
-                        <div className="sv-group">
+                    <div className={styles.panelRow}>
+                        <div className={styles.svGroup}>
                             <CompactNumber
                                 label={mode === 'freeform' ? 'SV' : 'Base SV'}
                                 value={reactiveParams.sv}
@@ -332,7 +334,7 @@ export function DiceCalculatorPage() {
                                 readOnly={mode === 'simulator'}
                             />
                             {mode === 'simulator' && (
-                                <div className="effective-sv">
+                                <div className={styles.effectiveSv}>
                                     Final SV: <strong>{reactiveEffectiveSv}</strong>
                                 </div>
                             )}
@@ -364,7 +366,7 @@ export function DiceCalculatorPage() {
 
             {/* Results Section */}
             {results && (
-                <div className="results-section">
+                <div className={styles.resultsSection}>
                     <ComparisonSummary
                         active={results.active}
                         reactive={results.reactive}

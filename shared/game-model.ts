@@ -605,7 +605,7 @@ export interface Profile {
     isStructure: boolean;
 
     ava:  number; // Availability (use AVA_UNLIMITED / AVA_PERIPHERAL constants)
-    characteristics: CharacteristicId[];
+    characteristics: number[]; // Char IDs — known values in CharacteristicId const, but may include future/unknown IDs
 
     skills:    SkillInstance[];
     equipment: EquipmentInstance[];
@@ -656,6 +656,12 @@ export interface WeaponInstance {
  * `q` is the quantity included. This is how peripherals are auto-attached to their
  * parent unit's loadout selection.
  */
+export interface PeripheralInclude {
+    q:      number; // Quantity
+    group:  number; // 1-based profile group index of the peripheral
+    option: number; // Option index within that group
+}
+
 export interface Loadout {
     id:     number;
     name:   string;      // e.g. "Combi Rifle + Light Shotgun"
@@ -666,6 +672,12 @@ export interface Loadout {
     skills:    SkillInstance[];
     equipment: EquipmentInstance[];
     weapons:   WeaponInstance[];
+
+    /** When true: auto-included via parent option's `includes`; not independently selectable.
+     *  Points cost exists for VP calculations but does NOT count toward army total. */
+    disabled?: boolean;
+    /** Auto-attached peripheral options when this loadout is selected. */
+    includes?: PeripheralInclude[];
 }
 
 /**
@@ -729,6 +741,10 @@ export interface ProfileGroup {
 
     isPeripheral: boolean;
     peripheralType?: PeripheralType; // Set when isPeripheral=true
+
+    /** True when any profile or ISC name contains "FTO" (Fire Team Option).
+     *  When present on a unit, ONLY FTO profiles may join fireteams. */
+    isFTO: boolean;
 }
 
 // ============================================================================

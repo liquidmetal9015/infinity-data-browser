@@ -17,9 +17,9 @@ interface MockUnitRaw {
         profiles: Array<{
             id: number;
             name: string;
-            skills: Array<{ id: number; extra?: number[] }>;
-            equip: Array<{ id: number; extra?: number[] }>;
-            weapons: Array<{ id: number; extra?: number[] }>;
+            skills: Array<{ id: number; name: string; modifiers?: string[] }>;
+            equipment: Array<{ id: number; name: string; modifiers?: string[] }>;
+            weapons: Array<{ id: number; name: string; modifiers?: string[] }>;
             move: number[];
             cc: number;
             bs: number;
@@ -35,9 +35,9 @@ interface MockUnitRaw {
             name: string;
             points: number;
             swc: number;
-            skills: Array<{ id: number }>;
-            equip: Array<{ id: number }>;
-            weapons: Array<{ id: number }>;
+            skills: Array<{ id: number; name: string }>;
+            equipment: Array<{ id: number; name: string }>;
+            weapons: Array<{ id: number; name: string }>;
         }>;
     }>;
 }
@@ -78,9 +78,9 @@ const mockUnits: MockUnitRaw[] = [
             profiles: [{
                 id: 1,
                 name: 'FUSILIER',
-                skills: [{ id: 12 }],
-                equip: [],
-                weapons: [{ id: 1 }],
+                skills: [{ id: 12, name: 'Courage' }],
+                equipment: [],
+                weapons: [{ id: 1, name: 'Combi Rifle' }],
                 move: [4, 2],
                 cc: 13,
                 bs: 12,
@@ -92,8 +92,8 @@ const mockUnits: MockUnitRaw[] = [
                 s: 2
             }],
             options: [
-                { id: 1, name: 'Combi Rifle', points: 10, swc: 0, skills: [], equip: [], weapons: [] },
-                { id: 2, name: 'HMG', points: 18, swc: 1, skills: [], equip: [], weapons: [] },
+                { id: 1, name: 'Combi Rifle', points: 10, swc: 0, skills: [], equipment: [], weapons: [] },
+                { id: 2, name: 'HMG', points: 18, swc: 1, skills: [], equipment: [], weapons: [] },
             ]
         }]
     },
@@ -108,9 +108,9 @@ const mockUnits: MockUnitRaw[] = [
             profiles: [{
                 id: 1,
                 name: 'SWISS GUARD',
-                skills: [{ id: 10, extra: [6] }, { id: 11 }],
-                equip: [{ id: 20, extra: [2] }],
-                weapons: [{ id: 2 }],
+                skills: [{ id: 10, name: 'Mimetism', modifiers: ['-6'] }, { id: 11, name: 'Total Immunity' }],
+                equipment: [{ id: 20, name: 'Multispectral Visor', modifiers: ['L2'] }],
+                weapons: [{ id: 2, name: 'HMG' }],
                 move: [4, 4],
                 cc: 15,
                 bs: 14,
@@ -122,8 +122,8 @@ const mockUnits: MockUnitRaw[] = [
                 s: 2
             }],
             options: [
-                { id: 1, name: 'HMG', points: 68, swc: 2, skills: [], equip: [], weapons: [] },
-                { id: 2, name: 'Missile Launcher', points: 70, swc: 2, skills: [], equip: [], weapons: [] },
+                { id: 1, name: 'HMG', points: 68, swc: 2, skills: [], equipment: [], weapons: [] },
+                { id: 2, name: 'Missile Launcher', points: 70, swc: 2, skills: [], equipment: [], weapons: [] },
             ]
         }]
     }
@@ -168,13 +168,13 @@ describe('MCP Server DatabaseAdapter Core Methods', () => {
         it('filters units by skill with modifier', () => {
             // Simulating search for Mimetism(-6)
             const skillId = 10;
-            const modifierValue = 6;
+            const modifierValue = '-6';
 
             const results = mockUnits.filter(unit =>
                 unit.profileGroups.some(pg =>
                     pg.profiles.some(p =>
                         p.skills?.some(s =>
-                            s.id === skillId && s.extra?.includes(modifierValue)
+                            s.id === skillId && s.modifiers?.includes(modifierValue)
                         )
                     )
                 )

@@ -4,8 +4,9 @@ import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { ClassifiedItem } from '../components/Classifieds/ClassifiedItem';
 import { useClassifiedsStore } from '../stores/useClassifiedsStore';
+import { clsx } from 'clsx';
 import { useClassifiedMatches } from '../hooks/useClassifiedMatches';
-import './ClassifiedsPage.css';
+import styles from './ClassifiedsPage.module.css';
 
 export function ClassifiedsPage() {
     const db = useDatabase();
@@ -48,7 +49,7 @@ export function ClassifiedsPage() {
     return (
         <div className="page-container">
             {/* Header */}
-            <div className="search-header flex-row items-center border-b border-border pb-4 mb-6">
+            <div className={clsx(styles.searchHeader, 'flex-row items-center border-b border-border pb-4 mb-6')}>
                 <CompactFactionSelector
                     groupedFactions={db.getGroupedFactions()}
                     value={globalFactionId}
@@ -57,16 +58,16 @@ export function ClassifiedsPage() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="classifieds-grid gap-6">
+            <div className={clsx(styles.classifiedsGrid, 'gap-6')}>
 
                 {/* Left Column: Objectives */}
-                <div className="objectives-column flex flex-col gap-4">
-                    <div className="column-header">
+                <div className={clsx(styles.objectivesColumn, 'flex flex-col gap-4')}>
+                    <div className={styles.columnHeader}>
                         <h2>Objectives</h2>
-                        <span className="badge">{db.classifieds.length}</span>
+                        <span className={styles.badge}>{db.classifieds.length}</span>
                     </div>
 
-                    <div className="objectives-list custom-scrollbar">
+                    <div className={clsx(styles.objectivesList, 'custom-scrollbar')}>
                         {db.classifieds.map(cls => {
                             // Determine relevance based on selected unit AND selected profile
                             let isRelevantToUnit = false;
@@ -117,18 +118,18 @@ export function ClassifiedsPage() {
                 </div>
 
                 {/* Right Column: Units */}
-                <div className="units-column flex flex-col gap-4">
-                    <div className="column-header">
+                <div className={clsx(styles.unitsColumn, 'flex flex-col gap-4')}>
+                    <div className={styles.columnHeader}>
                         <h2>Available Units</h2>
-                        <span className="badge">{factionUnits.length}</span>
+                        <span className={styles.badge}>{factionUnits.length}</span>
                         {selectedClassified && (
-                            <div className="active-filter-badge">
+                            <div className={styles.activeFilterBadge}>
                                 Filtered: {db.classifieds.find(c => c.id === selectedClassified)?.name}
                             </div>
                         )}
                     </div>
 
-                    <div className="units-grid">
+                    <div className={styles.unitsGrid}>
                         {factionUnits.map(unit => {
                             const matchData = unitMatches?.get(unit.isc);
 
@@ -141,12 +142,12 @@ export function ClassifiedsPage() {
                             return (
                                 <div
                                     key={unit.isc}
-                                    className={`
-                                        unit-card
-                                        ${isSelected ? 'selected' : ''}
-                                        ${selectedClassified && !canCompleteFocused ? 'subdued' : ''}
-                                        ${selectedClassified && canCompleteFocused ? 'highlighted' : ''}
-                                    `}
+                                    className={clsx(
+                                        styles.unitCard,
+                                        isSelected && styles.selected,
+                                        selectedClassified && !canCompleteFocused && styles.subdued,
+                                        selectedClassified && canCompleteFocused && styles.highlighted,
+                                    )}
                                     onClick={() => {
                                         // Unit-level selection is less relevant now that profiles are explicit, 
                                         // but we can still allow clicking the card header to select the unit and clear objective mode
@@ -160,15 +161,15 @@ export function ClassifiedsPage() {
                                         }
                                     }}
                                 >
-                                    <div className="unit-card-header">
-                                        <h3 className="unit-name">{unit.name}</h3>
+                                    <div className={styles.unitCardHeader}>
+                                        <h3 className={styles.unitName}>{unit.name}</h3>
                                         {canCompleteFocused && selectedClassified && (
-                                            <span className="match-indicator">Match</span>
+                                            <span className={styles.matchIndicator}>Match</span>
                                         )}
                                     </div>
 
                                     {/* Static Profile List */}
-                                    <div className="static-profile-list" onClick={e => e.stopPropagation()}>
+                                    <div className={styles.staticProfileList} onClick={e => e.stopPropagation()}>
                                         {matchData.profileMatches.map((pm, idx) => {
                                             const isProfileSelected = selectedProfileId === pm.option.id && isSelected;
                                             const matchesFocused = selectedClassified ? pm.matches.some(m => m.objectiveId === selectedClassified) : true;
@@ -176,16 +177,15 @@ export function ClassifiedsPage() {
                                             // Don't show the profile if it doesn't match the selected classified (when filtering by obj)
                                             if (selectedClassified && !matchesFocused) return null;
 
-                                            // Resolve item names using lookups to give the static profile real details
-                                            const weapons = pm.option.weapons.map(w => db.weaponMap.get(Math.abs(w.id)) || `Weapon ${w.id}`).filter(Boolean);
-                                            const skills = pm.option.skills.map(s => db.skillMap.get(Math.abs(s.id)) || `Skill ${s.id}`).filter(Boolean);
-                                            const equips = pm.option.equip.map(e => db.equipmentMap.get(Math.abs(e.id)) || `Equip ${e.id}`).filter(Boolean);
+                                            const weapons = pm.option.weapons.map(w => w.name).filter(Boolean);
+                                            const skills = pm.option.skills.map(s => s.displayName || s.name).filter(Boolean);
+                                            const equips = pm.option.equipment.map(e => e.name).filter(Boolean);
                                             const loadoutText = [...weapons, ...skills, ...equips].join(', ');
 
                                             return (
-                                                <div key={`${pm.profile.id}-${pm.option.id}-${idx}`} className="profile-row-container">
+                                                <div key={`${pm.profile.id}-${pm.option.id}-${idx}`} className={styles.profileRowContainer}>
                                                     <div
-                                                        className={`profile-row ${isProfileSelected ? 'active' : ''}`}
+                                                        className={clsx(styles.profileRow, isProfileSelected && styles.active)}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             // Always ensure this unit is set as selected to avoid weird state mismatches
@@ -194,23 +194,23 @@ export function ClassifiedsPage() {
                                                             setSelectedClassified(null); // Explicit selection clears objective
                                                         }}
                                                     >
-                                                        <div className="profile-row-header">
-                                                            <div className="profile-name-tag">{pm.option.name || "Standard Profile"}</div>
-                                                            <div className="profile-stats-tag">{pm.matches.length} Objs</div>
+                                                        <div className={styles.profileRowHeader}>
+                                                            <div className={styles.profileNameTag}>{pm.option.name || "Standard Profile"}</div>
+                                                            <div className={styles.profileStatsTag}>{pm.matches.length} Objs</div>
                                                         </div>
-                                                        <div className="profile-loadout">{loadoutText || "Standard Loadout"}</div>
+                                                        <div className={styles.profileLoadout}>{loadoutText || "Standard Loadout"}</div>
                                                     </div>
 
                                                     {/* If explicitly selected, show details on HOW it matches objectives */}
                                                     {isProfileSelected && (
-                                                        <div className="profile-match-reasons">
+                                                        <div className={styles.profileMatchReasons}>
                                                             <div className="reasons-header">Can complete:</div>
                                                             {pm.matches.map((m, mIdx) => {
                                                                 const objName = db.classifieds.find(c => c.id === m.objectiveId)?.name || 'Objective';
                                                                 return (
-                                                                    <div key={mIdx} className="reason-row">
-                                                                        <div className="reason-obj">{objName}</div>
-                                                                        <div className="reason-text">Via: {m.reason}</div>
+                                                                    <div key={mIdx} className={styles.reasonRow}>
+                                                                        <div className={styles.reasonObj}>{objName}</div>
+                                                                        <div className={styles.reasonText}>Via: {m.reason}</div>
                                                                     </div>
                                                                 );
                                                             })}

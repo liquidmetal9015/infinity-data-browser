@@ -2,23 +2,10 @@
 // Extends BaseDatabase with browser-specific data loading
 
 import type { DatabaseMetadata, FireteamChart, FactionInfo, SuperFaction, SearchSuggestion, Unit } from '@shared/types';
-import { BaseDatabase, type FactionDataFile, type SearchFilter } from '../../shared/BaseDatabase';
+import { BaseDatabase, type SearchFilter } from '../../shared/BaseDatabase';
 import type { ParsedWeapon } from '../../shared/types';
 import type { ClassifiedObjective } from '../../shared/classifieds';
-
-import api from './api';
-
-interface BulkFactionEntry extends FactionDataFile {
-    faction: {
-        id: number;
-        name: string;
-        slug: string;
-        parent_id: number | null;
-        is_vanilla: boolean;
-        discontinued: boolean;
-        logo: string;
-    };
-}
+import type { ProcessedFactionFile, ProcessedMetadataFile, ProcessedFactionsFile } from '../../shared/game-model';
 
 export interface IDatabase {
     units: Unit[];
@@ -33,14 +20,12 @@ export interface IDatabase {
     factionHasData(id: number): boolean;
     getSuggestions(query: string): SearchSuggestion[];
     factionMap: Map<number, string>;
-    extrasMap: Map<number, string>;
     weaponMap: Map<number, string>;
     skillMap: Map<number, string>;
     equipmentMap: Map<number, string>;
     getWikiLink(type: 'weapon' | 'skill' | 'equipment', id: number): string | undefined;
     getFireteamChart(factionId: number): FireteamChart | undefined;
     getUnitBySlug(slug: string): Unit | undefined;
-    getExtraName(id: number): string | undefined;
     getWeaponDetails(id: number): ParsedWeapon | undefined;
 }
 
@@ -48,8 +33,12 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
     private static instance: DatabaseImplementation;
     public classifieds: ClassifiedObjective[] = [];
 
+    private readonly dataBase: string;
+
     constructor() {
         super();
+        // BASE_URL is set by Vite (e.g. "/" in dev, "/app/" in production)
+        this.dataBase = `${import.meta.env.BASE_URL}data/processed`;
     }
 
     static getInstance(): DatabaseImplementation {
@@ -64,55 +53,44 @@ export class DatabaseImplementation extends BaseDatabase implements IDatabase {
         try {
             this.classifieds = await this.loadClassifieds();
         } catch (e) {
-            console.error("Failed to load classifieds", e);
+            console.error('Failed to load classifieds', e);
         }
     }
 
     // ========================================================================
-    // Platform-specific: Load via fetch()
+    // Platform-specific: Load via fetch() from static processed files
     // ========================================================================
 
-    private allFactionData: Record<string, FactionDataFile> | null = null;
-
-    protected async loadMetadata(): Promise<DatabaseMetadata> {
-        const [metaRes, bulkJson] = await Promise.all([
-            api.GET('/api/metadata'),
-            fetch('/api/factions/all/legacy').then(r => r.ok ? r.json() as Promise<Record<string, BulkFactionEntry>> : Promise.resolve({} as Record<string, BulkFactionEntry>)),
+    protected async loadMetadataFiles(): Promise<{ meta: ProcessedMetadataFile; factions: ProcessedFactionsFile }> {
+        const [metaRes, factionsRes] = await Promise.all([
+            fetch(`${this.dataBase}/metadata.json`),
+            fetch(`${this.dataBase}/factions.json`),
         ]);
 
-        if (metaRes.error) throw new Error(`Failed to load metadata: ${metaRes.error}`);
+        if (!metaRes.ok) throw new Error(`Failed to load metadata: ${metaRes.status}`);
+        if (!factionsRes.ok) throw new Error(`Failed to load factions: ${factionsRes.status}`);
 
-        this.allFactionData = Object.fromEntries(
-            Object.entries(bulkJson).map(([slug, entry]) => [slug, { units: entry.units, fireteamChart: entry.fireteamChart, filters: entry.filters }])
-        );
+        const [meta, factions] = await Promise.all([
+            metaRes.json() as Promise<ProcessedMetadataFile>,
+            factionsRes.json() as Promise<ProcessedFactionsFile>,
+        ]);
 
-        const factions: DatabaseMetadata['factions'] = Object.values(bulkJson).map(entry => ({
-            id: entry.faction.id,
-            parent: entry.faction.parent_id ?? entry.faction.id,
-            name: entry.faction.name,
-            slug: entry.faction.slug,
-            discontinued: entry.faction.discontinued,
-            logo: entry.faction.logo,
-        }));
+        return { meta, factions };
+    }
 
-        return {
-            ...metaRes.data,
-            factions,
-            equips: metaRes.data.equipment,
-        };
+    protected async loadFactionData(slug: string): Promise<ProcessedFactionFile | null> {
+        const res = await fetch(`${this.dataBase}/${slug}.json`);
+        if (!res.ok) return null;
+        return res.json() as Promise<ProcessedFactionFile>;
     }
 
     protected async loadClassifieds(): Promise<ClassifiedObjective[]> {
-        const res = await fetch(import.meta.env.BASE_URL + 'data/classifieds.json');
+        const res = await fetch(`${import.meta.env.BASE_URL}data/classifieds.json`);
         if (!res.ok) {
             console.warn(`Failed to load classifieds.json: ${res.status}`);
             return [];
         }
         return res.json();
-    }
-
-    protected async loadFactionData(slug: string): Promise<FactionDataFile | null> {
-        return this.allFactionData?.[slug] ?? null;
     }
 }
 

@@ -14,6 +14,9 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* Fill flex container (column layout) and also any height-based parent */
+    flex: 1;
+    min-height: 0;
     height: 100%;
 }
 
@@ -361,9 +364,5 @@
     .list-dashboard-dense {
         grid-template-columns: 1fr;
         height: auto;
-    }
-    .roster-panel {
-        position: static;
-        max-height: 400px;
     }
 }

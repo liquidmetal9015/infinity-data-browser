@@ -42,13 +42,6 @@ export function UnitDetailPanel() {
 
     if (!activeProfile) return null;
 
-    const getName = (type: 'weapon' | 'skill' | 'equipment', id: number) => {
-        if (type === 'weapon') return db.weaponMap.get(id) || `Weapon ${id}`;
-        if (type === 'skill') return db.skillMap.get(id) || `Skill ${id}`;
-        if (type === 'equipment') return db.equipmentMap.get(id) || `Equipment ${id}`;
-        return '?';
-    };
-
     const handleAddLoadout = (optionId: number) => {
         addUnit(unit, targetGroupIndex, activeGroup.id, activeProfile.id, optionId);
     };
@@ -88,7 +81,7 @@ export function UnitDetailPanel() {
                                         : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
                                     }`}
                             >
-                                {group.isco || group.isc || `PROFILE ${idx + 1}`}
+                                {group.isc || `PROFILE ${idx + 1}`}
                             </button>
                         ))}
                     </div>
@@ -103,7 +96,7 @@ export function UnitDetailPanel() {
                             val = formatMove(profileRecord[attr.key] as number[]);
                         }
                         let label = attr.label;
-                        if (attr.key === 'w' && activeProfile.str) label = 'STR';
+                        if (attr.key === 'w' && activeProfile.isStructure) label = 'STR';
 
                         return (
                             <div key={attr.key} className="flex flex-col items-center gap-1.5">
@@ -130,11 +123,9 @@ export function UnitDetailPanel() {
                                 const wikiLink = db.getWikiLink('skill', s.id);
                                 const content = (
                                     <>
-                                        {getName('skill', s.id)}
-                                        {s.extra && s.extra.length > 0 &&
-                                            <span className="ml-1">
-                                                ({s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})
-                                            </span>
+                                        {s.displayName || s.name}
+                                        {s.modifiers && s.modifiers.length > 0 &&
+                                            <span className="ml-1">({s.modifiers.join(', ')})</span>
                                         }
                                     </>
                                 );
@@ -159,19 +150,19 @@ export function UnitDetailPanel() {
                             Equipment
                         </h3>
                         <div className="flex flex-wrap gap-2">
-                            {activeProfile.equip?.map((e, i) => {
+                            {activeProfile.equipment?.map((e, i) => {
                                 const wikiLink = db.getWikiLink('equipment', e.id);
                                 return (
                                     <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
                                         {wikiLink ? (
                                             <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
-                                                {getName('equipment', e.id)}
+                                                {e.name}
                                             </a>
-                                        ) : getName('equipment', e.id)}
+                                        ) : e.name}
                                     </span>
                                 );
                             })}
-                            {(!activeProfile.equip || activeProfile.equip.length === 0) &&
+                            {(!activeProfile.equipment || activeProfile.equipment.length === 0) &&
                                 <span className="text-gray-600 text-xs italic">None</span>
                             }
                         </div>
@@ -206,16 +197,16 @@ export function UnitDetailPanel() {
                                             <div className="flex flex-col gap-1">
                                                 {opt.weapons?.map((w, i) => (
                                                     <span key={i} className={`text-xs ${i === 0 ? "text-gray-200 font-medium" : "text-gray-400"}`}>
-                                                        {getName('weapon', w.id)}
-                                                        {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})</span>}
+                                                        {w.name}
+                                                        {w.modifiers && w.modifiers.length > 0 && <span className="ml-1">({w.modifiers.join(', ')})</span>}
                                                     </span>
                                                 ))}
                                             </div>
                                         </td>
                                         <td className="px-3 py-3 align-top text-xs text-gray-400">
                                             <div className="flex flex-col gap-0.5">
-                                                {opt.equip?.map((e, i) => (
-                                                    <span key={i}>{getName('equipment', e.id)}</span>
+                                                {opt.equipment?.map((e, i) => (
+                                                    <span key={i}>{e.name}</span>
                                                 ))}
                                             </div>
                                         </td>

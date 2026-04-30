@@ -13,11 +13,14 @@ interface AuthContextType {
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const DEV_AUTH = import.meta.env.VITE_DEV_AUTH === 'true';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(DEV_AUTH ? ({ uid: 'dev-user', email: 'dev@local' } as User) : null);
+    const [loading, setLoading] = useState(!DEV_AUTH);
 
     useEffect(() => {
+        if (DEV_AUTH) return;
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setLoading(false);

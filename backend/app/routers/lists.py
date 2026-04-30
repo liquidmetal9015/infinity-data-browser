@@ -40,6 +40,8 @@ async def create_list(
     new_list = ArmyList(
         user_id=user_id,
         name=list_in.name,
+        description=list_in.description,
+        tags=list_in.tags,
         faction_id=list_in.faction_id,
         points=list_in.points,
         swc=list_in.swc,

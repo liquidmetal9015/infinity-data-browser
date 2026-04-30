@@ -12,7 +12,6 @@ import {
     generateBurstScalingData,
     generateWoundPipelineData
 } from '../utils/dice-analytics';
-import './DiceCalculatorPage.css'; // Reuse calculator styles for input panels
 
 export function DiceAnalyticsPage() {
     // Pull the exact same state as the Dice Calculator so they are perfectly synced

@@ -1,0 +1,201 @@
+.app-title-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.main-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.controls-nav {
+    margin-left: auto;
+}
+
+.explore-tabs {
+    display: flex;
+    gap: 0.125rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-right: 1px solid var(--border);
+    padding-right: 0.5rem;
+    margin-right: 0.25rem;
+}
+
+.explore-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.workspace-tabs,
+.tool-tabs {
+    display: flex;
+    gap: 0.125rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tool-tabs {
+    border-left: 1px solid var(--border);
+    padding-left: 0.5rem;
+    margin-left: 0.25rem;
+}
+
+.workspace-tabs::-webkit-scrollbar,
+.tool-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.open {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb, 99, 102, 241), 0.1);
+}
+
+.tool-tab {
+    opacity: 0.75;
+}
+
+.tool-tab:hover,
+.tool-tab.open {
+    opacity: 1;
+}
+
+.tool-tab .tab-label {
+    display: none;
+}
+
+.tab-indicator {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.tab-btn.active .tab-indicator {
+    background: var(--accent);
+    opacity: 1;
+}
+
+.layout-segmented-control {
+    display: flex;
+    align-items: center;
+    background: var(--bg-tertiary, #0f172a);
+    border: 1px solid var(--border, #334155);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.segmented-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.segmented-btn:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+.segmented-btn.active {
+    background: var(--surface-hover, #1e293b);
+    color: var(--accent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-link:hover:not(.disabled) {
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.clear-data-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.clear-data-btn:hover {
+    opacity: 1;
+    color: var(--error, #ef4444) !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.nav-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 0.25rem;
+    opacity: 0.5;
+}
+
+.layout-label {
+    display: none;
+}
+
+.tab-label {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .layout-label,
+    .tab-label {
+        display: inline;
+    }
+}

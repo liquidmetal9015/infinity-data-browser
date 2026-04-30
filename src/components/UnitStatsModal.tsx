@@ -63,13 +63,6 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
 
     if (!activeProfile) return null;
 
-    // Helper to get name from ID
-    const getName = (type: 'weapon' | 'skill' | 'equipment', id: number) => {
-        if (type === 'weapon') return db.weaponMap.get(id) || `Weapon ${id}`;
-        if (type === 'skill') return db.skillMap.get(id) || `Skill ${id}`;
-        if (type === 'equipment') return db.equipmentMap.get(id) || `Equipment ${id}`;
-        return '?';
-    };
 
     const handleSelectLoadout = (optionId: number) => {
         if (selectionMode) {
@@ -148,7 +141,7 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                                         : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
                                                     }`}
                                             >
-                                                {group.isco || group.isc || `PROFILE ${idx + 1}`}
+                                                {group.isc || `PROFILE ${idx + 1}`}
                                             </button>
                                         ))}
                                     </div>
@@ -166,7 +159,7 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                             val = formatMove(profileRecord[attr.key] as number[]);
                                         }
                                         let label = attr.label;
-                                        if (attr.key === 'w' && activeProfile.str) label = 'STR';
+                                        if (attr.key === 'w' && activeProfile.isStructure) label = 'STR';
 
                                         return (
                                             <div key={attr.key} className="flex flex-col items-center gap-3 relative z-10">
@@ -193,11 +186,9 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                                 const wikiLink = db.getWikiLink('skill', s.id);
                                                 const content = (
                                                     <>
-                                                        {getName('skill', s.id)}
-                                                        {s.extra && s.extra.length > 0 &&
-                                                            <span className="ml-1">
-                                                                ({s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})
-                                                            </span>
+                                                        {s.displayName || s.name}
+                                                        {s.modifiers && s.modifiers.length > 0 &&
+                                                            <span className="ml-1">({s.modifiers.join(', ')})</span>
                                                         }
                                                     </>
                                                 );
@@ -223,19 +214,19 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                             Equipment
                                         </h3>
                                         <div className="flex flex-wrap gap-3">
-                                            {activeProfile.equip?.map((e, i) => {
+                                            {activeProfile.equipment?.map((e, i) => {
                                                 const wikiLink = db.getWikiLink('equipment', e.id);
                                                 return (
                                                     <span key={i} className="inline-flex items-center px-3 py-1.5 bg-[#162032] border border-white/5 rounded-md text-sm text-gray-300 shadow-sm transition-colors hover:border-white/10 hover:bg-[#1e293b]">
                                                         {wikiLink ? (
                                                             <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
-                                                                {getName('equipment', e.id)}
+                                                                {e.name}
                                                             </a>
-                                                        ) : getName('equipment', e.id)}
+                                                        ) : e.name}
                                                     </span>
                                                 );
                                             })}
-                                            {(!activeProfile.equip || activeProfile.equip.length === 0) &&
+                                            {(!activeProfile.equipment || activeProfile.equipment.length === 0) &&
                                                 <span className="text-gray-600 text-sm italic pl-2">None</span>
                                             }
                                         </div>
@@ -275,8 +266,8 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                                                     const wikiLink = db.getWikiLink('weapon', w.id);
                                                                     const content = (
                                                                         <>
-                                                                            {getName('weapon', w.id)}
-                                                                            {w.extra && w.extra.length > 0 && <span className="ml-1">({w.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})</span>}
+                                                                            {w.name}
+                                                                            {w.modifiers && w.modifiers.length > 0 && <span className="ml-1">({w.modifiers.join(', ')})</span>}
                                                                         </>
                                                                     );
                                                                     return (
@@ -293,15 +284,15 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                                         </td>
                                                         <td className="px-6 py-6 align-top text-sm text-gray-400">
                                                             <div className="flex flex-col gap-1.5">
-                                                                {opt.equip?.map((e, i) => {
+                                                                {opt.equipment?.map((e, i) => {
                                                                     const wikiLink = db.getWikiLink('equipment', e.id);
                                                                     return (
                                                                         <span key={i}>
                                                                             {!inSelectionMode && wikiLink ? (
                                                                                 <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-gray-200 hover:underline decoration-white/30 underline-offset-2">
-                                                                                    {getName('equipment', e.id)}
+                                                                                    {e.name}
                                                                                 </a>
-                                                                            ) : getName('equipment', e.id)}
+                                                                            ) : e.name}
                                                                         </span>
                                                                     );
                                                                 })}
@@ -315,9 +306,9 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                                                         <span key={i}>
                                                                             {!inSelectionMode && wikiLink ? (
                                                                                 <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-gray-200 hover:underline decoration-white/30 underline-offset-2">
-                                                                                    {getName('skill', s.id)}
+                                                                                    {s.displayName || s.name}
                                                                                 </a>
-                                                                            ) : getName('skill', s.id)}
+                                                                            ) : (s.displayName || s.name)}
                                                                         </span>
                                                                     );
                                                                 })}

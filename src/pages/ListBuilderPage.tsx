@@ -13,15 +13,14 @@ import { calculateListPoints, calculateListSWC } from '@shared/listTypes';
 import { useAuth } from '../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
-import type { components } from '../types/schema';
 import type { Unit } from '@shared/types';
-import './ListBuilderPage.css';
+import styles from './ListBuilderPage.module.css';
 
 export function ListBuilderPage() {
     const db = useDatabase();
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const { currentList, createList, addUnit, resetList, updatePointsLimit, addCombatGroup } = useListStore();
+    const { currentList, createList, addUnit, resetList, updatePointsLimit, addCombatGroup, setServerId } = useListStore();
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const { openUnitModal } = useModal();
 
@@ -45,39 +44,53 @@ export function ListBuilderPage() {
 
     const saveListMutation = useMutation({
         mutationFn: async () => {
-            if (!currentList) return;
-            const body: components["schemas"]["ArmyListCreate"] = {
+            if (!currentList) return null;
+            const body = {
                 name: currentList.name,
+                description: currentList.description,
+                tags: currentList.tags ?? [],
                 faction_id: currentList.factionId,
                 points: calculateListPoints(currentList),
                 swc: calculateListSWC(currentList),
-                units_json: currentList as Record<string, unknown>
+                units_json: currentList as Record<string, unknown>,
             };
-            const { data, error } = await api.POST('/api/lists', { body });
-            if (error) throw error;
-            return data;
+            if (currentList.serverId) {
+                const { data, error } = await api.PUT('/api/lists/{list_id}', {
+                    params: { path: { list_id: currentList.serverId } },
+                    body,
+                });
+                if (error) throw error;
+                return data;
+            } else {
+                const { data, error } = await api.POST('/api/lists', { body });
+                if (error) throw error;
+                return data;
+            }
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });
-            alert("Army List saved to cloud!");
+            if (data && !currentList?.serverId) {
+                setServerId(data.id);
+            }
         },
         onError: (e) => {
             console.error("Save error", e);
-            alert("Failed to save the Army List.");
         }
     });
 
     const handleSaveList = user ? () => saveListMutation.mutate() : undefined;
+    const isSaved = saveListMutation.isSuccess && !saveListMutation.isPending;
 
     // If a list exists, show the Dashboard
     if (currentList) {
         return (
-            <div className="list-builder-page">
+            <div className={styles.listBuilderPage}>
                 <ListHeader
                     list={currentList}
                     factionName={db.getFactionName(currentList.factionId)}
                     codeCopied={codeCopied}
                     isSaving={saveListMutation.status === 'pending'}
+                    isSaved={isSaved}
                     onPointsLimitChange={updatePointsLimit}
                     onCopyCode={handleCopyCode}
                     onOpenInArmy={handleOpenInArmy}
@@ -97,7 +110,7 @@ export function ListBuilderPage() {
 
     // Faction Selection View
     return (
-        <div className="list-builder-page">
+        <div className={styles.listBuilderPage}>
             <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '4rem', paddingBottom: '4rem', height: '100%', minHeight: '50vh', gap: '2rem', maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
 
                 {/* Create New Block */}

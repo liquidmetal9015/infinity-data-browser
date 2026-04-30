@@ -4,8 +4,6 @@
 export type {
     Item,
     Profile,
-    Option,
-    UnitRaw,
     ItemWithModifier,
     Unit,
     DatabaseMetadata,

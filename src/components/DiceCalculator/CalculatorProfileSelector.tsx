@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import type { Unit, Profile, Option } from '../../../shared/types';
-import './CalculatorProfileSelector.css';
+import type { Unit, Profile } from '../../../shared/types';
+import type { Loadout as Option } from '../../../shared/game-model';
+import styles from './CalculatorProfileSelector.module.css';
 
 export interface ExtendedProfile extends Profile {
     optionId: number;
@@ -31,9 +32,9 @@ export function CalculatorProfileSelector({ unit, selectedProfileId, onSelect }:
     }, [unit]);
 
     return (
-        <div className="calculator-profile-selector">
+        <div className={styles.calculatorProfileSelector}>
             <select
-                className="profile-select"
+                className={styles.profileSelect}
                 value={selectedProfileId || ''}
                 onChange={(e) => {
                     const idx = parseInt(e.target.value);

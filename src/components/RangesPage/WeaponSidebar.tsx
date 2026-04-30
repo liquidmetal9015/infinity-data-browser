@@ -1,7 +1,9 @@
 // Weapon Selection Sidebar Component
 import { Search, Info } from 'lucide-react';
+import { clsx } from 'clsx';
 import type { ParsedWeapon } from './types';
 import type { Unit } from '@shared/types';
+import styles from '../../pages/RangesPage.module.css';
 
 interface WeaponSidebarProps {
     weaponSearch: string;
@@ -29,29 +31,29 @@ export function WeaponSidebar({
     onViewUnit
 }: WeaponSidebarProps) {
     return (
-        <div className="sidebar">
-            <div className="sidebar-header">
+        <div className={styles.sidebar}>
+            <div className={styles.sidebarHeader}>
                 <h2>Range Visualizer</h2>
 
                 {/* Unit Search */}
-                <div className="unit-search-section">
-                    <div className="search-wrapper">
-                        <Search className="search-icon" size={16} />
+                <div className={styles.unitSearchSection}>
+                    <div className={styles.searchWrapper}>
+                        <Search className={styles.searchIcon} size={16} />
                         <input
                             type="text"
                             placeholder="Load unit weapons..."
                             value={unitSearch}
                             onChange={(e) => setUnitSearch(e.target.value)}
-                            className="search-input"
+                            className={styles.searchInput}
                         />
                     </div>
                     {/* Autocomplete Dropdown */}
                     {filteredUnits.length > 0 && (
-                        <div className="autocomplete-dropdown">
+                        <div className={styles.autocompleteDropdown}>
                             {filteredUnits.map(u => (
                                 <div
                                     key={u.id}
-                                    className="autocomplete-item"
+                                    className={styles.autocompleteItem}
                                     onClick={() => onSelectUnitWeapons(u.id)}
                                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                                 >
@@ -72,31 +74,31 @@ export function WeaponSidebar({
                     )}
                 </div>
 
-                <div className="divider">or filter details</div>
+                <div className={styles.divider}>or filter details</div>
 
-                <div className="search-wrapper">
-                    <Search className="search-icon" size={16} />
+                <div className={styles.searchWrapper}>
+                    <Search className={styles.searchIcon} size={16} />
                     <input
                         type="text"
                         placeholder="Filter list..."
                         value={weaponSearch}
                         onChange={(e) => setWeaponSearch(e.target.value)}
-                        className="search-input"
+                        className={styles.searchInput}
                     />
                 </div>
             </div>
-            <div className="weapon-list">
+            <div className={styles.weaponList}>
                 {filteredWeapons.map(w => (
                     <div
                         key={w.id}
-                        className={`weapon-item ${selectedIds.has(w.id) ? 'selected' : ''}`}
+                        className={clsx(styles.weaponItem, selectedIds.has(w.id) && styles.selected)}
                         onClick={() => onToggleWeapon(w.id)}
                     >
-                        <span className="weapon-name">{w.name}</span>
+                        <span>{w.name}</span>
                     </div>
                 ))}
                 {filteredWeapons.length === 0 && (
-                    <div className="empty-msg">No weapons found</div>
+                    <div className={styles.emptyMsg}>No weapons found</div>
                 )}
             </div>
         </div>

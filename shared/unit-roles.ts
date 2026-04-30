@@ -1,7 +1,8 @@
 // unit-roles.ts - Unit classification logic for MCP tools
 // Classifies units by combat role: gunfighter, melee, specialist, etc.
 
-import type { Unit, Profile, Option } from './types';
+import type { Unit } from './types';
+import type { Profile, Loadout as Option, WeaponInstance } from './game-model.js';
 
 export type UnitRole =
     | 'gunfighter'
@@ -64,38 +65,23 @@ export function classifyUnit(
     unit: Unit,
     profile: Profile,
     option: Option,
-    metadata?: {
-        skills: Map<number, string>;
-        weapons: Map<number, { name: string; burst?: string; damage?: string; distance?: { med?: { max: number } } }>;
-        equips: Map<number, string>;
-    }
 ): UnitRoleAnalysis {
     const roles: RoleScore[] = [];
 
-    // Extract skill names
+    // Extract skill names from embedded SkillInstance names
     const skillNames = new Set<string>();
-    if (metadata?.skills) {
-        for (const s of [...profile.skills, ...option.skills]) {
-            const name = metadata.skills.get(s.id)?.toLowerCase();
-            if (name) skillNames.add(name);
-        }
+    for (const s of [...profile.skills, ...option.skills]) {
+        skillNames.add(s.name.toLowerCase());
     }
 
-    // Extract weapon info
-    const weapons: Array<{ name: string; burst: number; damage: number; ranged: boolean }> = [];
-    if (metadata?.weapons) {
-        for (const w of [...(profile.weapons || []), ...option.weapons]) {
-            const weapon = metadata.weapons.get(w.id);
-            if (weapon) {
-                weapons.push({
-                    name: weapon.name.toLowerCase(),
-                    burst: parseInt(weapon.burst || '1'),
-                    damage: parseInt(weapon.damage || '0'),
-                    ranged: !!(weapon.distance && weapon.distance.med && weapon.distance.med.max > 0)
-                });
-            }
-        }
-    }
+    // Extract weapon info from embedded WeaponInstance data
+    const allWeapons: WeaponInstance[] = [...(profile.weapons || []), ...option.weapons];
+    const weapons = allWeapons.map(w => ({
+        name: w.name.toLowerCase(),
+        burst: parseInt(w.burst || '1'),
+        damage: parseInt(w.damage || '0'),
+        ranged: !!(w.distance && w.distance.med && w.distance.med.max > 0)
+    }));
 
     // Gunfighter score
     const gunfighterScore = scoreGunfighter(profile, weapons);
@@ -316,11 +302,11 @@ function scoreHeavy(
     let score = 0;
 
     // Type (HI, TAG)
-    if (profile.type === 3) {
+    if (profile.unitType === 3) {
         score += 20;
         reasons.push('Heavy Infantry');
     }
-    if (profile.type === 7) {
+    if (profile.unitType === 7) {
         score += 40;
         reasons.push('TAG');
     }
@@ -370,15 +356,15 @@ function scoreHackTarget(profile: Profile): RoleScore {
     let score = 0;
 
     // HI, REM, TAG are hackable
-    if (profile.type === 3) { // HI
+    if (profile.unitType === 3) { // HI
         score += 30;
         reasons.push('Heavy Infantry (hackable)');
     }
-    if (profile.type === 6) { // REM
+    if (profile.unitType === 6) { // REM
         score += 40;
         reasons.push('REM (hackable)');
     }
-    if (profile.type === 7) { // TAG
+    if (profile.unitType === 7) { // TAG
         score += 50;
         reasons.push('TAG (hackable)');
     }
@@ -408,17 +394,12 @@ function scoreOrderGenerator(option: Option): RoleScore {
 export function getTopUnitsByRole(
     units: Array<{ unit: Unit; profile: Profile; option: Option }>,
     role: UnitRole,
-    metadata: {
-        skills: Map<number, string>;
-        weapons: Map<number, { name: string; burst?: string; damage?: string; distance?: { med?: { max: number } } }>;
-        equips: Map<number, string>;
-    },
     limit: number = 10
 ): UnitRoleAnalysis[] {
     const analyses: UnitRoleAnalysis[] = [];
 
     for (const { unit, profile, option } of units) {
-        const analysis = classifyUnit(unit, profile, option, metadata);
+        const analysis = classifyUnit(unit, profile, option);
         const roleScore = analysis.roles.find(r => r.role === role);
         if (roleScore && roleScore.score > 0) {
             analyses.push(analysis);

@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
+import { clsx } from 'clsx';
 import { Plus, X, Check, Info, Calculator } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
 import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '@shared/fireteams';
+import styles from './FireteamsPage.module.css';
 
 interface FireteamBuilderProps {
     chart: FireteamChart;
@@ -61,15 +63,15 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
     }, [selectedTeam, mappedTeamMembers]);
 
     return (
-        <div className="builder-container">
+        <div className={styles.builderContainer}>
             {/* Left Column: Selection */}
-            <div className="builder-selection">
+            <div className={styles.builderSelection}>
                 <h3>1. Select Team Type</h3>
-                <div className="team-selector">
+                <div className={styles.teamSelector}>
                     {regularTeams.map((team: Fireteam, idx: number) => (
                         <button
                             key={idx}
-                            className={`team-select-btn ${selectedTeam?.name === team.name ? 'selected' : ''} `}
+                            className={clsx(styles.teamSelectBtn, selectedTeam?.name === team.name && styles.selected)}
                             onClick={() => handleSelectTeam(team)}
                         >
                             {team.name}
@@ -168,7 +170,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                 return (
                                     <button
                                         key={`${type} -${idx} `}
-                                        className={`pool-item ${isLevelUp ? 'level-up' : ''} ${isRequiredHelper ? 'required-glow' : ''} `}
+                                        className={clsx(styles.poolItem, isLevelUp && styles.levelUp, isRequiredHelper && styles.requiredGlow)}
                                         onClick={() => handleAddMember(u)}
                                         disabled={isDisabled}
                                         style={isDisabled ? { opacity: 0.3, filter: 'grayscale(100%)' } : {}}
@@ -176,7 +178,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 {u.name}
-                                                {countsAsStr && <span className="counts-as-tiny">({countsAsStr})</span>}
+                                                {countsAsStr && <span className={styles.countsAsTiny}>({countsAsStr})</span>}
                                             </span>
                                             {/* Clean visuals: removed text tags */}
                                         </div>
@@ -186,7 +188,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                             };
 
                             return (
-                                <div className="unit-pool">
+                                <div className={styles.unitPool}>
                                     <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Team Members</div>
                                     {selectedTeam.units.map((u: FireteamUnit, i: number) => renderPoolItem(u, i, 'member'))}
 
@@ -204,20 +206,20 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
             </div>
 
             {/* Right Column: Workspace */}
-            <div className="builder-workspace">
+            <div className={styles.builderWorkspace}>
                 {!selectedTeam ? (
-                    <div className="empty-state" style={{ height: '100%' }}>
+                    <div className={styles.emptyState} style={{ height: '100%' }}>
                         <Calculator size={48} className="text-secondary" />
                         <p>Select a Fireteam from the left to start building.</p>
                     </div>
                 ) : (
                     <>
-                        <div className="active-team-card">
-                            <div className="card-header" style={{ marginBottom: '1.5rem', background: 'transparent', borderBottom: 'none', padding: 0 }}>
+                        <div className={styles.activeTeamCard}>
+                            <div className={styles.cardHeader} style={{ marginBottom: '1.5rem', background: 'transparent', borderBottom: 'none', padding: 0 }}>
                                 <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{selectedTeam.name} Composition</h3>
                                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                                     {selectedTeam.type.map(t => (
-                                        <span key={t} className={`badge ${t.toLowerCase()} `}>{t}</span>
+                                        <span key={t} className={clsx(styles.badge, styles[t.toLowerCase() as keyof typeof styles])}>{t}</span>
                                     ))}
                                     <span style={{ marginLeft: 'auto', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                                         Max Size: {maxTeamSize}
@@ -225,24 +227,24 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                 </div>
                             </div>
 
-                            <div className="team-slots">
+                            <div className={styles.teamSlots}>
                                 {Array.from({ length: 5 }).map((_, idx) => {
                                     const member = teamMembers[idx];
                                     const isLocked = idx >= maxTeamSize;
 
                                     if (isLocked) {
                                         return (
-                                            <div key={idx} className="member-slot locked">
+                                            <div key={idx} className={clsx(styles.memberSlot, styles.locked)}>
                                                 {/* Locked Slot */}
                                             </div>
                                         );
                                     }
 
                                     return (
-                                        <div key={idx} className={`member-slot ${member ? 'filled' : 'empty'} `}>
+                                        <div key={idx} className={clsx(styles.memberSlot, member ? styles.filled : styles.empty)}>
                                             {member ? (
                                                 <>
-                                                    <div className="slot-content">
+                                                    <div className={styles.slotContent}>
                                                         <div style={{ fontWeight: 'bold' }}>{member.name}</div>
                                                         {(() => {
                                                             const tags = getUnitTags(member.name, member.comment || '');
@@ -259,7 +261,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                                             return null;
                                                         })()}
                                                         <button
-                                                            className="info-btn"
+                                                            className={styles.infoBtn}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 const fullUnit = db.getUnitBySlug(member.slug);
@@ -272,7 +274,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                                         </button>
                                                     </div>
                                                     <button
-                                                        className="remove-btn"
+                                                        className={styles.removeBtn}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleRemoveMember(idx);
@@ -282,7 +284,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                                     </button>
                                                 </>
                                             ) : (
-                                                <div className="slot-content" style={{ opacity: 0.3 }}>
+                                                <div className={styles.slotContent} style={{ opacity: 0.3 }}>
                                                     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                                                         {idx + 1}
                                                     </div>
@@ -294,12 +296,12 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                 })}
                             </div>
 
-                            <div className="bonus-panel">
+                            <div className={styles.bonusPanel}>
                                 <h4>Active Bonuses</h4>
-                                <div className="bonus-list">
+                                <div className={styles.bonusList}>
                                     {bonuses.map((bonus, idx) => (
-                                        <div key={idx} className={`bonus-item ${bonus.isActive ? 'active' : ''} `}>
-                                            <div className="bonus-check">
+                                        <div key={idx} className={clsx(styles.bonusItem, bonus.isActive && styles.active)}>
+                                            <div className={styles.bonusCheck}>
                                                 {bonus.isActive ? <Check size={14} /> : <span style={{ fontSize: '10px' }}>{bonus.level}</span>}
                                             </div>
                                             <div style={{ flex: 1 }}>

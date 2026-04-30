@@ -21,8 +21,11 @@ import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
+import { useAuth } from '../../hooks/useAuth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../services/api';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit, type FireteamDef } from '@shared/listTypes';
-import { Plus, Trash2, Users, Copy, Check, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Users, Copy, Check, ExternalLink, CloudUpload, CloudCheck } from 'lucide-react';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -31,7 +34,8 @@ import { SortableFireteamContainer } from '../ListBuilder/SortableFireteamContai
 import { DraggableUnitRow } from '../ListBuilder/DraggableUnitRow';
 import { DragOverlayUnit } from '../ListBuilder/DragOverlayUnit';
 import { CompactFactionSelector } from '../shared/CompactFactionSelector';
-import '../ListBuilder/ListDashboard.css';
+import { clsx } from 'clsx';
+import styles from '../ListBuilder/ListDashboard.module.css';
 
 // Droppable container for empty groups or the whole group area
 function DroppableCombatGroup({
@@ -51,7 +55,7 @@ function DroppableCombatGroup({
     return (
         <div
             ref={setNodeRef}
-            className={`combat-group ${isTarget ? 'is-target' : ''} ${isOver ? 'is-drag-over' : ''}`}
+            className={clsx(styles.combatGroup, isTarget && styles.isTarget, isOver && styles.isDragOver)}
         >
             {children}
         </div>
@@ -64,9 +68,48 @@ export function ArmyListPanel() {
     const {
         createList, addUnit, removeUnit, addCombatGroup, removeCombatGroup,
         reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam,
-        addFireteamDef, removeFireteamDef, moveFireteam, resetList, updatePointsLimit,
+        addFireteamDef, removeFireteamDef, moveFireteam, resetList, updatePointsLimit, setServerId,
+        updateListName, updateTags,
     } = useListStore();
+
+    const [editingName, setEditingName] = useState(false);
+    const [nameValue, setNameValue] = useState('');
+    const [editingTags, setEditingTags] = useState(false);
+    const [tagInput, setTagInput] = useState('');
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+
+    const saveListMutation = useMutation({
+        mutationFn: async () => {
+            if (!currentList) return null;
+            const body = {
+                name: currentList.name,
+                description: currentList.description,
+                tags: currentList.tags ?? [],
+                faction_id: currentList.factionId,
+                points: calculateListPoints(currentList),
+                swc: calculateListSWC(currentList),
+                units_json: currentList as Record<string, unknown>,
+            };
+            if (currentList.serverId) {
+                const { data, error } = await api.PUT('/api/lists/{list_id}', {
+                    params: { path: { list_id: currentList.serverId } },
+                    body,
+                });
+                if (error) throw error;
+                return data;
+            } else {
+                const { data, error } = await api.POST('/api/lists', { body });
+                if (error) throw error;
+                return data;
+            }
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+            if (data && !currentList?.serverId) setServerId(data.id);
+        },
+    });
 
     const {
         hoveredUnitISC, targetGroupIndex,
@@ -323,7 +366,7 @@ export function ArmyListPanel() {
     const swcOver = totalSWC > list.swcLimit;
 
     return (
-        <div className="list-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className={styles.listPanel} style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* List Header - compact single-line */}
             <div style={{
                 flexShrink: 0,
@@ -335,18 +378,37 @@ export function ArmyListPanel() {
                 borderBottom: '1px solid var(--border-subtle)',
                 minHeight: 0,
             }}>
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <span style={{
-                        fontFamily: "'Oxanium', sans-serif",
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: 'var(--text-primary)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}>{list.name}</span>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden' }}>
+                    {editingName ? (
+                        <input
+                            autoFocus
+                            value={nameValue}
+                            onChange={e => setNameValue(e.target.value)}
+                            onBlur={() => { if (nameValue.trim()) updateListName(nameValue.trim()); setEditingName(false); }}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') { if (nameValue.trim()) updateListName(nameValue.trim()); setEditingName(false); }
+                                if (e.key === 'Escape') setEditingName(false);
+                            }}
+                            style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.1rem 0.4rem', fontSize: '0.85rem', fontWeight: 700, width: '100%', minWidth: 0 }}
+                        />
+                    ) : (
+                        <span
+                            title="Click to rename"
+                            onClick={() => { setNameValue(list.name); setEditingName(true); }}
+                            style={{
+                                fontFamily: "'Oxanium', sans-serif",
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                color: 'var(--text-primary)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                cursor: 'text',
+                            }}
+                        >{list.name}</span>
+                    )}
                     <span style={{ color: '#475569', fontSize: '0.75rem', flexShrink: 0 }}>|</span>
                     <span style={{
                         color: 'var(--color-primary)',
@@ -357,11 +419,12 @@ export function ArmyListPanel() {
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        flexShrink: 0,
                     }}>{db.getFactionName(list.factionId)}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
                     <select
-                        className="points-dropdown-inline"
+                        className={styles.pointsDropdownInline}
                         value={list.pointsLimit}
                         onChange={e => updatePointsLimit(Number(e.target.value))}
                         style={{ padding: '0.2rem 0.4rem', fontSize: '0.8rem', minWidth: 0 }}
@@ -372,39 +435,87 @@ export function ArmyListPanel() {
                         <option value={300}>300</option>
                         <option value={400}>400</option>
                     </select>
-                    <button className="code-button" onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
+                    {user && (
+                        <button
+                            className={styles.codeButton}
+                            onClick={() => saveListMutation.mutate()}
+                            disabled={saveListMutation.isPending}
+                            title="Save to My Lists"
+                            style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
+                        >
+                            {saveListMutation.isSuccess && !saveListMutation.isPending
+                                ? <CloudCheck size={14} />
+                                : <CloudUpload size={14} className={saveListMutation.isPending ? 'animate-pulse' : ''} />}
+                        </button>
+                    )}
+                    <button className={styles.codeButton} onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
                         <ExternalLink size={14} />
                     </button>
-                    <button className="code-button" onClick={handleCopyCode} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
+                    <button className={styles.codeButton} onClick={handleCopyCode} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
                         {codeCopied ? <Check size={14} /> : <Copy size={14} />}
                     </button>
-                    <button className="reset-button" onClick={resetList} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
+                    <button className={styles.resetButton} onClick={resetList} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
                         <Trash2 size={14} />
                     </button>
                 </div>
             </div>
 
+            {/* Tags row */}
+            <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.3rem', padding: '0.3rem 0.75rem', borderBottom: '1px solid var(--border, #1e293b)', minHeight: '30px' }}>
+                {(list.tags ?? []).map(tag => (
+                    <span
+                        key={tag}
+                        onClick={() => updateTags((list.tags ?? []).filter(t => t !== tag))}
+                        title="Click to remove"
+                        style={{ padding: '0.1rem 0.5rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 500, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#a5b4fc', cursor: 'pointer' }}
+                    >
+                        #{tag}
+                    </span>
+                ))}
+                {editingTags ? (
+                    <input
+                        autoFocus
+                        value={tagInput}
+                        onChange={e => setTagInput(e.target.value)}
+                        onBlur={() => { updateTags(tagInput.split(',').map(t => t.trim()).filter(Boolean)); setEditingTags(false); }}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') { updateTags(tagInput.split(',').map(t => t.trim()).filter(Boolean)); setEditingTags(false); }
+                            if (e.key === 'Escape') setEditingTags(false);
+                        }}
+                        placeholder="tag1, tag2, …"
+                        style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.1rem 0.4rem', fontSize: '0.7rem', width: '110px' }}
+                    />
+                ) : (
+                    <button
+                        onClick={() => { setTagInput((list.tags ?? []).join(', ')); setEditingTags(true); }}
+                        style={{ padding: '0.1rem 0.5rem', borderRadius: '20px', fontSize: '0.7rem', border: '1px dashed var(--border, #334155)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                    >
+                        + tag
+                    </button>
+                )}
+            </div>
+
             {/* Summary Bar */}
-            <div className="summary-bar" style={{ flexShrink: 0 }}>
-                <div className={`stat ${pointsOver ? 'over' : ''}`}>
-                    <span className="label">Points</span>
-                    <span className="value">{totalPoints} / {list.pointsLimit}</span>
+            <div className={styles.summaryBar} style={{ flexShrink: 0 }}>
+                <div className={clsx(styles.stat, pointsOver && styles.over)}>
+                    <span className={styles.label}>Points</span>
+                    <span className={styles.value}>{totalPoints} / {list.pointsLimit}</span>
                 </div>
-                <div className={`stat ${swcOver ? 'over' : ''}`}>
-                    <span className="label">SWC</span>
-                    <span className="value">{totalSWC.toFixed(1)} / {list.swcLimit}</span>
+                <div className={clsx(styles.stat, swcOver && styles.over)}>
+                    <span className={styles.label}>SWC</span>
+                    <span className={styles.value}>{totalSWC.toFixed(1)} / {list.swcLimit}</span>
                 </div>
-                <div className="stat">
-                    <span className="label flex items-center gap-1"><Users size={12} /> Units</span>
-                    <span className="value">{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
+                <div className={styles.stat}>
+                    <span className={clsx(styles.label, 'flex items-center gap-1')}><Users size={12} /> Units</span>
+                    <span className={styles.value}>{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
                 </div>
                 {db.getFireteamChart(list.factionId)?.spec && Object.entries(db.getFireteamChart(list.factionId)!.spec).map(([type, limit]) => {
                     if (limit >= 256) return null;
                     const count = fireteamCounts[type] || 0;
                     return (
-                        <div key={type} className={`stat ${count > limit ? 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded' : ''}`}>
-                            <span className="label text-gray-400 uppercase text-[10px]">{type} LIMIT</span>
-                            <span className="value">{count} / {limit}</span>
+                        <div key={type} className={clsx(styles.stat, count > limit && 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded')}>
+                            <span className={clsx(styles.label, 'text-gray-400 uppercase text-[10px]')}>{type} LIMIT</span>
+                            <span className={styles.value}>{count} / {limit}</span>
                         </div>
                     );
                 })}
@@ -418,7 +529,7 @@ export function ArmyListPanel() {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    <div className="combat-groups-container">
+                    <div className={styles.combatGroupsContainer}>
                         {list.groups.map((group, groupIndex) => {
                             const groupOrders = countGroupOrders(
                                 group.units.map(lu => {
@@ -429,12 +540,12 @@ export function ArmyListPanel() {
 
                             return (
                                 <DroppableCombatGroup key={group.id} groupIndex={groupIndex} isTarget={targetGroupIndex === groupIndex}>
-                                    <div className="group-header">
-                                        <div className="group-info">
+                                    <div className={styles.groupHeader}>
+                                        <div className={styles.groupInfo}>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="group-name">{group.name}</span>
-                                                    <span className="group-count">{group.units.filter(u => !u.isPeripheral).length} units</span>
+                                                    <span className={styles.groupName}>{group.name}</span>
+                                                    <span className={styles.groupCount}>{group.units.filter(u => !u.isPeripheral).length} units</span>
                                                 </div>
                                                 <div className="flex gap-2.5 mt-1.5">
                                                     {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
@@ -445,10 +556,10 @@ export function ArmyListPanel() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="group-actions self-start">
+                                        <div className={clsx(styles.groupActions, 'self-start')}>
                                             <div className="flex items-center">
                                                 <button
-                                                    className="target-btn group-ft-btn mr-1"
+                                                    className={clsx(styles.targetBtn, 'mr-1')}
                                                     title="Add a fireteam container"
                                                     onClick={() => {
                                                         const id = `ft-${Date.now()}`;
@@ -461,7 +572,7 @@ export function ArmyListPanel() {
                                                 </button>
                                             </div>
                                             <button
-                                                className={`target-btn ${targetGroupIndex === groupIndex ? 'active' : ''}`}
+                                                className={clsx(styles.targetBtn, targetGroupIndex === groupIndex && styles.active)}
                                                 title="Select as target for added units"
                                                 onClick={() => setTargetGroupIndex(groupIndex)}
                                             >
@@ -469,7 +580,7 @@ export function ArmyListPanel() {
                                             </button>
                                             {list.groups.length > 1 && (
                                                 <button
-                                                    className="delete-btn"
+                                                    className={styles.deleteBtn}
                                                     onClick={() => removeCombatGroup(groupIndex)}
                                                     title="Remove Combat Group"
                                                 >
@@ -480,21 +591,21 @@ export function ArmyListPanel() {
                                     </div>
 
                                     {group.units.length === 0 && (!group.fireteams || group.fireteams.length === 0) ? (
-                                        <div className="empty-group">
+                                        <div className={styles.emptyGroup}>
                                             Click a unit from the roster to add it here
                                         </div>
                                     ) : (
-                                        <div className="units-table relative">
-                                            <div className="units-thead flex items-center">
-                                                <div className="col-drag"></div>
-                                                <div className="col-orders text-center">Ord</div>
-                                                <div className="col-name">Name</div>
-                                                <div className="col-weapons">Weapons / Equipment</div>
-                                                <div className="col-swc text-right">SWC</div>
-                                                <div className="col-pts text-right">Pts</div>
-                                                <div className="col-actions"></div>
+                                        <div className={clsx(styles.unitsTable, 'relative')}>
+                                            <div className={clsx(styles.unitsThead, 'flex items-center')}>
+                                                <div className={styles.colDrag}></div>
+                                                <div className={clsx(styles.colOrders, 'text-center')}>Ord</div>
+                                                <div className={styles.colName}>Name</div>
+                                                <div className={styles.colWeapons}>Weapons / Equipment</div>
+                                                <div className={clsx(styles.colSwc, 'text-right')}>SWC</div>
+                                                <div className={clsx(styles.colPts, 'text-right')}>Pts</div>
+                                                <div className={styles.colActions}></div>
                                             </div>
-                                            <div className="units-tbody">
+                                            <div>
                                                 {(() => {
                                                     const fireteamItems: { ft: FireteamDef, members: ListUnit[] }[] = [];
                                                     const seenFireteams = new Set<string>();
@@ -534,7 +645,6 @@ export function ArmyListPanel() {
                                                                 groupIndex={groupIndex}
                                                                 onViewUnit={handleViewUnit}
                                                                 onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                db={db}
                                                             />
                                                             {peripheralsMap.get(u.id)?.map(p => (
                                                                 <DraggableUnitRow
@@ -543,7 +653,6 @@ export function ArmyListPanel() {
                                                                     groupIndex={groupIndex}
                                                                     onViewUnit={handleViewUnit}
                                                                     onRemove={() => {}}
-                                                                    db={db}
                                                                 />
                                                             ))}
                                                         </React.Fragment>
@@ -603,7 +712,7 @@ export function ArmyListPanel() {
                 </DndContext>
 
                 {list.groups.length < 2 && (
-                    <button className="add-group-btn" onClick={addCombatGroup}>
+                    <button className={styles.addGroupBtn} onClick={addCombatGroup}>
                         <Plus size={16} />
                         Add Combat Group
                     </button>

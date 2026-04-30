@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import type {
     WidgetType,
+    LayoutMode,
     WindowState,
     WorkspaceState,
     WorkspaceAction,
@@ -9,7 +10,7 @@ import type {
     WindowSize,
     AnyWidgetProps,
 } from '../types/workspace';
-import { DEFAULT_SIZES, WIDGET_LABELS, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT } from '../types/workspace';
+import { DEFAULT_SIZES, WIDGET_LABELS, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT, getColumnPanels } from '../types/workspace';
 
 // ============================================================================
 // Constants
@@ -34,6 +35,39 @@ function getCascadePosition(existingWindows: WindowState[]): WindowPosition {
         x: baseX + (offset % 300),
         y: baseY + (offset % 200),
     };
+}
+
+function computeColumnWindowPositions(state: WorkspaceState): WindowState[] {
+    if (typeof window === 'undefined') return state.windows;
+
+    const WINDOW_GAP = 6;
+    const DIVIDER = 5;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - 60;
+
+    const panels = getColumnPanels(state.columnCount ?? 3);
+    const widths = state.columnWidths ?? panels.map(() => 1);
+    const total = widths.reduce((a, b) => a + b, 0);
+    const totalColPx = vw - DIVIDER * (panels.length - 1);
+
+    let x = 0;
+    return panels.map((type, i) => {
+        const colPx = Math.round(totalColPx * (widths[i] / total));
+        const winState: WindowState = {
+            id: state.windows.find(w => w.type === type)?.id ?? generateId(),
+            type,
+            title: WIDGET_LABELS[type],
+            position: { x: x + WINDOW_GAP, y: WINDOW_GAP },
+            size: {
+                width: Math.max(MIN_WINDOW_WIDTH, colPx - WINDOW_GAP * 2),
+                height: Math.max(MIN_WINDOW_HEIGHT, vh - WINDOW_GAP * 2),
+            },
+            zIndex: state.nextZIndex + i,
+            isMinimized: false,
+        };
+        x += colPx + DIVIDER;
+        return winState;
+    });
 }
 
 function getInitialPlacement(windows: WindowState[], type: WidgetType): { position: WindowPosition, size: WindowSize } {
@@ -71,8 +105,11 @@ function getInitialPlacement(windows: WindowState[], type: WidgetType): { positi
 export const initialState: WorkspaceState = {
     windows: [],
     nextZIndex: 1,
-    layoutMode: typeof window !== 'undefined' && window.innerWidth < 768 ? 'tabbed' : 'multi-window',
+    layoutMode: 'columns',
     maximizedWindowId: null,
+    columnWidths: [1, 1, 1],
+    columnCount: 3,
+    activeColumnIndex: 0,
 };
 
 export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
@@ -195,7 +232,39 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
             return action.state;
         }
 
+        case 'SET_COLUMN_WIDTHS': {
+            return { ...state, columnWidths: action.widths };
+        }
+
+        case 'SET_COLUMN_COUNT': {
+            const newWidths = action.count === 2 ? [1, 1] : [1, 1, 1];
+            const maxIndex = action.count - 1;
+            return {
+                ...state,
+                columnCount: action.count,
+                columnWidths: newWidths,
+                activeColumnIndex: Math.min(state.activeColumnIndex, maxIndex),
+            };
+        }
+
+        case 'SET_ACTIVE_COLUMN': {
+            const maxIndex = (state.columnCount ?? 3) - 1;
+            return { ...state, activeColumnIndex: Math.max(0, Math.min(action.index, maxIndex)) };
+        }
+
         case 'SET_LAYOUT_MODE': {
+            if (action.mode === 'multi-window' && state.layoutMode === 'columns') {
+                const columnWindows = computeColumnWindowPositions(state);
+                const activePanels = new Set(getColumnPanels(state.columnCount ?? 3));
+                const otherWindows = state.windows.filter(w => !activePanels.has(w.type));
+                return {
+                    ...state,
+                    layoutMode: 'multi-window',
+                    maximizedWindowId: null,
+                    windows: [...otherWindows, ...columnWindows],
+                    nextZIndex: state.nextZIndex + columnWindows.length,
+                };
+            }
             return {
                 ...state,
                 layoutMode: action.mode,
@@ -279,11 +348,14 @@ function loadFromStorage(): WorkspaceState | null {
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.windows) && typeof parsed.nextZIndex === 'number') {
-            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+            const columnCount: 2 | 3 = parsed.columnCount === 2 ? 2 : 3;
             return {
                 ...parsed,
-                layoutMode: parsed.layoutMode || (isMobile ? 'tabbed' : 'multi-window'),
+                layoutMode: parsed.layoutMode || 'columns',
                 maximizedWindowId: parsed.maximizedWindowId ?? null,
+                columnWidths: parsed.columnWidths ?? (columnCount === 2 ? [1, 1] : [1, 1, 1]),
+                columnCount,
+                activeColumnIndex: parsed.activeColumnIndex ?? 0,
             } as WorkspaceState;
         }
     } catch {
@@ -304,14 +376,25 @@ interface WorkspaceStore extends WorkspaceState {
     restoreWindow: (windowId: string) => void;
     moveWindow: (windowId: string, position: WindowPosition) => void;
     resizeWindow: (windowId: string, size: WindowSize, position?: WindowPosition) => void;
-    setLayoutMode: (mode: 'multi-window' | 'tabbed') => void;
+    setLayoutMode: (mode: LayoutMode) => void;
     toggleMaximize: (windowId: string) => void;
     snapWindow: (windowId: string, position: 'left' | 'right') => void;
+    setColumnWidths: (widths: number[]) => void;
+    setColumnCount: (count: 2 | 3) => void;
+    setActiveColumn: (index: number) => void;
 }
 
 function applyAction(state: WorkspaceStore, action: WorkspaceAction): WorkspaceState {
     return workspaceReducer(
-        { windows: state.windows, nextZIndex: state.nextZIndex, layoutMode: state.layoutMode, maximizedWindowId: state.maximizedWindowId },
+        {
+            windows: state.windows,
+            nextZIndex: state.nextZIndex,
+            layoutMode: state.layoutMode,
+            maximizedWindowId: state.maximizedWindowId,
+            columnWidths: state.columnWidths,
+            columnCount: state.columnCount,
+            activeColumnIndex: state.activeColumnIndex,
+        },
         action
     );
 }
@@ -331,6 +414,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()((set) => ({
     setLayoutMode: (mode) => set(s => applyAction(s, { type: 'SET_LAYOUT_MODE', mode })),
     toggleMaximize: (windowId) => set(s => applyAction(s, { type: 'TOGGLE_MAXIMIZE', windowId })),
     snapWindow: (windowId, position) => set(s => applyAction(s, { type: 'SNAP_WINDOW', windowId, position })),
+    setColumnWidths: (widths) => set(s => applyAction(s, { type: 'SET_COLUMN_WIDTHS', widths })),
+    setColumnCount: (count) => set(s => applyAction(s, { type: 'SET_COLUMN_COUNT', count })),
+    setActiveColumn: (index) => set(s => applyAction(s, { type: 'SET_ACTIVE_COLUMN', index })),
 }));
 
 // Persist to localStorage on every state change
@@ -340,5 +426,8 @@ useWorkspaceStore.subscribe((state) => {
         nextZIndex: state.nextZIndex,
         layoutMode: state.layoutMode,
         maximizedWindowId: state.maximizedWindowId,
+        columnWidths: state.columnWidths,
+        columnCount: state.columnCount,
+        activeColumnIndex: state.activeColumnIndex,
     });
 });

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import ARRAY, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,8 @@ class ArmyList(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
     faction_id: Mapped[int] = mapped_column(ForeignKey("factions.id"))
     name: Mapped[str] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tags: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
     points: Mapped[int] = mapped_column(Integer)
     swc: Mapped[float] = mapped_column(Float)
 
@@ -30,3 +32,14 @@ class ArmyList(Base):
 
     user: Mapped["User"] = relationship(back_populates="lists")
     faction: Mapped["Faction"] = relationship()
+
+    @property
+    def unit_count(self) -> int:
+        """Count non-peripheral units across all combat groups."""
+        groups = self.units_json.get("groups", []) if self.units_json else []
+        return sum(
+            1
+            for group in groups
+            for unit in group.get("units", [])
+            if not unit.get("isPeripheral", False)
+        )

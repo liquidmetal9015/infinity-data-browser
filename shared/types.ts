@@ -2,6 +2,9 @@
 // Core Data Types - Used by both frontend and MCP server
 // ============================================================================
 
+// Re-export ProcessedUnit as the canonical unit data type
+export type { ProcessedUnit } from './game-model.js';
+
 export interface Item {
     id: number;
     name: string;
@@ -21,65 +24,19 @@ export interface RuleSummariesData {
 }
 
 
-export interface Profile {
-    id: number;
-    name: string;
-    skills: { id: number; extra?: number[] }[];
-    equip: { id: number; extra?: number[] }[];
-    weapons: { id: number; extra?: number[] }[];
-    type?: number; // Unit classification (1=LI, 2=MI, etc)
-    move: number[];
-    cc: number;
-    bs: number;
-    ph: number;
-    wip: number;
-    arm: number;
-    bts: number;
-    w: number;
-    s: number;
-    str?: boolean; // true if W is Structure
-    logo?: string; // Corvus Belli occasionally puts the unit logo on the profile
-}
-
-export interface Option {
-    id: number;
-    name: string;
-    points: number;
-    swc: number;
-    skills: { id: number; extra?: number[] }[];
-    equip: { id: number; extra?: number[] }[];
-    weapons: { id: number; extra?: number[] }[];
-    orders?: { type: string; list?: number; total?: number }[];
-}
-
-export interface UnitRaw {
-    id: number;
-    idArmy?: number;
-    isc: string;
-    name: string;
-    factions: number[];
-    profileGroups: {
-        id: number;
-        isc?: string;
-        isco?: string; // Option ISC (name for the group)
-        profiles: Profile[];
-        options: Option[];
-    }[];
-    slug?: string;
-    logo?: string;
-}
+// Re-export profile/loadout types from game-model for consumers that need them
+export type { Profile, Loadout } from './game-model.js';
 
 // Represents a skill/equipment with its modifier value(s)
 export interface ItemWithModifier {
     id: number;
     name: string;
     type: 'skill' | 'equipment' | 'weapon';
-    modifiers: number[];  // The 'extra' values, e.g., [6] for Mimetism(-6)
+    modifiers: string[];  // Decoded modifier display strings, e.g. ["-6"] for Mimetism(-6)
 }
 
 export interface Unit {
     id: number;
-    idArmy?: number;
     isc: string;
     name: string;
     factions: number[];
@@ -91,7 +48,7 @@ export interface Unit {
     allItemsWithMods: ItemWithModifier[];
     // Pre-computed points range [min, max] across all options
     pointsRange: [number, number];
-    raw: UnitRaw; // Keep raw data for display
+    raw: import('./game-model.js').ProcessedUnit; // Processed unit data for display
 }
 
 export interface DatabaseMetadata {
@@ -131,7 +88,7 @@ export interface SearchSuggestion {
     name: string;              // Base name "Mimetism"
     displayName: string;       // "Mimetism(-6)" or "Mimetism (any)"
     type: 'weapon' | 'skill' | 'equipment';
-    modifiers: number[];       // The modifier values
+    modifiers: string[];       // Decoded modifier display strings, e.g. ["-6"]
     isAnyVariant: boolean;     // True for the "any" option
     wiki?: string;
 }
@@ -268,7 +225,7 @@ export interface HydratedList {
 export interface SearchFilter {
     type: 'weapon' | 'skill' | 'equipment' | 'stat';
     baseId?: number;
-    modifiers?: number[];
+    modifiers?: string[];
     matchAnyModifier?: boolean;
     stat?: string;
     statOperator?: '>' | '>=' | '=' | '<=' | '<';

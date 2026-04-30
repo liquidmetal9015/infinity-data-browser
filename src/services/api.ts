@@ -9,6 +9,10 @@ const client = createClient<paths>({ baseURL });
 
 client.use({
     async onRequest({ request }) {
+        if (import.meta.env.VITE_DEV_AUTH === 'true') {
+            request.headers.set("Authorization", "Bearer dev-token");
+            return request;
+        }
         const user = auth.currentUser;
         if (user) {
             const token = await user.getIdToken();

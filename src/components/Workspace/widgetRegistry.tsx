@@ -14,16 +14,17 @@ import { UnitRosterPanel } from '../Panels/UnitRosterPanel';
 import { UnitDetailPanel } from '../Panels/UnitDetailPanel';
 import { ArmyListPanel } from '../Panels/ArmyListPanel';
 
-// Legacy imports (disconnected from launcher, kept for reference)
+// Optimization tool imports — opened as floating windows
+import { FireteamsPage } from '../../pages/FireteamsPage';
+import { DiceCalculatorPage } from '../../pages/DiceCalculatorPage';
+import { DiceAnalyticsPage } from '../../pages/DiceAnalyticsPage';
+import { ClassifiedsPage } from '../../pages/ClassifiedsPage';
+
+// Legacy/unused widget stubs (exploration pages now have proper routes)
 import { SearchPage } from '../../pages/SearchPage';
 import { ReferencePage } from '../../pages/ReferencePage';
 import { RangesPage } from '../../pages/RangesPage';
 import { ComparePage } from '../../pages/ComparePage';
-import { FireteamsPage } from '../../pages/FireteamsPage';
-import { ListBuilderPage } from '../../pages/ListBuilderPage';
-import { DiceCalculatorPage } from '../../pages/DiceCalculatorPage';
-import { DiceAnalyticsPage } from '../../pages/DiceAnalyticsPage';
-import { ClassifiedsPage } from '../../pages/ClassifiedsPage';
 
 export interface WidgetRegistryEntry {
     component: ComponentType<object>;
@@ -53,7 +54,33 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
         defaultSize: DEFAULT_SIZES.ARMY_LIST,
     },
 
-    // Legacy widgets (disconnected from launcher)
+    // Optimization tools — launchable as floating windows
+    FIRETEAMS: {
+        component: FireteamsPage,
+        label: WIDGET_LABELS.FIRETEAMS,
+        icon: Layers,
+        defaultSize: DEFAULT_SIZES.FIRETEAMS,
+    },
+    DICE_CALCULATOR: {
+        component: DiceCalculatorPage,
+        label: WIDGET_LABELS.DICE_CALCULATOR,
+        icon: Calculator,
+        defaultSize: DEFAULT_SIZES.DICE_CALCULATOR,
+    },
+    DICE_ANALYTICS: {
+        component: DiceAnalyticsPage,
+        label: WIDGET_LABELS.DICE_ANALYTICS,
+        icon: BarChart,
+        defaultSize: DEFAULT_SIZES.DICE_ANALYTICS,
+    },
+    CLASSIFIEDS: {
+        component: ClassifiedsPage,
+        label: WIDGET_LABELS.CLASSIFIEDS,
+        icon: Target,
+        defaultSize: DEFAULT_SIZES.CLASSIFIEDS,
+    },
+
+    // Exploration pages — these now have proper routes; widget entries kept for type completeness
     SEARCH: {
         component: SearchPage,
         label: WIDGET_LABELS.SEARCH,
@@ -78,41 +105,22 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
         icon: Users,
         defaultSize: DEFAULT_SIZES.COMPARE,
     },
-    FIRETEAMS: {
-        component: FireteamsPage,
-        label: WIDGET_LABELS.FIRETEAMS,
-        icon: Layers,
-        defaultSize: DEFAULT_SIZES.FIRETEAMS,
-    },
-    LIST_BUILDER: {
-        component: ListBuilderPage,
-        label: WIDGET_LABELS.LIST_BUILDER,
-        icon: ClipboardList,
-        defaultSize: DEFAULT_SIZES.LIST_BUILDER,
-    },
-    DICE_CALCULATOR: {
-        component: DiceCalculatorPage,
-        label: WIDGET_LABELS.DICE_CALCULATOR,
-        icon: Calculator,
-        defaultSize: DEFAULT_SIZES.DICE_CALCULATOR,
-    },
-    DICE_ANALYTICS: {
-        component: DiceAnalyticsPage,
-        label: WIDGET_LABELS.DICE_ANALYTICS,
-        icon: BarChart,
-        defaultSize: DEFAULT_SIZES.DICE_ANALYTICS,
-    },
-    CLASSIFIEDS: {
-        component: ClassifiedsPage,
-        label: WIDGET_LABELS.CLASSIFIEDS,
-        icon: Target,
-        defaultSize: DEFAULT_SIZES.CLASSIFIEDS,
-    },
 };
 
-// Widget types shown in the launcher (in display order)
-export const LAUNCHER_WIDGETS: WidgetType[] = [
+// Panel widgets — shown in columns layout (always visible), and as tabs in other modes
+export const PANEL_WIDGETS: WidgetType[] = [
     'UNIT_ROSTER',
     'UNIT_DETAIL',
     'ARMY_LIST',
 ];
+
+// Tool widgets — launchable as floating windows from the NavBar
+export const TOOL_WIDGETS: WidgetType[] = [
+    'FIRETEAMS',
+    'DICE_CALCULATOR',
+    'DICE_ANALYTICS',
+    'CLASSIFIEDS',
+];
+
+// Legacy export — PANEL_WIDGETS is now the source of truth for the columns layout
+export const LAUNCHER_WIDGETS = PANEL_WIDGETS;

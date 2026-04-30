@@ -3,12 +3,14 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import type { DatabaseMetadata, WikiPage, ITSRules } from './types.js';
-import { BaseDatabase, type FactionDataFile } from '../shared/BaseDatabase.js';
+import type { WikiPage, ITSRules } from './types.js';
+import { BaseDatabase } from '../shared/BaseDatabase.js';
+import type { ProcessedFactionFile, ProcessedMetadataFile, ProcessedFactionsFile } from '../shared/game-model.js';
 
 export class DatabaseAdapter extends BaseDatabase {
     private static instance: DatabaseAdapter;
     private dataDir: string;
+    private processedDir: string;
 
     // Wiki Cache
     wikiPages: Map<string, WikiPage> = new Map();
@@ -20,6 +22,7 @@ export class DatabaseAdapter extends BaseDatabase {
     constructor() {
         super();
         this.dataDir = path.join(process.cwd(), 'data');
+        this.processedDir = path.join(this.dataDir, 'processed');
     }
 
     static getInstance(): DatabaseAdapter {
@@ -30,20 +33,25 @@ export class DatabaseAdapter extends BaseDatabase {
     }
 
     // ========================================================================
-    // Platform-specific: Load via fs.readFile
+    // Platform-specific: Load via fs.readFile from data/processed/
     // ========================================================================
 
-    protected async loadMetadata(): Promise<DatabaseMetadata> {
-        const metaPath = path.join(this.dataDir, 'metadata.json');
-        const metaContent = await fs.readFile(metaPath, 'utf-8');
-        return JSON.parse(metaContent);
+    protected async loadMetadataFiles(): Promise<{ meta: ProcessedMetadataFile; factions: ProcessedFactionsFile }> {
+        const [metaContent, factionsContent] = await Promise.all([
+            fs.readFile(path.join(this.processedDir, 'metadata.json'), 'utf-8'),
+            fs.readFile(path.join(this.processedDir, 'factions.json'), 'utf-8'),
+        ]);
+        return {
+            meta: JSON.parse(metaContent) as ProcessedMetadataFile,
+            factions: JSON.parse(factionsContent) as ProcessedFactionsFile,
+        };
     }
 
-    protected async loadFactionData(slug: string): Promise<FactionDataFile | null> {
-        const filePath = path.join(this.dataDir, `${slug}.json`);
+    protected async loadFactionData(slug: string): Promise<ProcessedFactionFile | null> {
+        const filePath = path.join(this.processedDir, `${slug}.json`);
         try {
             const content = await fs.readFile(filePath, 'utf-8');
-            return JSON.parse(content);
+            return JSON.parse(content) as ProcessedFactionFile;
         } catch {
             return null;
         }

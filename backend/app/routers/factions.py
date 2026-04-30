@@ -170,4 +170,8 @@ async def get_faction_legacy(
     )
     chart_json = chart_result.scalar_one_or_none()
 
-    return {"version": _LEGACY_VERSION, "units": units_json, "fireteamChart": chart_json}
+    return {
+        "version": _LEGACY_VERSION,
+        "units": units_json,
+        "fireteamChart": chart_json,
+    }

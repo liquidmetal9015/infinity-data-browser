@@ -1,0 +1,59 @@
+.ammo-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ammo-row {
+    display: flex;
+    gap: 4px;
+}
+
+.ammo-btn {
+    flex: 1;
+    padding: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ammo-btn:hover {
+    border-color: var(--accent);
+}
+
+.ammo-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.ammo-toggles {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 0.35rem;
+    font-size: 0.7rem;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.toggle-btn:hover {
+    border-color: var(--text-secondary);
+}
+
+.toggle-btn.active {
+    background: rgba(var(--color-primary-rgb), 0.2);
+    border-style: solid;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}

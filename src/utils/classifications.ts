@@ -21,12 +21,8 @@ export const CLASSIFICATION_ORDER = [1, 2, 3, 4, 5, 6, 7, 8]; // LI, MI, HI, TAG
 
 /**
  * Determines if a profileGroup within a unit is a peripheral (e.g., Crabbot, Auxbot).
- * Peripherals are secondary profile groups with type=5 (REM) and a single low-cost option.
  */
-export function isPeripheralGroup(unit: { raw: { profileGroups: { profiles: { type?: number }[]; options: { points: number }[] }[] } }, groupIndex: number): boolean {
-    if (groupIndex === 0) return false;
+export function isPeripheralGroup(unit: { raw: { profileGroups: { isPeripheral?: boolean }[] } }, groupIndex: number): boolean {
     const pg = unit.raw.profileGroups[groupIndex];
-    if (!pg) return false;
-    const profile = pg.profiles?.[0];
-    return profile?.type === 5 && pg.options?.length === 1 && pg.options[0]?.points <= 5;
+    return pg?.isPeripheral ?? false;
 }

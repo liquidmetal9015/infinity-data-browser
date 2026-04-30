@@ -108,9 +108,11 @@ body {
 
 /* ---------- App Container ---------- */
 .app-container {
+  height: 100vh;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* ---------- Loading Screen ---------- */
@@ -1616,7 +1618,6 @@ body {
 
 .super-faction-header.comparison {
   margin-bottom: var(--space-4);
-  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border);
   background: transparent;
   border-left: none;

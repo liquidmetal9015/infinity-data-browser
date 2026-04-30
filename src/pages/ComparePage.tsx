@@ -5,8 +5,9 @@ import { Users, Check, Layers } from 'lucide-react';
 import { useCompareStore } from '../stores/useCompareStore';
 import { MultiFactionSelector } from '../components/MultiFactionSelector';
 import { getSafeLogo } from '../utils/assets';
+import { clsx } from 'clsx';
 import { useFactionsComparison } from '../hooks/useFactionsComparison';
-import './ComparePage.css';
+import styles from './ComparePage.module.css';
 
 export function ComparePage() {
     const db = useDatabase();
@@ -56,10 +57,10 @@ export function ComparePage() {
     };
 
     return (
-        <div className="page-container compare-page">
+        <div className={clsx('page-container', styles.comparePage)}>
 
             {/* Controls */}
-            <div className="controls-section">
+            <div className={styles.controlsSection}>
 
                 <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full">
                     <div className="flex-1">
@@ -106,25 +107,25 @@ export function ComparePage() {
 
             {/* Analysis Results */}
             {!analysis ? (
-                <div className="empty-state">
+                <div className={styles.emptyState}>
                     <Layers size={48} className="text-secondary" />
                     <p>Select at least two factions to compare overlapping units.</p>
                 </div>
             ) : (
-                <div className="analysis-grid">
+                <div className={styles.analysisGrid}>
                     {/* 1. Universal Units */}
                     {analysis.universal.length > 0 && (
-                        <div className="section universal-section">
+                        <div className={clsx(styles.section, 'universal-section')}>
                             <h3>
                                 <Check size={20} />
                                 Universal Units
-                                <span className="count-badge">{analysis.universal.length}</span>
+                                <span className={styles.countBadge}>{analysis.universal.length}</span>
                             </h3>
-                            <div className="unit-list-row">
+                            <div className={styles.unitListRow}>
                                 {analysis.universal.map(u => (
                                     <div
                                         key={u.id}
-                                        className="unit-card universal cursor-pointer hover:border-success/80 transition-colors"
+                                        className={clsx(styles.unitCard, styles.universal, 'cursor-pointer hover:border-success/80 transition-colors')}
                                         onClick={() => openUnitModal(u)}
                                     >
                                         {u.name || u.isc || 'Unknown'}
@@ -136,16 +137,16 @@ export function ComparePage() {
 
                     {/* 2. Partially Shared Groups */}
                     {analysis.sharedGroups.length > 0 && (
-                        <div className="section shared-section">
+                        <div className={clsx(styles.section, 'shared-section')}>
                             <h3>
                                 <Users size={20} />
                                 Shared Units (Partial Overlap)
                             </h3>
-                            <div className="shared-groups-container">
+                            <div className={styles.sharedGroupsContainer}>
                                 {analysis.sharedGroups.map((group, idx) => (
-                                    <div key={idx} className="shared-group-block">
-                                        <div className="group-header">
-                                            <div className="faction-tags">
+                                    <div key={idx} className={styles.sharedGroupBlock}>
+                                        <div className={styles.groupHeader}>
+                                            <div className={styles.factionTags}>
                                                 {group.factions.map(f => {
                                                     const color = `hsl(${(f.id * 137.5) % 360}, 70%, 50%)`;
                                                     return (
@@ -156,13 +157,13 @@ export function ComparePage() {
                                                     );
                                                 })}
                                             </div>
-                                            <span className="count-badge">{group.units.length}</span>
+                                            <span className={styles.countBadge}>{group.units.length}</span>
                                         </div>
-                                        <div className="unit-list-row">
+                                        <div className={styles.unitListRow}>
                                             {group.units.map(unit => (
                                                 <div
                                                     key={unit.id}
-                                                    className="unit-card shared cursor-pointer hover:border-primary/80 transition-colors"
+                                                    className={clsx(styles.unitCard, styles.shared, 'cursor-pointer hover:border-primary/80 transition-colors')}
                                                     onClick={() => openUnitModal(unit)}
                                                 >
                                                     {unit.name || unit.isc || 'Unknown'}
@@ -176,27 +177,27 @@ export function ComparePage() {
                     )}
 
                     {/* 3. Unique Units Columns */}
-                    <div className="unique-columns-wrapper">
+                    <div className={styles.uniqueColumnsWrapper}>
                         <h3>Unique to Faction (Relative to Selection)</h3>
-                        <div className="unique-columns">
+                        <div className={styles.uniqueColumns}>
                             {selectedFactions.map(f => {
                                 const units = analysis.unique[f.id] || [];
                                 const color = `hsl(${(f.id * 137.5) % 360}, 70%, 50%)`;
                                 return (
-                                    <div key={f.id} className="faction-column" style={{ borderTopColor: color }}>
-                                        <div className="column-header flex flex-col items-center pb-2">
+                                    <div key={f.id} className={styles.factionColumn} style={{ borderTopColor: color }}>
+                                        <div className={clsx(styles.columnHeader, 'flex flex-col items-center pb-2')}>
                                             {getLogoUrl(f.logo) && <img src={getLogoUrl(f.logo) as string} alt="" className="h-8 w-8 object-contain mb-2 opacity-90" />}
                                             <h4 style={{ color }} className="text-center font-bold text-lg">{f.name}</h4>
                                             <span className="count">{units.length} unique</span>
                                         </div>
-                                        <div className="column-content">
+                                        <div className={styles.compareColumnContent}>
                                             {units.length === 0 ? (
-                                                <div className="empty-col">- No unique units -</div>
+                                                <div className={styles.emptyCol}>- No unique units -</div>
                                             ) : (
                                                 units.map(u => (
                                                     <div
                                                         key={u.id}
-                                                        className="unit-item-compact cursor-pointer hover:text-accent transition-colors"
+                                                        className={clsx(styles.unitItemCompact, 'cursor-pointer hover:text-accent transition-colors')}
                                                         onClick={() => openUnitModal(u)}
                                                     >
                                                         {u.name || u.isc || 'Unknown'}

@@ -1,7 +1,6 @@
 // Workspace Window Management Types
 
 export type WidgetType =
-    | 'LIST_BUILDER'
     | 'DICE_CALCULATOR'
     | 'DICE_ANALYTICS'
     | 'CLASSIFIEDS'
@@ -27,7 +26,6 @@ export interface WindowSize {
 // Per-widget props types — extend this map when a widget needs typed props
 export type WidgetPropsMap = {
     DICE_CALCULATOR: { unitSlug?: string };
-    LIST_BUILDER: never;
     DICE_ANALYTICS: never;
     CLASSIFIEDS: never;
     FIRETEAMS: never;
@@ -52,11 +50,25 @@ export interface WindowState {
     props?: AnyWidgetProps;
 }
 
+export type LayoutMode = 'columns' | 'multi-window' | 'tabbed';
+
+// The three panels that occupy the column slots in 'columns' layout mode
+export const COLUMN_PANEL_ORDER: WidgetType[] = ['UNIT_ROSTER', 'UNIT_DETAIL', 'ARMY_LIST'];
+// Two-column variant: drop Unit Detail (available on demand)
+export const TWO_COLUMN_PANELS: WidgetType[] = ['UNIT_ROSTER', 'ARMY_LIST'];
+
+export function getColumnPanels(count: 2 | 3): WidgetType[] {
+    return count === 2 ? TWO_COLUMN_PANELS : COLUMN_PANEL_ORDER;
+}
+
 export interface WorkspaceState {
     windows: WindowState[];
     nextZIndex: number;
-    layoutMode: 'multi-window' | 'tabbed';
+    layoutMode: LayoutMode;
     maximizedWindowId: string | null;
+    columnWidths: number[]; // flex-grow fractions for each active column
+    columnCount: 2 | 3;
+    activeColumnIndex: number; // used for mobile swipe carousel
 }
 
 export type WorkspaceAction =
@@ -68,13 +80,15 @@ export type WorkspaceAction =
     | { type: 'MOVE_WINDOW'; windowId: string; position: WindowPosition }
     | { type: 'RESIZE_WINDOW'; windowId: string; size: WindowSize; position?: WindowPosition }
     | { type: 'RESTORE_STATE'; state: WorkspaceState }
-    | { type: 'SET_LAYOUT_MODE'; mode: 'multi-window' | 'tabbed' }
+    | { type: 'SET_LAYOUT_MODE'; mode: LayoutMode }
+    | { type: 'SET_COLUMN_WIDTHS'; widths: number[] }
+    | { type: 'SET_COLUMN_COUNT'; count: 2 | 3 }
+    | { type: 'SET_ACTIVE_COLUMN'; index: number }
     | { type: 'TOGGLE_MAXIMIZE'; windowId: string }
     | { type: 'SNAP_WINDOW'; windowId: string; position: 'left' | 'right' };
 
 // Default sizes for each widget type
 export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
-    LIST_BUILDER: { width: 700, height: 750 },
     DICE_CALCULATOR: { width: 550, height: 700 },
     DICE_ANALYTICS: { width: 800, height: 750 },
     CLASSIFIEDS: { width: 900, height: 700 },
@@ -90,7 +104,6 @@ export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
 
 // Display labels for widget types
 export const WIDGET_LABELS: Record<WidgetType, string> = {
-    LIST_BUILDER: 'List Builder',
     DICE_CALCULATOR: 'Dice Calculator',
     DICE_ANALYTICS: 'Dice Analytics',
     CLASSIFIEDS: 'Classifieds',

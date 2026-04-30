@@ -1,7 +1,9 @@
+import { clsx } from 'clsx';
 import { Info } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useModal } from '../../hooks/useModal';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
+import styles from './FireteamsPage.module.css';
 
 interface FireteamListViewProps {
     chart: FireteamChart;
@@ -15,27 +17,27 @@ export function FireteamListView({ chart }: FireteamListViewProps) {
     const regularTeams = chart.teams.filter((t: Fireteam) => !t.name.toLowerCase().includes('wildcard'));
 
     return (
-        <div className="fireteam-grid">
+        <div className={styles.fireteamGrid}>
             {regularTeams.map((team: Fireteam, idx: number) => (
-                <div key={idx} className="fireteam-card">
-                    <div className="card-header">
+                <div key={idx} className={styles.fireteamCard}>
+                    <div className={styles.cardHeader}>
                         <h4>{team.name}</h4>
-                        <div className="types-row">
-                            {team.type.includes('CORE') && <span className="badge core">CORE</span>}
-                            {team.type.includes('HARIS') && <span className="badge haris">HARIS</span>}
-                            {team.type.includes('DUO') && <span className="badge duo">DUO</span>}
+                        <div className={styles.typesRow}>
+                            {team.type.includes('CORE') && <span className={clsx(styles.badge, styles.core)}>CORE</span>}
+                            {team.type.includes('HARIS') && <span className={clsx(styles.badge, styles.haris)}>HARIS</span>}
+                            {team.type.includes('DUO') && <span className={clsx(styles.badge, styles.duo)}>DUO</span>}
                         </div>
                     </div>
-                    <div className="card-content">
+                    <div className={styles.cardContent}>
                         {team.units.map((u: FireteamUnit, uIdx: number) => {
 
                             return (
-                                <div key={uIdx} className={`unit-row ${u.required ? 'required' : ''} `}>
+                                <div key={uIdx} className={clsx(styles.unitRow, u.required && styles.required)}>
                                     <span>
                                         {u.name}
-                                        {u.comment && <span className="unit-note" style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '6px', opacity: 0.8 }}>{u.comment}</span>}
+                                        {u.comment && <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '6px', opacity: 0.8 }}>{u.comment}</span>}
                                         <button
-                                            className="info-btn"
+                                            className={styles.infoBtn}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const fullUnit = db.getUnitBySlug(u.slug);
@@ -47,7 +49,7 @@ export function FireteamListView({ chart }: FireteamListViewProps) {
                                             <Info size={14} />
                                         </button>
                                     </span>
-                                    <span className="min-max">{u.required ? '*' : u.min}-{u.max}</span>
+                                    <span className={styles.minMax}>{u.required ? '*' : u.min}-{u.max}</span>
                                 </div>
                             );
                         })}
@@ -58,9 +60,9 @@ export function FireteamListView({ chart }: FireteamListViewProps) {
                                     + Wildcards (up to limit):
                                 </div>
                                 {wildcards.units.map((u: FireteamUnit, wIdx: number) => (
-                                    <div key={`w-${wIdx} `} className="unit-row">
+                                    <div key={`w-${wIdx} `} className={styles.unitRow}>
                                         <span>{u.name}</span>
-                                        <span className="min-max">{u.min}-{u.max}</span>
+                                        <span className={styles.minMax}>{u.min}-{u.max}</span>
                                     </div>
                                 ))}
                             </div>

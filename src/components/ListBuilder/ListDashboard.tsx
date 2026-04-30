@@ -28,7 +28,8 @@ import { SortableFireteamContainer } from './SortableFireteamContainer';
 import { DraggableUnitRow } from './DraggableUnitRow';
 import { DragOverlayUnit } from './DragOverlayUnit';
 import { ListSearchPanel } from './ListSearchPanel';
-import './ListDashboard.css';
+import { clsx } from 'clsx';
+import styles from './ListDashboard.module.css';
 
 interface ListDashboardProps {
     list: ArmyList;
@@ -53,7 +54,7 @@ function DroppableCombatGroup({
     return (
         <div
             ref={setNodeRef}
-            className={`combat-group ${isTarget ? 'is-target' : ''} ${isOver ? 'is-drag-over' : ''}`}
+            className={clsx(styles.combatGroup, isTarget && styles.isTarget, isOver && styles.isDragOver)}
         >
             {children}
         </div>
@@ -286,7 +287,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
 
     return (
-        <div className="list-dashboard-dense">
+        <div className={styles.listDashboardDense}>
             {/* Left Column - Unit Roster */}
             <ListSearchPanel
                 list={list}
@@ -297,28 +298,28 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
             />
 
             {/* Right Column - Army List Table */}
-            <div className="list-panel">
+            <div className={styles.listPanel}>
                 {/* Summary Bar */}
-                <div className="summary-bar">
-                    <div className={`stat ${pointsOver ? 'over' : ''}`}>
-                        <span className="label">Points</span>
-                        <span className="value">{totalPoints} / {list.pointsLimit}</span>
+                <div className={styles.summaryBar}>
+                    <div className={clsx(styles.stat, pointsOver && styles.over)}>
+                        <span className={styles.label}>Points</span>
+                        <span className={styles.value}>{totalPoints} / {list.pointsLimit}</span>
                     </div>
-                    <div className={`stat ${swcOver ? 'over' : ''}`}>
-                        <span className="label">SWC</span>
-                        <span className="value">{totalSWC.toFixed(1)} / {list.swcLimit}</span>
+                    <div className={clsx(styles.stat, swcOver && styles.over)}>
+                        <span className={styles.label}>SWC</span>
+                        <span className={styles.value}>{totalSWC.toFixed(1)} / {list.swcLimit}</span>
                     </div>
-                    <div className="stat">
-                        <span className="label flex items-center gap-1"><Users size={12} /> Units</span>
-                        <span className="value">{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
+                    <div className={styles.stat}>
+                        <span className={clsx(styles.label, 'flex items-center gap-1')}><Users size={12} /> Units</span>
+                        <span className={styles.value}>{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
                     </div>
                     {db.getFireteamChart(list.factionId)?.spec && Object.entries(db.getFireteamChart(list.factionId)!.spec).map(([type, limit]) => {
-                        if (limit >= 256) return null; // Don't show unlimited like DUO usually is
+                        if (limit >= 256) return null;
                         const count = fireteamCounts[type] || 0;
                         return (
-                            <div key={type} className={`stat ${count > limit ? 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded' : ''}`}>
-                                <span className="label text-gray-400 uppercase text-[10px]">{type} LIMIT</span>
-                                <span className="value">{count} / {limit}</span>
+                            <div key={type} className={clsx(styles.stat, count > limit && 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded')}>
+                                <span className={clsx(styles.label, 'text-gray-400 uppercase text-[10px]')}>{type} LIMIT</span>
+                                <span className={styles.value}>{count} / {limit}</span>
                             </div>
                         );
                     })}
@@ -330,7 +331,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    <div className="combat-groups-container">
+                    <div className={styles.combatGroupsContainer}>
                         {/* Combat Groups */}
                         {list.groups.map((group, groupIndex) => {
                             const groupOrders = countGroupOrders(
@@ -342,12 +343,12 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
                             return (
                                 <DroppableCombatGroup key={group.id} groupIndex={groupIndex} isTarget={targetGroupIndex === groupIndex}>
-                                    <div className="group-header">
-                                        <div className="group-info">
+                                    <div className={styles.groupHeader}>
+                                        <div className={styles.groupInfo}>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="group-name">{group.name}</span>
-                                                    <span className="group-count">{group.units.filter(u => !u.isPeripheral).length} units</span>
+                                                    <span className={styles.groupName}>{group.name}</span>
+                                                    <span className={styles.groupCount}>{group.units.filter(u => !u.isPeripheral).length} units</span>
                                                 </div>
                                                 <div className="flex gap-2.5 mt-1.5">
                                                     {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
@@ -358,10 +359,10 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="group-actions self-start">
+                                        <div className={clsx(styles.groupActions, 'self-start')}>
                                             <div className="flex items-center">
                                                 <button
-                                                    className="target-btn group-ft-btn mr-1"
+                                                    className={clsx(styles.targetBtn, 'mr-1')}
                                                     title="Add a fireteam container"
                                                     onClick={() => {
                                                         const id = `ft-${Date.now()}`;
@@ -374,7 +375,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                 </button>
                                             </div>
                                             <button
-                                                className={`target-btn ${targetGroupIndex === groupIndex ? 'active' : ''}`}
+                                                className={clsx(styles.targetBtn, targetGroupIndex === groupIndex && styles.active)}
                                                 title="Select as target for added units"
                                                 onClick={() => setTargetGroupIndex(groupIndex)}
                                             >
@@ -382,7 +383,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                             </button>
                                             {list.groups.length > 1 && (
                                                 <button
-                                                    className="delete-btn"
+                                                    className={styles.deleteBtn}
                                                     onClick={() => removeCombatGroup(groupIndex)}
                                                     title="Remove Combat Group"
                                                 >
@@ -393,22 +394,22 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                     </div>
 
                                     {group.units.length === 0 && (!group.fireteams || group.fireteams.length === 0) ? (
-                                        <div className="empty-group">
+                                        <div className={styles.emptyGroup}>
                                             Click a unit from the roster to add it here
                                         </div>
                                     ) : (
-                                        <div className="units-table relative">
+                                        <div className={clsx(styles.unitsTable, 'relative')}>
 
-                                            <div className="units-thead flex items-center">
-                                                <div className="col-drag"></div>
-                                                <div className="col-orders text-center">Ord</div>
-                                                <div className="col-name">Name</div>
-                                                <div className="col-weapons">Weapons / Equipment</div>
-                                                <div className="col-swc text-right">SWC</div>
-                                                <div className="col-pts text-right">Pts</div>
-                                                <div className="col-actions"></div>
+                                            <div className={clsx(styles.unitsThead, 'flex items-center')}>
+                                                <div className={styles.colDrag}></div>
+                                                <div className={clsx(styles.colOrders, 'text-center')}>Ord</div>
+                                                <div className={styles.colName}>Name</div>
+                                                <div className={styles.colWeapons}>Weapons / Equipment</div>
+                                                <div className={clsx(styles.colSwc, 'text-right')}>SWC</div>
+                                                <div className={clsx(styles.colPts, 'text-right')}>Pts</div>
+                                                <div className={styles.colActions}></div>
                                             </div>
-                                            <div className="units-tbody">
+                                            <div>
                                                 {(() => {
                                                     const fireteamItems: { ft: FireteamDef, members: ListUnit[] }[] = [];
                                                     const seenFireteams = new Set<string>();
@@ -452,7 +453,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                                 groupIndex={groupIndex}
                                                                 onViewUnit={onViewUnit}
                                                                 onRemove={() => removeUnit(groupIndex, u.id)}
-                                                                db={db}
                                                             />
                                                             {peripheralsMap.get(u.id)?.map(p => (
                                                                 <DraggableUnitRow
@@ -461,7 +461,6 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                                                                     groupIndex={groupIndex}
                                                                     onViewUnit={onViewUnit}
                                                                     onRemove={() => {}}
-                                                                    db={db}
                                                                 />
                                                             ))}
                                                         </React.Fragment>
@@ -521,7 +520,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                 </DndContext>
 
                 {list.groups.length < 2 && (
-                    <button className="add-group-btn" onClick={addCombatGroup}>
+                    <button className={styles.addGroupBtn} onClick={addCombatGroup}>
                         <Plus size={16} />
                         Add Combat Group
                     </button>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
+import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { Settings2, ChevronDown } from 'lucide-react';
@@ -9,11 +10,14 @@ import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
 import { UnifiedSearchBar, type QueryState } from '../shared/UnifiedSearchBar';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } from '../../utils/classifications';
 import { getPossibleFireteams } from '@shared/fireteams';
+import { clsx } from 'clsx';
+import styles from '../ListBuilder/ListDashboard.module.css';
 
 export function UnitRosterPanel() {
     const db = useDatabase();
     const currentList = useListStore(s => s.currentList);
     const addUnit = useListStore(s => s.addUnit);
+    const { globalFactionId } = useGlobalFactionStore();
     const { hoveredFireteamId, targetGroupIndex, selectUnitForDetail, setHoveredUnitISC } = useListBuilderUIStore();
     const hasDetailPanel = useWorkspaceStore(s => s.windows.some(w => w.type === 'UNIT_DETAIL'));
 
@@ -56,10 +60,11 @@ export function UnitRosterPanel() {
         return iscs;
     }, [hoveredFireteamData, db.units, currentList]);
 
+    const activeFactionId = currentList?.factionId ?? globalFactionId;
     const factionUnits = useMemo(() => {
-        if (!currentList) return [];
-        return db.units.filter(unit => unit.factions.includes(currentList.factionId));
-    }, [db.units, currentList]);
+        if (!activeFactionId) return db.units;
+        return db.units.filter(unit => unit.factions.includes(activeFactionId));
+    }, [db.units, activeFactionId]);
 
     const filteredRoster = useMemo(() => {
         let results = factionUnits;
@@ -85,14 +90,14 @@ export function UnitRosterPanel() {
                 if (unit.isc.toLowerCase().includes(q) || unit.name?.toLowerCase().includes(q)) return true;
                 for (const group of unit.raw.profileGroups) {
                     for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
-                        if (profile.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
+                        if (profile.skills?.some(s => s.name.toLowerCase().includes(q))) return true;
+                        if (profile.equipment?.some(e => e.name.toLowerCase().includes(q))) return true;
                     }
                     for (const opt of group.options) {
-                        if (opt.weapons?.some(w => db.weaponMap.get(w.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.equip?.some(e => db.equipmentMap.get(e.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.skills?.some(s => db.skillMap.get(s.id)?.toLowerCase().includes(q))) return true;
-                        if (opt.name?.toLowerCase().includes(q) || group.isco?.toLowerCase().includes(q)) return true;
+                        if (opt.weapons?.some(w => w.name.toLowerCase().includes(q))) return true;
+                        if (opt.equipment?.some(e => e.name.toLowerCase().includes(q))) return true;
+                        if (opt.skills?.some(s => s.name.toLowerCase().includes(q))) return true;
+                        if (opt.name?.toLowerCase().includes(q) || group.isc?.toLowerCase().includes(q)) return true;
                     }
                 }
                 return false;
@@ -105,8 +110,6 @@ export function UnitRosterPanel() {
     const isSearchActive = rosterTextQuery.trim().length > 0 || rosterQuery.filters.length > 0;
 
     const groupedRoster = useMemo(() => {
-        if (isSearchActive) return null;
-
         const groups = new Map<number, Unit[]>();
         for (const unit of filteredRoster) {
             const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.type ?? 0;
@@ -114,7 +117,7 @@ export function UnitRosterPanel() {
             groups.get(primaryType)!.push(unit);
         }
 
-        return CLASSIFICATION_ORDER
+        const known = CLASSIFICATION_ORDER
             .filter(t => groups.has(t))
             .map(t => ({
                 type: t,
@@ -122,7 +125,19 @@ export function UnitRosterPanel() {
                 color: CLASSIFICATION_COLORS[t] || '#94a3b8',
                 units: groups.get(t)!,
             }));
-    }, [filteredRoster, isSearchActive]);
+
+        // Catch-all for units with types not in CLASSIFICATION_ORDER
+        const knownTypes = new Set(CLASSIFICATION_ORDER);
+        const others: Unit[] = [];
+        for (const [type, units] of groups) {
+            if (!knownTypes.has(type)) others.push(...units);
+        }
+        if (others.length > 0) {
+            known.push({ type: -1, label: 'Other', color: '#94a3b8', units: others });
+        }
+
+        return known;
+    }, [filteredRoster]);
 
     const toggleExpand = (unitId: number) => {
         setExpandedUnitIds(prev => {
@@ -156,16 +171,6 @@ export function UnitRosterPanel() {
         selectUnitForDetail(unit);
     };
 
-    if (!currentList) {
-        return (
-            <div className="roster-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>
-                    Create or import a list in the Army List panel to browse units.
-                </p>
-            </div>
-        );
-    }
-
     const renderUnitCard = (unit: Unit) => (
         <ExpandableUnitCard
             key={unit.id}
@@ -184,8 +189,8 @@ export function UnitRosterPanel() {
     );
 
     return (
-        <div className="roster-panel">
-            <div className="roster-header">
+        <div className={styles.rosterPanel}>
+            <div className={styles.rosterHeader}>
                 <h3>Unit Roster</h3>
                 <div className="flex items-center gap-2">
                     <button
@@ -195,11 +200,11 @@ export function UnitRosterPanel() {
                     >
                         <Settings2 size={16} />
                     </button>
-                    <span className="roster-count">{factionUnits.length}</span>
+                    <span className={styles.rosterCount}>{factionUnits.length}</span>
                 </div>
             </div>
 
-            <div className="roster-search border-b border-[#1e293b]">
+            <div className={clsx(styles.rosterSearch, 'border-b border-[#1e293b]')}>
                 <UnifiedSearchBar
                     query={rosterQuery}
                     setQuery={setRosterQuery}
@@ -210,8 +215,8 @@ export function UnitRosterPanel() {
                 />
             </div>
 
-            <div className="roster-list overflow-y-auto">
-                {groupedRoster ? (
+            <div className={clsx(styles.rosterList, 'overflow-y-auto')}>
+                {!isSearchActive ? (
                     groupedRoster.map(group => (
                         <div key={group.type}>
                             <button

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
-import { useDatabase } from '../../hooks/useDatabase';
 import { formatMove } from '../../utils/conversions';
 import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';
-import type { Unit, Option } from '@shared/types';
+import type { Unit } from '@shared/types';
+import type { Loadout as Option } from '@shared/game-model';
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 import { getSafeLogo } from '../../utils/assets';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, isPeripheralGroup } from '../../utils/classifications';
@@ -39,22 +39,14 @@ const ATTRIBUTES = [
 
 
 export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
-    const db = useDatabase();
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
     const profileGroups = unit.raw.profileGroups || [];
     const activeGroup = profileGroups[activeGroupIndex];
     const activeProfile = activeGroup?.profiles[0];
 
-    const getName = (type: 'weapon' | 'skill' | 'equipment', id: number) => {
-        if (type === 'weapon') return db.weaponMap.get(id) || `Weapon ${id}`;
-        if (type === 'skill') return db.skillMap.get(id) || `Skill ${id}`;
-        if (type === 'equipment') return db.equipmentMap.get(id) || `Equipment ${id}`;
-        return '?';
-    };
-
     const logoUrl = unit.raw.logo || unit.raw.profileGroups?.[0]?.profiles?.[0]?.logo;
-    const logoPath = getSafeLogo(logoUrl);
+    const logoPath = getSafeLogo(logoUrl) ?? `${import.meta.env.BASE_URL}logos/units/${unit.raw.slug}-1-1.svg`;
 
     return (
         <div
@@ -80,16 +72,16 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-base text-gray-100 tracking-wide leading-tight">{unit.isc}</span>
-                            {activeProfile?.type != null && CLASSIFICATION_LABELS[activeProfile.type] && (
+                            {activeProfile?.unitType != null && CLASSIFICATION_LABELS[activeProfile.unitType] && (
                                 <span
                                     className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
                                     style={{
-                                        color: CLASSIFICATION_COLORS[activeProfile.type],
-                                        background: `${CLASSIFICATION_COLORS[activeProfile.type]}15`,
-                                        border: `1px solid ${CLASSIFICATION_COLORS[activeProfile.type]}30`
+                                        color: CLASSIFICATION_COLORS[activeProfile.unitType],
+                                        background: `${CLASSIFICATION_COLORS[activeProfile.unitType]}15`,
+                                        border: `1px solid ${CLASSIFICATION_COLORS[activeProfile.unitType]}30`
                                     }}
                                 >
-                                    {CLASSIFICATION_LABELS[activeProfile.type]}
+                                    {CLASSIFICATION_LABELS[activeProfile.unitType]}
                                 </span>
                             )}
                         </div>
@@ -117,7 +109,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                         : 'bg-[#162032] text-gray-500 border-t border-x border-transparent hover:text-gray-300'
                                         }`}
                                 >
-                                    {group.isco || group.isc || `PROFILE ${idx + 1}`}
+                                    {group.isc || `PROFILE ${idx + 1}`}
                                 </button>
                             ))}
                         </div>
@@ -133,7 +125,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                     val = formatMove(profileRecord[attr.key] as number[]);
                                 }
                                 let label = attr.label;
-                                if (attr.key === 'w' && activeProfile.str) label = 'STR';
+                                if (attr.key === 'w' && activeProfile.isStructure) label = 'STR';
 
                                 return (
                                     <div key={attr.key} className="flex flex-col items-center min-w-[32px]">
@@ -149,10 +141,10 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                             <span className="font-bold text-gray-500 uppercase tracking-widest mr-2 text-[10px]">Skills & Eq:</span>
                             {[
                                 ...(activeProfile.skills || []).map(s => {
-                                    const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
-                                    return `${getName('skill', s.id)}${mods}`;
+                                    const mods = s.modifiers?.length ? ` (${s.modifiers.join(', ')})` : '';
+                                    return `${s.displayName || s.name}${mods}`;
                                 }),
-                                ...(activeProfile.equip || []).map(e => getName('equipment', e.id))
+                                ...(activeProfile.equipment || []).map(e => e.name)
                             ].join(' • ') || 'None'}
                         </div>
 
@@ -163,20 +155,18 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
 
                                 const weapsAndEq = [
                                     ...(opt.weapons || []).map(w => {
-                                        const mods = w.extra?.length ? ` (${w.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
-                                        return `${getName('weapon', w.id)}${mods}`;
+                                        const mods = w.modifiers?.length ? ` (${w.modifiers.join(', ')})` : '';
+                                        return `${w.name}${mods}`;
                                     }),
-                                    ...(opt.equip || []).map(e => getName('equipment', e.id))
+                                    ...(opt.equipment || []).map(e => e.name)
                                 ];
 
-                                const optionModsAndSkills = [
-                                    ...(opt.skills || []).map(s => {
-                                        const mods = s.extra?.length ? ` (${s.extra.map((eid: number) => db.getExtraName(eid) || eid).join(', ')})` : '';
-                                        return `${getName('skill', s.id)}${mods}`;
-                                    })
-                                ];
+                                const optionModsAndSkills = (opt.skills || []).map(s => {
+                                    const mods = s.modifiers?.length ? ` (${s.modifiers.join(', ')})` : '';
+                                    return `${s.displayName || s.name}${mods}`;
+                                });
 
-                                let optName = activeGroup.isco || unit.isc;
+                                let optName = activeGroup.isc || unit.isc;
                                 if (optionModsAndSkills.length > 0) {
                                     optName = `${optName} (${optionModsAndSkills.join(', ')})`;
                                 }
@@ -209,7 +199,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                             } else if (filter.type === 'skill') {
                                                 return opt.skills?.some(s => s.id === filter.baseId) || activeProfile.skills?.some(s => s.id === filter.baseId);
                                             } else if (filter.type === 'equipment') {
-                                                return opt.equip?.some(e => e.id === filter.baseId) || activeProfile.equip?.some(e => e.id === filter.baseId);
+                                                return opt.equipment?.some(e => e.id === filter.baseId) || activeProfile.equipment?.some(e => e.id === filter.baseId);
                                             }
                                             return false;
                                         });
@@ -279,7 +269,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                             style={{ color: CLASSIFICATION_COLORS[5], background: `${CLASSIFICATION_COLORS[5]}15`, border: `1px solid ${CLASSIFICATION_COLORS[5]}30` }}>
                                             REM
                                         </span>
-                                        <span className="text-xs font-bold text-gray-400">{pg.isc || pg.isco || pProfile.name}</span>
+                                        <span className="text-xs font-bold text-gray-400">{pg.isc || pProfile.name}</span>
                                         <span className="text-[10px] text-gray-500">Attached</span>
                                     </div>
                                     <div className="flex gap-3 text-[10px]">

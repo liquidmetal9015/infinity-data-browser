@@ -5,8 +5,13 @@ from firebase_admin import auth
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from app.config import settings
 from app.database import get_session
 from app.models.user import User
+
+DEV_AUTH = settings.dev_auth
+DEV_UID = "dev-user"
+DEV_EMAIL = "dev@local"
 
 # Initialize Firebase Admin App implicitly with default credentials,
 # or explicit config if needed by the hosting environment.
@@ -29,19 +34,20 @@ async def get_current_user(
 ) -> User:
     """Verifies the Firebase token and returns the current User."""
     token = credentials.credentials
-    try:
-        # In a real async backend, we might want to run this blocking call in a threadpool.
-        # But for typical payloads, it's fast enough.
-        decoded_token = auth.verify_id_token(token)
-    except Exception as e:
-        raise HTTPException(
-            status_code=401, detail=f"Invalid authentication token: {str(e)}"
-        ) from e
 
-    uid = decoded_token.get("uid")
-    email = decoded_token.get("email")
-    if not uid or not email:
-        raise HTTPException(status_code=401, detail="Token missing required fields")
+    if DEV_AUTH and token == "dev-token":
+        uid, email = DEV_UID, DEV_EMAIL
+    else:
+        try:
+            decoded_token = auth.verify_id_token(token)
+        except Exception as e:
+            raise HTTPException(
+                status_code=401, detail=f"Invalid authentication token: {str(e)}"
+            ) from e
+        uid = decoded_token.get("uid")
+        email = decoded_token.get("email")
+        if not uid or not email:
+            raise HTTPException(status_code=401, detail="Token missing required fields")
 
     # Auto-provision user if they don't exist
     result = await db.execute(select(User).where(User.id == uid))
@@ -67,6 +73,8 @@ async def get_current_user_id(
 ) -> str:
     """Fast-path dependency that just extracts the UID without hitting the database."""
     token = credentials.credentials
+    if DEV_AUTH and token == "dev-token":
+        return DEV_UID
     try:
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token.get("uid")
