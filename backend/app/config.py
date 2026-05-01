@@ -32,5 +32,11 @@ class Settings(BaseSettings):
     # Dev auth bypass — skip Firebase token verification in local development
     dev_auth: bool = False
 
+    # AI / LLM settings
+    anthropic_api_key: str = ""
+    llm_provider: str = "anthropic"
+    llm_model: str = "claude-haiku-4-5-20251001"
+    ai_monthly_limit: int = 100
+
 
 settings = Settings()

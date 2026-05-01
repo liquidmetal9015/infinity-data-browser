@@ -19,7 +19,11 @@ import {
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ArmyList, type ListUnit, type FireteamDef } from '@shared/listTypes';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { Plus, Sparkles, Trash2, Users } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { AIPanel } from '../AIPanel';
+import { useAIPanelStore } from '../../stores/useAIPanelStore';
+import { STATIC_MODE } from '../../services/listService';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -64,6 +68,7 @@ function DroppableCombatGroup({
 export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
     const db = useDatabase();
     const { addUnit, removeUnit, addCombatGroup, removeCombatGroup, reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam, addFireteamDef, removeFireteamDef, moveFireteam } = useListStore();
+    const { isOpen: isAIOpen, togglePanel: toggleAIPanel } = useAIPanelStore();
 
     // Hover state for highlighting
     const [hoveredFireteamId, setHoveredFireteamId] = useState<string | null>(null);
@@ -287,7 +292,7 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
 
 
     return (
-        <div className={styles.listDashboardDense}>
+        <div className={clsx(styles.listDashboardDense, styles.listDashboardRoot)}>
             {/* Left Column - Unit Roster */}
             <ListSearchPanel
                 list={list}
@@ -323,6 +328,15 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                             </div>
                         );
                     })}
+                    <button
+                        className={clsx(styles.aiToggleBtn, isAIOpen && styles.aiToggleBtnActive)}
+                        onClick={toggleAIPanel}
+                        disabled={STATIC_MODE}
+                        title={STATIC_MODE ? 'AI requires a backend connection' : 'AI Assistant'}
+                    >
+                        <Sparkles size={13} />
+                        <span>AI</span>
+                    </button>
                 </div>
 
                 <DndContext
@@ -526,6 +540,10 @@ export function ListDashboard({ list, onViewUnit }: ListDashboardProps) {
                     </button>
                 )}
             </div>
+
+            <AnimatePresence>
+                {isAIOpen && <AIPanel list={list} />}
+            </AnimatePresence>
         </div>
     );
 }

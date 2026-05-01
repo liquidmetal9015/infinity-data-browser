@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import factions, lists, metadata, search, units
+from app.routers import agent, factions, lists, metadata, search, units
 
 
 @asynccontextmanager
@@ -29,6 +29,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             if not result.scalars().first():
                 session.add(User(id=DEV_UID, email=DEV_EMAIL))
                 await session.commit()
+
+    # Initialize game data loader for AI tools
+    from app.agent.game_data.loader import GameDataLoader
+
+    await GameDataLoader.get_instance().initialize(settings.data_dir)
 
     yield
     # Shutdown: dispose engine
@@ -58,6 +63,7 @@ app.include_router(units.router)
 app.include_router(search.router)
 app.include_router(metadata.router)
 app.include_router(lists.router)
+app.include_router(agent.router)
 
 
 @app.get("/api/health")

@@ -17,7 +17,8 @@ dependencies = [
     "pytest-asyncio==1.0.0",
     "httpx==0.28.1",
     "google-auth==2.40.3",
-    "firebase-admin==7.4.0"
+    "firebase-admin==7.4.0",
+    "anthropic>=0.43.0",
 ]
 
 [dependency-groups]
@@ -45,7 +46,7 @@ strict = true
 
 [[tool.mypy.overrides]]
 # firebase_admin and asyncpg do not ship py.typed or stubs
-module = ["firebase_admin", "firebase_admin.*", "asyncpg", "asyncpg.*"]
+module = ["firebase_admin", "firebase_admin.*", "asyncpg", "asyncpg.*", "anthropic", "anthropic.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

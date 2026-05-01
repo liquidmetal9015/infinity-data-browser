@@ -6,6 +6,45 @@
     height: calc(100vh - 70px);
 }
 
+.list-dashboard-root {
+    position: relative;
+}
+
+.ai-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border: 1px solid #1e3a5f;
+    border-radius: 5px;
+    background: transparent;
+    color: #60a5fa;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    margin-left: auto;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.ai-toggle-btn:hover:not(:disabled) {
+    background: #0f2b3d;
+    border-color: #2a5a8a;
+}
+
+.ai-toggle-btn-active {
+    background: #0f2b3d;
+    border-color: #2a5a8a;
+    color: #93c5fd;
+}
+
+.ai-toggle-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #475569;
+    border-color: #1e293b;
+}
+
 /* Roster Panel */
 .roster-panel {
     background: #0d1117;
