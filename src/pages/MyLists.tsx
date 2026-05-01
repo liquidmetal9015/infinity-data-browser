@@ -7,11 +7,16 @@ import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { ArmyLogo } from '../components/shared/ArmyLogo';
-import { Download } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { getSafeLogo } from '../utils/assets';
 import { listService } from '../services/listService';
 import type { ListSummary } from '../services/listService';
-import { encodeArmyList } from '@shared/armyCode';
+import { encodeArmyList, decodeArmyCode, type DecodedArmyList } from '@shared/armyCode';
+import { generateId, getUnitDetails } from '@shared/listTypes';
+import type { ArmyList, CombatGroup, ListUnit } from '@shared/listTypes';
+import { indexList, type ListIndex } from '@shared/list-similarity';
+import type { SearchSuggestion } from '@shared/types';
+import { ListContentFilter } from '../components/MyLists/ListContentFilter';
 
 type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc';
 
@@ -24,6 +29,7 @@ export function MyLists() {
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const [showNewModal, setShowNewModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [openingInArmyId, setOpeningInArmyId] = useState<string | null>(null);
@@ -35,6 +41,17 @@ export function MyLists() {
     const [sortKey, setSortKey] = useState<SortKey>('updated');
     const [filterSuperFaction, setFilterSuperFaction] = useState<number | null>(null);
     const [filterTag, setFilterTag] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    const toggleSelected = (id: string) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
+
+    // Content-search state. Driving any of these triggers a lazy fetch of full
+    // list contents so we can index weapons / skills / equipment / unit names.
+    const [contentFilters, setContentFilters] = useState<SearchSuggestion[]>([]);
+    const [unitNameQuery, setUnitNameQuery] = useState('');
+    const hasContentFilter = contentFilters.length > 0 || unitNameQuery.trim().length > 0;
 
     const { data: lists, isLoading } = useQuery<ListSummary[]>({
         queryKey: ['my-lists'],
@@ -68,6 +85,22 @@ export function MyLists() {
         return Array.from(set).sort();
     }, [lists]);
 
+    // Lazy-fetch full list contents only when a content filter is active.
+    const allListIds = useMemo(() => (lists ?? []).map(l => l.id), [lists]);
+    const { data: fullLists, isFetching: indexFetching } = useQuery<ArmyList[]>({
+        queryKey: ['my-lists-full', allListIds.join(',')],
+        queryFn: () => Promise.all(allListIds.map(id => listService.getList(id))),
+        enabled: hasContentFilter && allListIds.length > 0,
+        staleTime: 60_000,
+    });
+
+    const indexMap = useMemo(() => {
+        if (!fullLists) return null;
+        const m = new Map<string, ListIndex>();
+        for (const l of fullLists) m.set(l.id, indexList(l));
+        return m;
+    }, [fullLists]);
+
     const displayedLists = useMemo(() => {
         if (!lists) return [];
         let result = [...lists];
@@ -79,6 +112,27 @@ export function MyLists() {
             }
         }
         if (filterTag !== null) result = result.filter(l => (l.tags ?? []).includes(filterTag));
+        if (hasContentFilter && indexMap) {
+            const q = unitNameQuery.trim().toLowerCase();
+            result = result.filter(l => {
+                const idx = indexMap.get(l.id);
+                if (!idx) return false;
+                if (q) {
+                    let hit = false;
+                    for (const n of idx.unitNames) {
+                        if (n.includes(q)) { hit = true; break; }
+                    }
+                    if (!hit) return false;
+                }
+                for (const cf of contentFilters) {
+                    const set = cf.type === 'weapon' ? idx.weaponIds
+                        : cf.type === 'skill' ? idx.skillIds
+                            : idx.equipmentIds;
+                    if (!set.has(cf.id)) return false;
+                }
+                return true;
+            });
+        }
         result.sort((a, b) => {
             switch (sortKey) {
                 case 'updated': return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
@@ -89,7 +143,7 @@ export function MyLists() {
             }
         });
         return result;
-    }, [lists, filterSuperFaction, filterTag, sortKey, groupedFactions]);
+    }, [lists, filterSuperFaction, filterTag, sortKey, groupedFactions, hasContentFilter, indexMap, unitNameQuery, contentFilters]);
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => listService.deleteList(id),
@@ -217,6 +271,24 @@ export function MyLists() {
                         </p>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                        {count >= 2 && (
+                            <button
+                                onClick={() => navigate('/lists/overview')}
+                                title="See similarity matrix across all your lists"
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    background: 'rgba(99,102,241,0.1)',
+                                    color: 'var(--accent, #6366f1)',
+                                    border: '1px solid rgba(99,102,241,0.35)',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Overview
+                            </button>
+                        )}
                         {count > 0 && (
                             <button
                                 onClick={handleExportAll}
@@ -242,6 +314,26 @@ export function MyLists() {
                                 {isExporting ? 'Exporting…' : 'Export All'}
                             </button>
                         )}
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            title="Import list from army code"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.5rem 1rem',
+                                background: 'rgba(16,185,129,0.1)',
+                                color: '#10b981',
+                                border: '1px solid rgba(16,185,129,0.35)',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                fontSize: '0.875rem',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <Upload size={15} />
+                            Import
+                        </button>
                         <button
                             onClick={() => setShowNewModal(true)}
                             style={{
@@ -363,10 +455,23 @@ export function MyLists() {
                             </span>
                         </div>
 
+                        {/* ── Content filter (units / skills / weapons / equipment) ── */}
+                        <div style={{ marginBottom: '1.25rem' }}>
+                            <ListContentFilter
+                                contentFilters={contentFilters}
+                                setContentFilters={setContentFilters}
+                                unitNameQuery={unitNameQuery}
+                                setUnitNameQuery={setUnitNameQuery}
+                                busy={hasContentFilter && indexFetching}
+                            />
+                        </div>
+
                         {/* ── Empty filtered state ── */}
                         {displayedLists.length === 0 && (
                             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                                No lists match the current filters.
+                                {hasContentFilter && indexFetching && !indexMap
+                                    ? 'Indexing list contents…'
+                                    : 'No lists match the current filters.'}
                             </div>
                         )}
                     </>
@@ -384,6 +489,25 @@ export function MyLists() {
                     }}>
                         <p style={{ margin: 0 }}>Build a list in the workspace and hit the save button — it'll appear here.</p>
                     </div>
+                )}
+
+                {/* ── Import from Code modal ── */}
+                {showImportModal && (
+                    <ImportFromCodeModal
+                        onImport={async (codes) => {
+                            const results = await Promise.allSettled(
+                                codes.map(code => {
+                                    const armyList = armyListFromDecodedCode(decodeArmyCode(code), db);
+                                    return listService.createList(armyList, armyList.factionId);
+                                })
+                            );
+                            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+                            const failed = results.filter(r => r.status === 'rejected').length;
+                            if (failed > 0) throw new Error(`${failed} code${failed > 1 ? 's' : ''} failed to import`);
+                            setShowImportModal(false);
+                        }}
+                        onCancel={() => setShowImportModal(false)}
+                    />
                 )}
 
                 {/* ── New List modal ── */}
@@ -427,6 +551,24 @@ export function MyLists() {
                                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-hover, #475569)')}
                                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                             >
+                                {/* Selection checkbox */}
+                                <label style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '0 0.65rem',
+                                    background: 'var(--bg-tertiary)',
+                                    borderRight: '1px solid var(--border)',
+                                    cursor: 'pointer',
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(list.id)}
+                                        onChange={() => toggleSelected(list.id)}
+                                        style={{ cursor: 'pointer', width: 16, height: 16, accentColor: 'var(--accent, #6366f1)' }}
+                                    />
+                                </label>
+
                                 {/* Faction logo strip */}
                                 <div style={{
                                     width: '72px',
@@ -608,6 +750,13 @@ export function MyLists() {
                                         Fork
                                     </button>
                                     <button
+                                        onClick={() => navigate(`/lists/overview?focus=${list.id}`)}
+                                        title="Find similar lists"
+                                        style={actionBtn('#a78bfa', false)}
+                                    >
+                                        Similar
+                                    </button>
+                                    <button
                                         onClick={() => { if (confirm('Delete this list?')) deleteMutation.mutate(list.id); }}
                                         disabled={deleteMutation.status === 'pending'}
                                         style={actionBtn('#ef4444', deleteMutation.status === 'pending')}
@@ -618,6 +767,206 @@ export function MyLists() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Multi-select action bar */}
+                {selectedIds.length > 0 && (
+                    <div style={{
+                        position: 'sticky',
+                        bottom: '1rem',
+                        marginTop: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '1rem',
+                        padding: '0.75rem 1rem',
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--accent)',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                        zIndex: 10,
+                    }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                            {selectedIds.length} selected
+                            {selectedIds.length === 2 && (
+                                <span style={{ marginLeft: '0.5rem', color: 'var(--text-tertiary, #64748b)', fontWeight: 400, fontSize: '0.78rem' }}>
+                                    — ready to compare
+                                </span>
+                            )}
+                            {selectedIds.length > 2 && (
+                                <span style={{ marginLeft: '0.5rem', color: 'var(--text-tertiary, #64748b)', fontWeight: 400, fontSize: '0.78rem' }}>
+                                    — compare requires exactly 2
+                                </span>
+                            )}
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                                onClick={() => setSelectedIds([])}
+                                style={{
+                                    padding: '0.4rem 0.85rem',
+                                    background: 'none',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text-secondary)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Clear
+                            </button>
+                            <button
+                                onClick={() => navigate(`/lists/compare?ids=${selectedIds.join(',')}`)}
+                                disabled={selectedIds.length !== 2}
+                                style={{
+                                    padding: '0.4rem 1rem',
+                                    background: selectedIds.length === 2 ? 'var(--accent, #6366f1)' : 'var(--bg-tertiary)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    cursor: selectedIds.length === 2 ? 'pointer' : 'not-allowed',
+                                    opacity: selectedIds.length === 2 ? 1 : 0.5,
+                                }}
+                            >
+                                Compare
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/** Build a full ArmyList from a decoded army code, resolving units from the db. */
+function armyListFromDecodedCode(
+    decoded: DecodedArmyList,
+    db: ReturnType<typeof import('../hooks/useDatabase').useDatabase>,
+): ArmyList {
+    const now = Date.now();
+    const groups: CombatGroup[] = decoded.combatGroups.map((cg, i) => {
+        const units: ListUnit[] = [];
+        for (const member of cg.members) {
+            const unit = db.units.find(u => u.id === member.unitId || u.idArmy === member.unitId);
+            if (!unit) continue;
+            const { option } = getUnitDetails(unit, member.groupChoice, member.groupChoice, member.optionChoice);
+            units.push({
+                id: generateId(),
+                unit,
+                profileGroupId: member.groupChoice,
+                profileId: member.groupChoice,
+                optionId: member.optionChoice,
+                points: Number(option?.points ?? 0),
+                swc: Number(option?.swc ?? 0),
+            });
+        }
+        return { id: generateId(), name: `Combat Group ${i + 1}`, units };
+    });
+
+    return {
+        id: generateId(),
+        name: decoded.armyName || 'Imported List',
+        tags: [],
+        factionId: decoded.factionId,
+        pointsLimit: decoded.maxPoints,
+        swcLimit: decoded.maxPoints / 50,
+        groups,
+        createdAt: now,
+        updatedAt: now,
+    };
+}
+
+function parseCodes(raw: string): string[] {
+    return raw
+        .split(/[\n,]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+}
+
+function ImportFromCodeModal({ onImport, onCancel }: {
+    onImport: (codes: string[]) => Promise<void>;
+    onCancel: () => void;
+}) {
+    const [raw, setRaw] = useState('');
+    const [error, setError] = useState('');
+    const [importing, setImporting] = useState(false);
+
+    const codes = parseCodes(raw);
+
+    const handleSubmit = async () => {
+        setError('');
+        setImporting(true);
+        try {
+            await onImport(codes);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Import failed — check that all codes are valid.');
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const placeholder = `Paste one or more army codes, one per line or comma-separated:\n\nABC123...\nDEF456...\nGHI789...`;
+
+    return (
+        <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+            onClick={onCancel}
+        >
+            <div
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}
+                onClick={e => e.stopPropagation()}
+            >
+                <div>
+                    <h2 style={{ margin: '0 0 0.3rem', fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>Import from Army Code</h2>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        Paste one or more codes from Infinity Army. Separate multiple codes with commas or newlines.
+                    </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Army Code(s)</label>
+                        {codes.length > 1 && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>
+                                {codes.length} lists detected
+                            </span>
+                        )}
+                    </div>
+                    <textarea
+                        autoFocus
+                        value={raw}
+                        onChange={e => { setRaw(e.target.value); setError(''); }}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && codes.length > 0) handleSubmit(); }}
+                        placeholder={placeholder}
+                        rows={6}
+                        style={{
+                            background: 'var(--bg-primary)',
+                            border: `1px solid ${error ? '#ef4444' : 'var(--border)'}`,
+                            color: 'var(--text-primary)',
+                            borderRadius: '8px',
+                            padding: '0.6rem 0.75rem',
+                            fontSize: '0.78rem',
+                            fontFamily: 'monospace',
+                            resize: 'vertical',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                        }}
+                    />
+                    {error && <p style={{ margin: 0, fontSize: '0.78rem', color: '#ef4444' }}>{error}</p>}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                    <button onClick={onCancel} disabled={importing} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-secondary)', cursor: importing ? 'not-allowed' : 'pointer', fontSize: '0.875rem', opacity: importing ? 0.5 : 1 }}>
+                        Cancel
+                    </button>
+                    <button
+                        disabled={codes.length === 0 || importing}
+                        onClick={handleSubmit}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', background: codes.length > 0 && !importing ? '#10b981' : 'var(--bg-tertiary)', color: '#fff', cursor: codes.length > 0 && !importing ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: '0.875rem', opacity: codes.length > 0 && !importing ? 1 : 0.5 }}
+                    >
+                        {importing ? 'Importing…' : `Import ${codes.length > 1 ? `${codes.length} Lists` : 'List'}`}
+                    </button>
                 </div>
             </div>
         </div>

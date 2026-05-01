@@ -25,6 +25,7 @@ import { SearchPage } from '../../pages/SearchPage';
 import { ReferencePage } from '../../pages/ReferencePage';
 import { RangesPage } from '../../pages/RangesPage';
 import { ComparePage } from '../../pages/ComparePage';
+import { ListsComparePage } from '../../pages/ListsComparePage';
 
 export interface WidgetRegistryEntry {
     component: ComponentType<object>;
@@ -104,6 +105,12 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
         label: WIDGET_LABELS.COMPARE,
         icon: Users,
         defaultSize: DEFAULT_SIZES.COMPARE,
+    },
+    LIST_COMPARE: {
+        component: ListsComparePage as ComponentType<object>,
+        label: WIDGET_LABELS.LIST_COMPARE,
+        icon: Layers,
+        defaultSize: DEFAULT_SIZES.LIST_COMPARE,
     },
 };
 

@@ -9,6 +9,8 @@ import { SearchPage } from './pages/SearchPage';
 import { ReferencePage } from './pages/ReferencePage';
 import { RangesPage } from './pages/RangesPage';
 import { ComparePage } from './pages/ComparePage';
+import { ListsComparePage } from './pages/ListsComparePage';
+import { ListsOverviewPage } from './pages/ListsOverviewPage';
 
 // Global App Event Handler
 function GlobalContextMenuHandler({ children }: { children: React.ReactNode }) {
@@ -43,6 +45,8 @@ function App() {
           <Routes>
             <Route path="/" element={<WorkspaceView />} />
             <Route path="/lists" element={<MyLists />} />
+            <Route path="/lists/overview" element={<ListsOverviewPage />} />
+            <Route path="/lists/compare" element={<ListsComparePage />} />
             <Route path="/search" element={<div className="flex-1 overflow-y-auto"><SearchPage /></div>} />
             <Route path="/reference" element={<div className="flex-1 overflow-y-auto"><ReferencePage /></div>} />
             <Route path="/ranges" element={<div className="flex-1 overflow-y-auto"><RangesPage /></div>} />

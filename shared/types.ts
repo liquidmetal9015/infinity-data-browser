@@ -37,6 +37,8 @@ export interface ItemWithModifier {
 
 export interface Unit {
     id: number;
+    /** Infinity Army's numeric ID for this unit (may differ from our internal id) */
+    idArmy?: number;
     isc: string;
     name: string;
     factions: number[];

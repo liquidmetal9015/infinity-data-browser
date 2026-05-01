@@ -168,7 +168,7 @@ describe('ListBuilder Components', () => {
                 />
             );
 
-            fireEvent.click(screen.getByText('Open in Infinity Army'));
+            fireEvent.click(screen.getByText('Open in Army'));
             expect(onOpenInArmy).toHaveBeenCalled();
         });
     });

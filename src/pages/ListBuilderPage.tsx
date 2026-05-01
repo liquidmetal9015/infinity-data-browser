@@ -1,5 +1,5 @@
 // List Builder Page - Main component
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -37,8 +37,7 @@ export function ListBuilderPage() {
     } = useArmyListImportExport({ db, currentList, createList, setGlobalFactionId, addCombatGroup, addUnit });
 
     // Track the updatedAt of the last successful save so we can show an unsaved-changes indicator
-    const savedAtRef = useRef<number | null>(null);
-    const [savedAtTick, setSavedAtTick] = useState(0); // force re-render after save
+    const [savedAt, setSavedAt] = useState<number | null>(null);
 
     const handleCreateList = () => {
         if (!globalFactionId) return;
@@ -60,8 +59,7 @@ export function ListBuilderPage() {
             if (data && !STATIC_MODE && !currentList?.serverId) {
                 setServerId(Number(data.id));
             }
-            savedAtRef.current = currentList?.updatedAt ?? null;
-            setSavedAtTick(t => t + 1);
+            setSavedAt(currentList?.updatedAt ?? null);
         },
         onError: (e) => {
             console.error("Save error", e);
@@ -89,9 +87,9 @@ export function ListBuilderPage() {
     const isSaved = saveListMutation.isSuccess && !saveListMutation.isPending;
     // Show unsaved if the list has been modified since the last save
     const hasUnsavedChanges = !!currentList && (
-        savedAtRef.current === null
+        savedAt === null
             ? !!currentList.serverId  // already saved once (has serverId) but we haven't tracked it yet
-            : currentList.updatedAt > savedAtRef.current
+            : currentList.updatedAt > savedAt
     );
 
     // If a list exists, show the Dashboard

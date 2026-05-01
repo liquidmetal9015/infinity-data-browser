@@ -7,6 +7,7 @@ export type WidgetType =
     | 'FIRETEAMS'
     | 'RANGES'
     | 'COMPARE'
+    | 'LIST_COMPARE'
     | 'SEARCH'
     | 'REFERENCE'
     | 'UNIT_ROSTER'
@@ -33,6 +34,7 @@ export type WidgetPropsMap = {
     FIRETEAMS: { contextMode?: ToolContextMode };
     RANGES: never;
     COMPARE: never;
+    LIST_COMPARE: { ids?: [string, string] };
     SEARCH: never;
     REFERENCE: never;
     UNIT_ROSTER: never;
@@ -97,6 +99,7 @@ export const DEFAULT_SIZES: Record<WidgetType, WindowSize> = {
     FIRETEAMS: { width: 800, height: 600 },
     RANGES: { width: 900, height: 650 },
     COMPARE: { width: 800, height: 600 },
+    LIST_COMPARE: { width: 1100, height: 800 },
     SEARCH: { width: 600, height: 500 },
     REFERENCE: { width: 700, height: 600 },
     UNIT_ROSTER: { width: 400, height: 700 },
@@ -112,6 +115,7 @@ export const WIDGET_LABELS: Record<WidgetType, string> = {
     FIRETEAMS: 'Fireteams',
     RANGES: 'Weapons',
     COMPARE: 'Factions',
+    LIST_COMPARE: 'Compare Lists',
     SEARCH: 'Units',
     REFERENCE: 'Skills & Equipment',
     UNIT_ROSTER: 'Roster',
