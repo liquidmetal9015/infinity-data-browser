@@ -18,6 +18,7 @@ export const AmmoSelector = ({ ammo, ap, continuous, critImmune, cover, onUpdate
             {AMMO_LIST.map(a => (
                 <button
                     key={a}
+                    aria-pressed={ammo === a}
                     className={clsx(styles.ammoBtn, ammo === a && styles.active)}
                     onClick={() => onUpdate('ammo', a)}
                 >

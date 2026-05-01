@@ -7,6 +7,11 @@ import { resolve } from 'path'
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  css: {
+    modules: {
+      localsConvention: 'camelCaseOnly',
+    },
+  },
   server: {
     proxy: {
       '/api': {

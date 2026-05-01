@@ -208,7 +208,7 @@ describe('listReducer', () => {
     describe('REMOVE_UNIT', () => {
         it('removes a unit from the specified group', () => {
             // Setup: Create list and add a unit
-            const state = listReducer(initialState, {
+            let state = listReducer(initialState, {
                 type: 'CREATE_LIST',
                 factionId: 101,
                 factionName: 'Test'
@@ -237,7 +237,7 @@ describe('listReducer', () => {
         });
 
         it('does nothing if unit ID not found', () => {
-            const state = listReducer(initialState, {
+            let state = listReducer(initialState, {
                 type: 'CREATE_LIST',
                 factionId: 101,
                 factionName: 'Test'
@@ -265,7 +265,7 @@ describe('listReducer', () => {
 
     describe('REORDER_UNIT', () => {
         it('reorders units within a combat group', () => {
-            const state = listReducer(initialState, {
+            let state = listReducer(initialState, {
                 type: 'CREATE_LIST',
                 factionId: 101,
                 factionName: 'Test'
@@ -312,7 +312,7 @@ describe('listReducer', () => {
 
     describe('REMOVE_COMBAT_GROUP', () => {
         it('removes a combat group and renumbers remaining', () => {
-            const state = listReducer(initialState, {
+            let state = listReducer(initialState, {
                 type: 'CREATE_LIST',
                 factionId: 101,
                 factionName: 'Test'
@@ -349,7 +349,7 @@ describe('listReducer', () => {
 
     describe('MOVE_UNIT_TO_GROUP', () => {
         it('moves a unit between combat groups', () => {
-            const state = listReducer(initialState, {
+            let state = listReducer(initialState, {
                 type: 'CREATE_LIST',
                 factionId: 101,
                 factionName: 'Test'

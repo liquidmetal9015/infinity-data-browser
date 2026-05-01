@@ -1,4 +1,4 @@
-.PHONY: setup dev migrate lint test hooks
+.PHONY: setup dev migrate seed lint test hooks help
 .DEFAULT_GOAL := help
 
 # Colors
@@ -13,22 +13,28 @@ hooks: ## Install pre-commit hooks (run once after setup)
 setup: ## Fully bootstrap the local development environment
 	@echo "$(GREEN)Starting local databases...$(RESET)"
 	docker compose up -d db
+	@echo "$(GREEN)Waiting for Postgres to be ready...$(RESET)"
+	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "$(GREEN)Installing Python backend dependencies via uv...$(RESET)"
 	cd backend && uv sync
+	@echo "$(GREEN)Creating test database if needed...$(RESET)"
+	docker compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='infinity_test'" | grep -q 1 || docker compose exec db psql -U postgres -c "CREATE DATABASE infinity_test"
 	@echo "$(GREEN)Running Alembic database migrations...$(RESET)"
 	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
 	@echo "$(GREEN)Installing Frontend Node dependencies...$(RESET)"
-	npm install
+	npm ci
 	@echo "$(GREEN)Environment flawlessly bootstrapped! 🎉$(RESET)"
 
 ##@ Development
 migrate: ## Run pending Alembic migrations
+	@echo "$(GREEN)Starting database...$(RESET)"
+	docker compose up -d db
+	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "$(GREEN)Running database migrations...$(RESET)"
 	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
 
 dev: migrate ## Concurrent launch of the Vite frontend and Uvicorn backend
 	@echo "$(GREEN)Starting Development Servers...$(RESET)"
-	docker compose up -d db
 	npx concurrently -k -c "blue.bold,green.bold" \
 		"cd backend && DATABASE_URL='postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity' uv run uvicorn app.main:app --reload --port 8000" \
 		"npm run dev"

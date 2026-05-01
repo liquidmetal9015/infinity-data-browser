@@ -42,9 +42,14 @@ def resolve_data_dir() -> Path:
 
 
 def _item_refs(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Extract compact {id, modifiers} refs from processed item objects for DB storage."""
+    """Extract compact {id, modifiers} refs from processed item objects for DB storage.
+
+    Items without an 'id' (e.g. Weapon#undefined from unresolved CB source data) are skipped.
+    """
     return [
-        {"id": item["id"], "modifiers": item.get("modifiers", [])} for item in items
+        {"id": item["id"], "modifiers": item.get("modifiers", [])}
+        for item in items
+        if "id" in item
     ]
 
 
@@ -91,7 +96,7 @@ async def run_import() -> None:
                     damage=w.get("damage"),
                     saving=w.get("saving"),
                     saving_num=w.get("savingNum"),
-                    ammunition_id=w.get("ammunition") or None,
+                    ammunition_id=int(w.get("ammunition") or 0) or None,
                     properties=w.get("properties"),
                     distance=w.get("distance"),
                 )

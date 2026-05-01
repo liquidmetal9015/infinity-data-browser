@@ -23,7 +23,7 @@ export function WoundPipelineChart({ data }: WoundPipelineChartProps) {
                 Notice the heavy weighting toward zero wounds ("No Hits / Draw" and "Saved Hits").
             </p>
             <div style={{ width: '100%', height: 400 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={data} margin={{ top: 20, right: 30, left: 40, bottom: 40 }}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                         <XAxis

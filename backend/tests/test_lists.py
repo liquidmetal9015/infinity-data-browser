@@ -1,20 +1,26 @@
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user, get_current_user_id
 from app.main import app
+from app.models.faction import Faction
 from app.models.user import User
+
+TEST_USER_ID = "test-user-123"
+TEST_FACTION_ID = 1
 
 
 # Mock dependencies
 async def mock_get_current_user_id() -> str:
-    return "test-user-123"
+    return TEST_USER_ID
 
 
 async def mock_get_current_user() -> User:
-    return User(id="test-user-123", email="test@example.com")
+    return User(id=TEST_USER_ID, email="test@example.com")
 
 
 @pytest.fixture(autouse=True)
@@ -25,12 +31,29 @@ def override_auth_dependencies() -> Generator[None, None, None]:
     app.dependency_overrides.clear()
 
 
+@pytest_asyncio.fixture(autouse=True)
+async def seed_test_data(session: AsyncSession) -> AsyncGenerator[None, None]:
+    """Insert a user and faction required by list tests, then roll back."""
+    session.add(User(id=TEST_USER_ID, email="test@example.com"))
+    session.add(
+        Faction(
+            id=TEST_FACTION_ID,
+            name="Test Faction",
+            slug="test-faction",
+            discontinued=False,
+            logo="",
+        )
+    )
+    await session.flush()
+    yield
+
+
 @pytest.mark.asyncio
 async def test_create_and_get_list(client: AsyncClient, setup_database: None) -> None:
     # 1. Create a list
     list_payload = {
         "name": "My Competitive List",
-        "faction_id": 16,  # Assuming PanOceania
+        "faction_id": TEST_FACTION_ID,
         "points": 300,
         "swc": 6.0,
         "units_json": {"group1": [{"unit_id": 10, "option_id": 5}], "group2": []},
@@ -60,7 +83,11 @@ async def test_create_and_get_list(client: AsyncClient, setup_database: None) ->
     assert any(lst["id"] == list_id for lst in lists)
 
     # 4. Update the list
-    update_payload = {"name": "Updated List Name", "points": 298, "faction_id": 16}
+    update_payload = {
+        "name": "Updated List Name",
+        "points": 298,
+        "faction_id": TEST_FACTION_ID,
+    }
     response = await client.put(f"/api/lists/{list_id}", json=update_payload)
     assert response.status_code == 200
     assert response.json()["name"] == "Updated List Name"

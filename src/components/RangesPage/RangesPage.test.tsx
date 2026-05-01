@@ -102,8 +102,8 @@ describe('RangesPage Components', () => {
             const props = { ...defaultProps, selectedIds: new Set([1]) };
             render(<WeaponSidebar {...props} />);
 
-            const combiItem = screen.getByText('Combi Rifle').closest('.weapon-item');
-            expect(combiItem).toHaveClass('selected');
+            const combiItem = screen.getByText('Combi Rifle').closest('[data-testid="weapon-item"]');
+            expect(combiItem).toHaveAttribute('data-selected', 'true');
         });
 
         it('calls onToggleWeapon when weapon clicked', () => {
@@ -269,7 +269,7 @@ describe('RangesPage Components', () => {
         });
 
         it('skips null entries', () => {
-            const { container } = render(
+            render(
                 <BestWeaponsBar
                     bestWeapons={mockBestWeapons}
                     selectedWeapons={mockWeapons}
@@ -277,7 +277,7 @@ describe('RangesPage Components', () => {
             );
 
             // Should have 3 range blocks (not 4, since one is null)
-            const blocks = container.querySelectorAll('.range-block');
+            const blocks = screen.getAllByTestId('range-block');
             expect(blocks.length).toBe(3);
         });
     });

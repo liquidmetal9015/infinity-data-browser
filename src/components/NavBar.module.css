@@ -18,6 +18,7 @@
     gap: 0.125rem;
     overflow-x: auto;
     scrollbar-width: none;
+    min-width: 0;
     border-right: 1px solid var(--border);
     padding-right: 0.5rem;
     margin-right: 0.25rem;
@@ -33,6 +34,7 @@
     gap: 0.125rem;
     overflow-x: auto;
     scrollbar-width: none;
+    min-width: 0;
 }
 
 .tool-tabs {

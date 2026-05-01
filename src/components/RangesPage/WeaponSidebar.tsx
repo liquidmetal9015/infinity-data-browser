@@ -91,6 +91,8 @@ export function WeaponSidebar({
                 {filteredWeapons.map(w => (
                     <div
                         key={w.id}
+                        data-testid="weapon-item"
+                        data-selected={selectedIds.has(w.id) ? 'true' : undefined}
                         className={clsx(styles.weaponItem, selectedIds.has(w.id) && styles.selected)}
                         onClick={() => onToggleWeapon(w.id)}
                     >

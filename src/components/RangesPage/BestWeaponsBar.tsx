@@ -20,7 +20,7 @@ export function BestWeaponsBar({ bestWeapons, selectedWeapons }: BestWeaponsBarP
                     const weaponIndex = selectedWeapons.findIndex(w => w.id === weapon.id);
                     const color = d3.schemeCategory10[weaponIndex % 10];
                     return (
-                        <div key={i} className={styles.rangeBlock} style={{ flex: 1, borderTop: `3px solid ${color}` }}>
+                        <div key={i} data-testid="range-block" className={styles.rangeBlock} style={{ flex: 1, borderTop: `3px solid ${color}` }}>
                             <div className={styles.rangeLabel}>{item.band.label}</div>
                             <div className={styles.winnerName} style={{ color }}>{weapon.name}</div>
                             <div className={styles.winnerMod}>

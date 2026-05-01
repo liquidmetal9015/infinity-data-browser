@@ -130,7 +130,7 @@ describe('DiceCalculator Components', () => {
             );
 
             const daBtn = screen.getByText('DA').closest('button');
-            expect(daBtn).toHaveClass('active');
+            expect(daBtn).toHaveAttribute('aria-pressed', 'true');
         });
 
         it('renders toggle buttons for continuous and crit immune', () => {

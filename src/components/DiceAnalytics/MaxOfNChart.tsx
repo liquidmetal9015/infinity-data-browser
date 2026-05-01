@@ -25,7 +25,7 @@ export function MaxOfNChart({ data, sv }: MaxOfNChartProps) {
                 Notice how higher burst pushes the distribution mass immediately to the right, closer to the SV threshold.
             </p>
             <div style={{ width: '100%', height: 400 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={data} margin={{ top: 20, right: 30, left: 40, bottom: 40 }}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                         <XAxis

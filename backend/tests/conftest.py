@@ -1,9 +1,9 @@
 """Test configuration — shared fixtures."""
 
-import asyncio
-from collections.abc import AsyncGenerator, Generator
+import os
+import re
+from collections.abc import AsyncGenerator
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -12,8 +12,13 @@ from app.database import get_session
 from app.main import app
 from app.models.base import Base
 
-# Use a separate test database
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:dev@localhost:5432/infinity_test"
+# Derive the test DB URL from DATABASE_URL env var by swapping the database name.
+# Falls back to a sensible local default.
+_base_url = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:password@localhost:5432/infinity",
+)
+TEST_DATABASE_URL = re.sub(r"/[^/]+$", "/infinity_test", _base_url)
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 test_session_factory = async_sessionmaker(
@@ -21,16 +26,9 @@ test_session_factory = async_sessionmaker(
 )
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_database() -> AsyncGenerator[None, None]:
-    """Create all tables at the start of the test session."""
+    """Create all tables at the start of the test session, drop them after."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield

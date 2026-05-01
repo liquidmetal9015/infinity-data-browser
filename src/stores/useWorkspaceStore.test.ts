@@ -15,13 +15,14 @@ describe('workspaceReducer', () => {
             expect(result.windows[0].isMinimized).toBe(false);
             expect(result.windows[0].zIndex).toBe(1);
             expect(result.windows[0].size.width).toBe(550);
+            // jsdom window.innerHeight=768, clamped to Math.min(700, 768-100)=668
             expect(result.windows[0].size.height).toBe(668);
             expect(result.nextZIndex).toBe(2);
         });
 
         it('assigns cascading positions for multiple windows', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
-            state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'LIST_BUILDER' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'ARMY_LIST' });
 
             expect(state.windows).toHaveLength(2);
             // Second window should have an offset position
@@ -38,7 +39,7 @@ describe('workspaceReducer', () => {
         });
 
         it('prevents opening multiple windows of the same type, focusing existing instead', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
 
             expect(state.windows).toHaveLength(1);
@@ -47,7 +48,7 @@ describe('workspaceReducer', () => {
 
     describe('CLOSE_WINDOW', () => {
         it('removes the window by ID', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'CLOSE_WINDOW', windowId });
@@ -64,8 +65,8 @@ describe('workspaceReducer', () => {
 
     describe('FOCUS_WINDOW', () => {
         it('sets the window to the highest z-index', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
-            state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'LIST_BUILDER' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'ARMY_LIST' });
 
             const firstId = state.windows[0].id;
             state = workspaceReducer(state, { type: 'FOCUS_WINDOW', windowId: firstId });
@@ -74,7 +75,7 @@ describe('workspaceReducer', () => {
         });
 
         it('restores minimized windows when focused', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'MINIMIZE_WINDOW', windowId });
@@ -96,7 +97,7 @@ describe('workspaceReducer', () => {
 
     describe('MINIMIZE_WINDOW', () => {
         it('sets isMinimized to true', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'MINIMIZE_WINDOW', windowId });
@@ -106,7 +107,7 @@ describe('workspaceReducer', () => {
 
     describe('RESTORE_WINDOW', () => {
         it('sets isMinimized to false and bumps z-index', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'MINIMIZE_WINDOW', windowId });
@@ -121,7 +122,7 @@ describe('workspaceReducer', () => {
 
     describe('MOVE_WINDOW', () => {
         it('updates window position', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'MOVE_WINDOW', windowId, position: { x: 100, y: 200 } });
@@ -131,7 +132,7 @@ describe('workspaceReducer', () => {
 
     describe('RESIZE_WINDOW', () => {
         it('updates window size', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            let state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'RESIZE_WINDOW', windowId, size: { width: 800, height: 600 } });
@@ -144,8 +145,8 @@ describe('workspaceReducer', () => {
             const savedState: WorkspaceState = {
                 windows: [{
                     id: 'test_1',
-                    type: 'LIST_BUILDER',
-                    title: 'List Builder',
+                    type: 'ARMY_LIST',
+                    title: 'Army List',
                     position: { x: 50, y: 50 },
                     size: { width: 700, height: 750 },
                     zIndex: 1,
@@ -154,6 +155,9 @@ describe('workspaceReducer', () => {
                 nextZIndex: 2,
                 layoutMode: 'multi-window',
                 maximizedWindowId: null,
+                columnWidths: [1, 1, 1],
+                columnCount: 3,
+                activeColumnIndex: 0,
             };
 
             const result = workspaceReducer(initialState, { type: 'RESTORE_STATE', state: savedState });
@@ -163,7 +167,7 @@ describe('workspaceReducer', () => {
 
     describe('SET_LAYOUT_MODE', () => {
         it('updates layout mode and clears maximized window if switching to multi-window', () => {
-            const state = workspaceReducer(initialState, { type: 'SET_LAYOUT_MODE', mode: 'tabbed' });
+            let state = workspaceReducer(initialState, { type: 'SET_LAYOUT_MODE', mode: 'tabbed' });
             expect(state.layoutMode).toBe('tabbed');
 
             state = { ...state, maximizedWindowId: 'win_1' };
@@ -175,7 +179,9 @@ describe('workspaceReducer', () => {
 
     describe('TOGGLE_MAXIMIZE', () => {
         it('switches to tabbed mode and maximizes if currently in multi-window', () => {
-            const state = workspaceReducer(initialState, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
+            // TOGGLE_MAXIMIZE only transitions from 'multi-window' → 'tabbed'
+            let state = workspaceReducer(initialState, { type: 'SET_LAYOUT_MODE', mode: 'multi-window' });
+            state = workspaceReducer(state, { type: 'OPEN_WINDOW', widgetType: 'DICE_CALCULATOR' });
             const windowId = state.windows[0].id;
 
             state = workspaceReducer(state, { type: 'TOGGLE_MAXIMIZE', windowId });

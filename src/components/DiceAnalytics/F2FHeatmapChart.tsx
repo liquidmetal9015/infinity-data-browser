@@ -27,7 +27,7 @@ export function F2FHeatmapChart({ data, activeBurst, reactiveBurst }: F2FHeatmap
                 Larger dots represent higher probabilities of the Active player winning the F2F roll.
             </p>
             <div style={{ width: '100%', height: 500 }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={500}>
                     <ScatterChart margin={{ top: 20, right: 30, left: 50, bottom: 50 }}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                         <XAxis

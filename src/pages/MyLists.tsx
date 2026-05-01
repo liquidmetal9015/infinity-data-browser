@@ -24,8 +24,6 @@ export function MyLists() {
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const [showNewModal, setShowNewModal] = useState(false);
-    const [newListName, setNewListName] = useState('');
-    const [newListPoints, setNewListPoints] = useState(300);
 
     const [loadingId, setLoadingId] = useState<number | null>(null);
     const [renamingId, setRenamingId] = useState<number | null>(null);
@@ -224,7 +222,7 @@ export function MyLists() {
                         </p>
                     </div>
                     <button
-                        onClick={() => { setNewListName(''); setShowNewModal(true); }}
+                        onClick={() => setShowNewModal(true)}
                         style={{
                             padding: '0.5rem 1.25rem',
                             background: 'var(--accent, #6366f1)',

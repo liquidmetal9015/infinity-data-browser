@@ -1,44 +1,59 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { BaseDatabase, type FactionDataFile } from '../../shared/BaseDatabase';
-import type { DatabaseMetadata } from '../../shared/types';
+import { BaseDatabase } from '../../shared/BaseDatabase';
+import type { ProcessedFactionFile, ProcessedMetadataFile, ProcessedFactionsFile } from '../../shared/game-model';
 
 // Mock Database Implementation for testing
 class TestDatabase extends BaseDatabase {
-    protected loadMetadata(): Promise<DatabaseMetadata> {
+    protected loadMetadataFiles(): Promise<{ meta: ProcessedMetadataFile; factions: ProcessedFactionsFile }> {
         return Promise.resolve({
-            factions: [],
-            ammunitions: [{ id: 1, name: 'AP' }, { id: 2, name: 'DA' }],
-            weapons: [
-                {
-                    id: 101,
-                    name: "Combi Rifle",
-                    burst: "3",
-                    damage: "13",
-                    ammunition: 1, // AP
-                    properties: ["Combi"],
-                    distance: {
-                        short: { max: 40, mod: "+3" }, // cm, roughly 16"
-                        med: { max: 80, mod: "-3" }, // cm, roughly 32"
-                        long: { max: 120, mod: "-6" },
-                        max: { max: 120, mod: "-6" }
+            meta: {
+                version: '2.0',
+                weapons: [
+                    {
+                        id: 101,
+                        name: 'Combi Rifle',
+                        weaponType: 'WEAPON',
+                        burst: '3',
+                        damage: '13',
+                        saving: 'ARM',
+                        savingNum: '1',
+                        ammunition: 1, // AP
+                        properties: ['Combi'],
+                        distance: {
+                            short: { max: 40, mod: '+3' }, // 40cm * 0.4 = 16"
+                            medium: { max: 80, mod: '-3' },
+                            long: { max: 120, mod: '-6' },
+                            max: { max: 120, mod: '-6' },
+                        }
+                    },
+                    {
+                        id: 102,
+                        name: 'Chain Rifle',
+                        weaponType: 'WEAPON',
+                        burst: '1',
+                        damage: '13',
+                        saving: 'ARM',
+                        savingNum: '1',
+                        ammunition: 0,
+                        properties: ['Direct Template', 'Large Teardrop'],
+                        distance: undefined
                     }
-                },
-                {
-                    id: 102,
-                    name: "Chain Rifle",
-                    burst: "1",
-                    damage: "13",
-                    ammunition: 0,
-                    properties: ["Direct Template", "Large Teardrop"],
-                    distance: null // Template weapon often has null distance
-                }
-            ],
-            skills: [],
-            equips: []
+                ],
+                skills: [],
+                equipment: [],
+                ammunitions: [
+                    { id: 1, name: 'AP' },
+                    { id: 2, name: 'DA' }
+                ]
+            },
+            factions: {
+                version: '2.0',
+                factions: []
+            }
         });
     }
 
-    protected loadFactionData(_slug: string): Promise<FactionDataFile | null> {
+    protected loadFactionData(_slug: string): Promise<ProcessedFactionFile | null> {
         return Promise.resolve(null);
     }
 }
