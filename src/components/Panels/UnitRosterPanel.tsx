@@ -7,11 +7,43 @@ import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { Settings2, ChevronDown } from 'lucide-react';
 import type { Unit } from '@shared/types';
 import { ExpandableUnitCard } from '../shared/ExpandableUnitCard';
-import { UnifiedSearchBar, type QueryState } from '../shared/UnifiedSearchBar';
+import { UnifiedSearchBar, type QueryState, type StatFilter } from '../shared/UnifiedSearchBar';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } from '../../utils/classifications';
 import { getPossibleFireteams } from '@shared/fireteams';
 import { clsx } from 'clsx';
 import styles from '../ListBuilder/ListDashboard.module.css';
+
+function matchesStat(unit: Unit, filter: StatFilter): boolean {
+    const compare = (val: number) => {
+        switch (filter.operator) {
+            case '>': return val > filter.value;
+            case '>=': return val >= filter.value;
+            case '=': return val === filter.value;
+            case '<=': return val <= filter.value;
+            case '<': return val < filter.value;
+        }
+    };
+    for (const pg of unit.raw.profileGroups) {
+        for (const profile of pg.profiles) {
+            let val: number | undefined;
+            switch (filter.stat) {
+                case 'MOV': val = Math.max(profile.move[0], profile.move[1]); break;
+                case 'MOV-1': val = profile.move[0]; break;
+                case 'MOV-2': val = profile.move[1]; break;
+                case 'CC': val = profile.cc; break;
+                case 'BS': val = profile.bs; break;
+                case 'PH': val = profile.ph; break;
+                case 'WIP': val = profile.wip; break;
+                case 'ARM': val = profile.arm; break;
+                case 'BTS': val = profile.bts; break;
+                case 'W': val = profile.w; break;
+                case 'S': val = profile.s; break;
+            }
+            if (val !== undefined && compare(val)) return true;
+        }
+    }
+    return false;
+}
 
 export function UnitRosterPanel() {
     const db = useDatabase();
@@ -19,7 +51,12 @@ export function UnitRosterPanel() {
     const addUnit = useListStore(s => s.addUnit);
     const { globalFactionId } = useGlobalFactionStore();
     const { hoveredFireteamId, targetGroupIndex, selectUnitForDetail, setHoveredUnitISC } = useListBuilderUIStore();
-    const hasDetailPanel = useWorkspaceStore(s => s.windows.some(w => w.type === 'UNIT_DETAIL'));
+    const windows = useWorkspaceStore(s => s.windows);
+    const layoutMode = useWorkspaceStore(s => s.layoutMode);
+    const columnCount = useWorkspaceStore(s => s.columnCount);
+    const hasDetailPanel = layoutMode === 'columns'
+        ? columnCount === 3
+        : windows.some(w => w.type === 'UNIT_DETAIL' && !w.isMinimized);
 
     const [rosterQuery, setRosterQuery] = useState<QueryState>({ filters: [], operator: 'or' });
     const [rosterTextQuery, setRosterTextQuery] = useState('');
@@ -70,18 +107,37 @@ export function UnitRosterPanel() {
         let results = factionUnits;
 
         const itemFilters = rosterQuery.filters.filter(f => f.type !== 'stat');
-        if (itemFilters.length > 0) {
-            const searched = db.searchWithModifiers(
-                itemFilters.map((f) => ({
-                    type: f.type,
-                    baseId: f.baseId,
-                    modifiers: f.modifiers,
-                    matchAnyModifier: f.matchAnyModifier
-                })),
-                rosterQuery.operator
-            );
-            const searchedIds = new Set(searched.map(u => u.id));
-            results = results.filter(u => searchedIds.has(u.id));
+        const statFilters = rosterQuery.filters.filter(f => f.type === 'stat') as StatFilter[];
+
+        if (itemFilters.length > 0 || statFilters.length > 0) {
+            if (rosterQuery.operator === 'or') {
+                const matchedIds = new Set<number>();
+                if (itemFilters.length > 0) {
+                    db.searchWithModifiers(
+                        itemFilters.map(f => ({ type: f.type, baseId: f.baseId, modifiers: f.modifiers, matchAnyModifier: f.matchAnyModifier })),
+                        'or'
+                    ).forEach(u => matchedIds.add(u.id));
+                }
+                if (statFilters.length > 0) {
+                    factionUnits.forEach(u => {
+                        if (statFilters.some(sf => matchesStat(u, sf))) matchedIds.add(u.id);
+                    });
+                }
+                results = results.filter(u => matchedIds.has(u.id));
+            } else {
+                // AND: narrow sequentially
+                if (itemFilters.length > 0) {
+                    const searched = db.searchWithModifiers(
+                        itemFilters.map(f => ({ type: f.type, baseId: f.baseId, modifiers: f.modifiers, matchAnyModifier: f.matchAnyModifier })),
+                        'and'
+                    );
+                    const searchedIds = new Set(searched.map(u => u.id));
+                    results = results.filter(u => searchedIds.has(u.id));
+                }
+                if (statFilters.length > 0) {
+                    results = results.filter(u => statFilters.every(sf => matchesStat(u, sf)));
+                }
+            }
         }
 
         if (rosterTextQuery.trim()) {
@@ -211,7 +267,7 @@ export function UnitRosterPanel() {
                     textQuery={rosterTextQuery}
                     setTextQuery={setRosterTextQuery}
                     placeholder="Search by name, weapon, skill, equipment..."
-                    className="bg-transparent"
+                    className="bg-transparent w-full"
                 />
             </div>
 

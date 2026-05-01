@@ -117,6 +117,7 @@ export const PANEL_WIDGETS: WidgetType[] = [
 // Tool widgets — launchable as floating windows from the NavBar
 export const TOOL_WIDGETS: WidgetType[] = [
     'FIRETEAMS',
+    'RANGES',
     'DICE_CALCULATOR',
     'DICE_ANALYTICS',
     'CLASSIFIEDS',

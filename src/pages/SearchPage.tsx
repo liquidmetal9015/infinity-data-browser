@@ -71,6 +71,47 @@ export function SearchPage() {
                     </div>
                 )}
 
+                {/* Empty state — inside search-section so it centres under the search bar */}
+                <AnimatePresence>
+                    {!hasSearch && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            key="empty"
+                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center mt-8"
+                        >
+                            <div className="text-4xl mb-4 opacity-50">⚡</div>
+                            <div className="text-xl font-bold text-gray-300 mb-2">Search the Infinity Database</div>
+                            <div className="text-gray-500">
+                                Use the search bar above to look up units, weapons, or skills.
+                                Use the autocomplete suggestions to add specific filter chips, or just type freely to search by name.
+                                Click "+ Stat" to add stat-based filters like "WIP &gt; 13".
+                            </div>
+                        </motion.div>
+                    )}
+                    {hasSearch && filteredUnits.length === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            key="no-results"
+                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center mt-8"
+                        >
+                            <div className="text-4xl mb-4 opacity-50">∅</div>
+                            <div className="text-xl font-bold text-gray-300 mb-2">No matches found</div>
+                            <div className="text-gray-500">
+                                {filters.factions.length > 0
+                                    ? 'Try selecting different factions or adjusting your filters'
+                                    : query.operator === 'and'
+                                        ? 'Try using OR instead, or remove some filters'
+                                        : 'Try a wildly different search term'
+                                }
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* View Toggle */}
                 {hasSearch && filteredUnits.length > 0 && (
                     <div className="view-controls flex justify-between items-end border-b border-white/10 pb-4 mb-6">
@@ -114,44 +155,11 @@ export function SearchPage() {
                 )}
             </section>
 
-            {/* Results Section */}
+            {/* Results Section — only rendered when there are actual results */}
+            {hasSearch && filteredUnits.length > 0 && (
             <section className="results-section pb-12" style={{ width: '100%', maxWidth: '64rem' }}>
                 <AnimatePresence mode='wait'>
-                    {!hasSearch ? (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            key="empty"
-                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center max-w-2xl mx-auto mt-8"
-                        >
-                            <div className="text-4xl mb-4 opacity-50">⚡</div>
-                            <div className="text-xl font-bold text-gray-300 mb-2">Search the Infinity Database</div>
-                            <div className="text-gray-500">
-                                Use the search bar above to look up units, weapons, or skills.
-                                Use the autocomplete suggestions to add specific filter chips, or just type freely to search by name.
-                                Click "+ Stat" to add stat-based filters like "WIP &gt; 13".
-                            </div>
-                        </motion.div>
-                    ) : filteredUnits.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            key="no-results"
-                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center max-w-2xl mx-auto mt-8"
-                        >
-                            <div className="text-4xl mb-4 opacity-50">∅</div>
-                            <div className="text-xl font-bold text-gray-300 mb-2">No matches found</div>
-                            <div className="text-gray-500">
-                                {filters.factions.length > 0
-                                    ? 'Try selecting different factions or adjusting your filters'
-                                    : query.operator === 'and'
-                                        ? 'Try using OR instead, or remove some filters'
-                                        : 'Try a wildly different search term'
-                                }
-                            </div>
-                        </motion.div>
-                    ) : viewMode === 'bubble' ? (
+                    {viewMode === 'bubble' ? (
                         <motion.div key="bubble-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                             <BubbleChart units={filteredUnits} />
                         </motion.div>
@@ -267,6 +275,7 @@ export function SearchPage() {
                     )}
                 </AnimatePresence>
             </section>
+            )}
         </div>
     )
 }

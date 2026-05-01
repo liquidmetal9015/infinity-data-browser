@@ -23,12 +23,14 @@ export interface WindowSize {
     height: number;
 }
 
+export type ToolContextMode = 'list' | 'standalone';
+
 // Per-widget props types — extend this map when a widget needs typed props
 export type WidgetPropsMap = {
-    DICE_CALCULATOR: { unitSlug?: string };
-    DICE_ANALYTICS: never;
-    CLASSIFIEDS: never;
-    FIRETEAMS: never;
+    DICE_CALCULATOR: { unitSlug?: string; contextMode?: ToolContextMode };
+    DICE_ANALYTICS: { contextMode?: ToolContextMode };
+    CLASSIFIEDS: { contextMode?: ToolContextMode };
+    FIRETEAMS: { contextMode?: ToolContextMode };
     RANGES: never;
     COMPARE: never;
     SEARCH: never;
@@ -37,7 +39,7 @@ export type WidgetPropsMap = {
     UNIT_DETAIL: never;
     ARMY_LIST: never;
 };
-export type AnyWidgetProps = WidgetPropsMap[WidgetType]; // { unitSlug?: string }
+export type AnyWidgetProps = WidgetPropsMap[WidgetType];
 
 export interface WindowState {
     id: string;

@@ -1,6 +1,7 @@
 // List Header with controls Component
-import { Trash2, Copy, Check, ExternalLink, CloudUpload, CloudCheck } from 'lucide-react';
+import { Trash2, Copy, Check, CloudUpload, CloudCheck, GitBranch } from 'lucide-react';
 import type { ArmyList } from '../../../shared/listTypes';
+import { ArmyLogo } from '../shared/ArmyLogo';
 import styles from '../../pages/ListBuilderPage.module.css';
 
 interface ListHeaderProps {
@@ -9,11 +10,13 @@ interface ListHeaderProps {
     codeCopied: boolean;
     isSaving?: boolean;
     isSaved?: boolean;
+    hasUnsavedChanges?: boolean;
     onPointsLimitChange: (limit: number) => void;
     onCopyCode: () => void;
     onReset: () => void;
     onOpenInArmy: () => void;
     onSaveList?: () => void;
+    onSaveAsCopy?: () => void;
 }
 
 export function ListHeader({
@@ -25,19 +28,30 @@ export function ListHeader({
     onReset,
     onOpenInArmy,
     onSaveList,
+    onSaveAsCopy,
     isSaving,
-    isSaved
+    isSaved,
+    hasUnsavedChanges,
 }: ListHeaderProps) {
+    const showUnsaved = hasUnsavedChanges && !isSaving && !isSaved;
+
     return (
         <div className={styles.listHeader}>
-            <div className={styles.listInfo} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                <h2>{list.name}</h2>
-                <span style={{ color: '#475569', fontSize: '1rem' }}>|</span>
-                <span className={styles.factionLabel}>{factionName}</span>
+            <div className={styles.listInfo} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                <div style={{ minWidth: 0 }}>
+                    <h2 style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{list.name}</h2>
+                    <span className={styles.factionLabel}>{factionName}</span>
+                </div>
+                {showUnsaved && (
+                    <span className={styles.unsavedBadge} title="You have unsaved changes">
+                        Unsaved
+                    </span>
+                )}
             </div>
+
             <div className={styles.headerActions}>
                 <div className={styles.pointsControl}>
-                    <label htmlFor="header-points">Points:</label>
+                    <label htmlFor="header-points">Points</label>
                     <select
                         id="header-points"
                         className={styles.pointsDropdownInline}
@@ -51,22 +65,45 @@ export function ListHeader({
                         <option value={400}>400</option>
                     </select>
                 </div>
+
                 {onSaveList && (
-                    <button className={styles.codeButton} onClick={onSaveList} disabled={isSaving} title="Save to My Lists">
-                        {isSaved ? <CloudCheck size={16} /> : <CloudUpload size={16} className={isSaving ? 'animate-pulse' : ''} />}
-                        {isSaving ? 'Saving...' : isSaved ? 'Saved!' : 'Save List'}
+                    <button
+                        className={showUnsaved ? styles.saveButtonUnsaved : styles.saveButton}
+                        onClick={onSaveList}
+                        disabled={isSaving}
+                        title={list.serverId ? 'Save changes' : 'Save to My Lists'}
+                    >
+                        {isSaved
+                            ? <CloudCheck size={18} />
+                            : <CloudUpload size={18} className={isSaving ? 'animate-pulse' : ''} />
+                        }
+                        {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save List'}
                     </button>
                 )}
-                <button className={styles.codeButton} onClick={onOpenInArmy} title="Open list in official Infinity Army app">
-                    <ExternalLink size={16} />
-                    Open in Infinity Army
+
+                {onSaveAsCopy && list.serverId && (
+                    <button
+                        className={styles.copyButton}
+                        onClick={onSaveAsCopy}
+                        title="Save a new copy of this list"
+                    >
+                        <GitBranch size={18} />
+                        Save as Copy
+                    </button>
+                )}
+
+                <button className={styles.armyButton} onClick={onOpenInArmy} title="Open in official Infinity Army app">
+                    <ArmyLogo size={18} backdrop />
+                    Open in Army
                 </button>
+
                 <button className={styles.codeButton} onClick={onCopyCode}>
-                    {codeCopied ? <Check size={16} /> : <Copy size={16} />}
+                    {codeCopied ? <Check size={18} /> : <Copy size={18} />}
                     {codeCopied ? 'Copied!' : 'Copy Code'}
                 </button>
-                <button className={styles.resetButton} onClick={onReset}>
-                    <Trash2 size={16} />
+
+                <button className={styles.resetButton} onClick={onReset} title="Discard this list and start over">
+                    <Trash2 size={18} />
                     Start Over
                 </button>
             </div>

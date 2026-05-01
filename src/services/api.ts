@@ -13,7 +13,7 @@ client.use({
             request.headers.set("Authorization", "Bearer dev-token");
             return request;
         }
-        const user = auth.currentUser;
+        const user = auth?.currentUser;
         if (user) {
             const token = await user.getIdToken();
             request.headers.set("Authorization", `Bearer ${token}`);

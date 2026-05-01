@@ -1,4 +1,5 @@
 // List Builder Page - Main component
+import { useState, useRef } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -9,10 +10,9 @@ import {
 } from '../components/ListBuilder';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { useArmyListImportExport } from '../hooks/useArmyListImportExport';
-import { calculateListPoints, calculateListSWC } from '@shared/listTypes';
 import { useAuth } from '../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../services/api';
+import { listService, forkListLocally, STATIC_MODE } from '../services/listService';
 import type { Unit } from '@shared/types';
 import styles from './ListBuilderPage.module.css';
 
@@ -36,6 +36,10 @@ export function ListBuilderPage() {
         handleOpenInArmy,
     } = useArmyListImportExport({ db, currentList, createList, setGlobalFactionId, addCombatGroup, addUnit });
 
+    // Track the updatedAt of the last successful save so we can show an unsaved-changes indicator
+    const savedAtRef = useRef<number | null>(null);
+    const [savedAtTick, setSavedAtTick] = useState(0); // force re-render after save
+
     const handleCreateList = () => {
         if (!globalFactionId) return;
         const factionName = db.getFactionName(globalFactionId);
@@ -45,41 +49,50 @@ export function ListBuilderPage() {
     const saveListMutation = useMutation({
         mutationFn: async () => {
             if (!currentList) return null;
-            const body = {
-                name: currentList.name,
-                description: currentList.description,
-                tags: currentList.tags ?? [],
-                faction_id: currentList.factionId,
-                points: calculateListPoints(currentList),
-                swc: calculateListSWC(currentList),
-                units_json: currentList as Record<string, unknown>,
-            };
-            if (currentList.serverId) {
-                const { data, error } = await api.PUT('/api/lists/{list_id}', {
-                    params: { path: { list_id: currentList.serverId } },
-                    body,
-                });
-                if (error) throw error;
-                return data;
-            } else {
-                const { data, error } = await api.POST('/api/lists', { body });
-                if (error) throw error;
-                return data;
+            if (!STATIC_MODE && currentList.serverId) {
+                return listService.updateList(String(currentList.serverId), currentList);
             }
+            return listService.createList(currentList, currentList.factionId);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });
-            if (data && !currentList?.serverId) {
-                setServerId(data.id);
+            // In GCP mode, after the first save, persist the server id so subsequent saves use PUT
+            if (data && !STATIC_MODE && !currentList?.serverId) {
+                setServerId(Number(data.id));
             }
+            savedAtRef.current = currentList?.updatedAt ?? null;
+            setSavedAtTick(t => t + 1);
         },
         onError: (e) => {
             console.error("Save error", e);
         }
     });
 
-    const handleSaveList = user ? () => saveListMutation.mutate() : undefined;
+    const forkListMutation = useMutation({
+        mutationFn: async () => {
+            if (!currentList) return null;
+            // We have the full list in hand — fork locally and create without a round-trip fetch
+            const forked = forkListLocally(currentList);
+            return listService.createList(forked, currentList.factionId);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+        },
+        onError: (e) => {
+            console.error("Fork error", e);
+        }
+    });
+
+    const canSave = STATIC_MODE || !!user;
+    const handleSaveList = canSave ? () => saveListMutation.mutate() : undefined;
+    const handleSaveAsCopy = canSave ? () => forkListMutation.mutate() : undefined;
     const isSaved = saveListMutation.isSuccess && !saveListMutation.isPending;
+    // Show unsaved if the list has been modified since the last save
+    const hasUnsavedChanges = !!currentList && (
+        savedAtRef.current === null
+            ? !!currentList.serverId  // already saved once (has serverId) but we haven't tracked it yet
+            : currentList.updatedAt > savedAtRef.current
+    );
 
     // If a list exists, show the Dashboard
     if (currentList) {
@@ -91,11 +104,13 @@ export function ListBuilderPage() {
                     codeCopied={codeCopied}
                     isSaving={saveListMutation.status === 'pending'}
                     isSaved={isSaved}
+                    hasUnsavedChanges={hasUnsavedChanges}
                     onPointsLimitChange={updatePointsLimit}
                     onCopyCode={handleCopyCode}
                     onOpenInArmy={handleOpenInArmy}
                     onReset={resetList}
                     onSaveList={handleSaveList}
+                    onSaveAsCopy={handleSaveAsCopy}
                 />
 
                 <ListDashboard

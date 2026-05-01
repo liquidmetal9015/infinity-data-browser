@@ -6,13 +6,13 @@ import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
+import { ArmyLogo } from '../components/shared/ArmyLogo';
+import { Download } from 'lucide-react';
 import { getSafeLogo } from '../utils/assets';
-import api from '../services/api';
-import type { components } from '../types/schema';
-import type { ArmyList } from '@shared/listTypes';
-import { generateId, calculateListPoints, calculateListSWC } from '@shared/listTypes';
+import { listService } from '../services/listService';
+import type { ListSummary } from '../services/listService';
+import { encodeArmyList } from '@shared/armyCode';
 
-type ArmyListSummary = components["schemas"]["ArmyListSummaryResponse"];
 type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc';
 
 export function MyLists() {
@@ -25,22 +25,20 @@ export function MyLists() {
 
     const [showNewModal, setShowNewModal] = useState(false);
 
-    const [loadingId, setLoadingId] = useState<number | null>(null);
-    const [renamingId, setRenamingId] = useState<number | null>(null);
+    const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [openingInArmyId, setOpeningInArmyId] = useState<string | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState('');
-    const [editingTagsId, setEditingTagsId] = useState<number | null>(null);
+    const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
     const [tagInput, setTagInput] = useState('');
     const [sortKey, setSortKey] = useState<SortKey>('updated');
     const [filterSuperFaction, setFilterSuperFaction] = useState<number | null>(null);
     const [filterTag, setFilterTag] = useState<string | null>(null);
 
-    const { data: lists, isLoading } = useQuery<ArmyListSummary[]>({
+    const { data: lists, isLoading } = useQuery<ListSummary[]>({
         queryKey: ['my-lists'],
-        queryFn: async () => {
-            const { data, error } = await api.GET('/api/lists');
-            if (error) throw error;
-            return data ?? [];
-        },
+        queryFn: () => listService.getLists(),
         enabled: !!user,
     });
 
@@ -94,76 +92,33 @@ export function MyLists() {
     }, [lists, filterSuperFaction, filterTag, sortKey, groupedFactions]);
 
     const deleteMutation = useMutation({
-        mutationFn: async (id: number) => {
-            const { error } = await api.DELETE('/api/lists/{list_id}', { params: { path: { list_id: id } } });
-            if (error) throw error;
-        },
+        mutationFn: (id: string) => listService.deleteList(id),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
     const renameMutation = useMutation({
-        mutationFn: async ({ id, name }: { id: number; name: string }) => {
-            const { error } = await api.PUT('/api/lists/{list_id}', {
-                params: { path: { list_id: id } },
-                body: { name },
-            });
-            if (error) throw error;
-        },
+        mutationFn: ({ id, name }: { id: string; name: string }) =>
+            listService.updateList(id, { name }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
     const tagsMutation = useMutation({
-        mutationFn: async ({ id, tags }: { id: number; tags: string[] }) => {
-            const { error } = await api.PUT('/api/lists/{list_id}', {
-                params: { path: { list_id: id } },
-                body: { tags },
-            });
-            if (error) throw error;
-        },
+        mutationFn: ({ id, tags }: { id: string; tags: string[] }) =>
+            listService.updateList(id, { tags }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
-    const duplicateMutation = useMutation({
-        mutationFn: async (id: number) => {
-            const { data: listData, error: fetchError } = await api.GET('/api/lists/{list_id}', {
-                params: { path: { list_id: id } },
-            });
-            if (fetchError) throw fetchError;
-            const original = listData.units_json as unknown as ArmyList;
-            const copy: ArmyList = {
-                ...original,
-                id: generateId(),
-                name: `${original.name} (copy)`,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-                serverId: undefined,
-            };
-            const { data, error } = await api.POST('/api/lists', {
-                body: {
-                    name: copy.name,
-                    description: copy.description,
-                    tags: copy.tags ?? [],
-                    faction_id: listData.faction_id,
-                    points: calculateListPoints(copy),
-                    swc: calculateListSWC(copy),
-                    units_json: copy as Record<string, unknown>,
-                },
-            });
-            if (error) throw error;
-            return data;
-        },
+    const forkMutation = useMutation({
+        mutationFn: (id: string) => listService.forkList(id),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
-    const handleLoad = async (id: number) => {
+    const handleLoad = async (id: string) => {
         setLoadingId(id);
         try {
-            const { data: listData, error } = await api.GET('/api/lists/{list_id}', { params: { path: { list_id: id } } });
-            if (error) throw error;
-            const restoredList = listData.units_json as unknown as ArmyList;
-            restoredList.serverId = listData.id;
-            if (!restoredList.tags) restoredList.tags = [];
-            loadList(restoredList);
+            const armyList = await listService.getList(id);
+            if (!armyList.tags) armyList.tags = [];
+            loadList(armyList);
             navigate('/');
         } catch (e) {
             console.error('Failed to load list', e);
@@ -172,7 +127,47 @@ export function MyLists() {
         }
     };
 
-    const handleRenameCommit = (id: number) => {
+    const handleOpenInArmy = async (id: string) => {
+        setOpeningInArmyId(id);
+        try {
+            const armyList = await listService.getList(id);
+            const factionInfo = db.getFactionInfo(armyList.factionId);
+            const code = encodeArmyList(armyList, factionInfo?.slug ?? 'unknown', (unit) => unit.idArmy || unit.id);
+            window.open(`https://infinitytheuniverse.com/army/list/${code}`, '_blank');
+        } catch (e) {
+            console.error('Failed to open in Army', e);
+        } finally {
+            setOpeningInArmyId(null);
+        }
+    };
+
+    const handleExportAll = async () => {
+        if (!lists || lists.length === 0) return;
+        setIsExporting(true);
+        try {
+            const exported = await Promise.all(
+                lists.map(async (summary) => {
+                    const armyList = await listService.getList(summary.id);
+                    const factionSlug = db.getFactionInfo(summary.faction_id)?.slug ?? 'unknown';
+                    const armyCode = encodeArmyList(armyList, factionSlug, (unit) => unit.idArmy || unit.id);
+                    return { name: summary.name, army_code: armyCode };
+                })
+            );
+            const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `infinity-army-lists-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Export failed', e);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleRenameCommit = (id: string) => {
         const trimmed = renameValue.trim();
         if (trimmed && trimmed !== lists?.find(l => l.id === id)?.name) {
             renameMutation.mutate({ id, name: trimmed });
@@ -180,7 +175,7 @@ export function MyLists() {
         setRenamingId(null);
     };
 
-    const handleTagsCommit = (id: number) => {
+    const handleTagsCommit = (id: string) => {
         const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
         tagsMutation.mutate({ id, tags });
         setEditingTagsId(null);
@@ -221,22 +216,48 @@ export function MyLists() {
                             {count === 0 ? 'No lists saved yet' : `${count} list${count === 1 ? '' : 's'} saved`}
                         </p>
                     </div>
-                    <button
-                        onClick={() => setShowNewModal(true)}
-                        style={{
-                            padding: '0.5rem 1.25rem',
-                            background: 'var(--accent, #6366f1)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            fontSize: '0.875rem',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                        }}
-                    >
-                        + New List
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                        {count > 0 && (
+                            <button
+                                onClick={handleExportAll}
+                                disabled={isExporting}
+                                title="Export all lists as JSON"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    padding: '0.5rem 1rem',
+                                    background: 'rgba(242,145,7,0.1)',
+                                    color: '#F29107',
+                                    border: '1px solid rgba(242,145,7,0.35)',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                                    opacity: isExporting ? 0.6 : 1,
+                                    transition: 'all 0.15s',
+                                }}
+                            >
+                                <Download size={16} />
+                                {isExporting ? 'Exporting…' : 'Export All'}
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setShowNewModal(true)}
+                            style={{
+                                padding: '0.5rem 1.25rem',
+                                background: 'var(--accent, #6366f1)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                fontSize: '0.875rem',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            + New List
+                        </button>
+                    </div>
                 </div>
 
                 {count > 0 && (
@@ -571,11 +592,20 @@ export function MyLists() {
                                         {loadingId === list.id ? '…' : 'Load'}
                                     </button>
                                     <button
-                                        onClick={() => duplicateMutation.mutate(list.id)}
-                                        disabled={duplicateMutation.status === 'pending'}
-                                        style={actionBtn('#6366f1', duplicateMutation.status === 'pending')}
+                                        onClick={() => handleOpenInArmy(list.id)}
+                                        disabled={openingInArmyId === list.id}
+                                        title="Open in Infinity Army"
+                                        style={{ ...actionBtn('#F29107', openingInArmyId === list.id), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
                                     >
-                                        Copy
+                                        <ArmyLogo size={12} backdrop />
+                                        {openingInArmyId === list.id ? '…' : 'Army'}
+                                    </button>
+                                    <button
+                                        onClick={() => forkMutation.mutate(list.id)}
+                                        disabled={forkMutation.status === 'pending'}
+                                        style={actionBtn('#6366f1', forkMutation.status === 'pending')}
+                                    >
+                                        Fork
                                     </button>
                                     <button
                                         onClick={() => { if (confirm('Delete this list?')) deleteMutation.mutate(list.id); }}

@@ -1,9 +1,7 @@
 name: Production Deployment Pipeline
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 # Required for Workload Identity Federation
 permissions:

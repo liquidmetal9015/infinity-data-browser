@@ -25,7 +25,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit, type FireteamDef } from '@shared/listTypes';
-import { Plus, Trash2, Users, Copy, Check, ExternalLink, CloudUpload, CloudCheck } from 'lucide-react';
+import { Plus, Trash2, Users, Copy, Check, CloudUpload, CloudCheck } from 'lucide-react';
+import { ArmyLogo } from '../shared/ArmyLogo';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -448,8 +449,8 @@ export function ArmyListPanel() {
                                 : <CloudUpload size={14} className={saveListMutation.isPending ? 'animate-pulse' : ''} />}
                         </button>
                     )}
-                    <button className={styles.codeButton} onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
-                        <ExternalLink size={14} />
+                    <button className={styles.codeButton} onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', color: '#F29107', borderColor: 'rgba(242,145,7,0.35)', background: 'rgba(242,145,7,0.1)' }}>
+                        <ArmyLogo size={14} backdrop />
                     </button>
                     <button className={styles.codeButton} onClick={handleCopyCode} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
                         {codeCopied ? <Check size={14} /> : <Copy size={14} />}

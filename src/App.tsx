@@ -1,4 +1,5 @@
 import { WorkspaceView } from './components/Workspace/WorkspaceView';
+import { FloatingToolOverlay } from './components/Workspace/FloatingToolOverlay';
 import { useContextMenuStore } from './stores/useContextMenuStore';
 import { NavBar } from './components/NavBar';
 import { ContextMenu } from './components/ContextMenu';
@@ -38,14 +39,17 @@ function App() {
     <GlobalContextMenuHandler>
       <div className="app-container flex flex-col h-screen">
         <NavBar />
-        <Routes>
-          <Route path="/" element={<WorkspaceView />} />
-          <Route path="/lists" element={<MyLists />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/reference" element={<ReferencePage />} />
-          <Route path="/ranges" element={<RangesPage />} />
-          <Route path="/compare" element={<ComparePage />} />
-        </Routes>
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <Routes>
+            <Route path="/" element={<WorkspaceView />} />
+            <Route path="/lists" element={<MyLists />} />
+            <Route path="/search" element={<div className="flex-1 overflow-y-auto"><SearchPage /></div>} />
+            <Route path="/reference" element={<div className="flex-1 overflow-y-auto"><ReferencePage /></div>} />
+            <Route path="/ranges" element={<div className="flex-1 overflow-y-auto"><RangesPage /></div>} />
+            <Route path="/compare" element={<div className="flex-1 overflow-y-auto"><ComparePage /></div>} />
+          </Routes>
+        </div>
+        <FloatingToolOverlay />
       </div>
       <ContextMenu />
     </GlobalContextMenuHandler>

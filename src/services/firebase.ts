@@ -1,5 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import type { Auth } from "firebase/auth";
+
+const STATIC_MODE = import.meta.env.VITE_DEPLOY_MODE === 'static';
 
 // Replace with actual config from Firebase project in environments
 const firebaseConfig = {
@@ -11,25 +14,34 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || "mock_app_id"
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
+// In static mode, skip Firebase initialization entirely to avoid SDK errors.
+let auth: Auth | null = null;
+let loginWithGoogle: () => Promise<void> = async () => {};
+let logout: () => Promise<void> = async () => {};
 
-export const loginWithGoogle = async () => {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        return result.user;
-    } catch (error) {
-        console.error("Firebase Login Error", error);
-        throw error;
-    }
-};
+if (!STATIC_MODE) {
+    const app = initializeApp(firebaseConfig);
+    const _auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    auth = _auth;
 
-export const logout = async () => {
-    try {
-        await signOut(auth);
-    } catch (error) {
-        console.error("Firebase Logout Error", error);
-        throw error;
-    }
-};
+    loginWithGoogle = async () => {
+        try {
+            await signInWithPopup(_auth, googleProvider);
+        } catch (error) {
+            console.error("Firebase Login Error", error);
+            throw error;
+        }
+    };
+
+    logout = async () => {
+        try {
+            await signOut(_auth);
+        } catch (error) {
+            console.error("Firebase Logout Error", error);
+            throw error;
+        }
+    };
+}
+
+export { auth, loginWithGoogle, logout };

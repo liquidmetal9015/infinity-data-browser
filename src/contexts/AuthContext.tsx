@@ -14,14 +14,16 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEV_AUTH = import.meta.env.VITE_DEV_AUTH === 'true';
+const STATIC_MODE = import.meta.env.VITE_DEPLOY_MODE === 'static';
+const BYPASS_AUTH = DEV_AUTH || STATIC_MODE;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(DEV_AUTH ? ({ uid: 'dev-user', email: 'dev@local' } as User) : null);
-    const [loading, setLoading] = useState(!DEV_AUTH);
+    const [user, setUser] = useState<User | null>(BYPASS_AUTH ? ({ uid: STATIC_MODE ? 'local' : 'dev-user', email: STATIC_MODE ? 'local' : 'dev@local' } as User) : null);
+    const [loading, setLoading] = useState(!BYPASS_AUTH);
 
     useEffect(() => {
-        if (DEV_AUTH) return;
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        if (BYPASS_AUTH) return;
+        const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
             setUser(currentUser);
             setLoading(false);
         });
@@ -30,11 +32,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const handleLogin = async () => {
-        await loginWithGoogle();
+        if (!STATIC_MODE) await loginWithGoogle();
     };
 
     const handleLogout = async () => {
-        await logout();
+        if (!STATIC_MODE) await logout();
     };
 
     return (

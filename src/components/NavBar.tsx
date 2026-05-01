@@ -1,4 +1,4 @@
-import { Trash2, AppWindow, Maximize, Columns3 } from 'lucide-react';
+import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
@@ -6,8 +6,10 @@ import { clearAllDataAndReload } from '../utils/clearData';
 import { widgetRegistry, PANEL_WIDGETS, TOOL_WIDGETS } from './Workspace/widgetRegistry';
 import type { WidgetType } from '../types/workspace';
 import { useAuth } from '../hooks/useAuth';
-import { Link, useLocation } from 'react-router-dom';
+import { STATIC_MODE } from '../services/listService';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAppModeStore } from '../stores/useAppModeStore';
 import styles from './NavBar.module.css';
 
 function useIsMobile() {
@@ -32,9 +34,18 @@ const EXPLORE_LINKS = [
 export function NavBar() {
     const db = useDatabase();
     const { windows, layoutMode, columnCount, setLayoutMode, setColumnCount, openWindow, focusWindow } = useWorkspaceStore();
+    const { appMode, lastBuilderPath, lastExplorerPath, setAppMode, setLastPath } = useAppModeStore();
     const { user, login, logout, loading } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const isMobile = useIsMobile();
+
+    const handleModeSwitch = (mode: typeof appMode) => {
+        if (mode === appMode) return;
+        setLastPath(appMode, location.pathname);
+        setAppMode(mode);
+        navigate(mode === 'builder' ? lastBuilderPath : lastExplorerPath);
+    };
 
     const topZIndex = windows.length > 0 ? Math.max(...windows.map(w => w.zIndex)) : 0;
     const activeWindow = windows.find(w => w.zIndex === topZIndex && !w.isMinimized);
@@ -58,21 +69,43 @@ export function NavBar() {
                     <span className="unit-count">{db.units.length} units</span>
                 </div>
 
-                {/* Explore links — always visible as nav destinations */}
-                <nav className={styles.exploreTabs}>
-                    {EXPLORE_LINKS.map(({ label, path }) => (
-                        <Link
-                            key={path}
-                            to={path}
-                            className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
-                        >
-                            <span className={styles.tabLabel}>{label}</span>
-                        </Link>
-                    ))}
-                </nav>
+                {/* Mode switcher */}
+                <div className={styles.layoutSegmentedControl} role="group" aria-label="App Mode">
+                    <button
+                        className={clsx(styles.segmentedBtn, appMode === 'builder' && styles.active)}
+                        onClick={() => handleModeSwitch('builder')}
+                        title="List Builder"
+                    >
+                        <Hammer size={14} />
+                        <span className={styles.layoutLabel}>Builder</span>
+                    </button>
+                    <button
+                        className={clsx(styles.segmentedBtn, appMode === 'explorer' && styles.active)}
+                        onClick={() => handleModeSwitch('explorer')}
+                        title="Data Explorer"
+                    >
+                        <Compass size={14} />
+                        <span className={styles.layoutLabel}>Explorer</span>
+                    </button>
+                </div>
 
-                {/* Panel launcher tabs — only in multi-window/tabbed mode on workspace */}
-                {isWorkspace && layoutMode !== 'columns' && (
+                {/* Explore links — only in Explorer mode */}
+                {appMode === 'explorer' && (
+                    <nav className={styles.exploreTabs}>
+                        {EXPLORE_LINKS.map(({ label, path }) => (
+                            <Link
+                                key={path}
+                                to={path}
+                                className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
+                            >
+                                <span className={styles.tabLabel}>{label}</span>
+                            </Link>
+                        ))}
+                    </nav>
+                )}
+
+                {/* Panel launcher tabs — Builder mode, multi-window/tabbed on workspace */}
+                {appMode === 'builder' && isWorkspace && layoutMode !== 'columns' && (
                     <nav className={styles.workspaceTabs}>
                         {PANEL_WIDGETS.map((widgetType: WidgetType) => {
                             const entry = widgetRegistry[widgetType];
@@ -103,8 +136,8 @@ export function NavBar() {
                     </nav>
                 )}
 
-                {/* Tool launcher — visible on workspace in all layout modes */}
-                {isWorkspace && (
+                {/* Tool launcher — Builder: workspace only; Explorer: always visible */}
+                {(appMode === 'builder' ? isWorkspace : true) && (
                     <nav className={styles.toolTabs}>
                         {TOOL_WIDGETS.map((widgetType: WidgetType) => {
                             const entry = widgetRegistry[widgetType];
@@ -121,7 +154,9 @@ export function NavBar() {
                                         if (windowInstance) {
                                             focusWindow(windowInstance.id);
                                         } else {
-                                            openWindow(widgetType);
+                                            openWindow(widgetType, {
+                                                contextMode: appMode === 'builder' ? 'list' : 'standalone',
+                                            });
                                         }
                                     }}
                                     title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
@@ -136,7 +171,7 @@ export function NavBar() {
                 )}
 
                 <div className={clsx(styles.mainNav, styles.controlsNav)}>
-                    {isWorkspace && !isMobile && (
+                    {appMode === 'builder' && isWorkspace && !isMobile && (
                         <>
                             {/* Column count toggle — only in columns mode */}
                             {layoutMode === 'columns' && (
@@ -187,15 +222,17 @@ export function NavBar() {
                         </>
                     )}
 
-                    {isWorkspace && !isMobile && <div className={styles.navDivider} />}
+                    {appMode === 'builder' && isWorkspace && !isMobile && <div className={styles.navDivider} />}
 
                     {user ? (
                         <>
-                            <Link to="/lists" className={styles.navLink} style={{ color: 'var(--accent)' }}>My Lists</Link>
-                            <button className={styles.navLink} onClick={logout} title="Sign Out">Sign Out</button>
+                            {appMode === 'builder' && (
+                                <Link to="/lists" className={styles.navLink} style={{ color: 'var(--accent)' }}>My Lists</Link>
+                            )}
+                            {!STATIC_MODE && <button className={styles.navLink} onClick={logout} title="Sign Out">Sign Out</button>}
                         </>
                     ) : (
-                        <button className={styles.navLink} onClick={login} disabled={loading}>Sign In</button>
+                        !STATIC_MODE && <button className={styles.navLink} onClick={login} disabled={loading}>Sign In</button>
                     )}
 
                     <div className={styles.navDivider} />
