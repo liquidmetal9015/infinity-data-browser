@@ -309,8 +309,8 @@ export function MyLists() {
         return (
             <div className="flex h-full w-full items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Sign in required</h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>Log in with Google to view and manage your saved Army Lists.</p>
+                    <h2 className="text-2xl font-bold mb-3 text-text-primary">Sign in required</h2>
+                    <p className="text-text-secondary">Log in with Google to view and manage your saved Army Lists.</p>
                 </div>
             </div>
         );
@@ -319,7 +319,7 @@ export function MyLists() {
     if (isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center">
-                <div style={{ color: 'var(--text-secondary)' }}>Loading your lists…</div>
+                <div className="text-text-secondary">Loading your lists…</div>
             </div>
         );
     }
@@ -327,8 +327,8 @@ export function MyLists() {
     const count = lists?.length ?? 0;
 
     return (
-        <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem 1rem', minHeight: 0 }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-10 min-h-0">
+            <div className="max-w-[1100px] mx-auto">
 
                 {/* ── Currently editing banner ── */}
                 {activeList && (
@@ -367,16 +367,16 @@ export function MyLists() {
                 )}
 
                 {/* ── Page header ── */}
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>
+                <div className="flex items-end justify-between mb-8 gap-4">
                     <div>
-                        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
+                        <h1 className="text-[1.75rem] font-bold text-text-primary tracking-tight">
                             My Army Lists
                         </h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0.25rem 0 0' }}>
+                        <p className="text-text-secondary text-sm mt-1">
                             {count === 0 ? 'No lists saved yet' : `${count} list${count === 1 ? '' : 's'} saved`}
                         </p>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                    <div className="flex gap-2 shrink-0">
                         {count >= 2 && (
                             <button
                                 onClick={() => navigate('/lists/overview')}
@@ -509,7 +509,7 @@ export function MyLists() {
 
                             {/* Super-faction filter pills */}
                             {activeSuperFactions.length > 1 && (
-                                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                <div className="flex gap-1 flex-wrap">
                                     {activeSuperFactions.map(sf => {
                                         const logo = getSafeLogo(sf.vanilla?.logo);
                                         const active = filterSuperFaction === sf.id;
@@ -599,7 +599,7 @@ export function MyLists() {
                         </div>
 
                         {/* ── Content filter (units / skills / weapons / equipment) ── */}
-                        <div style={{ marginBottom: '1.25rem' }}>
+                        <div className="mb-5">
                             <ListContentFilter
                                 contentFilters={contentFilters}
                                 setContentFilters={setContentFilters}
@@ -611,7 +611,7 @@ export function MyLists() {
 
                         {/* ── Empty filtered state ── */}
                         {displayedLists.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                            <div className="text-center p-12 text-text-secondary">
                                 {hasContentFilter && indexFetching && !indexMap
                                     ? 'Indexing list contents…'
                                     : 'No lists match the current filters.'}
@@ -622,15 +622,8 @@ export function MyLists() {
 
                 {/* ── Empty state ── */}
                 {count === 0 && (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '4rem 2rem',
-                        background: 'var(--bg-secondary)',
-                        border: '1px dashed var(--border)',
-                        borderRadius: '12px',
-                        color: 'var(--text-secondary)',
-                    }}>
-                        <p style={{ margin: 0 }}>Build a list in the workspace and hit the save button — it'll appear here.</p>
+                    <div className="text-center py-16 px-8 bg-bg-secondary border border-dashed border-border rounded-xl text-text-secondary">
+                        <p>Build a list in the workspace and hit the save button — it'll appear here.</p>
                     </div>
                 )}
 
@@ -671,7 +664,7 @@ export function MyLists() {
 
 
                 {/* ── List rows (dense) ── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div className="flex flex-col gap-1.5">
                     {displayedLists.map(list => {
                         const factionInfo = db.getFactionInfo(list.faction_id);
                         const logoSrc = factionInfo?.logo ? getSafeLogo(factionInfo.logo) : undefined;
