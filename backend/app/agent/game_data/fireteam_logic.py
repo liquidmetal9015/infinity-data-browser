@@ -1,4 +1,5 @@
 """Python port of shared/fireteams.ts — fireteam validation and bonus calculation."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -64,9 +65,7 @@ def assign_members_to_slots(
         m = members[member_idx]
         m_tags = get_unit_tags(m["name"], m.get("comment"))
         is_wildcard = "wildcard" in m_tags
-        matches_team = any(
-            t in tt or tt in t for t in m_tags for tt in team_tags
-        )
+        matches_team = any(t in tt or tt in t for t in m_tags for tt in team_tags)
 
         for s_idx, slot in enumerate(slots):
             if counts[s_idx] >= slot.get("max", 1):
@@ -79,9 +78,7 @@ def assign_members_to_slots(
             if m_slug and s_slug and m_slug == s_slug:
                 matches_slot = True
             else:
-                matches_slot = any(
-                    t in st or st in t for t in m_tags for st in s_tags
-                )
+                matches_slot = any(t in st or st in t for t in m_tags for st in s_tags)
 
             can_fill = is_wildcard or matches_slot
             if not can_fill and matches_team:

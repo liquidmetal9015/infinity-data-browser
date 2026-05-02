@@ -117,7 +117,8 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
                 // If OR: Start with empty to union with stat matches.
                 results = query.operator === 'and' ? db.units : [];
             } else {
-                results = [];
+                // No item or stat filters — seed with all units only if there's a text query
+                results = textQuery.trim() ? db.units : [];
             }
         } else {
             results = db.searchWithModifiers(
@@ -163,7 +164,7 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         }
 
         // Apply text query
-        if (results.length > 0 && textQuery.trim()) {
+        if (textQuery.trim()) {
             const lowerTerm = textQuery.trim().toLowerCase();
             results = results.filter(unit => {
                 if (unit.name?.toLowerCase().includes(lowerTerm) || unit.isc.toLowerCase().includes(lowerTerm)) return true;

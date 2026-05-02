@@ -53,3 +53,11 @@ ignore_missing_imports = true
 module = ["app.auth"]
 # firebase_admin.auth.verify_id_token() is typed as returning Any
 disable_error_code = ["no-any-return"]
+
+[[tool.mypy.overrides]]
+# The agent module and its endpoint are slated for deletion at TS-backend cutover.
+# Skip strict checks during the parallel-running window — the runtime path is
+# validated by integration tests, and the canonical implementation lives in
+# backend-ts/src/agent/.
+module = ["app.agent.*", "app.routers.agent"]
+ignore_errors = true

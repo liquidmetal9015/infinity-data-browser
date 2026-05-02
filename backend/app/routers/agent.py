@@ -1,4 +1,5 @@
 """Agent chat endpoint — LLM-powered assistant for list building and game queries."""
+
 from __future__ import annotations
 
 import logging
@@ -95,7 +96,9 @@ async def chat(
         )
     except Exception as e:
         logger.exception("Agent chat failed for user %s: %s", user.id, e)
-        raise HTTPException(status_code=500, detail="AI assistant encountered an error.") from e
+        raise HTTPException(
+            status_code=500, detail="AI assistant encountered an error."
+        ) from e
 
     return ChatResponse(
         reply=response.text,

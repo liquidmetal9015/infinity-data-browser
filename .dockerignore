@@ -7,3 +7,7 @@ backend/venv
 backend/__pycache__
 backend/.pytest_cache
 *.pyc
+backend-ts/node_modules
+backend-ts/dist
+backend-ts/.env
+backend-ts/drizzle

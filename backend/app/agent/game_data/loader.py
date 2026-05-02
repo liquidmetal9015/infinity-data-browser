@@ -1,4 +1,5 @@
 """GameDataLoader — singleton that loads static game data files once at startup."""
+
 from __future__ import annotations
 
 import json

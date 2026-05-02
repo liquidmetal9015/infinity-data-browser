@@ -1,4 +1,5 @@
 """Python port of shared/dice-engine.ts — Infinity N5 F2F probability engine."""
+
 from __future__ import annotations
 
 import math
@@ -113,8 +114,17 @@ def solve_f2f(
                 is_crit = va >= 200
 
                 for k in range(burst_a):
-                    binom = _n_c_k(burst_a - 1, k) * (p_hit**k) * ((1 - p_hit) ** (burst_a - 1 - k))
-                    res = {"aSuccess": 1 + k, "aCrit": is_crit, "bSuccess": 0, "bCrit": False}
+                    binom = (
+                        _n_c_k(burst_a - 1, k)
+                        * (p_hit**k)
+                        * ((1 - p_hit) ** (burst_a - 1 - k))
+                    )
+                    res = {
+                        "aSuccess": 1 + k,
+                        "aCrit": is_crit,
+                        "bSuccess": 0,
+                        "bCrit": False,
+                    }
                     key = json.dumps(res, sort_keys=True)
                     outcome_dist[key] = outcome_dist.get(key, 0.0) + joint * binom
 
@@ -125,8 +135,17 @@ def solve_f2f(
                 is_crit = vb >= 200
 
                 for k in range(burst_b):
-                    binom = _n_c_k(burst_b - 1, k) * (p_hit**k) * ((1 - p_hit) ** (burst_b - 1 - k))
-                    res = {"aSuccess": 0, "aCrit": False, "bSuccess": 1 + k, "bCrit": is_crit}
+                    binom = (
+                        _n_c_k(burst_b - 1, k)
+                        * (p_hit**k)
+                        * ((1 - p_hit) ** (burst_b - 1 - k))
+                    )
+                    res = {
+                        "aSuccess": 0,
+                        "aCrit": False,
+                        "bSuccess": 1 + k,
+                        "bCrit": is_crit,
+                    }
                     key = json.dumps(res, sort_keys=True)
                     outcome_dist[key] = outcome_dist.get(key, 0.0) + joint * binom
 
@@ -147,7 +166,9 @@ def _convolve(d1: dict[int, float], d2: dict[int, float]) -> dict[int, float]:
     return result
 
 
-def _get_single_save_dist(threshold: int, damage: int, is_cont: bool) -> dict[int, float]:
+def _get_single_save_dist(
+    threshold: int, damage: int, is_cont: bool
+) -> dict[int, float]:
     p_save = max(0.0, min(1.0, threshold / 20.0))
     p_fail = 1.0 - p_save
     dist: dict[int, float] = {}
@@ -171,7 +192,9 @@ def _get_single_save_dist(threshold: int, damage: int, is_cont: bool) -> dict[in
     return dist
 
 
-def _get_total_wounds_dist(saves: int, threshold: int, damage: int, cont: bool) -> dict[int, float]:
+def _get_total_wounds_dist(
+    saves: int, threshold: int, damage: int, cont: bool
+) -> dict[int, float]:
     if saves <= 0:
         return {0: 1.0}
     single = _get_single_save_dist(threshold, damage, cont)
@@ -183,10 +206,18 @@ def _get_total_wounds_dist(saves: int, threshold: int, damage: int, cont: bool) 
 
 def _calculate_expected_wounds(
     f2f_dist: dict[str, float],
-    a_damage: int, b_arm: int, a_ammo: str,
-    b_damage: int, a_arm: int, b_ammo: str,
-    a_cont: bool, b_bts: int, b_crit_immune: bool,
-    b_cont: bool, a_bts: int, a_crit_immune: bool,
+    a_damage: int,
+    b_arm: int,
+    a_ammo: str,
+    b_damage: int,
+    a_arm: int,
+    b_ammo: str,
+    a_cont: bool,
+    b_bts: int,
+    b_crit_immune: bool,
+    b_cont: bool,
+    a_bts: int,
+    a_crit_immune: bool,
 ) -> tuple[dict[int, float], dict[int, float]]:
     import json
 
@@ -232,10 +263,18 @@ def calculate_f2f(active: CombatantInput, reactive: CombatantInput) -> F2FResult
 
     wounds_active, wounds_reactive = _calculate_expected_wounds(
         f2f_dist,
-        active.damage, reactive.arm, active.ammo,
-        reactive.damage, active.arm, reactive.ammo,
-        active.cont, reactive.bts, reactive.crit_immune,
-        reactive.cont, active.bts, active.crit_immune,
+        active.damage,
+        reactive.arm,
+        active.ammo,
+        reactive.damage,
+        active.arm,
+        reactive.ammo,
+        active.cont,
+        reactive.bts,
+        reactive.crit_immune,
+        reactive.cont,
+        active.bts,
+        active.crit_immune,
     )
 
     import json

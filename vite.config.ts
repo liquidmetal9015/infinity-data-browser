@@ -34,6 +34,8 @@ export default defineConfig({
       'e2e/**',
       'mcp-server/**',
       'node_modules/**',
+      '**/node_modules/**',
+      'backend-ts/**',
     ],
   },
 })

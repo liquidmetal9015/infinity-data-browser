@@ -1,39 +1,32 @@
 # Stage 1: Build Frontend React App
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /app
-
-# Install dependencies and build
+FROM node:20-alpine AS frontend
+WORKDIR /repo
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Build FastAPI Backend server
-FROM python:3.12-slim
+# Stage 2: Install + compile TypeScript backend (shared/ available for path alias resolution)
+FROM node:20-alpine AS backend-build
+WORKDIR /repo
+COPY backend-ts/package.json backend-ts/package-lock.json* backend-ts/
+RUN cd backend-ts && npm ci
+COPY shared/ shared/
+COPY backend-ts/ backend-ts/
+RUN cd backend-ts && npm run build
 
+# Stage 3: Runtime — Node-only image serving /api/* and SPA static files on PORT=8080
+FROM node:20-alpine
 WORKDIR /app
+COPY --from=backend-build /repo/backend-ts/node_modules ./node_modules
+COPY --from=backend-build /repo/backend-ts/dist ./dist
+COPY --from=backend-build /repo/backend-ts/package.json ./
+COPY --from=frontend /repo/dist ./public
 
-# System dependencies for psycopg2/pg_config etc if needed
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install python dependencies via uv
-RUN pip install --no-cache-dir uv
-COPY backend/pyproject.toml ./backend/
-RUN cd backend && uv sync --no-dev --system
-
-# Copy backend code
-COPY backend/app/ app/
-COPY backend/alembic/ alembic/
-COPY backend/alembic.ini .
-
-# Copy compiled frontend from Stage 1 into the `dist/` folder
-COPY --from=frontend-builder /app/dist /app/dist
-
-# Cloud Run injects PORT
 ENV PORT=8080
+EXPOSE 8080
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+# Built layout:
+#   dist/backend-ts/src/index.js  ← entrypoint
+#   dist/shared/*.js              ← path-aliased imports resolve here
+CMD ["node", "dist/backend-ts/src/index.js"]

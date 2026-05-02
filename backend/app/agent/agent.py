@@ -1,4 +1,5 @@
 """InfinityAgent — orchestrates provider + tools for a single chat turn."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -35,7 +36,9 @@ class InfinityAgent:
         parts = [_SYSTEM_PROMPT_BASE]
 
         if context.faction_name:
-            parts.append(f"\nThe player is currently building a {context.faction_name} list.")
+            parts.append(
+                f"\nThe player is currently building a {context.faction_name} list."
+            )
 
         if context.list_points is not None:
             parts.append(f"List total: {context.list_points} pts.")
@@ -67,5 +70,7 @@ class InfinityAgent:
     ) -> AgentResponse:
         executor = ToolExecutor(db=db, loader=self._loader)
         system = self._build_system_prompt(context)
-        messages = self._format_history(history) + [{"role": "user", "content": message}]
+        messages = self._format_history(history) + [
+            {"role": "user", "content": message}
+        ]
         return await self._provider.chat(messages, TOOL_DEFINITIONS, system, executor)

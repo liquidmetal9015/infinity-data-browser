@@ -15,7 +15,7 @@ setup: ## Fully bootstrap the local development environment
 	docker compose up -d db
 	@echo "$(GREEN)Waiting for Postgres to be ready...$(RESET)"
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "$(GREEN)Installing Python backend dependencies via uv...$(RESET)"
+	@echo "$(GREEN)Installing Python backend dependencies via uv (still needed for Alembic + ETL)...$(RESET)"
 	cd backend && uv sync
 	@echo "$(GREEN)Creating test database if needed...$(RESET)"
 	docker compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='infinity_test'" | grep -q 1 || docker compose exec db psql -U postgres -c "CREATE DATABASE infinity_test"
@@ -23,6 +23,8 @@ setup: ## Fully bootstrap the local development environment
 	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
 	@echo "$(GREEN)Installing Frontend Node dependencies...$(RESET)"
 	npm ci
+	@echo "$(GREEN)Installing TypeScript backend Node dependencies...$(RESET)"
+	cd backend-ts && npm ci
 	@echo "$(GREEN)Environment flawlessly bootstrapped! 🎉$(RESET)"
 
 ##@ Development
@@ -33,10 +35,10 @@ migrate: ## Run pending Alembic migrations
 	@echo "$(GREEN)Running database migrations...$(RESET)"
 	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
 
-dev: migrate ## Concurrent launch of the Vite frontend and Uvicorn backend
+dev: migrate ## Concurrent launch of the Vite frontend and TypeScript backend
 	@echo "$(GREEN)Starting Development Servers...$(RESET)"
 	npx concurrently -k -c "blue.bold,green.bold" \
-		"cd backend && DATABASE_URL='postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity' uv run uvicorn app.main:app --reload --port 8000" \
+		"cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' DEV_AUTH=true PORT=8000 npm run dev" \
 		"npm run dev"
 
 seed: ## Import game data JSON files into the local database
@@ -45,14 +47,17 @@ seed: ## Import game data JSON files into the local database
 
 ##@ Verification
 lint: ## Run aggressive linting & type checks across stack
-	@echo "$(YELLOW)Linting Python (ruff/mypy) & Node (eslint)...$(RESET)"
+	@echo "$(YELLOW)Linting Python (ruff/mypy) — retained ETL/Alembic only...$(RESET)"
 	cd backend && uv run ruff format . && uv run ruff check --fix .
 	cd backend && uv run mypy .  # strict = true is set in pyproject.toml
+	@echo "$(YELLOW)Linting & typechecking TypeScript backend...$(RESET)"
+	cd backend-ts && npm run lint && npm run typecheck
+	@echo "$(YELLOW)Linting frontend...$(RESET)"
 	npm run lint
 
 test: ## Execute complete unit test suites
-	@echo "$(YELLOW)Running pytest and vitest...$(RESET)"
-	cd backend && DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run pytest
+	@echo "$(YELLOW)Running backend-ts vitest and frontend vitest...$(RESET)"
+	cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' DEV_AUTH=true npm test
 	npm run test
 
 help:  ## Display this help

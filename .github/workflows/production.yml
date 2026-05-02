@@ -16,6 +16,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Python tooling is retained for the Alembic migration step in the deploy
+      # job (and for the ETL script). Lint/typecheck the Python that's left.
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -46,14 +48,26 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Node dependencies
+      - name: Install frontend dependencies
         run: npm ci
 
-      - name: ESLint
+      - name: Frontend ESLint
         run: npm run lint
 
-      - name: TypeScript check
+      - name: Frontend TypeScript check
         run: npx tsc --noEmit
+
+      - name: Install backend-ts dependencies
+        working-directory: ./backend-ts
+        run: npm ci
+
+      - name: Backend-ts ESLint
+        working-directory: ./backend-ts
+        run: npm run lint
+
+      - name: Backend-ts TypeScript check
+        working-directory: ./backend-ts
+        run: npm run typecheck
 
   deploy:
     name: CI/CD - Build, Migrate, and Deploy
@@ -113,7 +127,10 @@ jobs:
           region: 'us-central1'
           source: '.' # Uploads everything and triggers the Multi-stage Docker build remotely via Cloud Build
           env_vars: |
-            DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/infinity?host=/cloudsql/infinity-os-494622:us-central1:infinity-db-instance
-            CORS_ORIGINS=["*"]
+            DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/infinity?host=/cloudsql/infinity-os-494622:us-central1:infinity-db-instance
+            CORS_ORIGINS=*
+            DEV_AUTH=false
+            LLM_PROVIDER=anthropic
+            LLM_MODEL=claude-haiku-4-5-20251001
           secrets: |
             FIREBASE_ADMIN_CREDENTIALS=firebase-admin-key:latest

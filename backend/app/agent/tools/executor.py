@@ -1,10 +1,11 @@
 """ToolExecutor — dispatches LLM tool calls to their implementations."""
+
 from __future__ import annotations
 
 import json
 from typing import Any
 
-from sqlalchemy import String, cast, func, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -13,9 +14,12 @@ from app.agent.game_data.fireteam_logic import get_fireteam_bonuses
 from app.agent.game_data.loader import GameDataLoader
 from app.models.faction import Faction
 from app.models.fireteam import FireteamChart
-from app.models.item import Equipment, Skill, Weapon
 from app.models.unit import Loadout, Unit
-from app.routers.units import _build_loadout_response, _build_profile_response, _get_catalogs
+from app.routers.units import (
+    _build_loadout_response,
+    _build_profile_response,
+    _get_catalogs,
+)
 
 
 class ToolExecutor:
@@ -138,10 +142,12 @@ class ToolExecutor:
                         {"name": s.name, "modifiers": s.extra_display} for s in p.skills
                     ],
                     "equipment": [
-                        {"name": e.name, "modifiers": e.extra_display} for e in p.equipment
+                        {"name": e.name, "modifiers": e.extra_display}
+                        for e in p.equipment
                     ],
                     "weapons": [
-                        {"name": w.name, "modifiers": w.extra_display} for w in p.weapons
+                        {"name": w.name, "modifiers": w.extra_display}
+                        for w in p.weapons
                     ],
                 }
                 for p in profiles
@@ -152,13 +158,16 @@ class ToolExecutor:
                     "points": lo.points,
                     "swc": lo.swc,
                     "weapons": [
-                        {"name": w.name, "modifiers": w.extra_display} for w in lo.weapons
+                        {"name": w.name, "modifiers": w.extra_display}
+                        for w in lo.weapons
                     ],
                     "skills": [
-                        {"name": s.name, "modifiers": s.extra_display} for s in lo.skills
+                        {"name": s.name, "modifiers": s.extra_display}
+                        for s in lo.skills
                     ],
                     "equipment": [
-                        {"name": e.name, "modifiers": e.extra_display} for e in lo.equipment
+                        {"name": e.name, "modifiers": e.extra_display}
+                        for e in lo.equipment
                     ],
                 }
                 for lo in loadouts
@@ -196,7 +205,11 @@ class ToolExecutor:
                         "name": t.get("name"),
                         "type": t.get("type", []),
                         "slots": [
-                            {"name": u.get("name"), "min": u.get("min", 0), "max": u.get("max", 1)}
+                            {
+                                "name": u.get("name"),
+                                "min": u.get("min", 0),
+                                "max": u.get("max", 1),
+                            }
                             for u in t.get("units", [])
                         ],
                     }
@@ -328,26 +341,31 @@ class ToolExecutor:
         for obj in classifieds:
             designated = [t.lower() for t in obj.get("designatedTroopers", [])]
             if not designated:
-                completable.append({"name": obj["name"], "category": obj.get("category", "")})
+                completable.append(
+                    {"name": obj["name"], "category": obj.get("category", "")}
+                )
                 continue
 
             can_complete = any(
-                any(d in n or n in d for n in lower_names)
-                for d in designated
+                any(d in n or n in d for n in lower_names) for d in designated
             )
 
             if can_complete:
-                completable.append({
-                    "name": obj["name"],
-                    "category": obj.get("category", ""),
-                    "requires": obj.get("designatedTroopers", []),
-                })
+                completable.append(
+                    {
+                        "name": obj["name"],
+                        "category": obj.get("category", ""),
+                        "requires": obj.get("designatedTroopers", []),
+                    }
+                )
             else:
-                not_completable.append({
-                    "name": obj["name"],
-                    "category": obj.get("category", ""),
-                    "requires": obj.get("designatedTroopers", []),
-                })
+                not_completable.append(
+                    {
+                        "name": obj["name"],
+                        "category": obj.get("category", ""),
+                        "requires": obj.get("designatedTroopers", []),
+                    }
+                )
 
         total = len(classifieds)
         pct = round(len(completable) / total * 100) if total else 0
