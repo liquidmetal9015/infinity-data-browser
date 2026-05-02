@@ -200,7 +200,9 @@ export function scoreList(
         }
     }
 
-    const classifiedCoverage = (completableClassifieds.length / classifieds.length) * 100;
+    const classifiedCoverage = classifieds.length > 0
+        ? (completableClassifieds.length / classifieds.length) * 100
+        : 0;
 
     // Calculate breakdown scores (0-100 each)
     const offenseScore = Math.min(100, (avgBS - 10) * 15 + gunfighterCount * 10);
