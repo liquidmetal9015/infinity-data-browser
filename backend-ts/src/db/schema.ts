@@ -169,6 +169,7 @@ export const army_lists = pgTable("army_lists", {
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	description: text(),
 	tags: varchar().array().default([""]).notNull(),
+	rating: integer().default(0).notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.faction_id],

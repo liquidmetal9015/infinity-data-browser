@@ -13,6 +13,7 @@ const ListCreateSchema = z.object({
     name: z.string().max(255),
     description: z.string().nullable().optional(),
     tags: z.array(z.string()).default([]),
+    rating: z.number().int().min(0).max(5).default(0),
     faction_id: z.number().int(),
     points: z.number().int().default(0),
     swc: z.number().default(0),
@@ -48,6 +49,7 @@ function toSummary(row: typeof army_lists.$inferSelect) {
         name: row.name,
         description: row.description,
         tags: row.tags,
+        rating: row.rating,
         faction_id: row.faction_id,
         points: row.points,
         swc: row.swc,
@@ -85,6 +87,7 @@ router.post('/', async c => {
             name: parsed.data.name,
             description: parsed.data.description ?? null,
             tags: parsed.data.tags,
+            rating: parsed.data.rating,
             points: parsed.data.points,
             swc: parsed.data.swc,
             units_json: parsed.data.units_json,
@@ -121,6 +124,7 @@ router.put('/:listId', async c => {
     if (parsed.data.name !== undefined) updates.name = parsed.data.name;
     if (parsed.data.description !== undefined) updates.description = parsed.data.description ?? null;
     if (parsed.data.tags !== undefined) updates.tags = parsed.data.tags;
+    if (parsed.data.rating !== undefined) updates.rating = parsed.data.rating;
     if (parsed.data.faction_id !== undefined) updates.faction_id = parsed.data.faction_id;
     if (parsed.data.points !== undefined) updates.points = parsed.data.points;
     if (parsed.data.swc !== undefined) updates.swc = parsed.data.swc;

@@ -15,7 +15,7 @@ interface WeaponSidebarProps {
     selectedIds: Set<number>;
     onToggleWeapon: (id: number) => void;
     onSelectUnitWeapons: (unitId: number) => void;
-    onViewUnit: (unit: Unit) => void;
+    onViewUnit?: (unit: Unit) => void;
 }
 
 export function WeaponSidebar({
@@ -58,16 +58,18 @@ export function WeaponSidebar({
                                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                                 >
                                     <span style={{ flex: 1 }}>{u.name}</span>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onViewUnit(u);
-                                        }}
-                                        className="hover:text-cyber-primary p-1"
-                                        title="View Unit Stats"
-                                    >
-                                        <Info size={14} />
-                                    </button>
+                                    {onViewUnit && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onViewUnit(u);
+                                            }}
+                                            className="hover:text-cyber-primary p-1"
+                                            title="View Unit Stats"
+                                        >
+                                            <Info size={14} />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { clsx } from 'clsx';
 import { Plus, X, Check, Info, Calculator } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
-import { useModal } from '../../hooks/useModal';
+import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
+import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
 import { getFireteamBonuses, getUnitTags, calculateFireteamLevel, getMemberWithChartData } from '@shared/fireteams';
 import styles from './FireteamsPage.module.css';
@@ -13,7 +14,8 @@ interface FireteamBuilderProps {
 
 export function FireteamBuilder({ chart }: FireteamBuilderProps) {
     const db = useDatabase();
-    const { openUnitModal } = useModal();
+    const selectUnitForDetail = useListBuilderUIStore(s => s.selectUnitForDetail);
+    const openWindow = useWorkspaceStore(s => s.openWindow);
     const [selectedTeam, setSelectedTeam] = useState<Fireteam | null>(null);
     const [teamMembers, setTeamMembers] = useState<FireteamUnit[]>([]);
 
@@ -265,7 +267,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 const fullUnit = db.getUnitBySlug(member.slug);
-                                                                if (fullUnit) openUnitModal(fullUnit);
+                                                                if (fullUnit) { selectUnitForDetail(fullUnit); openWindow('UNIT_DETAIL'); }
                                                             }}
                                                             style={{ marginTop: '0.25rem' }}
                                                             title="View Unit Stats"

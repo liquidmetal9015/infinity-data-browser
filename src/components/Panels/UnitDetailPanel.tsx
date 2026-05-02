@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Shield, Crosshair, Zap, Activity, CheckCircle, Info } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Shield, Crosshair, Zap, Activity, Info } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
@@ -20,10 +20,31 @@ const ATTRIBUTES = [
 export function UnitDetailPanel() {
     const db = useDatabase();
     const unit = useListBuilderUIStore(s => s.selectedUnitForDetail);
+    const selectedProfileGroupId = useListBuilderUIStore(s => s.selectedProfileGroupId);
     const targetGroupIndex = useListBuilderUIStore(s => s.targetGroupIndex);
     const addUnit = useListStore(s => s.addUnit);
 
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+    const [highlightedGroupIndex, setHighlightedGroupIndex] = useState<number | null>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // When a unit is selected from the army list, jump to the right profile group tab
+    useEffect(() => {
+        if (!unit) return;
+        const profileGroups = unit.raw.profileGroups || [];
+        if (selectedProfileGroupId != null) {
+            const idx = profileGroups.findIndex(g => g.id === selectedProfileGroupId);
+            if (idx !== -1 && idx !== activeGroupIndex) {
+                setActiveGroupIndex(idx);
+                // Brief highlight to draw attention to the tab
+                setHighlightedGroupIndex(idx);
+                setTimeout(() => setHighlightedGroupIndex(null), 800);
+            }
+        }
+        // Scroll to top when switching to a newly selected unit
+        scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [unit, selectedProfileGroupId]);
 
     if (!unit) {
         return (
@@ -47,7 +68,7 @@ export function UnitDetailPanel() {
     };
 
     return (
-        <div className="overflow-y-auto h-full bg-[#0b1221]">
+        <div ref={scrollRef} className="overflow-y-auto h-full bg-[#0b1221]">
             <div className="p-6 space-y-6">
                 {/* Header */}
                 <div className="space-y-2">
@@ -76,9 +97,11 @@ export function UnitDetailPanel() {
                                 key={group.id}
                                 onClick={() => setActiveGroupIndex(idx)}
                                 className={`px-4 py-2 text-xs font-bold tracking-wide rounded-lg transition-all duration-200
-                                    ${activeGroupIndex === idx
-                                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
+                                    ${highlightedGroupIndex === idx
+                                        ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 scale-105'
+                                        : activeGroupIndex === idx
+                                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
                                     }`}
                             >
                                 {group.isc || `PROFILE ${idx + 1}`}

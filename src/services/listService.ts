@@ -6,11 +6,13 @@ import type { components } from '../types/schema';
 export interface ListSummary {
     id: string;
     name: string;
+    description: string | null;
     faction_id: number;
     points: number;
     swc: number;
     unit_count: number;
     tags: string[];
+    rating: number;
     created_at: string;
     updated_at: string;
 }
@@ -59,6 +61,7 @@ function toSummary(list: ArmyList): ListSummary {
     return {
         id: list.id,
         name: list.name,
+        description: list.description ?? null,
         faction_id: list.factionId,
         points: calculateListPoints(list),
         swc: calculateListSWC(list),
@@ -67,6 +70,7 @@ function toSummary(list: ArmyList): ListSummary {
             0,
         ),
         tags: list.tags ?? [],
+        rating: list.rating ?? 0,
         created_at: new Date(list.createdAt).toISOString(),
         updated_at: new Date(list.updatedAt).toISOString(),
     };
@@ -125,17 +129,21 @@ export const localStorageListService: IListService = {
 type ApiSummary = components["schemas"]["ArmyListSummaryResponse"] & {
     unit_count?: number;
     tags?: string[];
+    description?: string | null;
+    rating?: number;
 };
 
 function fromApiSummary(s: ApiSummary): ListSummary {
     return {
         id: String(s.id),
         name: s.name,
+        description: s.description ?? null,
         faction_id: s.faction_id,
         points: s.points,
         swc: s.swc,
         unit_count: s.unit_count ?? 0,
         tags: s.tags ?? [],
+        rating: s.rating ?? 0,
         created_at: s.created_at,
         updated_at: s.updated_at,
     };
@@ -164,6 +172,9 @@ export const apiListService: IListService = {
             // Schema is outdated — backend also accepts description/tags
             body: {
                 name: list.name,
+                description: list.description ?? null,
+                tags: list.tags ?? [],
+                rating: list.rating ?? 0,
                 faction_id: factionId,
                 points: calculateListPoints(list),
                 swc: calculateListSWC(list),
@@ -185,13 +196,14 @@ export const apiListService: IListService = {
             body.points = calculateListPoints(fullList);
             body.swc = calculateListSWC(fullList);
         }
-        // tags is not in the schema but the backend supports it
-        const bodyWithTags = patch.tags !== undefined
-            ? { ...body, tags: patch.tags }
-            : body;
+        // tags/description are not in the generated schema but the backend supports them
+        const bodyWithExtras: Record<string, unknown> = { ...body };
+        if (patch.tags !== undefined) bodyWithExtras.tags = patch.tags;
+        if (patch.description !== undefined) bodyWithExtras.description = patch.description ?? null;
+        if (patch.rating !== undefined) bodyWithExtras.rating = patch.rating;
         const { data, error } = await api.PUT('/api/lists/{list_id}', {
             params: { path: { list_id: Number(id) } },
-            body: bodyWithTags as components["schemas"]["ArmyListUpdate"],
+            body: bodyWithExtras as components["schemas"]["ArmyListUpdate"],
         });
         if (error) throw error;
         return fromApiSummary(data as unknown as ApiSummary);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { ArmyLogo } from '../components/shared/ArmyLogo';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, ChevronDown, ChevronRight, MoreHorizontal, Star } from 'lucide-react';
 import { getSafeLogo } from '../utils/assets';
 import { listService } from '../services/listService';
 import type { ListSummary } from '../services/listService';
@@ -18,7 +18,7 @@ import type { SearchSuggestion } from '@shared/types';
 import { ListContentFilter } from '../components/MyLists/ListContentFilter';
 import { NewListModal } from '../components/ListBuilder/NewListModal';
 
-type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc';
+type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc' | 'rating';
 
 export function MyLists() {
     const { user } = useAuth();
@@ -38,9 +38,22 @@ export function MyLists() {
     const [renameValue, setRenameValue] = useState('');
     const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
     const [tagInput, setTagInput] = useState('');
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+    const [editingDescId, setEditingDescId] = useState<string | null>(null);
+    const [descValue, setDescValue] = useState('');
+    const [openKebabId, setOpenKebabId] = useState<string | null>(null);
+
+    const toggleExpanded = (id: string) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
     const [sortKey, setSortKey] = useState<SortKey>('updated');
     const [filterSuperFaction, setFilterSuperFaction] = useState<number | null>(null);
     const [filterTag, setFilterTag] = useState<string | null>(null);
+    const [minRating, setMinRating] = useState<number>(0);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     const toggleSelected = (id: string) => {
@@ -101,6 +114,13 @@ export function MyLists() {
         return m;
     }, [fullLists]);
 
+    const fullListMap = useMemo(() => {
+        if (!fullLists) return null;
+        const m = new Map<string, ArmyList>();
+        for (const l of fullLists) m.set(l.id, l);
+        return m;
+    }, [fullLists]);
+
     const displayedLists = useMemo(() => {
         if (!lists) return [];
         let result = [...lists];
@@ -112,6 +132,7 @@ export function MyLists() {
             }
         }
         if (filterTag !== null) result = result.filter(l => (l.tags ?? []).includes(filterTag));
+        if (minRating > 0) result = result.filter(l => (l.rating ?? 0) >= minRating);
         if (hasContentFilter && indexMap) {
             const q = unitNameQuery.trim().toLowerCase();
             result = result.filter(l => {
@@ -140,10 +161,14 @@ export function MyLists() {
                 case 'name': return a.name.localeCompare(b.name);
                 case 'points_asc': return a.points - b.points;
                 case 'points_desc': return b.points - a.points;
+                case 'rating': {
+                    const diff = (b.rating ?? 0) - (a.rating ?? 0);
+                    return diff !== 0 ? diff : new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+                }
             }
         });
         return result;
-    }, [lists, filterSuperFaction, filterTag, sortKey, groupedFactions, hasContentFilter, indexMap, unitNameQuery, contentFilters]);
+    }, [lists, filterSuperFaction, filterTag, minRating, sortKey, groupedFactions, hasContentFilter, indexMap, unitNameQuery, contentFilters]);
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => listService.deleteList(id),
@@ -161,6 +186,37 @@ export function MyLists() {
             listService.updateList(id, { tags }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
+
+    const ratingMutation = useMutation({
+        mutationFn: ({ id, rating }: { id: string; rating: number }) =>
+            listService.updateList(id, { rating }),
+        onMutate: async ({ id, rating }) => {
+            await queryClient.cancelQueries({ queryKey: ['my-lists'] });
+            const prev = queryClient.getQueryData<ListSummary[]>(['my-lists']);
+            queryClient.setQueryData<ListSummary[]>(['my-lists'], old =>
+                old?.map(l => l.id === id ? { ...l, rating } : l));
+            return { prev };
+        },
+        onError: (_e, _v, ctx) => {
+            if (ctx?.prev) queryClient.setQueryData(['my-lists'], ctx.prev);
+        },
+        onSettled: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
+    });
+
+    const descMutation = useMutation({
+        mutationFn: ({ id, description }: { id: string; description: string }) =>
+            listService.updateList(id, { description }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
+    });
+
+    const handleDescCommit = (id: string) => {
+        const trimmed = descValue.trim();
+        const current = lists?.find(l => l.id === id)?.description ?? '';
+        if (trimmed !== current) {
+            descMutation.mutate({ id, description: trimmed });
+        }
+        setEditingDescId(null);
+    };
 
     const forkMutation = useMutation({
         mutationFn: (id: string) => listService.forkList(id),
@@ -258,7 +314,7 @@ export function MyLists() {
 
     return (
         <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem 1rem', minHeight: 0 }}>
-            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
                 {/* ── Page header ── */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>
@@ -383,6 +439,7 @@ export function MyLists() {
                                 <option value="updated">Recently Updated</option>
                                 <option value="created">Recently Created</option>
                                 <option value="name">Name A–Z</option>
+                                <option value="rating">Rating ↓</option>
                                 <option value="points_desc">Points ↓</option>
                                 <option value="points_asc">Points ↑</option>
                             </select>
@@ -441,9 +498,32 @@ export function MyLists() {
                                 </button>
                             ))}
 
-                            {(filterSuperFaction !== null || filterTag !== null) && (
+                            {/* Min-rating filter pill (cycles 0 → 3 → 4 → 5 → 0) */}
+                            <button
+                                onClick={() => setMinRating(prev => prev === 0 ? 3 : prev === 3 ? 4 : prev === 4 ? 5 : 0)}
+                                title="Filter by minimum rating"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    padding: '0.25rem 0.65rem',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    border: minRating > 0 ? '1px solid #f59e0b' : '1px solid var(--border)',
+                                    background: minRating > 0 ? 'rgba(245,158,11,0.15)' : 'transparent',
+                                    color: minRating > 0 ? '#f59e0b' : 'var(--text-secondary)',
+                                    transition: 'all 0.15s',
+                                }}
+                            >
+                                <Star size={12} fill={minRating > 0 ? '#f59e0b' : 'none'} strokeWidth={1.8} />
+                                {minRating > 0 ? `${minRating}+` : 'Any'}
+                            </button>
+
+                            {(filterSuperFaction !== null || filterTag !== null || minRating > 0) && (
                                 <button
-                                    onClick={() => { setFilterSuperFaction(null); setFilterTag(null); }}
+                                    onClick={() => { setFilterSuperFaction(null); setFilterTag(null); setMinRating(0); }}
                                     style={{ fontSize: '0.75rem', color: 'var(--text-tertiary, #64748b)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', textDecoration: 'underline' }}
                                 >
                                     Clear
@@ -527,244 +607,381 @@ export function MyLists() {
                 )}
 
 
-                {/* ── List cards ── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {/* ── List rows (dense) ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     {displayedLists.map(list => {
                         const factionInfo = db.getFactionInfo(list.faction_id);
                         const logoSrc = factionInfo?.logo ? getSafeLogo(factionInfo.logo) : undefined;
                         const isRenaming = renamingId === list.id;
                         const isEditingTags = editingTagsId === list.id;
+                        const isEditingDesc = editingDescId === list.id;
+                        const isExpanded = expandedIds.has(list.id);
                         const updatedDate = new Date(list.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                        const tags = list.tags ?? [];
+                        const inlineTags = tags.slice(0, 3);
+                        const overflowCount = tags.length - inlineTags.length;
+                        const description = list.description ?? '';
 
                         return (
                             <div
                                 key={list.id}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'stretch',
-                                    gap: 0,
                                     background: 'var(--bg-secondary)',
                                     border: '1px solid var(--border)',
-                                    borderRadius: '12px',
-                                    overflow: 'hidden',
+                                    borderRadius: '8px',
+                                    overflow: 'visible',
                                     transition: 'border-color 0.15s',
                                 }}
                                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-hover, #475569)')}
                                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                             >
-                                {/* Selection checkbox */}
-                                <label style={{
+                                {/* Collapsed row (always visible) */}
+                                <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0 0.65rem',
-                                    background: 'var(--bg-tertiary)',
-                                    borderRight: '1px solid var(--border)',
-                                    cursor: 'pointer',
+                                    gap: '0.6rem',
+                                    padding: '0.4rem 0.5rem 0.4rem 0.6rem',
+                                    minHeight: '36px',
                                 }}>
+                                    {/* Selection checkbox */}
                                     <input
                                         type="checkbox"
                                         checked={selectedIds.includes(list.id)}
                                         onChange={() => toggleSelected(list.id)}
-                                        style={{ cursor: 'pointer', width: 16, height: 16, accentColor: 'var(--accent, #6366f1)' }}
+                                        title="Select for compare"
+                                        style={{ cursor: 'pointer', width: 14, height: 14, accentColor: 'var(--accent, #6366f1)', flexShrink: 0 }}
                                     />
-                                </label>
 
-                                {/* Faction logo strip */}
-                                <div style={{
-                                    width: '72px',
-                                    flexShrink: 0,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'var(--bg-tertiary)',
-                                    borderRight: '1px solid var(--border)',
-                                    padding: '1rem 0',
-                                }}>
-                                    {logoSrc ? (
-                                        <img
-                                            src={logoSrc}
-                                            alt={factionInfo?.name}
-                                            style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.9 }}
-                                            onError={e => { e.currentTarget.style.display = 'none'; }}
-                                        />
-                                    ) : (
-                                        <div style={{
-                                            width: 44, height: 44, borderRadius: '50%',
-                                            background: 'var(--bg-primary)',
-                                            border: '1px solid var(--border)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)',
-                                        }}>
-                                            {(factionInfo?.shortName || factionInfo?.name || '?')[0]}
-                                        </div>
-                                    )}
-                                </div>
+                                    {/* Expand toggle */}
+                                    <button
+                                        onClick={() => toggleExpanded(list.id)}
+                                        title={isExpanded ? 'Collapse' : 'Expand'}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--text-tertiary, #64748b)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            padding: 0,
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                    </button>
 
-                                {/* Main content */}
-                                <div style={{ flex: 1, minWidth: 0, padding: '0.875rem 1rem' }}>
-                                    {/* Name row */}
-                                    {isRenaming ? (
-                                        <input
-                                            autoFocus
-                                            value={renameValue}
-                                            onChange={e => setRenameValue(e.target.value)}
-                                            onBlur={() => handleRenameCommit(list.id)}
-                                            onKeyDown={e => {
-                                                if (e.key === 'Enter') handleRenameCommit(list.id);
-                                                if (e.key === 'Escape') setRenamingId(null);
-                                            }}
-                                            style={{
-                                                background: 'var(--bg-primary)',
-                                                border: '1px solid var(--accent)',
-                                                color: 'var(--text-primary)',
-                                                borderRadius: '6px',
-                                                padding: '0.2rem 0.5rem',
-                                                fontSize: '1rem',
-                                                fontWeight: 700,
-                                                width: '100%',
-                                                marginBottom: '0.25rem',
-                                            }}
-                                        />
-                                    ) : (
-                                        <div
-                                            onClick={() => { setRenamingId(list.id); setRenameValue(list.name); }}
-                                            title="Click to rename"
-                                            style={{
-                                                fontSize: '1rem',
-                                                fontWeight: 700,
-                                                color: 'var(--text-primary)',
-                                                cursor: 'text',
-                                                marginBottom: '0.2rem',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
-                                            {list.name}
-                                        </div>
-                                    )}
-
-                                    {/* Faction + stats row */}
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem 0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{factionInfo?.name ?? db.getFactionName(list.faction_id)}</span>
-                                        <span style={{ color: 'var(--border)' }}>·</span>
-                                        <span>{list.points} pts · {list.swc} SWC</span>
-                                        <span style={{ color: 'var(--border)' }}>·</span>
-                                        <span>{list.unit_count ?? 0} units</span>
-                                        <span style={{ color: 'var(--border)' }}>·</span>
-                                        <span style={{ color: 'var(--text-tertiary, #64748b)' }}>{updatedDate}</span>
+                                    {/* Faction logo */}
+                                    <div style={{ width: 22, height: 22, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {logoSrc ? (
+                                            <img
+                                                src={logoSrc}
+                                                alt={factionInfo?.name}
+                                                title={factionInfo?.name}
+                                                style={{ width: 22, height: 22, objectFit: 'contain', opacity: 0.9 }}
+                                                onError={e => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                        ) : (
+                                            <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                                                {(factionInfo?.shortName || factionInfo?.name || '?')[0]}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Tags row */}
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem', minHeight: '22px' }}>
-                                        {(list.tags ?? []).map(tag => (
-                                            <span
-                                                key={tag}
-                                                onClick={() => tagsMutation.mutate({ id: list.id, tags: (list.tags ?? []).filter(t => t !== tag) })}
-                                                title="Click to remove"
-                                                style={{
-                                                    padding: '0.15rem 0.55rem',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.72rem',
-                                                    fontWeight: 500,
-                                                    background: 'rgba(99,102,241,0.1)',
-                                                    border: '1px solid rgba(99,102,241,0.3)',
-                                                    color: '#a5b4fc',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                #{tag}
-                                            </span>
-                                        ))}
-                                        {isEditingTags ? (
+                                    {/* Name (click to rename) */}
+                                    <div style={{ flex: '1 1 200px', minWidth: 120, overflow: 'hidden' }}>
+                                        {isRenaming ? (
                                             <input
                                                 autoFocus
-                                                value={tagInput}
-                                                onChange={e => setTagInput(e.target.value)}
-                                                onBlur={() => handleTagsCommit(list.id)}
+                                                value={renameValue}
+                                                onChange={e => setRenameValue(e.target.value)}
+                                                onBlur={() => handleRenameCommit(list.id)}
                                                 onKeyDown={e => {
-                                                    if (e.key === 'Enter') handleTagsCommit(list.id);
-                                                    if (e.key === 'Escape') setEditingTagsId(null);
+                                                    if (e.key === 'Enter') handleRenameCommit(list.id);
+                                                    if (e.key === 'Escape') setRenamingId(null);
                                                 }}
-                                                placeholder="tag1, tag2, …"
                                                 style={{
                                                     background: 'var(--bg-primary)',
                                                     border: '1px solid var(--accent)',
                                                     color: 'var(--text-primary)',
-                                                    borderRadius: '6px',
-                                                    padding: '0.15rem 0.5rem',
-                                                    fontSize: '0.75rem',
-                                                    width: '130px',
+                                                    borderRadius: '4px',
+                                                    padding: '0.15rem 0.4rem',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: 600,
+                                                    width: '100%',
                                                 }}
                                             />
                                         ) : (
-                                            <button
-                                                onClick={() => { setEditingTagsId(list.id); setTagInput((list.tags ?? []).join(', ')); }}
+                                            <div
+                                                onClick={() => { setRenamingId(list.id); setRenameValue(list.name); }}
+                                                title={list.name}
                                                 style={{
-                                                    padding: '0.15rem 0.55rem',
-                                                    borderRadius: '20px',
-                                                    fontSize: '0.72rem',
-                                                    border: '1px dashed var(--border)',
-                                                    background: 'none',
-                                                    color: 'var(--text-tertiary, #64748b)',
-                                                    cursor: 'pointer',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: 600,
+                                                    color: 'var(--text-primary)',
+                                                    cursor: 'text',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
                                                 }}
                                             >
-                                                + tag
-                                            </button>
+                                                {list.name}
+                                                {description && (
+                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-tertiary, #64748b)' }} title={description}>
+                                                        — {description.length > 60 ? description.slice(0, 60) + '…' : description}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                        <span>{list.points}<span style={{ color: 'var(--text-tertiary, #64748b)' }}>/{list.swc}</span></span>
+                                        <span style={{ color: 'var(--border)' }}>·</span>
+                                        <span>{list.unit_count ?? 0}u</span>
+                                    </div>
+
+                                    {/* Inline tags (truncated) */}
+                                    {tags.length > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0 }}>
+                                            {inlineTags.map(tag => (
+                                                <span
+                                                    key={tag}
+                                                    style={{
+                                                        padding: '0.1rem 0.45rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.68rem',
+                                                        fontWeight: 500,
+                                                        background: 'rgba(99,102,241,0.1)',
+                                                        border: '1px solid rgba(99,102,241,0.3)',
+                                                        color: '#a5b4fc',
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                            {overflowCount > 0 && (
+                                                <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary, #64748b)' }}>+{overflowCount}</span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Star rating */}
+                                    <StarRating
+                                        value={list.rating ?? 0}
+                                        onChange={(v) => ratingMutation.mutate({ id: list.id, rating: v })}
+                                    />
+
+                                    {/* Primary action: Load */}
+                                    <button
+                                        onClick={() => handleLoad(list.id)}
+                                        disabled={loadingId === list.id}
+                                        style={{ ...actionBtnSm('#10b981', loadingId === list.id), flexShrink: 0 }}
+                                    >
+                                        {loadingId === list.id ? '…' : 'Load'}
+                                    </button>
+
+                                    {/* Kebab menu */}
+                                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                                        <button
+                                            onClick={() => setOpenKebabId(openKebabId === list.id ? null : list.id)}
+                                            title="More actions"
+                                            style={{
+                                                background: 'none',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: '6px',
+                                                padding: '0.25rem',
+                                                cursor: 'pointer',
+                                                color: 'var(--text-secondary)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <MoreHorizontal size={14} />
+                                        </button>
+                                        {openKebabId === list.id && (
+                                            <KebabMenu onClose={() => setOpenKebabId(null)}>
+                                                <KebabItem
+                                                    color="#F29107"
+                                                    disabled={openingInArmyId === list.id}
+                                                    onClick={() => { setOpenKebabId(null); handleOpenInArmy(list.id); }}
+                                                >
+                                                    <ArmyLogo size={12} backdrop />
+                                                    {openingInArmyId === list.id ? 'Opening…' : 'Open in Army'}
+                                                </KebabItem>
+                                                <KebabItem
+                                                    color="#6366f1"
+                                                    disabled={forkMutation.status === 'pending'}
+                                                    onClick={() => { setOpenKebabId(null); forkMutation.mutate(list.id); }}
+                                                >
+                                                    Fork
+                                                </KebabItem>
+                                                <KebabItem
+                                                    color="#a78bfa"
+                                                    onClick={() => { setOpenKebabId(null); navigate(`/lists/overview?focus=${list.id}`); }}
+                                                >
+                                                    Find similar
+                                                </KebabItem>
+                                                <KebabItem
+                                                    color="#ef4444"
+                                                    disabled={deleteMutation.status === 'pending'}
+                                                    onClick={() => {
+                                                        setOpenKebabId(null);
+                                                        if (confirm('Delete this list?')) deleteMutation.mutate(list.id);
+                                                    }}
+                                                >
+                                                    Delete
+                                                </KebabItem>
+                                            </KebabMenu>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Actions */}
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.4rem',
-                                    padding: '0.875rem 0.75rem',
-                                    borderLeft: '1px solid var(--border)',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                }}>
-                                    <button
-                                        onClick={() => handleLoad(list.id)}
-                                        disabled={loadingId === list.id}
-                                        style={actionBtn('#10b981', loadingId === list.id)}
-                                    >
-                                        {loadingId === list.id ? '…' : 'Load'}
-                                    </button>
-                                    <button
-                                        onClick={() => handleOpenInArmy(list.id)}
-                                        disabled={openingInArmyId === list.id}
-                                        title="Open in Infinity Army"
-                                        style={{ ...actionBtn('#F29107', openingInArmyId === list.id), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}
-                                    >
-                                        <ArmyLogo size={12} backdrop />
-                                        {openingInArmyId === list.id ? '…' : 'Army'}
-                                    </button>
-                                    <button
-                                        onClick={() => forkMutation.mutate(list.id)}
-                                        disabled={forkMutation.status === 'pending'}
-                                        style={actionBtn('#6366f1', forkMutation.status === 'pending')}
-                                    >
-                                        Fork
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/lists/overview?focus=${list.id}`)}
-                                        title="Find similar lists"
-                                        style={actionBtn('#a78bfa', false)}
-                                    >
-                                        Similar
-                                    </button>
-                                    <button
-                                        onClick={() => { if (confirm('Delete this list?')) deleteMutation.mutate(list.id); }}
-                                        disabled={deleteMutation.status === 'pending'}
-                                        style={actionBtn('#ef4444', deleteMutation.status === 'pending')}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
+                                {/* Expanded panel */}
+                                {isExpanded && (
+                                    <div style={{
+                                        borderTop: '1px solid var(--border)',
+                                        padding: '0.75rem 0.85rem 0.85rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.65rem',
+                                        background: 'var(--bg-primary)',
+                                    }}>
+                                        {/* Description */}
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                                Description
+                                            </div>
+                                            {isEditingDesc ? (
+                                                <textarea
+                                                    autoFocus
+                                                    value={descValue}
+                                                    onChange={e => setDescValue(e.target.value)}
+                                                    onBlur={() => handleDescCommit(list.id)}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleDescCommit(list.id);
+                                                        if (e.key === 'Escape') setEditingDescId(null);
+                                                    }}
+                                                    placeholder="Notes about this list — strategy, opponent, occasion…"
+                                                    rows={3}
+                                                    style={{
+                                                        background: 'var(--bg-secondary)',
+                                                        border: '1px solid var(--accent)',
+                                                        color: 'var(--text-primary)',
+                                                        borderRadius: '6px',
+                                                        padding: '0.4rem 0.55rem',
+                                                        fontSize: '0.82rem',
+                                                        width: '100%',
+                                                        boxSizing: 'border-box',
+                                                        resize: 'vertical',
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div
+                                                    onClick={() => { setEditingDescId(list.id); setDescValue(description); }}
+                                                    title="Click to edit"
+                                                    style={{
+                                                        fontSize: '0.82rem',
+                                                        color: description ? 'var(--text-secondary)' : 'var(--text-tertiary, #64748b)',
+                                                        fontStyle: description ? 'normal' : 'italic',
+                                                        cursor: 'text',
+                                                        whiteSpace: 'pre-wrap',
+                                                        minHeight: '1.2em',
+                                                        padding: '0.3rem 0.45rem',
+                                                        borderRadius: '6px',
+                                                        border: '1px dashed var(--border)',
+                                                    }}
+                                                >
+                                                    {description || 'Click to add a description…'}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Units summary (per-group dot list) */}
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                                Units
+                                            </div>
+                                            <ListUnitsSummary listId={list.id} fallback={fullListMap?.get(list.id)} />
+                                        </div>
+
+                                        {/* Tags editor */}
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                                Tags
+                                            </div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.3rem' }}>
+                                                {tags.map(tag => (
+                                                    <span
+                                                        key={tag}
+                                                        onClick={() => tagsMutation.mutate({ id: list.id, tags: tags.filter(t => t !== tag) })}
+                                                        title="Click to remove"
+                                                        style={{
+                                                            padding: '0.15rem 0.55rem',
+                                                            borderRadius: '20px',
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: 500,
+                                                            background: 'rgba(99,102,241,0.1)',
+                                                            border: '1px solid rgba(99,102,241,0.3)',
+                                                            color: '#a5b4fc',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        #{tag}
+                                                    </span>
+                                                ))}
+                                                {isEditingTags ? (
+                                                    <input
+                                                        autoFocus
+                                                        value={tagInput}
+                                                        onChange={e => setTagInput(e.target.value)}
+                                                        onBlur={() => handleTagsCommit(list.id)}
+                                                        onKeyDown={e => {
+                                                            if (e.key === 'Enter') handleTagsCommit(list.id);
+                                                            if (e.key === 'Escape') setEditingTagsId(null);
+                                                        }}
+                                                        placeholder="tag1, tag2, …"
+                                                        style={{
+                                                            background: 'var(--bg-secondary)',
+                                                            border: '1px solid var(--accent)',
+                                                            color: 'var(--text-primary)',
+                                                            borderRadius: '6px',
+                                                            padding: '0.15rem 0.5rem',
+                                                            fontSize: '0.75rem',
+                                                            width: '160px',
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <button
+                                                        onClick={() => { setEditingTagsId(list.id); setTagInput(tags.join(', ')); }}
+                                                        style={{
+                                                            padding: '0.15rem 0.55rem',
+                                                            borderRadius: '20px',
+                                                            fontSize: '0.72rem',
+                                                            border: '1px dashed var(--border)',
+                                                            background: 'none',
+                                                            color: 'var(--text-tertiary, #64748b)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        + tag
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Meta */}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 0.75rem', fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)' }}>
+                                            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                                                {factionInfo?.name ?? db.getFactionName(list.faction_id)}
+                                            </span>
+                                            <span>·</span>
+                                            <span>Updated {updatedDate}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
@@ -975,11 +1192,99 @@ function ImportFromCodeModal({ onImport, onCancel }: {
 }
 
 
-function actionBtn(accentColor: string, disabled: boolean): React.CSSProperties {
+function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+    const [hover, setHover] = useState(0);
+    const display = hover || value;
+    return (
+        <div
+            style={{ display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}
+            onMouseLeave={() => setHover(0)}
+            title={value > 0 ? `${value} / 5 — click same star to clear` : 'Rate this list'}
+        >
+            {[1, 2, 3, 4, 5].map(n => {
+                const filled = n <= display;
+                return (
+                    <button
+                        key={n}
+                        onClick={(e) => { e.stopPropagation(); onChange(value === n ? 0 : n); }}
+                        onMouseEnter={() => setHover(n)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '2px',
+                            cursor: 'pointer',
+                            color: filled ? '#f59e0b' : 'var(--text-tertiary, #64748b)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            opacity: filled ? 1 : 0.45,
+                            transition: 'opacity 0.1s, color 0.1s',
+                        }}
+                        aria-label={`${n} star${n === 1 ? '' : 's'}`}
+                    >
+                        <Star size={13} fill={filled ? '#f59e0b' : 'none'} strokeWidth={1.8} />
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+function ListUnitsSummary({ listId, fallback }: { listId: string; fallback?: ArmyList }) {
+    const { data, isLoading } = useQuery<ArmyList>({
+        queryKey: ['list-detail', listId],
+        queryFn: () => listService.getList(listId),
+        enabled: !fallback,
+        initialData: fallback,
+        staleTime: 60_000,
+    });
+
+    const muted: React.CSSProperties = { fontSize: '0.78rem', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' };
+    if (isLoading && !data) return <div style={muted}>Loading units…</div>;
+    if (!data) return <div style={muted}>(unable to load)</div>;
+
+    const groups = (data.groups ?? []).filter(g => g.units.some(u => !u.isPeripheral));
+    if (groups.length === 0) return <div style={muted}>(empty list)</div>;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            {groups.map((g, idx) => {
+                const realUnits = g.units.filter(u => !u.isPeripheral);
+                return (
+                    <div key={g.id} style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                        <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 600, marginRight: '0.4rem', fontSize: '0.72rem' }}>
+                            G{idx + 1}
+                        </span>
+                        {realUnits.map((u, i) => {
+                            const label = unitLabel(u);
+                            return (
+                                <span key={u.id}>
+                                    {i > 0 && <span style={{ color: 'var(--border)', margin: '0 0.35rem' }}>·</span>}
+                                    {label}
+                                </span>
+                            );
+                        })}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+function unitLabel(u: ListUnit): string {
+    const isc = u.unit?.isc || u.unit?.name || '?';
+    const { option } = getUnitDetails(u.unit, u.profileGroupId, u.profileId, u.optionId);
+    const optName = option?.name?.trim();
+    if (optName && optName !== isc && !isc.toLowerCase().includes(optName.toLowerCase())) {
+        return `${isc} (${optName})`;
+    }
+    return isc;
+}
+
+function actionBtnSm(accentColor: string, disabled: boolean): React.CSSProperties {
     return {
-        padding: '0.35rem 0.9rem',
-        borderRadius: '6px',
-        fontSize: '0.78rem',
+        padding: '0.2rem 0.65rem',
+        borderRadius: '5px',
+        fontSize: '0.72rem',
         fontWeight: 600,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
@@ -988,7 +1293,75 @@ function actionBtn(accentColor: string, disabled: boolean): React.CSSProperties 
         color: accentColor,
         transition: 'all 0.15s',
         whiteSpace: 'nowrap' as const,
-        width: '64px',
         textAlign: 'center' as const,
     };
+}
+
+function KebabMenu({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+    const ref = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+        };
+        // Defer one tick so the click that opened the menu doesn't immediately close it
+        const t = setTimeout(() => document.addEventListener('mousedown', handler), 0);
+        return () => { clearTimeout(t); document.removeEventListener('mousedown', handler); };
+    }, [onClose]);
+    return (
+        <div
+            ref={ref}
+            style={{
+                position: 'absolute',
+                top: 'calc(100% + 4px)',
+                right: 0,
+                minWidth: 160,
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+                zIndex: 50,
+                padding: '0.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.15rem',
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
+function KebabItem({ color, disabled, onClick, children }: {
+    color: string;
+    disabled?: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.4rem 0.6rem',
+                borderRadius: '5px',
+                fontSize: '0.78rem',
+                fontWeight: 500,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                border: 'none',
+                background: 'transparent',
+                color,
+                textAlign: 'left',
+                whiteSpace: 'nowrap',
+                transition: 'background 0.1s',
+            }}
+            onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = `${color}15`; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+        >
+            {children}
+        </button>
+    );
 }

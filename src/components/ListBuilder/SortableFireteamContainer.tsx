@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Users, Trash2, Check, ShieldCheck, Shield } from 'lucide-react';
@@ -74,6 +74,14 @@ export function SortableFireteamContainer({
         if (!chart) return [];
         return getPossibleFireteams(chart, members);
     }, [chart, members]);
+
+    // Auto-reset team selection when selected team no longer fits the current units
+    useEffect(() => {
+        if (!selectedTeamName) return;
+        if (members.length === 0 || !possibleTeams.some(t => t.name === selectedTeamName)) {
+            updateFireteamDef(groupIndex, fireteamId, { selectedTeamName: undefined, selectedTeamType: undefined });
+        }
+    }, [selectedTeamName, possibleTeams, members.length, groupIndex, fireteamId, updateFireteamDef]);
 
     const handleTeamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value;

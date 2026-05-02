@@ -1,7 +1,6 @@
 // Ranges/Weapons Page - Main component with D3 visualization
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
-import { useModal } from '../hooks/useModal';
 import { Info } from 'lucide-react';
 import * as d3 from 'd3';
 import {
@@ -17,7 +16,6 @@ import styles from './RangesPage.module.css';
 
 export function RangesPage() {
     const db = useDatabase();
-    const { openUnitModal } = useModal();
     const { selectedWeaponIds, weaponSearch, toggleWeapon, setSelectedWeaponIds, setWeaponSearch } = useRangesStore();
     const [unitSearch, setUnitSearch] = useState('');
     // Derive Set from stored array for compatibility with downstream components
@@ -198,7 +196,7 @@ export function RangesPage() {
                     selectedIds={selectedIds}
                     onToggleWeapon={toggleWeapon}
                     onSelectUnitWeapons={selectUnitWeapons}
-                    onViewUnit={openUnitModal}
+
                 />
 
                 <div className={styles.chartArea} ref={containerRef}>

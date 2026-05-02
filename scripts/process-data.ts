@@ -151,6 +151,7 @@ interface RawFireteamChart {
             min: number;
             max: number;
             required?: boolean;
+            comment?: string;
             obs?: string;
         }>;
     }>;
@@ -524,7 +525,7 @@ function transformFireteamChart(raw: RawFireteamChart | null | undefined): Facti
                 min: u.min ?? 0,
                 max: u.max ?? 5,
                 required: u.required ?? false,
-                comment: u.obs ?? '',
+                comment: u.comment ?? u.obs ?? '',
             })),
             ...(team.obs ? { obs: team.obs } : {}),
         };

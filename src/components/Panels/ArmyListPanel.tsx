@@ -20,6 +20,8 @@ import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
+import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
+import { getColumnPanels } from '../../types/workspace';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
 import { useAuth } from '../../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -117,6 +119,8 @@ export function ArmyListPanel() {
         setHoveredFireteamId, setTargetGroupIndex, selectUnitForDetail,
     } = useListBuilderUIStore();
 
+    const { layoutMode, columnCount, windows, openWindow, setActiveColumn } = useWorkspaceStore();
+
     const {
         codeCopied, importCode, importError, setImportCode,
         handleImportCode, handleCopyCode, handleOpenInArmy,
@@ -183,8 +187,24 @@ export function ArmyListPanel() {
         return counts;
     }, [currentList, db]);
 
-    const handleViewUnit = (unit: Unit) => {
-        selectUnitForDetail(unit);
+    const handleViewUnit = (unit: Unit, profileGroupId?: number) => {
+        selectUnitForDetail(unit, profileGroupId);
+
+        if (layoutMode === 'columns') {
+            const panels = getColumnPanels(columnCount ?? 3);
+            const detailIdx = panels.indexOf('UNIT_DETAIL');
+            if (detailIdx === -1) {
+                // 2-column mode: UNIT_DETAIL isn't a column, open it as a floating window
+                openWindow('UNIT_DETAIL');
+            } else if (window.innerWidth < 768) {
+                // Mobile: swipe to the UNIT_DETAIL column
+                setActiveColumn(detailIdx);
+            }
+        } else {
+            // multi-window / tabbed: open if not already visible
+            const isVisible = windows.some(w => w.type === 'UNIT_DETAIL' && !w.isMinimized);
+            if (!isVisible) openWindow('UNIT_DETAIL');
+        }
     };
 
     const handleDragStart = (event: DragStartEvent) => {

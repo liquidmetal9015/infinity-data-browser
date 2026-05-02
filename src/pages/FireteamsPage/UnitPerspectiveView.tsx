@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { clsx } from 'clsx';
 import { Info } from 'lucide-react';
-import { useModal } from '../../hooks/useModal';
+import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
+import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import type { Fireteam, FireteamUnit, FireteamChart, Unit } from '@shared/types';
 import type { IDatabase } from '../../services/Database';
 import { getUnitTags } from '@shared/fireteams';
@@ -14,7 +15,8 @@ interface UnitPerspectiveViewProps {
 }
 
 export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveViewProps) {
-    const { openUnitModal } = useModal();
+    const selectUnitForDetail = useListBuilderUIStore(s => s.selectUnitForDetail);
+    const openWindow = useWorkspaceStore(s => s.openWindow);
     // Get all units in this faction
     const units = useMemo(() => {
         return db.units.filter((u: Unit) => u.factions.includes(factionId))
@@ -76,7 +78,7 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
                             {unit.name}
                             <button
                                 className={styles.infoBtn}
-                                onClick={() => openUnitModal(unit)}
+                                onClick={() => { selectUnitForDetail(unit); openWindow('UNIT_DETAIL'); }}
                                 title="View Unit Stats"
                             >
                                 <Info size={16} />

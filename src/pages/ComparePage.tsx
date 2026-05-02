@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
-import { useModal } from '../hooks/useModal';
 import { Users, Check, Layers } from 'lucide-react';
 import { useCompareStore } from '../stores/useCompareStore';
 import { MultiFactionSelector } from '../components/MultiFactionSelector';
@@ -11,7 +10,6 @@ import styles from './ComparePage.module.css';
 
 export function ComparePage() {
     const db = useDatabase();
-    const { openUnitModal } = useModal();
     const { selectedFactionIds, setFactions, addMultipleFactions, clearAll } = useCompareStore();
 
     const getLogoUrl = (logo: string | undefined | null) => getSafeLogo(logo);
@@ -125,8 +123,7 @@ export function ComparePage() {
                                 {analysis.universal.map(u => (
                                     <div
                                         key={u.id}
-                                        className={clsx(styles.unitCard, styles.universal, 'cursor-pointer hover:border-success/80 transition-colors')}
-                                        onClick={() => openUnitModal(u)}
+                                        className={clsx(styles.unitCard, styles.universal)}
                                     >
                                         {u.name || u.isc || 'Unknown'}
                                     </div>
@@ -163,8 +160,7 @@ export function ComparePage() {
                                             {group.units.map(unit => (
                                                 <div
                                                     key={unit.id}
-                                                    className={clsx(styles.unitCard, styles.shared, 'cursor-pointer hover:border-primary/80 transition-colors')}
-                                                    onClick={() => openUnitModal(unit)}
+                                                    className={clsx(styles.unitCard, styles.shared)}
                                                 >
                                                     {unit.name || unit.isc || 'Unknown'}
                                                 </div>
@@ -197,8 +193,7 @@ export function ComparePage() {
                                                 units.map(u => (
                                                     <div
                                                         key={u.id}
-                                                        className={clsx(styles.unitItemCompact, 'cursor-pointer hover:text-accent transition-colors')}
-                                                        onClick={() => openUnitModal(u)}
+                                                        className={styles.unitItemCompact}
                                                     >
                                                         {u.name || u.isc || 'Unknown'}
                                                     </div>

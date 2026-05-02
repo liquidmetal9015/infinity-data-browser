@@ -18,7 +18,7 @@ export function DraggableUnitRow({
 }: {
     listUnit: ListUnit;
     groupIndex: number;
-    onViewUnit: (unit: Unit) => void;
+    onViewUnit: (unit: Unit, profileGroupId?: number) => void;
     onRemove: () => void;
 }) {
     const { showMenu } = useContextMenu();
@@ -52,8 +52,9 @@ export function DraggableUnitRow({
     if (listUnit.isPeripheral) {
         return (
             <div
-                className={styles.unitRow}
+                className={clsx(styles.unitRow, 'cursor-pointer')}
                 style={{ paddingLeft: '2.5rem', background: '#0a1020', borderLeft: '2px solid rgba(59, 130, 246, 0.3)' }}
+                onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId)}
             >
                 <div className={clsx(styles.colDrag, 'flex items-center justify-center')} style={{ width: 30 }}>
                     <Link size={10} className="text-blue-500/40" />
@@ -78,15 +79,7 @@ export function DraggableUnitRow({
                 </div>
                 <div className={clsx(styles.unitSwc, styles.colSwc)} style={{ color: '#475569' }}>{option?.swc || 0}</div>
                 <div className={clsx(styles.unitPts, styles.colPts)} style={{ color: '#475569' }}>{option?.points || 0}</div>
-                <div className={clsx(styles.unitActions, styles.colActions)}>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onViewUnit(listUnit.unit); }}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        title="View unit"
-                    >
-                        <Eye size={14} />
-                    </button>
-                </div>
+                <div className={clsx(styles.unitActions, styles.colActions)} />
             </div>
         );
     }
@@ -97,7 +90,8 @@ export function DraggableUnitRow({
             style={style}
             {...attributes}
             {...listeners}
-            className={clsx(styles.unitRow, isDragging && styles.dragging, 'cursor-grab active:cursor-grabbing')}
+            className={clsx(styles.unitRow, isDragging && styles.dragging, 'cursor-pointer active:cursor-grabbing')}
+            onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId)}
             onContextMenu={(e) => {
                 e.preventDefault();
                 showMenu(e.clientX, e.clientY, [
@@ -139,13 +133,6 @@ export function DraggableUnitRow({
             <div className={clsx(styles.unitSwc, styles.colSwc)}>{option?.swc || 0}</div>
             <div className={clsx(styles.unitPts, styles.colPts)}>{option?.points || 0}</div>
             <div className={clsx(styles.unitActions, styles.colActions)}>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onViewUnit(listUnit.unit); }}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    title="View unit"
-                >
-                    <Eye size={14} />
-                </button>
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(); }}
                     onPointerDown={(e) => e.stopPropagation()}

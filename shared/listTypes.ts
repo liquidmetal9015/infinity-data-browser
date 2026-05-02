@@ -71,6 +71,8 @@ export interface ArmyList {
     description?: string;
     /** User-defined tags for organization */
     tags: string[];
+    /** Star rating 0–5 (0 = unrated) */
+    rating?: number;
     /** The faction ID this list is built for */
     factionId: number;
     /** Target points limit (e.g., 300) */

@@ -1,7 +1,8 @@
 import { clsx } from 'clsx';
 import { Info } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
-import { useModal } from '../../hooks/useModal';
+import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
+import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import type { Fireteam, FireteamUnit, FireteamChart } from '@shared/types';
 import styles from './FireteamsPage.module.css';
 
@@ -11,7 +12,8 @@ interface FireteamListViewProps {
 
 export function FireteamListView({ chart }: FireteamListViewProps) {
     const db = useDatabase();
-    const { openUnitModal } = useModal();
+    const selectUnitForDetail = useListBuilderUIStore(s => s.selectUnitForDetail);
+    const openWindow = useWorkspaceStore(s => s.openWindow);
     // Identify generic wildcards
     const wildcards = chart.teams.find((t: Fireteam) => t.name.toLowerCase().includes('wildcard'));
     const regularTeams = chart.teams.filter((t: Fireteam) => !t.name.toLowerCase().includes('wildcard'));
@@ -41,7 +43,7 @@ export function FireteamListView({ chart }: FireteamListViewProps) {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const fullUnit = db.getUnitBySlug(u.slug);
-                                                if (fullUnit) openUnitModal(fullUnit);
+                                                if (fullUnit) { selectUnitForDetail(fullUnit); openWindow('UNIT_DETAIL'); }
                                             }}
                                             title="View Unit Stats"
                                             style={{ display: 'inline-flex', verticalAlign: 'middle' }}

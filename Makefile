@@ -15,25 +15,25 @@ setup: ## Fully bootstrap the local development environment
 	docker compose up -d db
 	@echo "$(GREEN)Waiting for Postgres to be ready...$(RESET)"
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "$(GREEN)Installing Python backend dependencies via uv (still needed for Alembic + ETL)...$(RESET)"
+	@echo "$(GREEN)Installing Python backend dependencies via uv (still needed for ETL)...$(RESET)"
 	cd backend && uv sync
 	@echo "$(GREEN)Creating test database if needed...$(RESET)"
 	docker compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='infinity_test'" | grep -q 1 || docker compose exec db psql -U postgres -c "CREATE DATABASE infinity_test"
-	@echo "$(GREEN)Running Alembic database migrations...$(RESET)"
-	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
 	@echo "$(GREEN)Installing Frontend Node dependencies...$(RESET)"
 	npm ci
 	@echo "$(GREEN)Installing TypeScript backend Node dependencies...$(RESET)"
 	cd backend-ts && npm ci
+	@echo "$(GREEN)Running Drizzle database migrations...$(RESET)"
+	cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' npm run db:migrate
 	@echo "$(GREEN)Environment flawlessly bootstrapped! 🎉$(RESET)"
 
 ##@ Development
-migrate: ## Run pending Alembic migrations
+migrate: ## Run pending Drizzle migrations
 	@echo "$(GREEN)Starting database...$(RESET)"
 	docker compose up -d db
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "$(GREEN)Running database migrations...$(RESET)"
-	cd backend && PYTHONPATH=. DATABASE_URL="postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity" uv run alembic upgrade head
+	cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' npm run db:migrate
 
 dev: migrate ## Concurrent launch of the Vite frontend and TypeScript backend
 	@echo "$(GREEN)Starting Development Servers...$(RESET)"
