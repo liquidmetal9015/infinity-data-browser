@@ -71,3 +71,12 @@
 | 6.4 | scripts/process-data.ts | DONE | 0 | 0 | 0 | 0 | 0 |
 | 6.5 | .github/workflows/ | DONE | 2 | 0 | 0 | 2 | 0 |
 | 6.6 | Styling architecture | DONE | 2 | 0 | 1 | 1 | 0 |
+
+## Phase 7: Test Coverage
+
+| Unit | Module | Status | Notes |
+|------|--------|--------|-------|
+| 7.1 | Test inventory & metrics | DONE | 18 files, 163 tests, 3,317 LoC, ~25-30% coverage |
+| 7.2 | Coverage gap analysis | DONE | 15 significant modules with 0 tests |
+| 7.3 | Quality assessment | DONE | Good culture, gaps in breadth not depth |
+| 7.4 | Prioritized recommendations | DONE | 4 test sprints proposed |

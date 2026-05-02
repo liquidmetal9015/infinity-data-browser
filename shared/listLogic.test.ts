@@ -355,6 +355,29 @@ describe('listReducer', () => {
 
             expect(result.currentList?.groups).toHaveLength(1);
         });
+
+        it('does not mutate the original state groups', () => {
+            let state = listReducer(initialState, {
+                type: 'CREATE_LIST',
+                factionId: 101,
+                factionName: 'Test'
+            });
+            state = listReducer(state, { type: 'ADD_COMBAT_GROUP' });
+            state = listReducer(state, { type: 'ADD_COMBAT_GROUP' });
+
+            // Capture original group names
+            const originalNames = state.currentList!.groups.map(g => g.name);
+
+            // Remove the second group
+            listReducer(state, {
+                type: 'REMOVE_COMBAT_GROUP',
+                groupIndex: 1
+            });
+
+            // Original state must NOT have been mutated
+            const namesAfter = state.currentList!.groups.map(g => g.name);
+            expect(namesAfter).toEqual(originalNames);
+        });
     });
 
     describe('MOVE_UNIT_TO_GROUP', () => {

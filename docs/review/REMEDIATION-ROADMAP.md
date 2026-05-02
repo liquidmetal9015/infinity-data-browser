@@ -21,7 +21,19 @@ Effort:       XS=1, S=2, M=3, L=4, XL=5
 | 4: Frontend Services & State | 11 | 0 | 0 | 7 | 4 |
 | 5: Frontend Components | 7 | 0 | 2 | 5 | 0 |
 | 6: Infrastructure | 8 | 0 | 1 | 6 | 1 |
+| 7: Test Coverage | — | — | — | — | — |
 | **Total** | **82** | **3** | **9** | **53** | **17** |
+
+### Test Coverage Summary (Phase 7)
+
+| Metric | Value |
+|--------|-------|
+| Test files | 18 |
+| Test cases | 163 (all passing) |
+| Estimated coverage | 25-30% |
+| Modules with 0 tests | 15 significant |
+| Regression tests for confirmed bugs | 0 of 4 |
+| Tests in CI | No |
 
 ---
 
@@ -206,14 +218,29 @@ These emerged across multiple phases and represent structural debt:
 
 ## Recommended Execution Order
 
-**Sprint 1 (Quick Wins)**: P1 items 1-4 (all XS effort, fix real bugs)
+**Sprint 1 (Quick Wins + Regression Tests)**: P1 items 1-4 (fix real bugs) + write regression tests for each fix
+- Fix UnitType magic numbers → add `unit-roles.test.ts` (10+ tests)
+- Fix REMOVE_COMBAT_GROUP mutation → add isolation test in `listLogic.test.ts`
+- Fix search_units OR logic → add `mcp-server/search.test.ts`
+- Fix tags schema default → add `schema.test.ts`
 
 **Sprint 2 (Styling Foundation)**: P1 #5 + P2 #9 (fix CSS specificity, then migrate styles)
 
-**Sprint 3 (Architecture)**: P2 #6 + #7 (type consolidation + ListUnit refactor)
+**Sprint 3 (Critical Test Gaps)**: Dice engine + army code coverage
+- Expand `dice-engine.test.ts` to 15+ known-answer tests per ammo type
+- Expand `armyCode.test.ts` with 10+ round-trip tests using real army codes
+- Add `useDiceCalculator.test.ts` for `computeDiceResults`
 
-**Sprint 4 (CI & DRY cleanup)**: P2 #10 + P3 items 12-23 (add tests, batch small fixes)
+**Sprint 4 (Architecture)**: P2 #6 + #7 (type consolidation + ListUnit refactor)
+
+**Sprint 5 (CI + Data Layer Tests)**: P2 #10 + data layer coverage
+- Add `npm test -- --run` to CI workflows
+- Add `BaseDatabase.test.ts` (init, concurrent init, partial failure)
+- Add `list-scoring.test.ts` (score breakdown for known lists)
+- Add `mcp-server/list-builder.test.ts` (full session workflow)
+
+**Sprint 6 (DRY cleanup)**: P3 items 12-23 (batch small fixes)
 
 ---
 
-*Review completed 2026-05-02. 82 findings across 6 phases.*
+*Review completed 2026-05-02. 82 findings across 6 phases + test coverage analysis. 163 tests passing, ~25-30% estimated coverage.*

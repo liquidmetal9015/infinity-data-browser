@@ -158,8 +158,14 @@ server.tool(
                     const matchIds = new Set(itemMatches.map(u => u.id));
                     results = results.filter(u => matchIds.has(u.id));
                 } else {
-                    const matchIds = new Set(itemMatches.map(u => u.id));
-                    results = results.filter(u => matchIds.has(u.id));
+                    // OR: union results with item matches
+                    const seen = new Set(results.map(u => u.id));
+                    for (const u of itemMatches) {
+                        if (!seen.has(u.id)) {
+                            results.push(u);
+                            seen.add(u.id);
+                        }
+                    }
                 }
             }
 

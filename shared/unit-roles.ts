@@ -2,6 +2,7 @@
 // Classifies units by combat role: gunfighter, melee, specialist, etc.
 
 import type { Unit, DatabaseMetadata } from './types';
+import { UnitType } from './game-model.js';
 import type { Profile, Loadout as Option, WeaponInstance } from './game-model.js';
 
 export type UnitRole =
@@ -313,11 +314,11 @@ function scoreHeavy(
     let score = 0;
 
     // Type (HI, TAG)
-    if (profile.unitType === 3) {
+    if (profile.unitType === UnitType.HI) {
         score += 20;
         reasons.push('Heavy Infantry');
     }
-    if (profile.unitType === 7) {
+    if (profile.unitType === UnitType.TAG) {
         score += 40;
         reasons.push('TAG');
     }
@@ -367,15 +368,15 @@ function scoreHackTarget(profile: Profile): RoleScore {
     let score = 0;
 
     // HI, REM, TAG are hackable
-    if (profile.unitType === 3) { // HI
+    if (profile.unitType === UnitType.HI) {
         score += 30;
         reasons.push('Heavy Infantry (hackable)');
     }
-    if (profile.unitType === 6) { // REM
+    if (profile.unitType === UnitType.REM) {
         score += 40;
         reasons.push('REM (hackable)');
     }
-    if (profile.unitType === 7) { // TAG
+    if (profile.unitType === UnitType.TAG) {
         score += 50;
         reasons.push('TAG (hackable)');
     }

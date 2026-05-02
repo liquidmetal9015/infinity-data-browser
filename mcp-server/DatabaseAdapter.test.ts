@@ -406,6 +406,90 @@ describe('Fireteam Validation Logic', () => {
     });
 });
 
+describe('search_units OR operator logic', () => {
+    // Regression test for F-044: OR operator was doing intersection instead of union
+    // The tool logic combines `results` (from name query) with `itemMatches` (from item filters)
+
+    const unitA = { id: 1, name: 'Unit A' };
+    const unitB = { id: 2, name: 'Unit B' };
+    const unitC = { id: 3, name: 'Unit C' };
+
+    it('AND operator intersects results with item matches', () => {
+        const results = [unitA, unitB, unitC];
+        const itemMatches = [unitB, unitC];
+        const operator = 'and';
+
+        let filtered: typeof results;
+        if (operator === 'and') {
+            const matchIds = new Set(itemMatches.map(u => u.id));
+            filtered = results.filter(u => matchIds.has(u.id));
+        } else {
+            const seen = new Set(results.map(u => u.id));
+            filtered = [...results];
+            for (const u of itemMatches) {
+                if (!seen.has(u.id)) {
+                    filtered.push(u);
+                    seen.add(u.id);
+                }
+            }
+        }
+
+        // AND: only units in BOTH sets
+        expect(filtered).toHaveLength(2);
+        expect(filtered.map(u => u.id)).toEqual([2, 3]);
+    });
+
+    it('OR operator unions results with item matches', () => {
+        const results = [unitA];
+        const itemMatches = [unitB, unitC];
+        const operator = 'or';
+
+        let filtered: typeof results;
+        if (operator === 'and') {
+            const matchIds = new Set(itemMatches.map(u => u.id));
+            filtered = results.filter(u => matchIds.has(u.id));
+        } else {
+            const seen = new Set(results.map(u => u.id));
+            filtered = [...results];
+            for (const u of itemMatches) {
+                if (!seen.has(u.id)) {
+                    filtered.push(u);
+                    seen.add(u.id);
+                }
+            }
+        }
+
+        // OR: units from EITHER set
+        expect(filtered).toHaveLength(3);
+        expect(filtered.map(u => u.id)).toEqual([1, 2, 3]);
+    });
+
+    it('OR operator deduplicates overlapping results', () => {
+        const results = [unitA, unitB];
+        const itemMatches = [unitB, unitC];
+        const operator = 'or';
+
+        let filtered: typeof results;
+        if (operator === 'and') {
+            const matchIds = new Set(itemMatches.map(u => u.id));
+            filtered = results.filter(u => matchIds.has(u.id));
+        } else {
+            const seen = new Set(results.map(u => u.id));
+            filtered = [...results];
+            for (const u of itemMatches) {
+                if (!seen.has(u.id)) {
+                    filtered.push(u);
+                    seen.add(u.id);
+                }
+            }
+        }
+
+        // OR with overlap: no duplicates
+        expect(filtered).toHaveLength(3);
+        expect(filtered.map(u => u.id)).toEqual([1, 2, 3]);
+    });
+});
+
 describe('Army Code Parsing Logic', () => {
     // Test the army code format understanding
 

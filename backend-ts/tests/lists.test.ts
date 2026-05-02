@@ -40,6 +40,9 @@ describe('lists CRUD', () => {
             headers: DEV_TOKEN_HEADER,
         }));
         expect(fetched.status).toBe(200);
+        const fetchedJson = await fetched.json() as { tags: string[] };
+        // Regression: tags default must be [] not [""] (F-036)
+        expect(fetchedJson.tags).toEqual([]);
 
         const all = await app.fetch(new Request('http://localhost/api/lists', {
             headers: DEV_TOKEN_HEADER,

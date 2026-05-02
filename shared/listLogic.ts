@@ -226,16 +226,15 @@ export function listReducer(state: ListState, action: ListAction): ListState {
             if (!state.currentList) return state;
             if (state.currentList.groups.length <= 1) return state;
 
-            const newGroups = state.currentList.groups.filter((_, i) => i !== action.groupIndex);
-            newGroups.forEach((g, i) => {
-                g.name = `Combat Group ${i + 1}`;
-            });
+            const renamedGroups = state.currentList.groups
+                .filter((_, i) => i !== action.groupIndex)
+                .map((g, i) => ({ ...g, name: `Combat Group ${i + 1}` }));
 
             return {
                 ...state,
                 currentList: {
                     ...state.currentList,
-                    groups: newGroups,
+                    groups: renamedGroups,
                     updatedAt: Date.now(),
                 },
             };
