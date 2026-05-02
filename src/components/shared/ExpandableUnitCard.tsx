@@ -109,7 +109,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                         const q = searchQuery.toLowerCase();
                         if (
                             optName.toLowerCase().includes(q) ||
-                            weapsAndEq.join(' ').toLowerCase().includes(q) ||
+                            [...weaponNames, ...equipNames].join(' ').toLowerCase().includes(q) ||
                             optionModsAndSkills.join(' ').toLowerCase().includes(q)
                         ) matchesSearch = true;
                     }

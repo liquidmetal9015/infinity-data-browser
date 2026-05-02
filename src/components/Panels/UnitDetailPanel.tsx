@@ -6,6 +6,7 @@ import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { formatMove } from '../../utils/conversions';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../../utils/classifications';
 import type { ProfileGroup, Profile, Loadout } from '@shared/game-model';
+import { WeaponTooltip } from '../shared/WeaponTooltip';
 
 const ATTRIBUTES = [
     { key: 'move', label: 'MOV', icon: <Activity size={14} /> },
@@ -115,7 +116,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                 </h3>
                 <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
                     <table className="w-full text-left border-collapse">
-                        {/* Note: Tailwind px-*/py-* utilities are suppressed by the unlayered * reset in
+                        {/* Note: Tailwind px-N/py-N utilities are suppressed by the unlayered * reset in
                              index.css — use inline styles for any padding that must actually take effect. */}
                         <thead className="bg-[#162032] border-b border-white/5">
                             <tr>
@@ -140,10 +141,17 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                                         className={`${interactive ? 'transition-colors hover:bg-blue-500/10 cursor-pointer' : ''} ${isHighlighted ? 'option-row-highlighted' : ''}`}
                                         onClick={interactive ? () => onAddLoadout!(opt.id) : undefined}
                                     >
-                                        <td style={{ padding: '2.5rem 1rem 2.5rem 0', verticalAlign: 'middle' }}>
+                                        <td style={{ padding: '2.5rem 1rem 2.5rem 0', verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
                                             <div className="text-base font-bold text-gray-100 mb-2 tracking-wide">{optName}</div>
                                             <div className="flex items-center flex-wrap gap-x-2 text-sm">
-                                                <span className="text-gray-200">{(opt.weapons || []).map(w => w.displayName || w.name).join(', ') || '—'}</span>
+                                                <span className="text-gray-200">
+                                                    {(opt.weapons || []).length ? (opt.weapons || []).map((w, i) => (
+                                                        <span key={w.id}>
+                                                            {i > 0 && ', '}
+                                                            <WeaponTooltip weaponId={w.id}>{w.displayName || w.name}</WeaponTooltip>
+                                                        </span>
+                                                    )) : '—'}
+                                                </span>
                                                 {(opt.equipment?.length ?? 0) > 0 && (
                                                     <>
                                                         <span className="text-gray-500">|</span>

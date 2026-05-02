@@ -302,7 +302,7 @@
     font-weight: 600;
     color: #e2e8f0;
     display: block;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .unit-weapons {

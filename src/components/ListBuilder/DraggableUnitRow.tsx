@@ -9,6 +9,7 @@ import { getProfileOrders } from '../../utils/orderUtils';
 import type { Unit } from '@shared/types';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../../utils/classifications';
 import styles from './ListDashboard.module.css';
+import { WeaponTooltip } from '../shared/WeaponTooltip';
 
 export function DraggableUnitRow({
     listUnit,
@@ -38,7 +39,7 @@ export function DraggableUnitRow({
     const { profile, option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
     const orders = getProfileOrders(profile, option);
 
-    const weaponNames = option?.weapons?.map(w => w.displayName || w.name) || [];
+
     const equipNames = option?.equipment?.map(e => e.name) || [];
     const allGroups = listUnit.unit.raw.profileGroups;
     const includedPeripheralNames = (option?.includes || []).map(inc => {
@@ -79,7 +80,14 @@ export function DraggableUnitRow({
                     </div>
                 </div>
                 <div className={clsx(styles.unitWeapons, styles.colWeapons, 'flex items-center gap-1.5 flex-wrap')}>
-                    <span className={styles.weapons} style={{ color: '#94a3b8' }}>{weaponNames.join(', ') || '—'}</span>
+                    <span className={styles.weapons} style={{ color: '#94a3b8' }}>
+                        {option?.weapons?.length ? option.weapons.map((w, i) => (
+                            <span key={w.id}>
+                                {i > 0 && ', '}
+                                <WeaponTooltip weaponId={w.id}>{w.displayName || w.name}</WeaponTooltip>
+                            </span>
+                        )) : '—'}
+                    </span>
                     {equipNames.length > 0 && (
                         <>
                             <span className="text-gray-600 text-xs">|</span>
@@ -143,7 +151,14 @@ export function DraggableUnitRow({
                 </div>
             </div>
             <div className={clsx(styles.unitWeapons, styles.colWeapons, 'flex items-center gap-1.5 flex-wrap')}>
-                <span className={styles.weapons}>{weaponNames.join(', ') || '—'}</span>
+                <span className={styles.weapons}>
+                    {option?.weapons?.length ? option.weapons.map((w, i) => (
+                        <span key={w.id}>
+                            {i > 0 && ', '}
+                            <WeaponTooltip weaponId={w.id}>{w.displayName || w.name}</WeaponTooltip>
+                        </span>
+                    )) : '—'}
+                </span>
                 {equipNames.length > 0 && (
                     <>
                         <span className="text-gray-600 text-xs">|</span>

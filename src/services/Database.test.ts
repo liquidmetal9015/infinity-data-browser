@@ -47,6 +47,7 @@ const mockFactionFile: ProcessedFactionFile = {
             isc: 'Fusilier',
             category: 1,
             isPeripheral: false,
+            isAutoAttached: false,
             isFTO: false,
             profiles: [{
                 id: 1,

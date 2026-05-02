@@ -71,6 +71,28 @@ export function UnitRosterPanel() {
     const [highlightTargetUnitId, setHighlightTargetUnitId] = useState<number | null>(null);
     const [highlightedProfileGroupId, setHighlightedProfileGroupId] = useState<number | null>(null);
 
+    // Derived visibility: when a scroll target is set, ensure its group is uncollapsed and the
+    // unit is expanded during render — so the DOM element exists when the rAF fires below.
+    const effectiveCollapsedGroups = useMemo(() => {
+        if (!rosterScrollTarget) return collapsedGroups;
+        const unit = db.units.find(u => u.id === rosterScrollTarget.unitId);
+        if (!unit) return collapsedGroups;
+        const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
+        if (!collapsedGroups.has(primaryType)) return collapsedGroups;
+        const next = new Set(collapsedGroups);
+        next.delete(primaryType);
+        return next;
+    }, [rosterScrollTarget, collapsedGroups, db.units]);
+
+    const effectiveExpandedUnitIds = useMemo(() => {
+        if (!rosterScrollTarget) return expandedUnitIds;
+        const { unitId } = rosterScrollTarget;
+        if (expandedUnitIds.has(unitId)) return expandedUnitIds;
+        const next = expandMode === 'single' ? new Set<number>() : new Set(expandedUnitIds);
+        next.add(unitId);
+        return next;
+    }, [rosterScrollTarget, expandedUnitIds, expandMode]);
+
     useEffect(() => {
         if (!rosterScrollTarget) return;
         const { unitId, optionId, profileGroupId } = rosterScrollTarget;
@@ -80,35 +102,33 @@ export function UnitRosterPanel() {
 
         const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
 
-        setCollapsedGroups(prev => {
-            if (!prev.has(primaryType)) return prev;
-            const next = new Set(prev);
-            next.delete(primaryType);
-            return next;
-        });
-
-        setExpandedUnitIds(prev => {
-            if (prev.has(unitId)) return prev;
-            const next = expandMode === 'single' ? new Set<number>() : new Set(prev);
-            next.add(unitId);
-            return next;
-        });
-
-        if (optionId != null) {
-            if (optionHighlightTimeoutRef.current) clearTimeout(optionHighlightTimeoutRef.current);
-            setHighlightTargetUnitId(unitId);
-            setHighlightedOptionId(optionId);
-            setHighlightedOptionTick(t => t + 1);
-            setHighlightedProfileGroupId(profileGroupId ?? null);
-            optionHighlightTimeoutRef.current = setTimeout(() => {
-                setHighlightedOptionId(null);
-                setHighlightTargetUnitId(null);
-                setHighlightedProfileGroupId(null);
-                optionHighlightTimeoutRef.current = null;
-            }, 900);
-        }
-
         requestAnimationFrame(() => {
+            if (optionId != null) {
+                if (optionHighlightTimeoutRef.current) clearTimeout(optionHighlightTimeoutRef.current);
+                setHighlightTargetUnitId(unitId);
+                setHighlightedOptionId(optionId);
+                setHighlightedOptionTick(t => t + 1);
+                setHighlightedProfileGroupId(profileGroupId ?? null);
+                optionHighlightTimeoutRef.current = setTimeout(() => {
+                    setHighlightedOptionId(null);
+                    setHighlightTargetUnitId(null);
+                    setHighlightedProfileGroupId(null);
+                    optionHighlightTimeoutRef.current = null;
+                }, 900);
+            }
+            // Persist the uncollapsed/expanded state so it survives after the scroll target is cleared.
+            setCollapsedGroups(prev => {
+                if (!prev.has(primaryType)) return prev;
+                const next = new Set(prev);
+                next.delete(primaryType);
+                return next;
+            });
+            setExpandedUnitIds(prev => {
+                if (prev.has(unitId)) return prev;
+                const next = expandMode === 'single' ? new Set<number>() : new Set(prev);
+                next.add(unitId);
+                return next;
+            });
             const el = rosterListRef.current?.querySelector<HTMLElement>(`[data-unit-id="${unitId}"]`);
             el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             setRosterScrollTarget(null);
@@ -266,7 +286,7 @@ export function UnitRosterPanel() {
         } else {
             setExpandedUnitIds(prev => {
                 const next = new Set(prev);
-                next.has(unitId) ? next.delete(unitId) : next.add(unitId);
+                if (next.has(unitId)) { next.delete(unitId); } else { next.add(unitId); }
                 return next;
             });
         }
@@ -293,7 +313,7 @@ export function UnitRosterPanel() {
         <div key={unit.id} data-unit-id={unit.id}>
             <ExpandableUnitCard
                 unit={unit}
-                isExpanded={!hasDetailPanel && expandedUnitIds.has(unit.id)}
+                isExpanded={!hasDetailPanel && effectiveExpandedUnitIds.has(unit.id)}
                 onToggle={() => toggleExpand(unit.id)}
                 detailMode={hasDetailPanel}
                 searchQuery={rosterTextQuery.trim()}
@@ -339,7 +359,7 @@ export function UnitRosterPanel() {
                 {!isSearchActive ? (
                     groupedRoster.map(group => (
                         <div key={group.type}>
-                            {/* Note: Tailwind py-*/px-* don't work here — see index.css cascade note.
+                            {/* Note: Tailwind py-N/px-N don't work here — see index.css cascade note.
                                  Use inline styles for padding. The left border uses the classification
                                  color to visually distinguish each group. */}
                             <button
@@ -363,10 +383,10 @@ export function UnitRosterPanel() {
                                 </div>
                                 <ChevronDown
                                     size={16}
-                                    className={`text-gray-500 transition-transform ${collapsedGroups.has(group.type) ? '-rotate-90' : ''}`}
+                                    className={`text-gray-500 transition-transform ${effectiveCollapsedGroups.has(group.type) ? '-rotate-90' : ''}`}
                                 />
                             </button>
-                            {!collapsedGroups.has(group.type) && (
+                            {!effectiveCollapsedGroups.has(group.type) && (
                                 <div className="p-2 space-y-1.5">
                                     {group.units.map(renderUnitCard)}
                                 </div>

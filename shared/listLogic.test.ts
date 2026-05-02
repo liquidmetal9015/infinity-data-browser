@@ -25,6 +25,7 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
                 isc: 'Test Unit',
                 category: 1,
                 isPeripheral: false,
+                isAutoAttached: false,
                 isFTO: false,
                 profiles: [
                     {
