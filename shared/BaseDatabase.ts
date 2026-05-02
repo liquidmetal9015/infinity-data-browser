@@ -5,7 +5,6 @@ import type {
     DatabaseMetadata,
     SearchSuggestion,
     FireteamChart,
-    Fireteam,
     FactionInfo,
     SuperFaction,
     SearchFilter,
@@ -104,11 +103,11 @@ export abstract class BaseDatabase {
                     const data = await this.loadFactionData(faction.slug);
                     if (!data) return null;
 
-                    // Store fireteam chart (convert FactionFireteamChart → FireteamChart)
+                    // Store fireteam chart
                     if (data.faction.fireteams) {
                         const chart: FireteamChart = {
                             spec: data.faction.fireteams.spec,
-                            teams: data.faction.fireteams.compositions as unknown as Fireteam[],
+                            teams: data.faction.fireteams.compositions,
                         };
                         this.fireteamData.set(faction.id, chart);
                     }

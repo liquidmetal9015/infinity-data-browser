@@ -7,7 +7,7 @@ import type {
     ProcessedFactionsFile,
     ProcessedMetadataFile,
 } from '@shared/game-model';
-import type { Fireteam, FireteamChart } from '@shared/types';
+import type { FireteamChart } from '@shared/types';
 
 export interface ClassifiedObjective {
     name: string;
@@ -89,7 +89,7 @@ export class GameDataLoader {
             if (f.fireteams) {
                 this.fireteamCharts.set(f.id, {
                     spec: f.fireteams.spec,
-                    teams: f.fireteams.compositions as unknown as Fireteam[],
+                    teams: f.fireteams.compositions,
                 });
             }
         }

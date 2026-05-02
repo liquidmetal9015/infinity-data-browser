@@ -416,6 +416,22 @@ export interface FactionFireteamChart {
     compositions: FireteamComposition[];
 }
 
+// Consumer-facing aliases — these match what the rest of the codebase uses.
+// The canonical definitions above match the on-disk JSON format (field: compositions).
+// These aliases let consumers import Fireteam/FireteamUnit/FireteamChart without casts.
+export type { FireteamSlot as FireteamUnit };
+export type { FireteamComposition as Fireteam };
+
+/**
+ * Consumer-facing fireteam chart with `teams` field name (used by UI and logic).
+ * This differs from `FactionFireteamChart` only in field naming (teams vs compositions).
+ */
+export interface FireteamChart {
+    spec: FireteamSpec;
+    desc?: string;
+    teams: FireteamComposition[];
+}
+
 // ============================================================================
 // SKILLS
 // ============================================================================

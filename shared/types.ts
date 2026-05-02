@@ -96,30 +96,10 @@ export interface SearchSuggestion {
 }
 
 // ============================================================================
-// Fireteam Types
+// Fireteam Types — canonical definitions in game-model.ts
 // ============================================================================
 
-export interface FireteamUnit {
-    name: string;
-    slug: string;
-    min: number;
-    max: number;
-    required?: boolean;
-    comment?: string;
-}
-
-export interface Fireteam {
-    name: string;
-    type: string[]; // e.g. ["CORE", "HARIS", "DUO"]
-    units: FireteamUnit[];
-    obs?: string;
-}
-
-export interface FireteamChart {
-    spec: Record<string, number>; // e.g. { CORE: 1, HARIS: 1, DUO: 256 }
-    desc?: string;
-    teams: Fireteam[];
-}
+export type { FireteamUnit, Fireteam, FireteamChart, FireteamType, FireteamSpec } from './game-model.js';
 
 export interface FireteamBonus {
     level: number;
