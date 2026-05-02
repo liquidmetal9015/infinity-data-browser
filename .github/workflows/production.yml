@@ -69,6 +69,13 @@ jobs:
         working-directory: ./backend-ts
         run: npm run typecheck
 
+      - name: Frontend & shared tests
+        run: npm test -- --run
+
+      - name: Backend-ts tests
+        working-directory: ./backend-ts
+        run: npm test
+
   deploy:
     name: CI/CD - Build, Migrate, and Deploy
     needs: lint
