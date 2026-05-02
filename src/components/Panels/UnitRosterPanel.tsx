@@ -69,10 +69,11 @@ export function UnitRosterPanel() {
     const [highlightedOptionId, setHighlightedOptionId] = useState<number | null>(null);
     const [highlightedOptionTick, setHighlightedOptionTick] = useState(0);
     const [highlightTargetUnitId, setHighlightTargetUnitId] = useState<number | null>(null);
+    const [highlightedProfileGroupId, setHighlightedProfileGroupId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!rosterScrollTarget) return;
-        const { unitId, optionId } = rosterScrollTarget;
+        const { unitId, optionId, profileGroupId } = rosterScrollTarget;
 
         const unit = db.units.find(u => u.id === unitId);
         if (!unit) { setRosterScrollTarget(null); return; }
@@ -98,9 +99,11 @@ export function UnitRosterPanel() {
             setHighlightTargetUnitId(unitId);
             setHighlightedOptionId(optionId);
             setHighlightedOptionTick(t => t + 1);
+            setHighlightedProfileGroupId(profileGroupId ?? null);
             optionHighlightTimeoutRef.current = setTimeout(() => {
                 setHighlightedOptionId(null);
                 setHighlightTargetUnitId(null);
+                setHighlightedProfileGroupId(null);
                 optionHighlightTimeoutRef.current = null;
             }, 900);
         }
@@ -244,18 +247,29 @@ export function UnitRosterPanel() {
     }, [filteredRoster]);
 
     const toggleExpand = (unitId: number) => {
-        setExpandedUnitIds(prev => {
-            const next = new Set(prev);
-            if (next.has(unitId)) {
-                next.delete(unitId);
-            } else {
-                if (expandMode === 'single') {
-                    next.clear();
-                }
-                next.add(unitId);
+        const isExpanding = !expandedUnitIds.has(unitId);
+
+        if (expandMode === 'single' && isExpanding) {
+            const el = rosterListRef.current?.querySelector<HTMLElement>(`[data-unit-id="${unitId}"]`);
+            const beforeTop = el?.getBoundingClientRect().top ?? null;
+
+            setExpandedUnitIds(new Set([unitId]));
+
+            if (beforeTop !== null && el) {
+                requestAnimationFrame(() => {
+                    const delta = el.getBoundingClientRect().top - beforeTop;
+                    if (delta !== 0 && rosterListRef.current) {
+                        rosterListRef.current.scrollTop += delta;
+                    }
+                });
             }
-            return next;
-        });
+        } else {
+            setExpandedUnitIds(prev => {
+                const next = new Set(prev);
+                next.has(unitId) ? next.delete(unitId) : next.add(unitId);
+                return next;
+            });
+        }
     };
 
     const toggleGroupCollapse = (type: number) => {
@@ -285,7 +299,7 @@ export function UnitRosterPanel() {
                 searchQuery={rosterTextQuery.trim()}
                 activeFilters={rosterQuery.filters}
                 isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
-                highlightOption={unit.id === highlightTargetUnitId && highlightedOptionId != null ? { id: highlightedOptionId, tick: highlightedOptionTick } : undefined}
+                highlightOption={unit.id === highlightTargetUnitId && highlightedOptionId != null ? { id: highlightedOptionId, tick: highlightedOptionTick, profileGroupId: highlightedProfileGroupId ?? undefined } : undefined}
                 onMouseEnter={() => setHoveredUnitISC(unit.isc)}
                 onMouseLeave={() => setHoveredUnitISC(null)}
                 onAddUnit={handleAddUnit}
@@ -326,13 +340,15 @@ export function UnitRosterPanel() {
                     groupedRoster.map(group => (
                         <div key={group.type}>
                             <button
-                                className="w-full flex items-center justify-between px-3 py-2 bg-[#161b22] border-b border-[#1e293b] sticky top-0 z-10 cursor-pointer hover:bg-[#1e293b] transition-colors"
+                                className="w-full flex items-center justify-between bg-[#161b22] border-b border-[#1e293b] sticky top-0 z-10 cursor-pointer hover:bg-[#1e293b] transition-colors"
+                                style={{ padding: '0.75rem 1rem' }}
                                 onClick={() => toggleGroupCollapse(group.type)}
                             >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                     <span
-                                        className="text-[11px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                        className="text-xs font-bold rounded uppercase tracking-wider"
                                         style={{
+                                            padding: '0.25rem 0.5rem',
                                             color: group.color,
                                             background: `${group.color}15`,
                                             border: `1px solid ${group.color}30`
@@ -340,10 +356,10 @@ export function UnitRosterPanel() {
                                     >
                                         {group.label}
                                     </span>
-                                    <span className="text-xs text-gray-500">{group.units.length}</span>
+                                    <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>{group.units.length}</span>
                                 </div>
                                 <ChevronDown
-                                    size={14}
+                                    size={16}
                                     className={`text-gray-500 transition-transform ${collapsedGroups.has(group.type) ? '-rotate-90' : ''}`}
                                 />
                             </button>

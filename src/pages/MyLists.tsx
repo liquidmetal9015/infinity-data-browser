@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -11,6 +11,7 @@ import { getSafeLogo } from '../utils/assets';
 import { listService } from '../services/listService';
 import type { ListSummary } from '../services/listService';
 import { encodeArmyList, decodeArmyCode } from '@shared/armyCode';
+import { calculateListPoints } from '@shared/listTypes';
 import type { ArmyList } from '@shared/listTypes';
 import { indexList, type ListIndex } from '@shared/list-similarity';
 import type { SearchSuggestion } from '@shared/types';
@@ -31,7 +32,7 @@ export function MyLists() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const db = useDatabase();
-    const { loadList, createList } = useListStore();
+    const { loadList, createList, currentList: activeList, isDirty: isActiveDirty } = useListStore();
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const [showNewModal, setShowNewModal] = useState(false);
@@ -328,6 +329,42 @@ export function MyLists() {
     return (
         <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem 1rem', minHeight: 0 }}>
             <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+                {/* ── Currently editing banner ── */}
+                {activeList && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                        marginBottom: '1.5rem',
+                        padding: '0.65rem 1rem',
+                        background: 'rgba(245,158,11,0.08)',
+                        border: '1px solid rgba(245,158,11,0.3)',
+                        borderRadius: '10px',
+                        fontSize: '0.85rem',
+                    }}>
+                        <span style={{ color: '#f59e0b', fontWeight: 600 }}>Editing:</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{activeList.name}</span>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                            {calculateListPoints(activeList)}/{activeList.pointsLimit} pts
+                            {isActiveDirty && ' · unsaved changes'}
+                        </span>
+                        <Link
+                            to="/"
+                            style={{
+                                marginLeft: 'auto',
+                                color: '#f59e0b',
+                                fontWeight: 600,
+                                fontSize: '0.82rem',
+                                textDecoration: 'none',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            Resume editing ↗
+                        </Link>
+                    </div>
+                )}
 
                 {/* ── Page header ── */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem' }}>

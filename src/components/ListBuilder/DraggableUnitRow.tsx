@@ -38,8 +38,13 @@ export function DraggableUnitRow({
     const { profile, option } = getUnitDetails(listUnit.unit, listUnit.profileGroupId, listUnit.profileId, listUnit.optionId);
     const orders = getProfileOrders(profile, option);
 
-    const weapons = option?.weapons?.map(w => w.name).join(', ') || '—';
-    const equipment = option?.equipment?.map(e => e.name).join(', ') || '';
+    const weaponNames = option?.weapons?.map(w => w.displayName || w.name) || [];
+    const equipNames = option?.equipment?.map(e => e.name) || [];
+    const allGroups = listUnit.unit.raw.profileGroups;
+    const includedPeripheralNames = (option?.includes || []).map(inc => {
+        const pg = allGroups[inc.group - 1];
+        return pg?.options[inc.option - 1]?.name ?? null;
+    }).filter((n): n is string => n !== null);
 
     const optionModsAndSkills = (option?.skills || []).map(s =>
         s.displayName || s.name
@@ -73,9 +78,20 @@ export function DraggableUnitRow({
                         <span className={styles.name} style={{ color: '#8b9ab5', fontStyle: 'italic', fontSize: '0.8rem' }}>{displayName}</span>
                     </div>
                 </div>
-                <div className={clsx(styles.unitWeapons, styles.colWeapons)}>
-                    <span className={styles.weapons} style={{ color: '#64748b' }}>{weapons}</span>
-                    {equipment && <span className={styles.equipment}>{equipment}</span>}
+                <div className={clsx(styles.unitWeapons, styles.colWeapons, 'flex items-center gap-1.5 flex-wrap')}>
+                    <span className={styles.weapons} style={{ color: '#94a3b8' }}>{weaponNames.join(', ') || '—'}</span>
+                    {equipNames.length > 0 && (
+                        <>
+                            <span className="text-gray-600 text-xs">|</span>
+                            <span className={styles.equipment}>{equipNames.join(', ')}</span>
+                        </>
+                    )}
+                    {includedPeripheralNames.length > 0 && (
+                        <>
+                            <span className="text-gray-600 text-xs">||</span>
+                            <span className="text-xs font-medium" style={{ color: '#22c55ecc' }}>{includedPeripheralNames.join(', ')}</span>
+                        </>
+                    )}
                 </div>
                 <div className={clsx(styles.unitSwc, styles.colSwc)} style={{ color: '#475569' }}>{option?.swc || 0}</div>
                 <div className={clsx(styles.unitPts, styles.colPts)} style={{ color: '#475569' }}>{option?.points || 0}</div>
@@ -126,9 +142,20 @@ export function DraggableUnitRow({
                     <span className={styles.name}>{displayName}</span>
                 </div>
             </div>
-            <div className={clsx(styles.unitWeapons, styles.colWeapons)}>
-                <span className={styles.weapons}>{weapons}</span>
-                {equipment && <span className={styles.equipment}>{equipment}</span>}
+            <div className={clsx(styles.unitWeapons, styles.colWeapons, 'flex items-center gap-1.5 flex-wrap')}>
+                <span className={styles.weapons}>{weaponNames.join(', ') || '—'}</span>
+                {equipNames.length > 0 && (
+                    <>
+                        <span className="text-gray-600 text-xs">|</span>
+                        <span className={styles.equipment}>{equipNames.join(', ')}</span>
+                    </>
+                )}
+                {includedPeripheralNames.length > 0 && (
+                    <>
+                        <span className="text-gray-600 text-xs">||</span>
+                        <span className="text-xs font-medium" style={{ color: '#22c55ecc' }}>{includedPeripheralNames.join(', ')}</span>
+                    </>
+                )}
             </div>
             <div className={clsx(styles.unitSwc, styles.colSwc)}>{option?.swc || 0}</div>
             <div className={clsx(styles.unitPts, styles.colPts)}>{option?.points || 0}</div>

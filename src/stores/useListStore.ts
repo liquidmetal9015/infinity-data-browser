@@ -13,6 +13,9 @@ import { listReducer, initialState, type ListState, type ListAction } from '@sha
 // ============================================================================
 
 interface ListStore extends ListState {
+    lastSavedAt: number | null;
+    isDirty: boolean;
+    recordSave: () => void;
     // Actions (same API as the old ListContext)
     createList: (factionId: number, factionName: string, pointsLimit?: number, name?: string) => void;
     addUnit: (unit: Unit, groupIndex: number, profileGroupId: number, profileId: number, optionId: number) => void;
@@ -41,9 +44,10 @@ interface ListStore extends ListState {
 // Dispatch helper — delegates to the existing pure reducer
 // ============================================================================
 
-function dispatch(state: ListState, action: ListAction): Partial<ListStore> {
+function dispatch(state: ListStore, action: ListAction): Partial<ListStore> {
     const next = listReducer(state, action);
-    return { currentList: next.currentList };
+    const isDirty = next.currentList !== null && next.currentList.updatedAt > (state.lastSavedAt ?? 0);
+    return { currentList: next.currentList, isDirty };
 }
 
 // ============================================================================
@@ -55,10 +59,21 @@ export const useListStore = create<ListStore>()(
         (set) => ({
             // Initial state
             ...initialState,
+            lastSavedAt: null,
+            isDirty: false,
+
+            recordSave: () =>
+                set(s => ({
+                    lastSavedAt: s.currentList?.updatedAt ?? Date.now(),
+                    isDirty: false,
+                })),
 
             // Actions
             createList: (factionId, factionName, pointsLimit, name) =>
-                set(s => dispatch(s, { type: 'CREATE_LIST', factionId, factionName, pointsLimit, name })),
+                set(s => ({
+                    ...dispatch(s, { type: 'CREATE_LIST', factionId, factionName, pointsLimit, name }),
+                    lastSavedAt: null,
+                })),
 
             addUnit: (unit, groupIndex, profileGroupId, profileId, optionId) =>
                 set(s => dispatch(s, { type: 'ADD_UNIT', unit, groupIndex, profileGroupId, profileId, optionId })),
@@ -112,16 +127,34 @@ export const useListStore = create<ListStore>()(
                 set(s => dispatch(s, { type: 'UPDATE_TAGS', tags })),
 
             resetList: () =>
-                set(s => dispatch(s, { type: 'RESET_LIST' })),
+                set(s => ({
+                    ...dispatch(s, { type: 'RESET_LIST' }),
+                    lastSavedAt: null,
+                    isDirty: false,
+                })),
 
             loadList: (list) =>
-                set(s => dispatch(s, { type: 'LOAD_LIST', list })),
+                set(() => ({
+                    currentList: list,
+                    lastSavedAt: list.updatedAt,
+                    isDirty: false,
+                })),
 
             setServerId: (serverId) =>
                 set(s => dispatch(s, { type: 'SET_SERVER_ID', serverId })),
         }),
         {
             name: 'infinity-list-state',
+            partialize: (state) => ({
+                currentList: state.currentList,
+                lastSavedAt: state.lastSavedAt,
+            }),
+            onRehydrateStorage: () => (state) => {
+                if (!state) return;
+                if (state.currentList) {
+                    state.isDirty = state.currentList.updatedAt > (state.lastSavedAt ?? 0);
+                }
+            },
         }
     )
 );

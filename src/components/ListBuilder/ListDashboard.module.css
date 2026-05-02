@@ -306,16 +306,15 @@
 }
 
 .unit-weapons {
-    font-size: 0.8rem;
-    color: #94a3b8;
+    font-size: 0.85rem;
+    color: #cbd5e1;
 }
 .unit-weapons .weapons {
-    display: block;
+    display: inline;
 }
 .unit-weapons .equipment {
-    display: block;
-    color: #8b9ab5;
-    font-style: italic;
+    display: inline;
+    color: #94a3b8;
 }
 
 .unit-swc {

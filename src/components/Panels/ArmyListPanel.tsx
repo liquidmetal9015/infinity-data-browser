@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
     DndContext,
     DragOverlay,
@@ -72,7 +72,7 @@ export function ArmyListPanel() {
         createList, addUnit, removeUnit, addCombatGroup, removeCombatGroup,
         reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam,
         addFireteamDef, removeFireteamDef, moveFireteam, resetList, updatePointsLimit, setServerId,
-        updateListName, updateTags,
+        updateListName, updateTags, isDirty, recordSave,
     } = useListStore();
 
     const [editingName, setEditingName] = useState(false);
@@ -112,8 +112,23 @@ export function ArmyListPanel() {
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });
             if (data && !currentList?.serverId) setServerId(data.id);
+            recordSave();
         },
     });
+
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (!user || !currentList || !isDirty || saveListMutation.isPending) return;
+        saveTimerRef.current = setTimeout(() => saveListMutation.mutate(), 3500);
+        return () => {
+            if (saveTimerRef.current !== null) {
+                clearTimeout(saveTimerRef.current);
+                saveTimerRef.current = null;
+            }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentList?.updatedAt, isDirty, user, saveListMutation.isPending]);
 
     const {
         hoveredUnitISC, targetGroupIndex,
@@ -197,7 +212,7 @@ export function ArmyListPanel() {
             const detailIdx = panels.indexOf('UNIT_DETAIL');
             if (detailIdx === -1) {
                 // 2-column mode: scroll and expand unit in the roster instead of floating window
-                setRosterScrollTarget({ unitId: unit.id, optionId });
+                setRosterScrollTarget({ unitId: unit.id, optionId, profileGroupId });
             } else if (window.innerWidth < 768) {
                 // Mobile: swipe to the UNIT_DETAIL column
                 setActiveColumn(detailIdx);
@@ -337,7 +352,7 @@ export function ArmyListPanel() {
                 <div style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
                     <div style={{ textAlign: 'center' }}>
                         <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Select a faction to start building a new roster.</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Use <strong>+ New</strong> in the nav bar above, or select a faction here to jump right in.</p>
                     </div>
                     <div style={{ display: 'flex', gap: '0.75rem', width: '100%', alignItems: 'stretch' }}>
                         <div style={{ flex: 1 }}>
@@ -476,12 +491,24 @@ export function ArmyListPanel() {
                             className={styles.codeButton}
                             onClick={() => saveListMutation.mutate()}
                             disabled={saveListMutation.isPending}
-                            title="Save to My Lists"
-                            style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}
+                            title={
+                                saveListMutation.isPending ? 'Saving…'
+                                : isDirty ? 'Unsaved changes — click to save now'
+                                : 'Saved'
+                            }
+                            style={{
+                                padding: '0.35rem 0.5rem',
+                                fontSize: '0.75rem',
+                                color: saveListMutation.isPending ? undefined : isDirty ? '#f59e0b' : '#10b981',
+                                borderColor: saveListMutation.isPending ? undefined : isDirty ? 'rgba(245,158,11,0.35)' : 'rgba(16,185,129,0.35)',
+                                background: saveListMutation.isPending ? undefined : isDirty ? 'rgba(245,158,11,0.08)' : 'rgba(16,185,129,0.08)',
+                            }}
                         >
-                            {saveListMutation.isSuccess && !saveListMutation.isPending
-                                ? <CloudCheck size={14} />
-                                : <CloudUpload size={14} className={saveListMutation.isPending ? 'animate-pulse' : ''} />}
+                            {saveListMutation.isPending
+                                ? <CloudUpload size={14} className="animate-pulse" />
+                                : isDirty
+                                    ? <CloudUpload size={14} />
+                                    : <CloudCheck size={14} />}
                         </button>
                     )}
                     <button className={styles.codeButton} onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', color: '#F29107', borderColor: 'rgba(242,145,7,0.35)', background: 'rgba(242,145,7,0.1)' }}>
@@ -691,7 +718,7 @@ export function ArmyListPanel() {
                                                                     key={p.id}
                                                                     listUnit={p}
                                                                     groupIndex={groupIndex}
-                                                                    onViewUnit={() => handleViewUnit(u.unit, u.profileGroupId, u.optionId, u.id)}
+                                                                    onViewUnit={handleViewUnit}
                                                                     onRemove={() => {}}
                                                                 />
                                                             ))}

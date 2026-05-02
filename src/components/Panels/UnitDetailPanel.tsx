@@ -4,6 +4,8 @@ import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { formatMove } from '../../utils/conversions';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../../utils/classifications';
+import type { ProfileGroup, Profile, Loadout } from '@shared/game-model';
 
 const ATTRIBUTES = [
     { key: 'move', label: 'MOV', icon: <Activity size={14} /> },
@@ -15,7 +17,159 @@ const ATTRIBUTES = [
     { key: 'bts', label: 'BTS', icon: <Shield size={14} /> },
     { key: 'w', label: 'W', icon: <Activity size={14} /> },
     { key: 's', label: 'S', icon: <Activity size={14} /> },
+    { key: 'ava', label: 'AVA', icon: <Info size={14} /> },
 ];
+
+// ─── Shared profile body ──────────────────────────────────────────────────────
+// Renders stats, skills, equipment, and loadout table for one profile group.
+// Used for both the main unit and inline attached peripherals.
+
+interface ProfileBodyProps {
+    group: ProfileGroup;
+    profile: Profile;
+    allGroups: ProfileGroup[];       // needed to resolve includes references
+    onAddLoadout?: (optionId: number) => void; // omit to make loadout rows non-interactive
+    highlightedOptionId?: number | null;
+    highlightTick?: number;
+    getWikiLink: (type: 'skill' | 'equipment', id: number) => string | undefined;
+}
+
+function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptionId, highlightTick, getWikiLink }: ProfileBodyProps) {
+    const interactive = !!onAddLoadout;
+
+    return (
+        <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-10 gap-3 p-4 rounded-xl bg-[#0f172a] border border-white/5">
+                {ATTRIBUTES.map((attr) => {
+                    const rec = profile as unknown as Record<string, unknown>;
+                    let val: string | number | undefined = rec[attr.key] as string | number | undefined;
+                    if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
+                    if (attr.key === 'ava') val = val === 255 ? '∞' : val === -1 ? '-' : val;
+                    const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
+                    return (
+                        <div key={attr.key} className="flex flex-col items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">{label}</span>
+                            <span className="text-lg font-bold text-gray-100 font-mono tracking-tight">{val ?? '-'}</span>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Special Skills & Equipment */}
+            <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-3">
+                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
+                        <Zap size={12} className="text-yellow-500/80" />
+                        Special Skills
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        {profile.skills?.map((s, i) => {
+                            const wikiLink = getWikiLink('skill', s.id);
+                            const content = s.displayName || s.name;
+                            return (
+                                <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
+                                    {wikiLink ? (
+                                        <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
+                                            {content}
+                                        </a>
+                                    ) : content}
+                                </span>
+                            );
+                        })}
+                        {(!profile.skills || profile.skills.length === 0) &&
+                            <span className="text-gray-600 text-xs italic">None</span>
+                        }
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
+                        <Shield size={12} className="text-blue-500/80" />
+                        Equipment
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        {profile.equipment?.map((e, i) => {
+                            const wikiLink = getWikiLink('equipment', e.id);
+                            return (
+                                <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
+                                    {wikiLink ? (
+                                        <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
+                                            {e.name}
+                                        </a>
+                                    ) : e.name}
+                                </span>
+                            );
+                        })}
+                        {(!profile.equipment || profile.equipment.length === 0) &&
+                            <span className="text-gray-600 text-xs italic">None</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            {/* Profile Options */}
+            <div className="space-y-3">
+                <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Crosshair size={12} className="text-red-500/80" />
+                    Profile Options
+                </h3>
+                <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-[#162032] border-b border-white/5">
+                            <tr>
+                                <th className="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Profile</th>
+                                <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">SWC</th>
+                                <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {group.options.map((opt: Loadout, idx: number) => {
+                                const optMods = (opt.skills || []).map((s) => s.displayName || s.name);
+                                let optName = opt.name || group.isc;
+                                if (optMods.length > 0) optName = `${optName} (${optMods.join(', ')})`;
+                                const includedPeripheralNames = (opt.includes || []).map(inc => {
+                                    const pg = allGroups[inc.group - 1];
+                                    return pg?.options[inc.option - 1]?.name ?? null;
+                                }).filter((n): n is string => n !== null);
+                                const isHighlighted = highlightedOptionId === opt.id;
+                                return (
+                                    <tr
+                                        key={isHighlighted ? `h-${opt.id}-t${highlightTick}` : `opt-${idx}`}
+                                        className={`${interactive ? 'transition-colors hover:bg-blue-500/10 cursor-pointer' : ''} ${isHighlighted ? 'option-row-highlighted' : ''}`}
+                                        onClick={interactive ? () => onAddLoadout!(opt.id) : undefined}
+                                    >
+                                        <td style={{ padding: '2.5rem 1.5rem', verticalAlign: 'middle' }}>
+                                            <div className="text-base font-bold text-gray-100 mb-2 tracking-wide">{optName}</div>
+                                            <div className="flex items-center flex-wrap gap-x-2 text-sm">
+                                                <span className="text-gray-200">{(opt.weapons || []).map(w => w.displayName || w.name).join(', ') || '—'}</span>
+                                                {(opt.equipment?.length ?? 0) > 0 && (
+                                                    <>
+                                                        <span className="text-gray-500">|</span>
+                                                        <span className="text-gray-300">{opt.equipment!.map(e => e.name).join(', ')}</span>
+                                                    </>
+                                                )}
+                                                {includedPeripheralNames.length > 0 && (
+                                                    <>
+                                                        <span className="text-gray-500">||</span>
+                                                        <span className="font-medium" style={{ color: '#22c55ecc' }}>{includedPeripheralNames.join(', ')}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '2.5rem 1rem', verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.875rem', color: '#9ca3af' }}>{opt.swc}</td>
+                                        <td style={{ padding: '2.5rem 1rem', verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.875rem', fontWeight: 700, color: '#60a5fa' }}>{opt.points}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </>
+    );
+}
+
+// ─── Main panel ───────────────────────────────────────────────────────────────
 
 export function UnitDetailPanel() {
     const db = useDatabase();
@@ -30,18 +184,31 @@ export function UnitDetailPanel() {
     const [highlightedGroupIndex, setHighlightedGroupIndex] = useState<number | null>(null);
     const [highlightedOptionId, setHighlightedOptionId] = useState<number | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const peripheralSectionRefs = useRef<Map<number, HTMLElement | null>>(new Map());
     const optionHighlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // When a unit is selected from the army list, jump to the right profile group and highlight the specific option
     useEffect(() => {
         if (!unit) return;
         const profileGroups = unit.raw.profileGroups || [];
+
+        // Always reset to first non-peripheral group when the unit changes
+        setActiveGroupIndex(0);
+
+        let scrollToPeripheralId: number | null = null;
+
         if (selectedProfileGroupId != null) {
             const idx = profileGroups.findIndex(g => g.id === selectedProfileGroupId);
-            if (idx !== -1 && idx !== activeGroupIndex) {
-                setActiveGroupIndex(idx);
-                setHighlightedGroupIndex(idx);
-                setTimeout(() => setHighlightedGroupIndex(null), 800);
+            if (idx !== -1) {
+                const targetGroup = profileGroups[idx];
+                // Auto-attached peripherals are shown inline — never switch the tab to them.
+                // Instead, scroll down to the inline peripheral section.
+                if (targetGroup.isAutoAttached) {
+                    scrollToPeripheralId = selectedProfileGroupId;
+                } else if (idx !== activeGroupIndex) {
+                    setActiveGroupIndex(idx);
+                    setHighlightedGroupIndex(idx);
+                    setTimeout(() => setHighlightedGroupIndex(null), 800);
+                }
             }
         }
         if (selectedOptionId != null) {
@@ -52,7 +219,16 @@ export function UnitDetailPanel() {
                 optionHighlightTimeoutRef.current = null;
             }, 900);
         }
-        scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (scrollToPeripheralId != null) {
+            const id = scrollToPeripheralId;
+            requestAnimationFrame(() => {
+                const el = peripheralSectionRefs.current.get(id);
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        } else {
+            scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [unit, selectedProfileGroupId, selectedOptionId, highlightTick]);
 
@@ -73,12 +249,22 @@ export function UnitDetailPanel() {
 
     if (!activeProfile) return null;
 
+    // Standalone peripheral units (e.g. Palbots viewed directly) have only peripheral groups.
+    // Embedded peripherals (Drumbots) are always shown inline; the active group is never one.
     const isAutoAttachedPeripheral = activeGroup.isAutoAttached;
 
     const handleAddLoadout = (optionId: number) => {
-        if (isAutoAttachedPeripheral) return;
         addUnit(unit, targetGroupIndex, activeGroup.id, activeProfile.id, optionId);
     };
+
+    // Peripheral profile groups to display inline below the main unit
+    const inlinePeripherals = !isAutoAttachedPeripheral
+        ? profileGroups.filter(pg => pg.isAutoAttached)
+        : [];
+
+    // Which profile group the current option highlight belongs to.
+    // Used to route the flash animation to the right ProfileBody.
+    const highlightGroupId = selectedProfileGroupId ?? activeGroup?.id;
 
     return (
         <div className="h-full flex flex-col overflow-hidden bg-[#0b1221]">
@@ -93,6 +279,11 @@ export function UnitDetailPanel() {
                         <span className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-white/5 border border-white/5 text-gray-400 tracking-wide">
                             {unit.isc}
                         </span>
+                        {isAutoAttachedPeripheral && (
+                            <span className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400/80 tracking-wide flex items-center gap-1">
+                                <Link size={10} /> Attached
+                            </span>
+                        )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {unit.factions.map(fid => (
@@ -103,245 +294,77 @@ export function UnitDetailPanel() {
                     </div>
                 </div>
 
-                {/* Profile Group Tabs */}
-                {profileGroups.length > 1 && (
+                {/* Profile Group Tabs — auto-attached peripherals are shown inline, not as tabs */}
+                {profileGroups.filter(g => !g.isAutoAttached).length > 1 && (
                     <div className="flex gap-2 border-b border-white/5 pb-3">
-                        {profileGroups.map((group, idx) => (
-                            <button
-                                key={group.id}
-                                onClick={() => setActiveGroupIndex(idx)}
-                                className={`px-4 py-2 text-xs font-bold tracking-wide rounded-lg transition-all duration-200
-                                    ${highlightedGroupIndex === idx
-                                        ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 scale-105'
-                                        : activeGroupIndex === idx
-                                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
-                                    }`}
-                            >
-                                {group.isc || `PROFILE ${idx + 1}`}
-                            </button>
-                        ))}
+                        {profileGroups.map((group, idx) => {
+                            if (group.isAutoAttached) return null;
+                            return (
+                                <button
+                                    key={group.id}
+                                    onClick={() => setActiveGroupIndex(idx)}
+                                    className={`px-4 py-2 text-xs font-bold tracking-wide rounded-lg transition-all duration-200
+                                        ${highlightedGroupIndex === idx
+                                            ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 scale-105'
+                                            : activeGroupIndex === idx
+                                                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
+                                        }`}
+                                >
+                                    {group.isc || `PROFILE ${idx + 1}`}
+                                </button>
+                            );
+                        })}
                     </div>
                 )}
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-9 gap-3 p-4 rounded-xl bg-[#0f172a] border border-white/5">
-                    {ATTRIBUTES.map((attr) => {
-                        const profileRecord = activeProfile as unknown as Record<string, unknown>;
-                        let val: string | number | undefined = profileRecord[attr.key] as string | number | undefined;
-                        if (attr.key === 'move' && Array.isArray(profileRecord[attr.key])) {
-                            val = formatMove(profileRecord[attr.key] as number[]);
-                        }
-                        let label = attr.label;
-                        if (attr.key === 'w' && activeProfile.isStructure) label = 'STR';
+                {/* Main unit profile body */}
+                <ProfileBody
+                    group={activeGroup}
+                    profile={activeProfile}
+                    allGroups={profileGroups}
+                    onAddLoadout={isAutoAttachedPeripheral ? undefined : handleAddLoadout}
+                    highlightedOptionId={highlightGroupId === activeGroup.id ? highlightedOptionId : null}
+                    highlightTick={highlightTick}
+                    getWikiLink={(type, id) => db.getWikiLink(type, id)}
+                />
 
-                        return (
-                            <div key={attr.key} className="flex flex-col items-center gap-1.5">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">
-                                    {label}
-                                </span>
-                                <span className="text-lg font-bold text-gray-100 font-mono tracking-tight">
-                                    {val ?? '-'}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Skills & Equipment */}
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-3">
-                        <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
-                            <Zap size={12} className="text-yellow-500/80" />
-                            Special Skills
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {activeProfile.skills?.map((s, i) => {
-                                const wikiLink = db.getWikiLink('skill', s.id);
-                                const content = s.displayName || s.name;
-                                return (
-                                    <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
-                                        {wikiLink ? (
-                                            <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
-                                                {content}
-                                            </a>
-                                        ) : content}
-                                    </span>
-                                );
-                            })}
-                            {(!activeProfile.skills || activeProfile.skills.length === 0) &&
-                                <span className="text-gray-600 text-xs italic">None</span>
-                            }
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
-                            <Shield size={12} className="text-blue-500/80" />
-                            Equipment
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {activeProfile.equipment?.map((e, i) => {
-                                const wikiLink = db.getWikiLink('equipment', e.id);
-                                return (
-                                    <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
-                                        {wikiLink ? (
-                                            <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
-                                                {e.name}
-                                            </a>
-                                        ) : e.name}
-                                    </span>
-                                );
-                            })}
-                            {(!activeProfile.equipment || activeProfile.equipment.length === 0) &&
-                                <span className="text-gray-600 text-xs italic">None</span>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                {/* Loadouts Table */}
-                <div className="space-y-3">
-                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
-                        <Crosshair size={12} className="text-red-500/80" />
-                        Loadout Options
-                    </h3>
-                    {isAutoAttachedPeripheral && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300">
-                            <Link size={12} />
-                            Linked unit — auto-attached to its parent, not independently purchasable
-                        </div>
-                    )}
-                    <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-[#162032] border-b border-white/5">
-                                <tr>
-                                    <th className="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Loadout</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Equip</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">SWC</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {activeGroup.options.map((opt, idx) => {
-                                    const optMods = (opt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name);
-                                    let optName = opt.name || activeGroup.isc || unit.isc;
-                                    if (optMods.length > 0) optName = `${optName} (${optMods.join(', ')})`;
-                                    const includedPeripheralNames = (opt.includes || []).map(inc => {
-                                        const pg = profileGroups[inc.group - 1];
-                                        return pg?.options[inc.option - 1]?.name ?? null;
-                                    }).filter((n): n is string => n !== null);
-                                    const isThisOptionHighlighted = highlightedOptionId === opt.id;
-                                    return (
-                                    <tr
-                                        key={isThisOptionHighlighted ? `h-${opt.id}-t${highlightTick}` : `opt-${opt.id}`}
-                                        className={`${isAutoAttachedPeripheral ? 'opacity-60' : 'transition-colors hover:bg-blue-500/10 cursor-pointer'} ${isThisOptionHighlighted ? 'option-row-highlighted' : ''}`}
-                                        onClick={isAutoAttachedPeripheral ? undefined : () => handleAddLoadout(opt.id)}
-                                    >
-                                        <td className="px-4 py-3 align-top">
-                                            <div className="text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wide">
-                                                {optName}
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                {opt.weapons?.map((w: { displayName?: string; name: string }, i: number) => (
-                                                    <span key={i} className={`text-xs ${i === 0 ? "text-gray-400 font-medium" : "text-gray-500"}`}>
-                                                        {w.displayName || w.name}
-                                                    </span>
-                                                ))}
-                                                {includedPeripheralNames.length > 0 && (
-                                                    <div className="flex items-center gap-1 mt-0.5">
-                                                        <span className="text-gray-600 text-xs">||</span>
-                                                        <span className="text-xs font-medium" style={{ color: '#22c55ecc' }}>
-                                                            {includedPeripheralNames.join(', ')}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-3 py-3 align-top text-xs text-gray-400">
-                                            <div className="flex flex-col gap-0.5">
-                                                {opt.equipment?.map((e, i) => (
-                                                    <span key={i}>{e.name}</span>
-                                                ))}
-                                            </div>
-                                        </td>
-                                        <td className="px-3 py-3 align-top text-right font-mono text-gray-400 text-sm">
-                                            {opt.swc}
-                                        </td>
-                                        <td className="px-3 py-3 align-top text-right font-mono font-bold text-blue-400 text-sm">
-                                            {opt.points}
-                                        </td>
-                                    </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Inline Auto-Attached Peripherals — full first-class profile listing */}
-                {!isAutoAttachedPeripheral && profileGroups.filter(pg => pg.isAutoAttached).map(pg => {
+                {/* Inline attached peripherals — same layout as main unit */}
+                {inlinePeripherals.map(pg => {
                     const pProfile = pg.profiles[0];
                     if (!pProfile) return null;
+                    const typeLabel = CLASSIFICATION_LABELS[pProfile.unitType];
+                    const typeColor = CLASSIFICATION_COLORS[pProfile.unitType];
                     return (
-                        <div key={pg.id} className="space-y-3">
-                            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
-                                <Link size={12} className="text-blue-400/60" />
-                                Attached: {pg.isc || pProfile.name}
-                            </h3>
-                            <div className="rounded-xl bg-[#0f172a] border border-white/5 overflow-hidden">
-                                {/* Stats + shared skills */}
-                                <div className="p-4 space-y-3 border-b border-white/5">
-                                    <div className="grid grid-cols-9 gap-2">
-                                        {ATTRIBUTES.map((attr) => {
-                                            const rec = pProfile as unknown as Record<string, unknown>;
-                                            let val: string | number | undefined = rec[attr.key] as string | number | undefined;
-                                            if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
-                                            return (
-                                                <div key={attr.key} className="flex flex-col items-center gap-1">
-                                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.15em]">{attr.label}</span>
-                                                    <span className="text-sm font-bold text-gray-400 font-mono">{val ?? '-'}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    {((pProfile.skills && pProfile.skills.length > 0) || (pProfile.equipment && pProfile.equipment.length > 0)) && (
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {[
-                                                ...(pProfile.skills || []).map(s => s.displayName || s.name),
-                                                ...(pProfile.equipment || []).map(e => e.name)
-                                            ].map((item, i) => (
-                                                <span key={i} className="px-2 py-0.5 bg-[#162032] border border-white/5 rounded text-[11px] text-gray-400">{item}</span>
-                                            ))}
-                                        </div>
+                        <div key={pg.id} ref={(el) => { peripheralSectionRefs.current.set(pg.id, el); }} className="space-y-6 pt-6 border-t border-white/10">
+                            {/* Peripheral header — mirrors main unit header style */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <h2 className="text-2xl font-bold text-white tracking-tight leading-none bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                                        {(pg.isc || pProfile.name).toUpperCase()}
+                                    </h2>
+                                    {typeLabel && (
+                                        <span
+                                            className="px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider"
+                                            style={{ color: typeColor, background: `${typeColor}15`, border: `1px solid ${typeColor}30` }}
+                                        >
+                                            {typeLabel}
+                                        </span>
                                     )}
+                                    <span className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400/80 tracking-wide flex items-center gap-1">
+                                        <Link size={10} /> Attached
+                                    </span>
                                 </div>
-                                {/* One row per option */}
-                                <table className="w-full text-left border-collapse">
-                                    <thead className="bg-[#162032] border-b border-white/5">
-                                        <tr>
-                                            <th className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Option</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Weapons & Skills</th>
-                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {pg.options.map((pOpt) => {
-                                            const pItems = [
-                                                ...(pOpt.weapons || []).map((w: { displayName?: string; name: string }) => w.displayName || w.name),
-                                                ...(pOpt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name),
-                                                ...(pOpt.equipment || []).map((e: { name: string }) => e.name),
-                                            ];
-                                            return (
-                                                <tr key={pOpt.id} className="hover:bg-white/[0.02]">
-                                                    <td className="px-4 py-2.5 text-xs font-bold text-gray-300 whitespace-nowrap">{pOpt.name}</td>
-                                                    <td className="px-3 py-2.5 text-xs text-gray-400">{pItems.join(', ') || '—'}</td>
-                                                    <td className="px-3 py-2.5 text-xs font-mono text-blue-400 text-right">{pOpt.points}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
                             </div>
+
+                            <ProfileBody
+                                group={pg}
+                                profile={pProfile}
+                                allGroups={profileGroups}
+                                highlightedOptionId={highlightGroupId === pg.id ? highlightedOptionId : null}
+                                highlightTick={highlightTick}
+                                getWikiLink={(type, id) => db.getWikiLink(type, id)}
+                            />
                         </div>
                     );
                 })}

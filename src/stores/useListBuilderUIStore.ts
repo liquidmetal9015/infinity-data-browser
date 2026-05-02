@@ -9,12 +9,12 @@ interface ListBuilderUIStore {
     hoveredFireteamId: string | null;
     hoveredUnitISC: string | null;
     targetGroupIndex: number;
-    rosterScrollTarget: { unitId: number; optionId?: number } | null;
+    rosterScrollTarget: { unitId: number; optionId?: number; profileGroupId?: number } | null;
     selectUnitForDetail: (unit: Unit | null, profileGroupId?: number | null, optionId?: number | null) => void;
     setHoveredFireteamId: (id: string | null) => void;
     setHoveredUnitISC: (isc: string | null) => void;
     setTargetGroupIndex: (idx: number) => void;
-    setRosterScrollTarget: (target: { unitId: number; optionId?: number } | null) => void;
+    setRosterScrollTarget: (target: { unitId: number; optionId?: number; profileGroupId?: number } | null) => void;
 }
 
 export const useListBuilderUIStore = create<ListBuilderUIStore>()((set, get) => ({

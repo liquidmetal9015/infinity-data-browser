@@ -1,4 +1,4 @@
-import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass } from 'lucide-react';
+import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
@@ -10,6 +10,10 @@ import { STATIC_MODE } from '../services/listService';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAppModeStore } from '../stores/useAppModeStore';
+import { useListStore } from '../stores/useListStore';
+import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
+import { NewListModal } from './ListBuilder/NewListModal';
+import { calculateListPoints } from '@shared/listTypes';
 import styles from './NavBar.module.css';
 
 function useIsMobile() {
@@ -39,6 +43,9 @@ export function NavBar() {
     const location = useLocation();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
+    const { currentList, createList } = useListStore();
+    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
+    const [showNewModal, setShowNewModal] = useState(false);
 
     const handleModeSwitch = (mode: typeof appMode) => {
         if (mode === appMode) return;
@@ -227,7 +234,38 @@ export function NavBar() {
                     {user ? (
                         <>
                             {appMode === 'builder' && (
-                                <Link to="/lists" className={styles.navLink} style={{ color: 'var(--accent)' }}>My Lists</Link>
+                                <>
+                                    {!isWorkspace && currentList && (
+                                        <Link
+                                            to="/"
+                                            className={styles.navActionBtn}
+                                            title={`Resume editing: ${currentList.name}`}
+                                            style={{ color: '#f59e0b', borderColor: 'rgba(245,158,11,0.4)', background: 'rgba(245,158,11,0.08)' }}
+                                        >
+                                            <span style={{ fontSize: '0.9rem', lineHeight: 1 }}>↩</span>
+                                            <span className={styles.tabLabel}>
+                                                {currentList.name.length > 20 ? currentList.name.slice(0, 20) + '…' : currentList.name}
+                                                {' '}({calculateListPoints(currentList)}/{currentList.pointsLimit})
+                                            </span>
+                                        </Link>
+                                    )}
+                                    <button
+                                        className={styles.navActionBtn}
+                                        onClick={() => setShowNewModal(true)}
+                                        title="Create a new army list"
+                                        style={{ color: 'var(--accent)', borderColor: 'rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)' }}
+                                    >
+                                        <Plus size={13} />
+                                        <span className={styles.tabLabel}>New List</span>
+                                    </button>
+                                    <Link
+                                        to="/lists"
+                                        className={styles.navActionBtn}
+                                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}
+                                    >
+                                        <span className={styles.tabLabel}>My Lists</span>
+                                    </Link>
+                                </>
                             )}
                             {!STATIC_MODE && <button className={styles.navLink} onClick={logout} title="Sign Out">Sign Out</button>}
                         </>
@@ -241,6 +279,21 @@ export function NavBar() {
                     </button>
                 </div>
             </div>
+            {showNewModal && (
+                <NewListModal
+                    db={db}
+                    globalFactionId={globalFactionId}
+                    setGlobalFactionId={setGlobalFactionId}
+                    onConfirm={(name, factionId, points) => {
+                        const factionName = db.getFactionName(factionId);
+                        createList(factionId, factionName, points, name);
+                        setShowNewModal(false);
+                        navigate('/');
+                    }}
+                    onCancel={() => setShowNewModal(false)}
+                />
+            )}
+
             {STATIC_MODE && (
                 <div
                     title="VITE_DEPLOY_MODE=static — lists are saved to this browser only and will not sync to the cloud."

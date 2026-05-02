@@ -113,13 +113,21 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 swc: Number(option.swc || 0),
             };
 
-            // Auto-attach peripheral units (e.g., Crabbots for TAGs)
+            // Auto-attach peripheral units specified by this loadout's includes array.
+            // Each entry in option.includes is a { q, group, option } reference where
+            // group is a 1-based profile group index and option is a 1-based option index.
+            // This is the authoritative source — units with no includes (e.g. FTO-only
+            // Order Sergeants) get no peripherals, while Drummers get exactly the right
+            // Drumbots for the chosen loadout (including multiple when q>1 or there are
+            // multiple include entries).
             const peripherals: ListUnit[] = [];
-            for (const pg of unit.raw.profileGroups) {
-                if (!pg.isPeripheral) continue;
+            for (const inc of (option.includes || [])) {
+                const pg = unit.raw.profileGroups[inc.group - 1];
+                if (!pg?.isAutoAttached) continue;
                 const pProfile = pg.profiles?.[0];
-                const pOption = pg.options?.[0];
-                if (pProfile && pOption) {
+                const pOption = pg.options?.[inc.option - 1];
+                if (!pProfile || !pOption) continue;
+                for (let q = 0; q < (inc.q || 1); q++) {
                     peripherals.push({
                         id: generateId(),
                         unit,
@@ -395,12 +403,12 @@ export function listReducer(state: ListState, action: ListAction): ListState {
 
         case 'UPDATE_DESCRIPTION': {
             if (!state.currentList) return state;
-            return { ...state, currentList: { ...state.currentList, description: action.description } };
+            return { ...state, currentList: { ...state.currentList, description: action.description, updatedAt: Date.now() } };
         }
 
         case 'UPDATE_TAGS': {
             if (!state.currentList) return state;
-            return { ...state, currentList: { ...state.currentList, tags: action.tags } };
+            return { ...state, currentList: { ...state.currentList, tags: action.tags, updatedAt: Date.now() } };
         }
 
         default:
