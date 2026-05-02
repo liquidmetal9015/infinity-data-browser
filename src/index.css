@@ -79,52 +79,48 @@
 
 /* ---------- Reset & Base ---------- */
 /*
- * IMPORTANT — CSS CASCADE ARCHITECTURE NOTE
+ * CSS CASCADE ARCHITECTURE
  *
- * This `*` reset is intentionally kept as unlayered CSS (not inside `@layer base`).
- * Tailwind v4 places its utility classes in `@layer utilities`. Unlayered CSS always
- * beats any `@layer` in the cascade, so this reset overrides ALL Tailwind margin/
- * padding/gap utilities (py-*, px-*, m-*, gap-*, space-*, etc.) on every element.
+ * This reset is in @layer base, which means Tailwind utility classes (in @layer utilities)
+ * will correctly override it. Tailwind spacing utilities (py-*, px-*, m-*, gap-*, etc.)
+ * work as expected. The reset ensures all elements start from zero margin/padding,
+ * and utilities or component styles add spacing as needed.
  *
- * This means: DO NOT use Tailwind spacing utilities (padding, margin, gap) to set
- * sizes that actually need to take effect. They will be silently ignored.
- *
- * Instead use:
- *   1. Inline styles:  style={{ padding: '1rem' }}          ← highest cascade priority
- *   2. CSS module classes with explicit padding/margin values ← specificity 0-1-0 > 0-0-0
- *
- * Tailwind utilities that DON'T set margin/padding (colors, font-size, flex, grid,
- * border-radius, etc.) still work fine — the reset only affects `margin` and `padding`.
- *
- * The reset itself is load-bearing: moving it into @layer base would silently activate
- * every Tailwind spacing utility across the entire app, changing the layout everywhere.
+ * Preferred styling order:
+ *   1. Tailwind utilities for spacing, layout, colors
+ *   2. CSS module classes for complex component-scoped styles
+ *   3. Inline styles only for truly dynamic values (e.g., calculated positions)
  */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
-html {
-  font-size: 15px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer base {
+  html {
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-body {
-  font-family: var(--font-sans);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.5;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-::selection {
-  background: var(--accent);
-  color: white;
+  ::selection {
+    background: var(--accent);
+    color: white;
+  }
 }
 
 /* ---------- App Container ---------- */

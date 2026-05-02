@@ -116,8 +116,6 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                 </h3>
                 <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
                     <table className="w-full text-left border-collapse">
-                        {/* Note: Tailwind px-N/py-N utilities are suppressed by the unlayered * reset in
-                             index.css — use inline styles for any padding that must actually take effect. */}
                         <thead className="bg-[#162032] border-b border-white/5">
                             <tr>
                                 <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0' }}>Profile</th>

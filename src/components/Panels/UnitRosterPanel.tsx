@@ -359,9 +359,7 @@ export function UnitRosterPanel() {
                 {!isSearchActive ? (
                     groupedRoster.map(group => (
                         <div key={group.type}>
-                            {/* Note: Tailwind py-N/px-N don't work here — see index.css cascade note.
-                                 Use inline styles for padding. The left border uses the classification
-                                 color to visually distinguish each group. */}
+                            {/* The left border uses the classification color to visually distinguish each group. */}
                             <button
                                 className="w-full flex items-center justify-between bg-[#161b22] border-b border-[#1e293b] sticky top-0 z-10 cursor-pointer hover:bg-[#1e293b] transition-colors"
                                 style={{ padding: '0.45rem 1rem', borderLeft: `3px solid ${group.color}70` }}
