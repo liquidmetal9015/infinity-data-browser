@@ -115,11 +115,13 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                 </h3>
                 <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
                     <table className="w-full text-left border-collapse">
+                        {/* Note: Tailwind px-*/py-* utilities are suppressed by the unlayered * reset in
+                             index.css — use inline styles for any padding that must actually take effect. */}
                         <thead className="bg-[#162032] border-b border-white/5">
                             <tr>
-                                <th className="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Profile</th>
-                                <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">SWC</th>
-                                <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
+                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0' }}>Profile</th>
+                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>SWC</th>
+                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>Pts</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -138,7 +140,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                                         className={`${interactive ? 'transition-colors hover:bg-blue-500/10 cursor-pointer' : ''} ${isHighlighted ? 'option-row-highlighted' : ''}`}
                                         onClick={interactive ? () => onAddLoadout!(opt.id) : undefined}
                                     >
-                                        <td style={{ padding: '2.5rem 1.5rem', verticalAlign: 'middle' }}>
+                                        <td style={{ padding: '2.5rem 1rem 2.5rem 0', verticalAlign: 'middle' }}>
                                             <div className="text-base font-bold text-gray-100 mb-2 tracking-wide">{optName}</div>
                                             <div className="flex items-center flex-wrap gap-x-2 text-sm">
                                                 <span className="text-gray-200">{(opt.weapons || []).map(w => w.displayName || w.name).join(', ') || '—'}</span>

@@ -339,24 +339,27 @@ export function UnitRosterPanel() {
                 {!isSearchActive ? (
                     groupedRoster.map(group => (
                         <div key={group.type}>
+                            {/* Note: Tailwind py-*/px-* don't work here — see index.css cascade note.
+                                 Use inline styles for padding. The left border uses the classification
+                                 color to visually distinguish each group. */}
                             <button
                                 className="w-full flex items-center justify-between bg-[#161b22] border-b border-[#1e293b] sticky top-0 z-10 cursor-pointer hover:bg-[#1e293b] transition-colors"
-                                style={{ padding: '0.75rem 1rem' }}
+                                style={{ padding: '0.45rem 1rem', borderLeft: `3px solid ${group.color}70` }}
                                 onClick={() => toggleGroupCollapse(group.type)}
                             >
                                 <div className="flex items-center gap-3">
                                     <span
                                         className="text-xs font-bold rounded uppercase tracking-wider"
                                         style={{
-                                            padding: '0.25rem 0.5rem',
+                                            padding: '0.2rem 0.45rem',
                                             color: group.color,
-                                            background: `${group.color}15`,
-                                            border: `1px solid ${group.color}30`
+                                            background: `${group.color}25`,
+                                            border: `1px solid ${group.color}50`
                                         }}
                                     >
                                         {group.label}
                                     </span>
-                                    <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>{group.units.length}</span>
+                                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{group.units.length}</span>
                                 </div>
                                 <ChevronDown
                                     size={16}

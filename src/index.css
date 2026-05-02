@@ -78,6 +78,27 @@
 }
 
 /* ---------- Reset & Base ---------- */
+/*
+ * IMPORTANT — CSS CASCADE ARCHITECTURE NOTE
+ *
+ * This `*` reset is intentionally kept as unlayered CSS (not inside `@layer base`).
+ * Tailwind v4 places its utility classes in `@layer utilities`. Unlayered CSS always
+ * beats any `@layer` in the cascade, so this reset overrides ALL Tailwind margin/
+ * padding/gap utilities (py-*, px-*, m-*, gap-*, space-*, etc.) on every element.
+ *
+ * This means: DO NOT use Tailwind spacing utilities (padding, margin, gap) to set
+ * sizes that actually need to take effect. They will be silently ignored.
+ *
+ * Instead use:
+ *   1. Inline styles:  style={{ padding: '1rem' }}          ← highest cascade priority
+ *   2. CSS module classes with explicit padding/margin values ← specificity 0-1-0 > 0-0-0
+ *
+ * Tailwind utilities that DON'T set margin/padding (colors, font-size, flex, grid,
+ * border-radius, etc.) still work fine — the reset only affects `margin` and `padding`.
+ *
+ * The reset itself is load-bearing: moving it into @layer base would silently activate
+ * every Tailwind spacing utility across the entire app, changing the layout everywhere.
+ */
 *,
 *::before,
 *::after {
