@@ -4,24 +4,32 @@ import type { ProcessedMetadataFile, ProcessedFactionsFile, ProcessedFactionFile
 import { DatabaseImplementation } from './Database';
 
 const mockMetaFile: ProcessedMetadataFile = {
-    weapons: [{ id: 101, name: 'Combi Rifle', wikiUrl: '', weaponType: '', burst: '3', damage: '13', saving: 'ARM', savingNum: '0', properties: [], distance: null }],
+    version: '2.0',
+    weapons: [{ id: 101, name: 'Combi Rifle', wikiUrl: '', weaponType: 'WEAPON', burst: '3', damage: '13', saving: 'ARM', savingNum: '0', properties: [] }],
     skills: [{ id: 201, name: 'Mimetism', wikiUrl: '' }],
     equipment: [{ id: 301, name: 'Multispectral Visor', wikiUrl: '' }],
     ammunitions: [{ id: 1, name: 'AP', wikiUrl: '' }],
 };
 
 const mockFactionsFile: ProcessedFactionsFile = {
+    version: '2.0',
     factions: [
-        { id: 1, parentId: 1, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '' },
-        { id: 2, parentId: 1, name: 'Varuna', slug: 'varuna', discontinued: false, logo: '' },
+        { id: 1, parentId: 1, name: 'PanOceania', slug: 'panoceania', isVanilla: true, discontinued: false, logo: '', fireteams: null },
+        { id: 2, parentId: 1, name: 'Varuna', slug: 'varuna', isVanilla: false, discontinued: false, logo: '', fireteams: null },
     ],
 };
 
 const mockFactionFile: ProcessedFactionFile = {
+    version: '2.0',
     faction: {
         id: 1,
+        name: 'PanOceania',
         slug: 'panoceania',
-        fireteams: { spec: {}, compositions: [] },
+        parentId: 1,
+        isVanilla: true,
+        discontinued: false,
+        logo: '',
+        fireteams: { spec: { CORE: 0, HARIS: 0, DUO: 0 }, compositions: [] },
     },
     units: [{
         id: 1,
@@ -37,6 +45,7 @@ const mockFactionFile: ProcessedFactionFile = {
         profileGroups: [{
             id: 1,
             isc: 'Fusilier',
+            category: 1,
             isPeripheral: false,
             isFTO: false,
             profiles: [{
@@ -53,6 +62,8 @@ const mockFactionFile: ProcessedFactionFile = {
                 w: 1,
                 s: 2,
                 isStructure: false,
+                ava: 255,
+                characteristics: [],
                 skills: [{ id: 201, name: 'Mimetism', modifiers: ['-6'], displayName: 'Mimetism(-6)' }],
                 equipment: [],
                 weapons: [],
@@ -62,9 +73,10 @@ const mockFactionFile: ProcessedFactionFile = {
                 name: 'Combi Rifle',
                 points: 10,
                 swc: 0,
+                minis: 1,
                 skills: [],
                 equipment: [],
-                weapons: [{ id: 101, name: 'Combi Rifle', modifiers: [], burst: '3', damage: '13', distance: null }],
+                weapons: [{ id: 101, name: 'Combi Rifle', modifiers: [], displayName: 'Combi Rifle' }],
                 orders: [],
             }],
         }],

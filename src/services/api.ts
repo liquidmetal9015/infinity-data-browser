@@ -2,10 +2,10 @@ import createClient from "openapi-fetch";
 import type { paths } from "../types/schema";
 import { auth } from "./firebase";
 
-const baseURL = import.meta.env.VITE_API_URL ||
+const baseUrl = import.meta.env.VITE_API_URL ||
     (typeof window !== "undefined" ? window.location.origin : "http://localhost");
 
-const client = createClient<paths>({ baseURL });
+const client = createClient<paths>({ baseUrl });
 
 client.use({
     async onRequest({ request }) {

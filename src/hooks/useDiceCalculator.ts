@@ -18,7 +18,7 @@ export interface PlayerParams {
     weaponBands: RangeBand[]; // Range limits and mods
     selectedUnit?: import('../../shared/types').Unit;
     selectedProfile?: import('../../shared/types').Profile;
-    selectedOption?: import('../../shared/types').Option;
+    selectedOption?: import('../../shared/types').Loadout;
 }
 
 export interface CalculatorResults {

@@ -188,6 +188,14 @@ interface RawMetadata {
 // Helper: build global extras map from all faction files
 // ============================================================================
 
+function cmDistanceToInches(cmStr: string): string {
+    const hasPlus = cmStr.startsWith('+');
+    const num = parseFloat(cmStr);
+    if (isNaN(num)) return cmStr;
+    const inches = Math.round(num * MOVEMENT_CM_TO_INCHES);
+    return hasPlus ? `+${inches}"` : `${inches}"`;
+}
+
 async function buildExtrasMap(
     factionSlugs: string[],
 ): Promise<{ extrasMap: Map<number, string>; distanceExtras: Set<number> }> {
@@ -200,10 +208,10 @@ async function buildExtrasMap(
             const raw: RawFactionFile = JSON.parse(await fs.readFile(filePath, 'utf8'));
             for (const extra of raw.filters?.extras ?? []) {
                 if (!extrasMap.has(extra.id)) {
-                    extrasMap.set(extra.id, extra.name);
-                    if (extra.type === 'DISTANCE') {
-                        distanceExtras.add(extra.id);
-                    }
+                    const isDistance = extra.type === 'DISTANCE';
+                    const value = isDistance ? cmDistanceToInches(extra.name) : extra.name;
+                    extrasMap.set(extra.id, value);
+                    if (isDistance) distanceExtras.add(extra.id);
                 }
             }
         } catch {

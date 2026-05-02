@@ -1,14 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { getApp, DEV_TOKEN_HEADER, ensureFaction, deleteListsForUser } from './helpers.js';
+import { getApp, DEV_TOKEN_HEADER, deleteListsForUser } from './helpers.js';
 
-const FACTION_ID = 101; // Aleph (real faction id seeded in dev DB)
+const FACTION_ID = 101; // PanOceania (catalog is static JSON; faction_id is just an int)
 
 describe('lists CRUD', () => {
     let app: Awaited<ReturnType<typeof getApp>>;
 
     beforeAll(async () => {
         app = await getApp();
-        await ensureFaction(FACTION_ID);
         await deleteListsForUser('dev-user');
     });
 

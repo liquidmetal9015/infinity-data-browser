@@ -1,7 +1,7 @@
 // unit-roles.ts - Unit classification logic for MCP tools
 // Classifies units by combat role: gunfighter, melee, specialist, etc.
 
-import type { Unit } from './types';
+import type { Unit, DatabaseMetadata } from './types';
 import type { Profile, Loadout as Option, WeaponInstance } from './game-model.js';
 
 export type UnitRole =
@@ -65,6 +65,7 @@ export function classifyUnit(
     unit: Unit,
     profile: Profile,
     option: Option,
+    metadata?: DatabaseMetadata,
 ): UnitRoleAnalysis {
     const roles: RoleScore[] = [];
 
@@ -74,14 +75,24 @@ export function classifyUnit(
         skillNames.add(s.name.toLowerCase());
     }
 
-    // Extract weapon info from embedded WeaponInstance data
+    // Extract weapon info — WeaponInstance only carries id/name/modifiers, so
+    // burst/damage/distance must come from metadata. If metadata is not
+    // provided (some callers don't have it in scope), fall back to a
+    // name-based heuristic that still classifies HMG-style heavy weapons.
+    const weaponDefById = new Map<number, DatabaseMetadata['weapons'][number]>();
+    if (metadata) {
+        for (const w of metadata.weapons) weaponDefById.set(w.id, w);
+    }
     const allWeapons: WeaponInstance[] = [...(profile.weapons || []), ...option.weapons];
-    const weapons = allWeapons.map(w => ({
-        name: w.name.toLowerCase(),
-        burst: parseInt(w.burst || '1'),
-        damage: parseInt(w.damage || '0'),
-        ranged: !!(w.distance && w.distance.med && w.distance.med.max > 0)
-    }));
+    const weapons = allWeapons.map(w => {
+        const def = weaponDefById.get(w.id);
+        return {
+            name: w.name.toLowerCase(),
+            burst: parseInt(def?.burst || '1') || 1,
+            damage: parseInt(def?.damage || '0') || 0,
+            ranged: !!(def?.distance && def.distance.med && def.distance.med.max > 0),
+        };
+    });
 
     // Gunfighter score
     const gunfighterScore = scoreGunfighter(profile, weapons);

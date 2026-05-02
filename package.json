@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "generate:types": "echo 'TODO: re-enable with @hono/zod-openapi in backend-ts/. Frontend src/types/schema.d.ts is the current source of truth — edit by hand or regenerate when the OpenAPI export lands.' && exit 1",
+    "generate:types": "cd backend-ts && npm run export:openapi && cd .. && openapi-typescript openapi.json -o src/types/schema.d.ts",
     "etl": "tsx scripts/process-data.ts",
     "mcp": "tsx mcp-server/index.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "lint:css": "stylelint 'src/**/*.css'",
     "lint:css-modules-only": "! find src/components src/pages -name '*.css' ! -name '*.module.css' | grep -q . || (echo 'ERROR: Use .module.css for component/page styles' && exit 1)",

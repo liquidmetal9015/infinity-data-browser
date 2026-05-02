@@ -1,4 +1,4 @@
-.PHONY: setup dev migrate seed lint test hooks help
+.PHONY: setup dev migrate etl lint test hooks help
 .DEFAULT_GOAL := help
 
 # Colors
@@ -15,8 +15,6 @@ setup: ## Fully bootstrap the local development environment
 	docker compose up -d db
 	@echo "$(GREEN)Waiting for Postgres to be ready...$(RESET)"
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "$(GREEN)Installing Python backend dependencies via uv (still needed for ETL)...$(RESET)"
-	cd backend && uv sync
 	@echo "$(GREEN)Creating test database if needed...$(RESET)"
 	docker compose exec db psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname='infinity_test'" | grep -q 1 || docker compose exec db psql -U postgres -c "CREATE DATABASE infinity_test"
 	@echo "$(GREEN)Installing Frontend Node dependencies...$(RESET)"
@@ -26,6 +24,10 @@ setup: ## Fully bootstrap the local development environment
 	@echo "$(GREEN)Running Drizzle database migrations...$(RESET)"
 	cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' npm run db:migrate
 	@echo "$(GREEN)Environment flawlessly bootstrapped! 🎉$(RESET)"
+
+etl: ## Process raw game data into static JSON files
+	@echo "$(GREEN)Running ETL pipeline...$(RESET)"
+	npm run etl
 
 ##@ Development
 migrate: ## Run pending Drizzle migrations
@@ -41,19 +43,12 @@ dev: migrate ## Concurrent launch of the Vite frontend and TypeScript backend
 		"cd backend-ts && DATABASE_URL='postgresql://postgres:password@127.0.0.1:5432/infinity' DEV_AUTH=true PORT=8000 npm run dev" \
 		"npm run dev"
 
-seed: ## Import game data JSON files into the local database
-	@echo "$(GREEN)Importing game data into database...$(RESET)"
-	cd backend && DATABASE_URL='postgresql+asyncpg://postgres:password@127.0.0.1:5432/infinity' uv run python -m app.etl.import_json
-
 ##@ Verification
-lint: ## Run aggressive linting & type checks across stack
-	@echo "$(YELLOW)Linting Python (ruff/mypy) — retained ETL only...$(RESET)"
-	cd backend && uv run ruff format . && uv run ruff check --fix .
-	cd backend && uv run mypy .  # strict = true is set in pyproject.toml
+lint: ## Run linting & type checks across the TypeScript stack
 	@echo "$(YELLOW)Linting & typechecking TypeScript backend...$(RESET)"
 	cd backend-ts && npm run lint && npm run typecheck
-	@echo "$(YELLOW)Linting frontend...$(RESET)"
-	npm run lint
+	@echo "$(YELLOW)Linting & typechecking frontend...$(RESET)"
+	npm run lint && npm run typecheck
 
 test: ## Execute complete unit test suites
 	@echo "$(YELLOW)Running backend-ts vitest and frontend vitest...$(RESET)"

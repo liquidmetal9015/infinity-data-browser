@@ -30,7 +30,7 @@ export function WeaponSelector({ onSelect, placeholder = "Search weapons...", fi
             }
         });
         return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
-    }, [db.metadata, db, filterOptionIds]);
+    }, [db, filterOptionIds]);
 
     // Filter by search
     const filteredWeapons = useMemo(() => {

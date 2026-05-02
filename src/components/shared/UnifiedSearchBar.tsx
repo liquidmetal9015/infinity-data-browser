@@ -8,7 +8,7 @@ export interface ItemFilter {
     type: 'weapon' | 'skill' | 'equipment';
     value: string;           // Display name like "Mimetism(-6)"
     baseId: number;          // The base skill/weapon/equipment ID
-    modifiers: number[];     // Required modifiers (empty = any variant)
+    modifiers: string[];     // Required modifier display strings (empty = any variant)
     matchAnyModifier: boolean; // If true, match any variant
 }
 

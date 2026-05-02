@@ -45,7 +45,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
     const activeGroup = profileGroups[activeGroupIndex];
     const activeProfile = activeGroup?.profiles[0];
 
-    const logoUrl = unit.raw.logo || unit.raw.profileGroups?.[0]?.profiles?.[0]?.logo;
+    const logoUrl = unit.raw.logo;
     const logoPath = getSafeLogo(logoUrl) ?? `${import.meta.env.BASE_URL}logos/units/${unit.raw.slug}-1-1.svg`;
 
     return (

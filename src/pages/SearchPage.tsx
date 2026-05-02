@@ -46,7 +46,7 @@ export function SearchPage() {
         } else {
             setExpandedIds(new Set());
         }
-    }, [textQuery, query.filters.length, filteredUnits.length]);
+    }, [textQuery, query.filters.length, filteredUnits]);
 
     return (
         <div className="search-page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1.5rem' }}>

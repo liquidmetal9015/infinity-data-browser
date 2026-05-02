@@ -70,12 +70,12 @@ export function DraggableUnitRow({
                         >
                             REM
                         </span>
-                        <span className={styles.name} style={{ color: '#8b9ab5', fontStyle: 'italic', fontSize: '0.8rem' }} title={displayName}>{displayName}</span>
+                        <span className={styles.name} style={{ color: '#8b9ab5', fontStyle: 'italic', fontSize: '0.8rem' }}>{displayName}</span>
                     </div>
                 </div>
                 <div className={clsx(styles.unitWeapons, styles.colWeapons)}>
-                    <span className={styles.weapons} style={{ color: '#64748b' }} title={weapons}>{weapons}</span>
-                    {equipment && <span className={styles.equipment} title={equipment}>{equipment}</span>}
+                    <span className={styles.weapons} style={{ color: '#64748b' }}>{weapons}</span>
+                    {equipment && <span className={styles.equipment}>{equipment}</span>}
                 </div>
                 <div className={clsx(styles.unitSwc, styles.colSwc)} style={{ color: '#475569' }}>{option?.swc || 0}</div>
                 <div className={clsx(styles.unitPts, styles.colPts)} style={{ color: '#475569' }}>{option?.points || 0}</div>
@@ -123,12 +123,12 @@ export function DraggableUnitRow({
                             {CLASSIFICATION_LABELS[profile.unitType]}
                         </span>
                     )}
-                    <span className={styles.name} title={displayName}>{displayName}</span>
+                    <span className={styles.name}>{displayName}</span>
                 </div>
             </div>
             <div className={clsx(styles.unitWeapons, styles.colWeapons)}>
-                <span className={styles.weapons} title={weapons}>{weapons}</span>
-                {equipment && <span className={styles.equipment} title={equipment}>{equipment}</span>}
+                <span className={styles.weapons}>{weapons}</span>
+                {equipment && <span className={styles.equipment}>{equipment}</span>}
             </div>
             <div className={clsx(styles.unitSwc, styles.colSwc)}>{option?.swc || 0}</div>
             <div className={clsx(styles.unitPts, styles.colPts)}>{option?.points || 0}</div>

@@ -4,141 +4,34 @@
  */
 
 export interface paths {
-    "/api/factions": {
+    "/api/health": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * List Factions Grouped
-         * @description Get all factions grouped by super-faction.
-         */
-        get: operations["list_factions_grouped_api_factions_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/factions/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        /** Liveness check */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Server is running */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HealthResponse"];
+                    };
+                };
+            };
         };
-        /**
-         * Get Faction
-         * @description Get faction details including unit count and fireteam chart.
-         */
-        get: operations["get_faction_api_factions__slug__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/factions/{slug}/legacy": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Faction Legacy
-         * @description Return raw JSON blob exactly matching frontend legacy layout.
-         */
-        get: operations["get_faction_legacy_api_factions__slug__legacy_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/units": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Units
-         * @description List units with optional faction filter.
-         */
-        get: operations["list_units_api_units_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/units/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Unit
-         * @description Get full unit details with profiles and loadouts.
-         */
-        get: operations["get_unit_api_units__slug__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Search Units
-         * @description Search units with text query and/or attribute filters.
-         *
-         *     Filters are ANDed together. Text search matches name and ISC (case-insensitive).
-         *     Item filters use the JSONB arrays on profiles and loadouts.
-         */
-        get: operations["search_units_api_search_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/metadata": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Metadata
-         * @description Get all item catalogs (weapons, skills, equipment, ammunition).
-         */
-        get: operations["get_metadata_api_metadata_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -154,85 +47,312 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get User Lists
-         * @description Get all saved army lists for the authenticated user.
-         */
-        get: operations["get_user_lists_api_lists_get"];
+        /** List the authenticated user's army lists */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ArmyListSummary"][];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         put?: never;
-        /**
-         * Create List
-         * @description Create a new army list for the user.
-         */
-        post: operations["create_list_api_lists_post"];
+        /** Create an army list */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ArmyListCreate"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ArmyListDetail"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Validation error */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/lists/{list_id}": {
+    "/api/lists/{listId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get List
-         * @description Get details of a specific army list.
-         */
-        get: operations["get_list_api_lists__list_id__get"];
-        /**
-         * Update List
-         * @description Update an existing army list.
-         */
-        put: operations["update_list_api_lists__list_id__put"];
+        /** Get an army list by ID */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    listId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ArmyListDetail"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        /** Update an army list */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    listId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ArmyListUpdate"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ArmyListDetail"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Validation error */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         post?: never;
-        /**
-         * Delete List
-         * @description Delete an army list.
-         */
-        delete: operations["delete_list_api_lists__list_id__delete"];
+        /** Delete an army list */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    listId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/health": {
+    "/api/agent/chat": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Health
-         * @description Health check endpoint.
-         */
-        get: operations["health_api_health_get"];
+        get?: never;
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/{full_path}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        /** Chat with the Infinity AI agent */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChatRequest"];
+                };
+            };
+            responses: {
+                /** @description Reply */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChatResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Validation error */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Rate limited */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description AI provider unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
         };
-        /**
-         * Serve Frontend
-         * @description Fallback handler for React single-page application routing.
-         */
-        get: operations["serve_frontend__full_path__get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -243,378 +363,86 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AmmunitionResponse */
-        AmmunitionResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Wiki Url */
-            wiki_url?: string | null;
+        HealthResponse: {
+            /** @enum {string} */
+            status: "ok";
+            version: string;
         };
-        /** ArmyListCreate */
-        ArmyListCreate: {
-            /** Name */
+        ArmyListSummary: {
+            id: number;
             name: string;
-            /** Faction Id */
+            description: string | null;
+            tags: string[];
+            rating: number;
             faction_id: number;
-            /**
-             * Points
-             * @default 0
-             */
             points: number;
-            /**
-             * Swc
-             * @default 0
-             */
             swc: number;
-            /**
-             * Units Json
-             * @description JSON payload representing the list composition
-             */
-            units_json?: {
-                [key: string]: unknown;
-            };
-        };
-        /** ArmyListDetailResponse */
-        ArmyListDetailResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Faction Id */
-            faction_id: number;
-            /** Points */
-            points: number;
-            /** Swc */
-            swc: number;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /** Units Json */
-            units_json: {
-                [key: string]: unknown;
-            };
-        };
-        /** ArmyListSummaryResponse */
-        ArmyListSummaryResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Faction Id */
-            faction_id: number;
-            /** Points */
-            points: number;
-            /** Swc */
-            swc: number;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** ArmyListUpdate */
-        ArmyListUpdate: {
-            /** Name */
-            name?: string | null;
-            /** Faction Id */
-            faction_id?: number | null;
-            /** Points */
-            points?: number | null;
-            /** Swc */
-            swc?: number | null;
-            /** Units Json */
-            units_json?: {
-                [key: string]: unknown;
-            } | null;
-        };
-        /** EquipmentResponse */
-        EquipmentResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Wiki Url */
-            wiki_url?: string | null;
-        };
-        /**
-         * FactionDetailResponse
-         * @description Full faction detail including fireteam chart.
-         */
-        FactionDetailResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /** Parent Id */
-            parent_id: number | null;
-            /** Is Vanilla */
-            is_vanilla: boolean;
-            /** Discontinued */
-            discontinued: boolean;
-            /** Logo */
-            logo: string;
-            /** Fireteam Chart */
-            fireteam_chart?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Unit Count
-             * @default 0
-             */
             unit_count: number;
+            created_at: string;
+            updated_at: string;
         };
-        /**
-         * FactionSummary
-         * @description Lightweight faction info for list views.
-         */
-        FactionSummary: {
-            /** Id */
-            id: number;
-            /** Name */
+        Error: {
+            detail: string | unknown[];
+        };
+        ArmyListDetail: components["schemas"]["ArmyListSummary"] & {
+            units_json: components["schemas"]["UnitsJson"];
+        };
+        UnitsJson: {
+            [key: string]: unknown;
+        };
+        ArmyListCreate: {
             name: string;
-            /** Slug */
-            slug: string;
-            /** Parent Id */
-            parent_id: number | null;
-            /** Is Vanilla */
-            is_vanilla: boolean;
-            /** Discontinued */
-            discontinued: boolean;
-            /** Logo */
-            logo: string;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /**
-         * ItemRef
-         * @description A reference to a weapon/skill/equipment with optional modifiers.
-         */
-        ItemRef: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /**
-             * Extra
-             * @default []
-             */
-            extra: number[];
-            /**
-             * Extra Display
-             * @default []
-             */
-            extra_display: string[];
-        };
-        /**
-         * LoadoutResponse
-         * @description Equipment option / variant.
-         */
-        LoadoutResponse: {
-            /** Id */
-            id: number;
-            /** Option Id */
-            option_id: number;
-            /** Profile Group Id */
-            profile_group_id: number;
-            /** Name */
-            name: string;
-            /** Points */
+            description?: string | null;
+            /** @default [] */
+            tags: string[];
+            /** @default 0 */
+            rating: number;
+            faction_id: number;
+            /** @default 0 */
             points: number;
-            /** Swc */
+            /** @default 0 */
             swc: number;
-            /**
-             * Skills
-             * @default []
-             */
-            skills: components["schemas"]["ItemRef"][];
-            /**
-             * Equipment
-             * @default []
-             */
-            equipment: components["schemas"]["ItemRef"][];
-            /**
-             * Weapons
-             * @default []
-             */
-            weapons: components["schemas"]["ItemRef"][];
+            units_json?: components["schemas"]["UnitsJson"];
         };
-        /** MetadataResponse */
-        MetadataResponse: {
-            /** Weapons */
-            weapons: components["schemas"]["WeaponResponse"][];
-            /** Skills */
-            skills: components["schemas"]["SkillResponse"][];
-            /** Equipment */
-            equipment: components["schemas"]["EquipmentResponse"][];
-            /** Ammunitions */
-            ammunitions: components["schemas"]["AmmunitionResponse"][];
+        ArmyListUpdate: {
+            name?: string;
+            description?: string | null;
+            tags?: string[];
+            rating?: number;
+            faction_id?: number;
+            points?: number;
+            swc?: number;
+            units_json?: components["schemas"]["UnitsJson"];
         };
-        /**
-         * ProfileResponse
-         * @description Unit stat line.
-         */
-        ProfileResponse: {
-            /** Id */
-            id: number;
-            /** Profile Group Id */
-            profile_group_id: number;
-            /** Name */
+        ChatResponse: {
+            reply: string;
+            tools_used: string[];
+            input_tokens: number;
+            output_tokens: number;
+        };
+        ChatRequest: {
+            message: string;
+            history?: components["schemas"]["ChatMessage"][];
+            context?: components["schemas"]["ChatContext"];
+        };
+        ChatMessage: {
+            /** @enum {string} */
+            role: "user" | "assistant";
+            content: string;
+        };
+        ChatContext: {
+            faction_id?: number | null;
+            faction_name?: string | null;
+            list_points?: number | null;
+            list_swc?: number | null;
+            list_units?: components["schemas"]["ListContextUnit"][];
+        };
+        ListContextUnit: {
             name: string;
-            /** Mov */
-            mov: string;
-            /** Cc */
-            cc: number;
-            /** Bs */
-            bs: number;
-            /** Ph */
-            ph: number;
-            /** Wip */
-            wip: number;
-            /** Arm */
-            arm: number;
-            /** Bts */
-            bts: number;
-            /** Wounds */
-            wounds: number;
-            /** Silhouette */
-            silhouette: number;
-            /** Is Structure */
-            is_structure: boolean;
-            /** Unit Type */
-            unit_type?: number | null;
-            /**
-             * Skills
-             * @default []
-             */
-            skills: components["schemas"]["ItemRef"][];
-            /**
-             * Equipment
-             * @default []
-             */
-            equipment: components["schemas"]["ItemRef"][];
-            /**
-             * Weapons
-             * @default []
-             */
-            weapons: components["schemas"]["ItemRef"][];
-        };
-        /** SkillResponse */
-        SkillResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Wiki Url */
-            wiki_url?: string | null;
-        };
-        /**
-         * SuperFactionResponse
-         * @description Grouped faction: a super-faction with its sectorials.
-         */
-        SuperFactionResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            vanilla: components["schemas"]["FactionSummary"] | null;
-            /** Sectorials */
-            sectorials: components["schemas"]["FactionSummary"][];
-        };
-        /**
-         * UnitDetailResponse
-         * @description Full unit detail with profiles and loadouts.
-         */
-        UnitDetailResponse: {
-            /** Id */
-            id: number;
-            /** Isc */
             isc: string;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /** Factions */
-            factions: string[];
-            /** Profiles */
-            profiles: components["schemas"]["ProfileResponse"][];
-            /** Loadouts */
-            loadouts: components["schemas"]["LoadoutResponse"][];
-        };
-        /**
-         * UnitSummaryResponse
-         * @description Lightweight unit info for list / search views.
-         */
-        UnitSummaryResponse: {
-            /** Id */
-            id: number;
-            /** Isc */
-            isc: string;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /** Factions */
-            factions: string[];
-            /** Points Min */
-            points_min: number;
-            /** Points Max */
-            points_max: number;
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-        };
-        /** WeaponResponse */
-        WeaponResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Weapon Type */
-            weapon_type?: string | null;
-            /** Burst */
-            burst?: string | null;
-            /** Damage */
-            damage?: string | null;
-            /** Saving */
-            saving?: string | null;
-            /** Saving Num */
-            saving_num?: string | null;
-            /**
-             * Properties
-             * @default []
-             */
-            properties: string[];
-            /** Distance */
-            distance?: {
-                [key: string]: unknown;
-            } | null;
-            /** Wiki Url */
-            wiki_url?: string | null;
+            loadout?: string;
+            points?: number;
+            swc?: number;
         };
     };
     responses: never;
@@ -624,417 +452,4 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export interface operations {
-    list_factions_grouped_api_factions_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SuperFactionResponse"][];
-                };
-            };
-        };
-    };
-    get_faction_api_factions__slug__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FactionDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_faction_legacy_api_factions__slug__legacy_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_units_api_units_get: {
-        parameters: {
-            query?: {
-                /** @description Filter by faction slug */
-                faction?: string | null;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UnitSummaryResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_unit_api_units__slug__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UnitDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    search_units_api_search_get: {
-        parameters: {
-            query?: {
-                /** @description Text search query (name or ISC) */
-                q?: string | null;
-                /** @description Filter by faction slug */
-                faction?: string | null;
-                /** @description Filter by weapon ID */
-                has_weapon?: number | null;
-                /** @description Filter by skill ID */
-                has_skill?: number | null;
-                /** @description Filter by equipment ID */
-                has_equipment?: number | null;
-                /** @description Minimum points cost */
-                min_points?: number | null;
-                /** @description Maximum points cost */
-                max_points?: number | null;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UnitSummaryResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_metadata_api_metadata_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MetadataResponse"];
-                };
-            };
-        };
-    };
-    get_user_lists_api_lists_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ArmyListSummaryResponse"][];
-                };
-            };
-        };
-    };
-    create_list_api_lists_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ArmyListCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ArmyListDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_list_api_lists__list_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ArmyListDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_list_api_lists__list_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ArmyListUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ArmyListDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_list_api_lists__list_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    health_api_health_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    serve_frontend__full_path__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                full_path: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-}
+export type operations = Record<string, never>;

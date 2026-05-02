@@ -36,7 +36,7 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as unknown as Unit
+        } as unknown as Unit['raw']
     },
     {
         id: 2,
@@ -67,7 +67,7 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as unknown as Unit
+        } as unknown as Unit['raw']
     }
 ];
 

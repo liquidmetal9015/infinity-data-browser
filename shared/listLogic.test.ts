@@ -12,11 +12,18 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
         id: 1,
         isc: 'Test Unit',
         name: 'Test Unit',
-        factions: [101],
+        slug: 'test-unit',
+        factionIds: [101],
+        allWeaponIds: [],
+        allSkillIds: [],
+        allEquipmentIds: [],
+        pointsRange: [25, 35],
+        hasPeripherals: false,
         profileGroups: [
             {
                 id: 1,
                 isc: 'Test Unit',
+                category: 1,
                 isPeripheral: false,
                 isFTO: false,
                 profiles: [
@@ -24,6 +31,8 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
                         id: 1,
                         name: 'Profile 1',
                         unitType: 1,
+                        ava: 255,
+                        characteristics: [],
                         skills: [],
                         equipment: [],
                         weapons: [],
@@ -40,8 +49,8 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
                     }
                 ],
                 options: [
-                    { id: 1, name: 'Combi Rifle', points: 25, swc: 0, skills: [], equipment: [], weapons: [], orders: [] },
-                    { id: 2, name: 'HMG', points: 35, swc: 1.5, skills: [], equipment: [], weapons: [], orders: [] },
+                    { id: 1, name: 'Combi Rifle', points: 25, swc: 0, minis: 1, skills: [], equipment: [], weapons: [], orders: [] },
+                    { id: 2, name: 'HMG', points: 35, swc: 1.5, minis: 1, skills: [], equipment: [], weapons: [], orders: [] },
                 ]
             }
         ],
@@ -52,7 +61,7 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
         id: raw.id,
         isc: raw.isc,
         name: raw.name,
-        factions: raw.factions,
+        factions: raw.factionIds,
         allWeaponIds: new Set(),
         allSkillIds: new Set(),
         allEquipmentIds: new Set(),
@@ -436,6 +445,7 @@ describe('listTypes helpers', () => {
             const list = {
                 id: '1',
                 name: 'Test',
+                tags: [],
                 factionId: 101,
                 pointsLimit: 300,
                 swcLimit: 6,
@@ -469,6 +479,7 @@ describe('listTypes helpers', () => {
             const list = {
                 id: '1',
                 name: 'Test',
+                tags: [],
                 factionId: 101,
                 pointsLimit: 300,
                 swcLimit: 6,

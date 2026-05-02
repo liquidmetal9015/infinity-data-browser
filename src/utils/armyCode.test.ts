@@ -46,6 +46,7 @@ describe('armyCode.ts', () => {
             const mockList: ArmyList = {
                 id: 'test',
                 name: decoded.armyName,
+                tags: [],
                 factionId: decoded.factionId,
                 pointsLimit: decoded.maxPoints,
                 swcLimit: 6,

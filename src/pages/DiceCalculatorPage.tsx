@@ -91,7 +91,7 @@ export function DiceCalculatorPage() {
         });
     };
 
-    const handleActiveUnitSelect = (unit: Unit) => {
+    const handleActiveUnitSelect = (unit: Unit | undefined) => {
         setActiveUnit(unit);
         setActiveProfile(undefined);
         setActiveOption(undefined);
@@ -126,7 +126,7 @@ export function DiceCalculatorPage() {
         });
     };
 
-    const handleReactiveUnitSelect = (unit: Unit) => {
+    const handleReactiveUnitSelect = (unit: Unit | undefined) => {
         setReactiveUnit(unit);
         setReactiveProfile(undefined);
         setReactiveOption(undefined);

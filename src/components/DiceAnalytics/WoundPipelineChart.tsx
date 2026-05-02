@@ -37,7 +37,7 @@ export function WoundPipelineChart({ data }: WoundPipelineChartProps) {
                             label={{ value: 'Probability', angle: -90, position: 'insideLeft', offset: -20, fill: '#94a3b8' }}
                         />
                         <Tooltip
-                            formatter={(value: number | string) => [`${Number(value).toFixed(1)}%`, '']}
+                            formatter={(value) => [`${Number(value ?? 0).toFixed(1)}%`, '']}
                             contentStyle={{ backgroundColor: 'var(--color-bg-secondary)', border: 'none', borderRadius: '4px' }}
                             cursor={{ fill: 'var(--color-bg-secondary)', opacity: 0.4 }}
                         />

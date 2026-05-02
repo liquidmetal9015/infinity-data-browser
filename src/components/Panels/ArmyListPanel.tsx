@@ -88,16 +88,17 @@ export function ArmyListPanel() {
             if (!currentList) return null;
             const body = {
                 name: currentList.name,
-                description: currentList.description,
+                description: currentList.description ?? null,
                 tags: currentList.tags ?? [],
+                rating: currentList.rating ?? 0,
                 faction_id: currentList.factionId,
                 points: calculateListPoints(currentList),
                 swc: calculateListSWC(currentList),
-                units_json: currentList as Record<string, unknown>,
+                units_json: currentList as unknown as Record<string, unknown>,
             };
             if (currentList.serverId) {
-                const { data, error } = await api.PUT('/api/lists/{list_id}', {
-                    params: { path: { list_id: currentList.serverId } },
+                const { data, error } = await api.PUT('/api/lists/{listId}', {
+                    params: { path: { listId: String(currentList.serverId) } },
                     body,
                 });
                 if (error) throw error;
@@ -225,8 +226,16 @@ export function ArmyListPanel() {
 
         if (!over || active.id === over.id || !currentList) return;
 
-        const activeData = active.data.current as Record<string, unknown>;
-        const overData = over.data.current as Record<string, unknown>;
+        type DndData = {
+            type?: string;
+            groupIndex: number;
+            fireteamId?: string;
+            listUnit?: ListUnit;
+            color?: string;
+            notes?: string;
+        };
+        const activeData = active.data.current as DndData | undefined;
+        const overData = over.data.current as DndData | undefined;
 
         if (!activeData) return;
 
@@ -265,7 +274,7 @@ export function ArmyListPanel() {
                 dropType = 'group';
             } else if (overData && overData.type === 'fireteam-container') {
                 toGroupIndex = overData.groupIndex;
-                targetFireteamId = overData.fireteamId;
+                targetFireteamId = overData.fireteamId ?? null;
                 toIndex = currentList.groups[toGroupIndex].units.length;
                 dropType = 'fireteam';
             } else if (overData) {
@@ -385,6 +394,11 @@ export function ArmyListPanel() {
     const totalSWC = calculateListSWC(list);
     const pointsOver = totalPoints > list.pointsLimit;
     const swcOver = totalSWC > list.swcLimit;
+    const totalLt = list.groups.reduce((sum, g) => sum + countGroupOrders(g.units.map(lu => {
+        const { profile, option } = getUnitDetails(lu.unit, lu.profileGroupId, lu.profileId, lu.optionId);
+        return { profile, option };
+    })).lieutenant, 0);
+    const ltInvalid = totalLt !== 1;
 
     return (
         <div className={styles.listPanel} style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -529,6 +543,10 @@ export function ArmyListPanel() {
                 <div className={styles.stat}>
                     <span className={clsx(styles.label, 'flex items-center gap-1')}><Users size={12} /> Units</span>
                     <span className={styles.value}>{list.groups.reduce((t, g) => t + g.units.length, 0)}</span>
+                </div>
+                <div className={clsx(styles.stat, ltInvalid && styles.over)}>
+                    <span className={clsx(styles.label, 'flex items-center gap-1')}><OrderIcon type="lieutenant" size={12} /> LT</span>
+                    <span className={styles.value}>{totalLt} / 1</span>
                 </div>
                 {db.getFireteamChart(list.factionId)?.spec && Object.entries(db.getFireteamChart(list.factionId)!.spec).map(([type, limit]) => {
                     if (limit >= 256) return null;

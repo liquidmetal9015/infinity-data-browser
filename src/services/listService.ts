@@ -3,6 +3,9 @@ import { generateId, calculateListPoints, calculateListSWC } from '@shared/listT
 import api from './api';
 import type { components } from '../types/schema';
 
+type ApiSummary = components['schemas']['ArmyListSummary'];
+type ApiDetail = components['schemas']['ArmyListDetail'];
+
 export interface ListSummary {
     id: string;
     name: string;
@@ -125,14 +128,6 @@ export const localStorageListService: IListService = {
 
 // ── API implementation ───────────────────────────────────────────────────
 
-// The generated schema is missing tags/unit_count from summary responses — the backend returns them.
-type ApiSummary = components["schemas"]["ArmyListSummaryResponse"] & {
-    unit_count?: number;
-    tags?: string[];
-    description?: string | null;
-    rating?: number;
-};
-
 function fromApiSummary(s: ApiSummary): ListSummary {
     return {
         id: String(s.id),
@@ -141,27 +136,35 @@ function fromApiSummary(s: ApiSummary): ListSummary {
         faction_id: s.faction_id,
         points: s.points,
         swc: s.swc,
-        unit_count: s.unit_count ?? 0,
-        tags: s.tags ?? [],
-        rating: s.rating ?? 0,
+        unit_count: s.unit_count,
+        tags: s.tags,
+        rating: s.rating,
         created_at: s.created_at,
         updated_at: s.updated_at,
     };
+}
+
+// units_json is JSONB on the backend — opaque on the wire by design (the SPA
+// owns the ArmyList shape and round-trips it as a blob). This is the only
+// boundary cast in the file; runtime trust is bounded by it being the same
+// data we wrote on the way in.
+function unitsJsonAsArmyList(detail: ApiDetail): ArmyList {
+    return detail.units_json as unknown as ArmyList;
 }
 
 export const apiListService: IListService = {
     getLists: async () => {
         const { data, error } = await api.GET('/api/lists');
         if (error) throw error;
-        return (data ?? []).map(s => fromApiSummary(s as ApiSummary));
+        return (data ?? []).map(fromApiSummary);
     },
 
     getList: async (id) => {
-        const { data, error } = await api.GET('/api/lists/{list_id}', {
-            params: { path: { list_id: Number(id) } },
+        const { data, error } = await api.GET('/api/lists/{listId}', {
+            params: { path: { listId: id } },
         });
         if (error) throw error;
-        const armyList = data.units_json as unknown as ArmyList;
+        const armyList = unitsJsonAsArmyList(data);
         armyList.serverId = data.id;
         if (!armyList.tags) armyList.tags = [];
         return armyList;
@@ -169,7 +172,6 @@ export const apiListService: IListService = {
 
     createList: async (list, factionId) => {
         const { data, error } = await api.POST('/api/lists', {
-            // Schema is outdated — backend also accepts description/tags
             body: {
                 name: list.name,
                 description: list.description ?? null,
@@ -179,39 +181,36 @@ export const apiListService: IListService = {
                 points: calculateListPoints(list),
                 swc: calculateListSWC(list),
                 units_json: list as unknown as Record<string, unknown>,
-            } as components["schemas"]["ArmyListCreate"],
+            },
         });
         if (error) throw error;
-        return fromApiSummary(data as ApiSummary);
+        return fromApiSummary(data);
     },
 
     updateList: async (id, patch) => {
-        // Build only the fields that are present in the patch
-        const body: components["schemas"]["ArmyListUpdate"] = {};
+        const body: components['schemas']['ArmyListUpdate'] = {};
         if (patch.name !== undefined) body.name = patch.name;
         if (patch.factionId !== undefined) body.faction_id = patch.factionId;
+        if (patch.tags !== undefined) body.tags = patch.tags;
+        if (patch.description !== undefined) body.description = patch.description ?? null;
+        if (patch.rating !== undefined) body.rating = patch.rating;
         if (patch.groups !== undefined) {
             const fullList = patch as ArmyList;
             body.units_json = fullList as unknown as Record<string, unknown>;
             body.points = calculateListPoints(fullList);
             body.swc = calculateListSWC(fullList);
         }
-        // tags/description are not in the generated schema but the backend supports them
-        const bodyWithExtras: Record<string, unknown> = { ...body };
-        if (patch.tags !== undefined) bodyWithExtras.tags = patch.tags;
-        if (patch.description !== undefined) bodyWithExtras.description = patch.description ?? null;
-        if (patch.rating !== undefined) bodyWithExtras.rating = patch.rating;
-        const { data, error } = await api.PUT('/api/lists/{list_id}', {
-            params: { path: { list_id: Number(id) } },
-            body: bodyWithExtras as components["schemas"]["ArmyListUpdate"],
+        const { data, error } = await api.PUT('/api/lists/{listId}', {
+            params: { path: { listId: id } },
+            body,
         });
         if (error) throw error;
-        return fromApiSummary(data as unknown as ApiSummary);
+        return fromApiSummary(data);
     },
 
     deleteList: async (id) => {
-        const { error } = await api.DELETE('/api/lists/{list_id}', {
-            params: { path: { list_id: Number(id) } },
+        const { error } = await api.DELETE('/api/lists/{listId}', {
+            params: { path: { listId: id } },
         });
         if (error) throw error;
     },

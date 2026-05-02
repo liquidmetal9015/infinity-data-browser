@@ -31,4 +31,12 @@ export const config = {
     firebaseAdminCredentials: parsed.FIREBASE_ADMIN_CREDENTIALS,
 } as const;
 
+if (process.env.NODE_ENV === 'production' && config.devAuth) {
+    throw new Error(
+        'DEV_AUTH=true in production: refusing to start. ' +
+        'The dev token bypass would let any caller impersonate dev-user. ' +
+        'Unset DEV_AUTH (or set to false) and redeploy.',
+    );
+}
+
 export type Config = typeof config;

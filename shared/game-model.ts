@@ -151,11 +151,11 @@ export type StatModifierExtra =
 
 /**
  * Distance/range modifiers — modify a skill's deployment or movement distance.
- * Extra type: DISTANCE
+ * Extra type: DISTANCE (values stored in inches, converted from cm during ETL)
  * These appear on skills like Forward Deployment, Dodge, Infiltration, Jump.
  */
 export type DistanceExtra =
-    | '+2.5' | '+5' | '+7.5' | '+10' | '+20' | '20' | '7.5'
+    | '+1"' | '+2"' | '+3"' | '+4"' | '+8"' | '3"' | '8"'
     ;
 
 /**

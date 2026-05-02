@@ -195,23 +195,30 @@ export function UnitDetailPanel() {
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-[#162032] border-b border-white/5">
                                 <tr>
-                                    <th className="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Weapons</th>
+                                    <th className="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Loadout</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Equip</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">SWC</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {activeGroup.options.map((opt, idx) => (
+                                {activeGroup.options.map((opt, idx) => {
+                                    const optMods = (opt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name);
+                                    let optName = activeGroup.isc || unit.isc;
+                                    if (optMods.length > 0) optName = `${optName} (${optMods.join(', ')})`;
+                                    return (
                                     <tr
                                         key={idx}
                                         className="transition-colors hover:bg-blue-500/10 cursor-pointer"
                                         onClick={() => handleAddLoadout(opt.id)}
                                     >
                                         <td className="px-4 py-3 align-top">
+                                            <div className="text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wide">
+                                                {optName}
+                                            </div>
                                             <div className="flex flex-col gap-1">
-                                                {opt.weapons?.map((w, i) => (
-                                                    <span key={i} className={`text-xs ${i === 0 ? "text-gray-200 font-medium" : "text-gray-400"}`}>
+                                                {opt.weapons?.map((w: { displayName?: string; name: string }, i: number) => (
+                                                    <span key={i} className={`text-xs ${i === 0 ? "text-gray-400 font-medium" : "text-gray-500"}`}>
                                                         {w.displayName || w.name}
                                                     </span>
                                                 ))}
@@ -231,7 +238,8 @@ export function UnitDetailPanel() {
                                             {opt.points}
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

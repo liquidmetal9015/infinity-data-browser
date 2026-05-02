@@ -264,17 +264,17 @@
     border-bottom: 1px solid #1e293b;
 }
 
-.col-drag { width: 30px; flex-shrink: 0; }
-.col-orders { width: 50px; flex-shrink: 0; display: flex; justify-content: center; }
-.col-name { width: 200px; flex-shrink: 0; }
+.col-drag { width: 30px; flex-shrink: 0; align-self: center; }
+.col-orders { width: 50px; flex-shrink: 0; display: flex; justify-content: center; align-self: center; }
+.col-name { width: 200px; flex-shrink: 0; align-self: center; }
 .col-weapons { flex: 1; min-width: 0; }
 .col-swc { width: 50px; flex-shrink: 0; text-align: right; }
 .col-pts { width: 50px; flex-shrink: 0; text-align: right; }
-.col-actions { width: 80px; flex-shrink: 0; display: flex; justify-content: flex-end; }
+.col-actions { width: 80px; flex-shrink: 0; display: flex; justify-content: flex-end; align-self: center; }
 
 .unit-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 0.625rem 0.75rem;
     background: #0d1117;
     border-bottom: 1px solid #1e293b;
@@ -300,10 +300,8 @@
     font-size: 0.9rem;
     font-weight: 600;
     color: #e2e8f0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     display: block;
+    word-break: break-word;
 }
 
 .unit-weapons {
@@ -312,17 +310,11 @@
 }
 .unit-weapons .weapons {
     display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 .unit-weapons .equipment {
     display: block;
     color: #8b9ab5;
     font-style: italic;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .unit-swc {

@@ -58,7 +58,7 @@ export function RangesPage() {
         });
 
         return validWeapons.sort((a, b) => a.name.localeCompare(b.name));
-    }, [db.metadata, db]);
+    }, [db]);
 
     const filteredWeapons = useMemo(() => {
         return allWeapons.filter(w => w.name.toLowerCase().includes(weaponSearch.toLowerCase()));

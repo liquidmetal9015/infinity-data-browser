@@ -1,23 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Unit, Profile } from '@shared/types';
 import type { IDatabase } from '../services/Database';
 import type { QueryState, StatFilter } from '../components/shared/UnifiedSearchBar';
 import type { FiltersState } from '../components/FilterBar';
 
-export const useUnitSearch = (db: IDatabase, loading: boolean) => {
-    const [query, setQuery] = useState<QueryState>({
-        filters: [],
-        operator: 'or'
-    });
-
-    const [filters, setFilters] = useState<FiltersState>({
-        factions: []
-    });
-
-    const [textQuery, setTextQuery] = useState('');
-
-    // Helper to check if a unit matches ALL stat filters
-    const checkProfileStat = (profile: Profile, stat: string, operator: string, value: number) => {
+// Pure stat-comparison helpers. Module-level so they are stable across renders
+// and don't pollute useCallback/useMemo dependency arrays.
+function checkProfileStat(profile: Profile, stat: string, operator: string, value: number) {
         let statVal = 0;
 
         // Handle lookup
@@ -62,44 +51,41 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
             case '=': return statVal === value;
             case '<=': return statVal <= value;
             case '<': return statVal < value;
-            default: return false;
+        default: return false;
+    }
+}
+
+function checkUnitStats(unit: Unit, filter: StatFilter): boolean {
+    const { stat, operator, value } = filter;
+    // Match if ANY profile in the unit meets the stat condition.
+    for (const group of unit.raw.profileGroups) {
+        for (const profile of group.profiles) {
+            if (checkProfileStat(profile, stat, operator, value)) return true;
         }
-    };
+    }
+    return false;
+}
 
-    const checkUnitStats = (unit: Unit, filter: StatFilter) => {
-        const { stat, operator, value } = filter;
+export const useUnitSearch = (db: IDatabase, loading: boolean) => {
+    const [query, setQuery] = useState<QueryState>({
+        filters: [],
+        operator: 'or',
+    });
 
-        // Check all profiles/options in the unit.
-        // Return true if ANY profile matches the stat condition.
-        // (As per implementation plan: "match if **ANY** single profile within a Unit meets **ALL** the criteria" - wait, criteria is per filter)
-        // So for a single filter 'WIP > 13', we return true if any profile has WIP > 13.
+    const [filters, setFilters] = useState<FiltersState>({
+        factions: [],
+    });
 
-        // Iterate profiles
-        for (const group of unit.raw.profileGroups) {
-            // Check profiles
-            for (const profile of group.profiles) {
-                if (checkProfileStat(profile, stat, operator, value)) return true;
-            }
-            // Check options? Options usually modify equipment/skills, but typically inherit stats from profile?
-            // In Infinity data, `options` can have overrides but usually stats are on profile.
-            // Wait, Unit definition: 
-            // profiles: Profile[] (has stats)
-            // options: Option[] (has points, swc, skills, equip, weapons - NO stats usually)
-            // However, sometimes stats DO change? No, usually distinct profiles for stat changes (e.g. MetaChemistry)
-            // So checking profiles is sufficient.
-        }
-        return false;
-    };
+    const [textQuery, setTextQuery] = useState('');
 
-    const checkStatFilters = (unit: Unit, stats: StatFilter[]) => {
+    const checkStatFilters = useCallback((unit: Unit, stats: StatFilter[]) => {
         if (query.operator === 'and') {
             return stats.every((filter) => checkUnitStats(unit, filter));
         } else {
             return stats.some((filter) => checkUnitStats(unit, filter));
         }
-    };
+    }, [query.operator]);
 
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const filteredUnits = useMemo(() => {
         if (loading) return [];
 
@@ -187,7 +173,7 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         }
 
         return results;
-    }, [query, filters, textQuery, loading, db]);
+    }, [query, filters, textQuery, loading, db, checkStatFilters]);
 
     return {
         query,
