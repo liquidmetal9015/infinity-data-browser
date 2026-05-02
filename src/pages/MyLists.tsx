@@ -251,23 +251,39 @@ export function MyLists() {
         }
     };
 
-    const handleExportAll = async () => {
-        if (!lists || lists.length === 0) return;
+    const handleExport = async (summaries: ListSummary[], format: 'md' | 'json') => {
+        if (summaries.length === 0) return;
         setIsExporting(true);
         try {
-            const exported = await Promise.all(
-                lists.map(async (summary) => {
+            const items = await Promise.all(
+                summaries.map(async (summary) => {
                     const armyList = await listService.getList(summary.id);
-                    const factionSlug = db.getFactionInfo(summary.faction_id)?.slug ?? 'unknown';
+                    const factionInfo = db.getFactionInfo(summary.faction_id);
+                    const factionSlug = factionInfo?.slug ?? 'unknown';
+                    const factionName = factionInfo?.name ?? factionSlug;
                     const armyCode = encodeArmyList(armyList, factionSlug, (unit) => unit.idArmy || unit.id);
-                    return { name: summary.name, army_code: armyCode };
+                    return { armyList, summary, factionName, armyCode };
                 })
             );
-            const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const stem = summaries === lists
+                ? `infinity-army-lists-${dateStr}`
+                : `infinity-army-lists-selected-${dateStr}`;
+            let blob: Blob;
+            let filename: string;
+            if (format === 'md') {
+                blob = new Blob([generateMarkdownExport(items)], { type: 'text/markdown' });
+                filename = `${stem}.md`;
+            } else {
+                const data = items.map(({ armyList, summary, factionName, armyCode }) =>
+                    serializeListForJson(armyList, summary, factionName, armyCode));
+                blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                filename = `${stem}.json`;
+            }
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `infinity-army-lists-${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
         } catch (e) {
@@ -275,6 +291,14 @@ export function MyLists() {
         } finally {
             setIsExporting(false);
         }
+    };
+
+    const handleDeleteSelected = async () => {
+        if (selectedIds.length === 0) return;
+        if (!confirm(`Delete ${selectedIds.length} list${selectedIds.length > 1 ? 's' : ''}? This cannot be undone.`)) return;
+        await Promise.all(selectedIds.map(id => listService.deleteList(id)));
+        setSelectedIds([]);
+        queryClient.invalidateQueries({ queryKey: ['my-lists'] });
     };
 
     const handleRenameCommit = (id: string) => {
@@ -346,29 +370,42 @@ export function MyLists() {
                             </button>
                         )}
                         {count > 0 && (
-                            <button
-                                onClick={handleExportAll}
-                                disabled={isExporting}
-                                title="Export all lists as JSON"
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.4rem',
-                                    padding: '0.5rem 1rem',
-                                    background: 'rgba(242,145,7,0.1)',
-                                    color: '#F29107',
-                                    border: '1px solid rgba(242,145,7,0.35)',
-                                    borderRadius: '8px',
-                                    fontWeight: 600,
-                                    fontSize: '0.875rem',
-                                    cursor: isExporting ? 'not-allowed' : 'pointer',
-                                    opacity: isExporting ? 0.6 : 1,
-                                    transition: 'all 0.15s',
-                                }}
-                            >
-                                <Download size={16} />
-                                {isExporting ? 'Exporting…' : 'Export All'}
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => handleExport(lists ?? [], 'md')}
+                                    disabled={isExporting}
+                                    title="Export all lists as Markdown"
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        padding: '0.5rem 1rem',
+                                        background: 'rgba(242,145,7,0.1)', color: '#F29107',
+                                        border: '1px solid rgba(242,145,7,0.35)', borderRadius: '8px',
+                                        fontWeight: 600, fontSize: '0.875rem',
+                                        cursor: isExporting ? 'not-allowed' : 'pointer',
+                                        opacity: isExporting ? 0.6 : 1,
+                                    }}
+                                >
+                                    <Download size={16} />
+                                    Export .md
+                                </button>
+                                <button
+                                    onClick={() => handleExport(lists ?? [], 'json')}
+                                    disabled={isExporting}
+                                    title="Export all lists as full JSON"
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        padding: '0.5rem 1rem',
+                                        background: 'rgba(242,145,7,0.1)', color: '#F29107',
+                                        border: '1px solid rgba(242,145,7,0.35)', borderRadius: '8px',
+                                        fontWeight: 600, fontSize: '0.875rem',
+                                        cursor: isExporting ? 'not-allowed' : 'pointer',
+                                        opacity: isExporting ? 0.6 : 1,
+                                    }}
+                                >
+                                    <Download size={16} />
+                                    Export .json
+                                </button>
+                            </>
                         )}
                         <button
                             onClick={() => setShowImportModal(true)}
@@ -1011,11 +1048,6 @@ export function MyLists() {
                                     — ready to compare
                                 </span>
                             )}
-                            {selectedIds.length > 2 && (
-                                <span style={{ marginLeft: '0.5rem', color: 'var(--text-tertiary, #64748b)', fontWeight: 400, fontSize: '0.78rem' }}>
-                                    — compare requires exactly 2
-                                </span>
-                            )}
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
@@ -1031,6 +1063,52 @@ export function MyLists() {
                                 }}
                             >
                                 Clear
+                            </button>
+                            <button
+                                onClick={() => handleExport((lists ?? []).filter(l => selectedIds.includes(l.id)), 'md')}
+                                disabled={isExporting}
+                                style={{
+                                    padding: '0.4rem 0.85rem',
+                                    background: 'none',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text-secondary)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                                    opacity: isExporting ? 0.5 : 1,
+                                }}
+                            >
+                                Export .md
+                            </button>
+                            <button
+                                onClick={() => handleExport((lists ?? []).filter(l => selectedIds.includes(l.id)), 'json')}
+                                disabled={isExporting}
+                                style={{
+                                    padding: '0.4rem 0.85rem',
+                                    background: 'none',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text-secondary)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                                    opacity: isExporting ? 0.5 : 1,
+                                }}
+                            >
+                                Export .json
+                            </button>
+                            <button
+                                onClick={handleDeleteSelected}
+                                style={{
+                                    padding: '0.4rem 0.85rem',
+                                    background: 'none',
+                                    border: '1px solid #ef4444',
+                                    color: '#ef4444',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Delete
                             </button>
                             <button
                                 onClick={() => navigate(`/lists/compare?ids=${selectedIds.join(',')}`)}
@@ -1055,6 +1133,121 @@ export function MyLists() {
             </div>
         </div>
     );
+}
+
+function fmtSwc(v: number): string {
+    return v % 1 === 0 ? String(v) : v.toFixed(1);
+}
+
+function fmtStars(n: number): string {
+    return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function fmtDate(ts: number | string): string {
+    return new Date(typeof ts === 'number' ? ts : ts).toISOString().slice(0, 10);
+}
+
+function generateMarkdownExport(
+    items: Array<{ armyList: ArmyList; summary: import('../services/listService').ListSummary; factionName: string; armyCode: string }>
+): string {
+    const sections = items.map(({ armyList, summary, factionName, armyCode }) => {
+        const url = `https://infinitytheuniverse.com/army/list/${armyCode}`;
+        const lines: string[] = [];
+
+        lines.push(`# ${armyList.name}`);
+        lines.push('');
+        lines.push(`**Faction:** ${factionName}  `);
+        lines.push(`**Points:** ${summary.points} / ${armyList.pointsLimit} · **SWC:** ${fmtSwc(summary.swc)} / ${fmtSwc(armyList.swcLimit)}  `);
+        if (armyList.rating) lines.push(`**Rating:** ${fmtStars(armyList.rating)}  `);
+        if (armyList.tags?.length) lines.push(`**Tags:** ${armyList.tags.join(', ')}  `);
+        lines.push(`**Created:** ${fmtDate(armyList.createdAt)} · **Updated:** ${fmtDate(armyList.updatedAt)}`);
+
+        if (armyList.description?.trim()) {
+            lines.push('');
+            lines.push(`> ${armyList.description.trim().replace(/\n/g, '\n> ')}`);
+        }
+
+        lines.push('');
+        lines.push(`[Open in Infinity Army →](${url})`);
+        lines.push('');
+        lines.push('```');
+        lines.push(armyCode);
+        lines.push('```');
+
+        for (const group of armyList.groups) {
+            if (group.units.length === 0) continue;
+            lines.push('');
+            lines.push(`### ${group.name || 'Combat Group'}`);
+            lines.push('');
+            lines.push('| Unit | Loadout | Pts | SWC |');
+            lines.push('|------|---------|----:|----:|');
+            for (const lu of group.units) {
+                const profileGroup = lu.unit.raw.profileGroups.find(pg => pg.id === lu.profileGroupId);
+                const option = profileGroup?.options.find(o => o.id === lu.optionId);
+                const unitLabel = lu.isPeripheral
+                    ? `↳ ${profileGroup?.isc ?? lu.unit.name}`
+                    : (profileGroup?.isc ?? lu.unit.name);
+                lines.push(`| ${unitLabel} | ${option?.name ?? '—'} | ${lu.points} | ${fmtSwc(lu.swc)} |`);
+            }
+            const gPts = group.units.filter(u => !u.isPeripheral).reduce((s, u) => s + u.points, 0);
+            const gSwc = group.units.filter(u => !u.isPeripheral).reduce((s, u) => s + u.swc, 0);
+            lines.push('');
+            lines.push(`*${gPts} pts / ${fmtSwc(gSwc)} SWC*`);
+        }
+
+        lines.push('');
+        lines.push(`**Total: ${summary.points} pts / ${fmtSwc(summary.swc)} SWC** (${summary.unit_count} units)`);
+
+        return lines.join('\n');
+    });
+
+    return sections.join('\n\n---\n\n');
+}
+
+function serializeListForJson(
+    armyList: ArmyList,
+    summary: import('../services/listService').ListSummary,
+    factionName: string,
+    armyCode: string,
+) {
+    return {
+        id: armyList.id,
+        name: armyList.name,
+        description: armyList.description ?? null,
+        tags: armyList.tags,
+        rating: armyList.rating ?? null,
+        factionId: armyList.factionId,
+        factionName,
+        pointsLimit: armyList.pointsLimit,
+        swcLimit: armyList.swcLimit,
+        points: summary.points,
+        swc: summary.swc,
+        unitCount: summary.unit_count,
+        createdAt: armyList.createdAt,
+        updatedAt: armyList.updatedAt,
+        armyCode,
+        groups: armyList.groups.map(g => ({
+            id: g.id,
+            name: g.name,
+            fireteams: g.fireteams ?? [],
+            units: g.units.map(lu => ({
+                id: lu.id,
+                unitId: lu.unit.id,
+                unitIdArmy: lu.unit.idArmy ?? null,
+                unitName: lu.unit.name,
+                profileGroupId: lu.profileGroupId,
+                profileId: lu.profileId,
+                optionId: lu.optionId,
+                points: lu.points,
+                swc: lu.swc,
+                isPeripheral: lu.isPeripheral ?? false,
+                parentId: lu.parentId ?? null,
+                fireteamId: lu.fireteamId ?? null,
+                fireteamColor: lu.fireteamColor ?? null,
+                fireteamNotes: lu.fireteamNotes ?? null,
+            })),
+        })),
+    };
 }
 
 /** Build a full ArmyList from a decoded army code, resolving units from the db. */

@@ -3,10 +3,6 @@ import { pgTable, varchar, uniqueIndex, index, serial, integer, jsonb, foreignKe
 
 
 
-export const alembic_version = pgTable("alembic_version", {
-	version_num: varchar({ length: 32 }).primaryKey().notNull(),
-});
-
 export const units = pgTable("units", {
 	id: serial().primaryKey().notNull(),
 	id_army: integer(),

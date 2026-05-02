@@ -1,8 +1,8 @@
-"""Configuration for Alembic migrations and the JSON ETL importer.
+"""Configuration for the JSON ETL importer.
 
-The runtime API service is now `backend-ts/`; the only Python code that remains
-is Alembic and `app/etl/import_json.py`, both of which only need a database URL
-and the data directory.
+The runtime API service is now `backend-ts/` and the schema is owned by Drizzle
+there. The only Python code that remains is `app/etl/import_json.py`, which
+needs a database URL and the data directory.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict

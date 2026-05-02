@@ -47,7 +47,7 @@ seed: ## Import game data JSON files into the local database
 
 ##@ Verification
 lint: ## Run aggressive linting & type checks across stack
-	@echo "$(YELLOW)Linting Python (ruff/mypy) — retained ETL/Alembic only...$(RESET)"
+	@echo "$(YELLOW)Linting Python (ruff/mypy) — retained ETL only...$(RESET)"
 	cd backend && uv run ruff format . && uv run ruff check --fix .
 	cd backend && uv run mypy .  # strict = true is set in pyproject.toml
 	@echo "$(YELLOW)Linting & typechecking TypeScript backend...$(RESET)"

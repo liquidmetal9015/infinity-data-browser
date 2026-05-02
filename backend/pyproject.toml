@@ -6,11 +6,10 @@ authors = [{ name = "clindbeck9" }]
 readme = "README.md"
 requires-python = ">=3.12, <3.14"
 dependencies = [
-    # Schema source-of-truth (Alembic migrations) + game-data ETL importer.
-    # The runtime API service is in backend-ts/; nothing here serves traffic.
+    # Game-data ETL importer (app/etl/import_json.py). Schema is now owned by
+    # Drizzle in backend-ts/; the runtime API service lives there too.
     "sqlalchemy[asyncio]==2.0.41",
     "asyncpg==0.31.0",
-    "alembic==1.15.2",
     "pydantic==2.11.4",
     "pydantic-settings==2.9.1",
 ]

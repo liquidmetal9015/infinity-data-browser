@@ -1,6 +1,6 @@
 """SQLAlchemy async engine and session factory.
 
-Used by Alembic migrations and `app/etl/import_json.py`. The runtime API is
+Used by `app/etl/import_json.py`. The runtime API and schema migrations live
 in `backend-ts/`; this module is intentionally minimal.
 """
 

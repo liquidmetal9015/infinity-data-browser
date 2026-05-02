@@ -35,7 +35,7 @@ gcloud sql users set-password postgres --instance=infinity-db-instance --passwor
 ```
 
 3. **Run Initial Migrations** (via Cloud SQL Auth Proxy):
-From your local environment, use the Cloud SQL Auth proxy to temporarily connect to the database and pipe the Alembic migrations up. First, download the proxy if you don't have it:
+From your local environment, use the Cloud SQL Auth proxy to temporarily connect to the database and apply the Drizzle migrations. First, download the proxy if you don't have it:
 ```bash
 curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
 chmod +x cloud-sql-proxy
@@ -45,11 +45,15 @@ chmod +x cloud-sql-proxy
 # In terminal 1:
 ./cloud-sql-proxy YOUR_PROJECT_ID:us-central1:infinity-db-instance --port 5433
 
-# In terminal 2:
-export DATABASE_URL="postgresql+asyncpg://postgres:YOUR_SECURE_PASSWORD@127.0.0.1:5433/infinity"
-cd backend/
-PYTHONPATH=. alembic upgrade head
-PYTHONPATH=. python -m app.etl.import_json # Seed the core Corvus Belli CB data
+# In terminal 2 — apply schema migrations (Drizzle, in backend-ts/):
+export DATABASE_URL="postgresql://postgres:YOUR_SECURE_PASSWORD@127.0.0.1:5433/infinity"
+cd backend-ts/
+npm run db:migrate
+
+# Then seed Corvus Belli game data via the Python ETL:
+cd ../backend/
+DATABASE_URL="postgresql+asyncpg://postgres:YOUR_SECURE_PASSWORD@127.0.0.1:5433/infinity" \
+    PYTHONPATH=. uv run python -m app.etl.import_json
 ```
 
 ## 3. Configuring Secrets (Firebase Admin)
