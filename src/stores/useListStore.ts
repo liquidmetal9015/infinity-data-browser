@@ -3,10 +3,12 @@
 // and shares state between workspace windows and full-screen pages.
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, type StorageValue } from 'zustand/middleware';
 import type { Unit } from '@shared/types';
 import type { ArmyList } from '@shared/listTypes';
+import { dehydrateList, hydrateList, type DehydratedArmyList } from '@shared/listTypes';
 import { listReducer, initialState, type ListState, type ListAction } from '@shared/listLogic';
+import { DatabaseImplementation } from '../services/Database';
 
 // ============================================================================
 // Store Interface
@@ -149,6 +151,44 @@ export const useListStore = create<ListStore>()(
                 currentList: state.currentList,
                 lastSavedAt: state.lastSavedAt,
             }),
+            storage: {
+                getItem: (name) => {
+                    const raw = localStorage.getItem(name);
+                    if (!raw) return null;
+                    const stored = JSON.parse(raw) as StorageValue<{ currentList: DehydratedArmyList | ArmyList | null; lastSavedAt: number | null }>;
+                    if (!stored?.state?.currentList) return stored as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>;
+
+                    const list = stored.state.currentList;
+                    // If the list already has resolved `unit` fields (legacy format), pass through
+                    const firstUnit = list.groups?.[0]?.units?.[0];
+                    if (firstUnit && 'unit' in firstUnit && (firstUnit as any).unit?.raw) {
+                        return stored as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>;
+                    }
+
+                    // Hydrate from database
+                    const db = DatabaseImplementation.getInstance();
+                    const hydrated = hydrateList(
+                        list as DehydratedArmyList,
+                        (id) => db.getUnitById(id),
+                    );
+                    return {
+                        ...stored,
+                        state: { ...stored.state, currentList: hydrated },
+                    } as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>;
+                },
+                setItem: (name, value) => {
+                    const state = (value as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>).state;
+                    const toStore = {
+                        ...value,
+                        state: {
+                            ...state,
+                            currentList: state.currentList ? dehydrateList(state.currentList) : null,
+                        },
+                    };
+                    localStorage.setItem(name, JSON.stringify(toStore));
+                },
+                removeItem: (name) => localStorage.removeItem(name),
+            },
             onRehydrateStorage: () => (state) => {
                 if (!state) return;
                 if (state.currentList) {

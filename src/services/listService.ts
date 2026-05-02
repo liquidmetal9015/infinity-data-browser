@@ -1,5 +1,6 @@
 import type { ArmyList } from '@shared/listTypes';
-import { generateId, calculateListPoints, calculateListSWC } from '@shared/listTypes';
+import { generateId, calculateListPoints, calculateListSWC, dehydrateList, hydrateList, type DehydratedArmyList } from '@shared/listTypes';
+import { DatabaseImplementation } from './Database';
 import api from './api';
 import type { components } from '../types/schema';
 
@@ -145,11 +146,19 @@ function fromApiSummary(s: ApiSummary): ListSummary {
 }
 
 // units_json is JSONB on the backend — opaque on the wire by design (the SPA
-// owns the ArmyList shape and round-trips it as a blob). This is the only
-// boundary cast in the file; runtime trust is bounded by it being the same
-// data we wrote on the way in.
+// owns the ArmyList shape and round-trips it as a blob). We dehydrate on save
+// (stripping the `unit` field) and hydrate on load (resolving from database).
 function unitsJsonAsArmyList(detail: ApiDetail): ArmyList {
-    return detail.units_json as unknown as ArmyList;
+    const raw = detail.units_json as unknown as ArmyList | DehydratedArmyList;
+    // Check if already hydrated (legacy data stored with full unit objects)
+    const firstUnit = raw.groups?.[0]?.units?.[0];
+    if (firstUnit && 'unit' in firstUnit && (firstUnit as any).unit?.raw) {
+        return raw as ArmyList;
+    }
+    // Hydrate dehydrated format
+    const db = DatabaseImplementation.getInstance();
+    const hydrated = hydrateList(raw as DehydratedArmyList, (id) => db.getUnitById(id));
+    return hydrated ?? raw as ArmyList;
 }
 
 export const apiListService: IListService = {
@@ -180,7 +189,7 @@ export const apiListService: IListService = {
                 faction_id: factionId,
                 points: calculateListPoints(list),
                 swc: calculateListSWC(list),
-                units_json: list as unknown as Record<string, unknown>,
+                units_json: dehydrateList(list) as unknown as Record<string, unknown>,
             },
         });
         if (error) throw error;
@@ -196,7 +205,7 @@ export const apiListService: IListService = {
         if (patch.rating !== undefined) body.rating = patch.rating;
         if (patch.groups !== undefined) {
             const fullList = patch as ArmyList;
-            body.units_json = fullList as unknown as Record<string, unknown>;
+            body.units_json = dehydrateList(fullList) as unknown as Record<string, unknown>;
             body.points = calculateListPoints(fullList);
             body.swc = calculateListSWC(fullList);
         }

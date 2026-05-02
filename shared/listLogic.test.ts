@@ -478,15 +478,15 @@ describe('listTypes helpers', () => {
                         id: 'g1',
                         name: 'Group 1',
                         units: [
-                            { id: 'u1', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 25, swc: 0 },
-                            { id: 'u2', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 2, points: 35, swc: 1.5 },
+                            { id: 'u1', unitId: 1, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 25, swc: 0 },
+                            { id: 'u2', unitId: 2, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 2, points: 35, swc: 1.5 },
                         ]
                     },
                     {
                         id: 'g2',
                         name: 'Group 2',
                         units: [
-                            { id: 'u3', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 40, swc: 1 },
+                            { id: 'u3', unitId: 3, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 40, swc: 1 },
                         ]
                     }
                 ],
@@ -512,15 +512,15 @@ describe('listTypes helpers', () => {
                         id: 'g1',
                         name: 'Group 1',
                         units: [
-                            { id: 'u1', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 25, swc: 0 },
-                            { id: 'u2', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 2, points: 35, swc: 1.5 },
+                            { id: 'u1', unitId: 1, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 25, swc: 0 },
+                            { id: 'u2', unitId: 2, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 2, points: 35, swc: 1.5 },
                         ]
                     },
                     {
                         id: 'g2',
                         name: 'Group 2',
                         units: [
-                            { id: 'u3', unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 40, swc: 1 },
+                            { id: 'u3', unitId: 3, unit: {} as Unit, profileGroupId: 1, profileId: 1, optionId: 1, points: 40, swc: 1 },
                         ]
                     }
                 ],

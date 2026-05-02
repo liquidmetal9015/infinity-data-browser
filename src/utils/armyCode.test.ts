@@ -55,6 +55,7 @@ describe('armyCode.ts', () => {
                     name: `Group ${g.groupNumber}`,
                     units: g.members.map(m => ({
                         id: 'unit-' + Math.random(),
+                        unitId: m.unitId,
                         unit: { id: m.unitId } as Unit,
                         profileGroupId: m.groupChoice,
                         profileId: m.groupChoice,

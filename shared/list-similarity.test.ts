@@ -78,6 +78,7 @@ function lu(unit: Unit, optionId = 1): ListUnit {
     const opt = unit.raw.profileGroups[0].options.find(o => o.id === optionId)!;
     return {
         id: `lu-${++counter}`,
+        unitId: unit.id,
         unit,
         profileGroupId: 1,
         profileId: 1,

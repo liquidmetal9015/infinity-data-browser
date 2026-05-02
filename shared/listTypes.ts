@@ -6,11 +6,18 @@ import type { Profile, Loadout } from './game-model.js';
 
 /**
  * Represents a single unit added to an army list.
+ *
+ * `unitId` is the canonical identifier — always persisted.
+ * `unit` is the resolved Unit object, populated at runtime from the database.
+ * When serializing (localStorage, API), only `unitId` is stored; `unit` is
+ * rehydrated via `hydrateList()` after loading.
  */
 export interface ListUnit {
     /** Unique ID for this list entry */
     id: string;
-    /** Reference to the base Unit data */
+    /** Canonical unit identifier — used for serialization and hydration */
+    unitId: number;
+    /** Resolved Unit data — populated at runtime, stripped on serialize */
     unit: Unit;
     /** The selected profile group ID */
     profileGroupId: number;
@@ -123,4 +130,70 @@ export function getUnitDetails(unit: Unit, profileGroupId: number, profileId: nu
  */
 export function generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+// ============================================================================
+// Serialization helpers — strip/restore `unit` for persistence
+// ============================================================================
+
+/**
+ * A dehydrated ListUnit stores only `unitId` (no `unit` field).
+ * Used when persisting to localStorage or sending to the API.
+ */
+export type DehydratedListUnit = Omit<ListUnit, 'unit'>;
+
+export interface DehydratedCombatGroup {
+    id: string;
+    name: string;
+    units: DehydratedListUnit[];
+    fireteams?: FireteamDef[];
+}
+
+export interface DehydratedArmyList {
+    id: string;
+    name: string;
+    description?: string;
+    tags: string[];
+    rating?: number;
+    factionId: number;
+    pointsLimit: number;
+    swcLimit: number;
+    groups: DehydratedCombatGroup[];
+    createdAt: number;
+    updatedAt: number;
+    serverId?: number;
+}
+
+/**
+ * Strip the `unit` field from all ListUnits for compact serialization.
+ * The `unitId` field is retained for rehydration.
+ */
+export function dehydrateList(list: ArmyList): DehydratedArmyList {
+    return {
+        ...list,
+        groups: list.groups.map(g => ({
+            ...g,
+            units: g.units.map(({ unit: _unit, ...rest }) => rest),
+        })),
+    };
+}
+
+/**
+ * Restore `unit` references on all ListUnits from a unit resolver.
+ * Returns null for any unit that cannot be resolved (data mismatch).
+ */
+export function hydrateList(
+    dehydrated: DehydratedArmyList,
+    resolveUnit: (unitId: number) => Unit | undefined,
+): ArmyList | null {
+    const groups: CombatGroup[] = dehydrated.groups.map(g => ({
+        ...g,
+        units: g.units.map(dlu => {
+            const unit = resolveUnit(dlu.unitId);
+            if (!unit) return null;
+            return { ...dlu, unit } as ListUnit;
+        }).filter((u): u is ListUnit => u !== null),
+    }));
+
+    return { ...dehydrated, groups };
 }

@@ -105,6 +105,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
 
             const newUnit: ListUnit = {
                 id: generateId(),
+                unitId: unit.id,
                 unit,
                 profileGroupId,
                 profileId,
@@ -130,6 +131,7 @@ export function listReducer(state: ListState, action: ListAction): ListState {
                 for (let q = 0; q < (inc.q || 1); q++) {
                     peripherals.push({
                         id: generateId(),
+                        unitId: unit.id,
                         unit,
                         profileGroupId: pg.id,
                         profileId: pProfile.id,

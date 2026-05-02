@@ -17,6 +17,7 @@ export function armyListFromDecodedCode(
             const { option } = getUnitDetails(unit, member.groupChoice, member.groupChoice, member.optionChoice);
             units.push({
                 id: generateId(),
+                unitId: unit.id,
                 unit,
                 profileGroupId: member.groupChoice,
                 profileId: member.groupChoice,
