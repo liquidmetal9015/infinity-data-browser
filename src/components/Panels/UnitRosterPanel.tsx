@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
@@ -50,7 +50,7 @@ export function UnitRosterPanel() {
     const currentList = useListStore(s => s.currentList);
     const addUnit = useListStore(s => s.addUnit);
     const { globalFactionId } = useGlobalFactionStore();
-    const { hoveredFireteamId, targetGroupIndex, selectUnitForDetail, setHoveredUnitISC } = useListBuilderUIStore();
+    const { hoveredFireteamId, targetGroupIndex, selectUnitForDetail, setHoveredUnitISC, rosterScrollTarget, setRosterScrollTarget } = useListBuilderUIStore();
     const windows = useWorkspaceStore(s => s.windows);
     const layoutMode = useWorkspaceStore(s => s.layoutMode);
     const columnCount = useWorkspaceStore(s => s.columnCount);
@@ -58,11 +58,43 @@ export function UnitRosterPanel() {
         ? columnCount === 3
         : windows.some(w => w.type === 'UNIT_DETAIL' && !w.isMinimized);
 
+    const rosterListRef = useRef<HTMLDivElement>(null);
+
     const [rosterQuery, setRosterQuery] = useState<QueryState>({ filters: [], operator: 'or' });
     const [rosterTextQuery, setRosterTextQuery] = useState('');
     const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
     const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
     const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+
+    useEffect(() => {
+        if (!rosterScrollTarget) return;
+        const { unitId } = rosterScrollTarget;
+
+        const unit = db.units.find(u => u.id === unitId);
+        if (!unit) { setRosterScrollTarget(null); return; }
+
+        const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
+
+        setCollapsedGroups(prev => {
+            if (!prev.has(primaryType)) return prev;
+            const next = new Set(prev);
+            next.delete(primaryType);
+            return next;
+        });
+
+        setExpandedUnitIds(prev => {
+            if (prev.has(unitId)) return prev;
+            const next = expandMode === 'single' ? new Set<number>() : new Set(prev);
+            next.add(unitId);
+            return next;
+        });
+
+        requestAnimationFrame(() => {
+            const el = rosterListRef.current?.querySelector<HTMLElement>(`[data-unit-id="${unitId}"]`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setRosterScrollTarget(null);
+        });
+    }, [rosterScrollTarget]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Compute valid ISCs for hovered fireteam (moved from ListDashboard)
     // eslint-disable-next-line react-hooks/preserve-manual-memoization
@@ -228,20 +260,21 @@ export function UnitRosterPanel() {
     };
 
     const renderUnitCard = (unit: Unit) => (
-        <ExpandableUnitCard
-            key={unit.id}
-            unit={unit}
-            isExpanded={!hasDetailPanel && expandedUnitIds.has(unit.id)}
-            onToggle={() => toggleExpand(unit.id)}
-            detailMode={hasDetailPanel}
-            searchQuery={rosterTextQuery.trim()}
-            activeFilters={rosterQuery.filters}
-            isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
-            onMouseEnter={() => setHoveredUnitISC(unit.isc)}
-            onMouseLeave={() => setHoveredUnitISC(null)}
-            onAddUnit={handleAddUnit}
-            onViewUnit={handleViewUnit}
-        />
+        <div key={unit.id} data-unit-id={unit.id}>
+            <ExpandableUnitCard
+                unit={unit}
+                isExpanded={!hasDetailPanel && expandedUnitIds.has(unit.id)}
+                onToggle={() => toggleExpand(unit.id)}
+                detailMode={hasDetailPanel}
+                searchQuery={rosterTextQuery.trim()}
+                activeFilters={rosterQuery.filters}
+                isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
+                onMouseEnter={() => setHoveredUnitISC(unit.isc)}
+                onMouseLeave={() => setHoveredUnitISC(null)}
+                onAddUnit={handleAddUnit}
+                onViewUnit={handleViewUnit}
+            />
+        </div>
     );
 
     return (
@@ -271,7 +304,7 @@ export function UnitRosterPanel() {
                 />
             </div>
 
-            <div className={clsx(styles.rosterList, 'overflow-y-auto')}>
+            <div ref={rosterListRef} className={clsx(styles.rosterList, 'overflow-y-auto')}>
                 {!isSearchActive ? (
                     groupedRoster.map(group => (
                         <div key={group.type}>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Crosshair, Zap, Activity, Info } from 'lucide-react';
+import { Shield, Crosshair, Zap, Activity, Info, Link } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
@@ -63,7 +63,10 @@ export function UnitDetailPanel() {
 
     if (!activeProfile) return null;
 
+    const isPeripheralGroup = activeGroup.isPeripheral === true;
+
     const handleAddLoadout = (optionId: number) => {
+        if (isPeripheralGroup) return;
         addUnit(unit, targetGroupIndex, activeGroup.id, activeProfile.id, optionId);
     };
 
@@ -191,6 +194,12 @@ export function UnitDetailPanel() {
                         <Crosshair size={12} className="text-red-500/80" />
                         Loadout Options
                     </h3>
+                    {isPeripheralGroup && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300">
+                            <Link size={12} />
+                            Linked unit — auto-attached to its parent, not independently purchasable
+                        </div>
+                    )}
                     <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0f172a]">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-[#162032] border-b border-white/5">
@@ -204,13 +213,13 @@ export function UnitDetailPanel() {
                             <tbody className="divide-y divide-white/5">
                                 {activeGroup.options.map((opt, idx) => {
                                     const optMods = (opt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name);
-                                    let optName = activeGroup.isc || unit.isc;
+                                    let optName = opt.name || activeGroup.isc || unit.isc;
                                     if (optMods.length > 0) optName = `${optName} (${optMods.join(', ')})`;
                                     return (
                                     <tr
                                         key={idx}
-                                        className="transition-colors hover:bg-blue-500/10 cursor-pointer"
-                                        onClick={() => handleAddLoadout(opt.id)}
+                                        className={isPeripheralGroup ? 'opacity-60' : 'transition-colors hover:bg-blue-500/10 cursor-pointer'}
+                                        onClick={isPeripheralGroup ? undefined : () => handleAddLoadout(opt.id)}
                                     >
                                         <td className="px-4 py-3 align-top">
                                             <div className="text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wide">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
     DndContext,
     DragOverlay,
@@ -118,7 +118,9 @@ export function ArmyListPanel() {
     const {
         hoveredUnitISC, targetGroupIndex,
         setHoveredFireteamId, setTargetGroupIndex, selectUnitForDetail,
+        setRosterScrollTarget, setHighlightedListUnitId,
     } = useListBuilderUIStore();
+    const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const { layoutMode, columnCount, windows, openWindow, setActiveColumn } = useWorkspaceStore();
 
@@ -188,15 +190,24 @@ export function ArmyListPanel() {
         return counts;
     }, [currentList, db]);
 
-    const handleViewUnit = (unit: Unit, profileGroupId?: number) => {
+    const handleViewUnit = (unit: Unit, profileGroupId?: number, listUnitId?: string) => {
         selectUnitForDetail(unit, profileGroupId);
+
+        if (listUnitId) {
+            if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+            setHighlightedListUnitId(listUnitId);
+            highlightTimeoutRef.current = setTimeout(() => {
+                setHighlightedListUnitId(null);
+                highlightTimeoutRef.current = null;
+            }, 700);
+        }
 
         if (layoutMode === 'columns') {
             const panels = getColumnPanels(columnCount ?? 3);
             const detailIdx = panels.indexOf('UNIT_DETAIL');
             if (detailIdx === -1) {
-                // 2-column mode: UNIT_DETAIL isn't a column, open it as a floating window
-                openWindow('UNIT_DETAIL');
+                // 2-column mode: scroll and expand unit in the roster instead of floating window
+                setRosterScrollTarget({ unitId: unit.id });
             } else if (window.innerWidth < 768) {
                 // Mobile: swipe to the UNIT_DETAIL column
                 setActiveColumn(detailIdx);
@@ -690,7 +701,7 @@ export function ArmyListPanel() {
                                                                     key={p.id}
                                                                     listUnit={p}
                                                                     groupIndex={groupIndex}
-                                                                    onViewUnit={handleViewUnit}
+                                                                    onViewUnit={() => handleViewUnit(u.unit, u.profileGroupId, u.id)}
                                                                     onRemove={() => {}}
                                                                 />
                                                             ))}

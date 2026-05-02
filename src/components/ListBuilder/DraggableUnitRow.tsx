@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { clsx } from 'clsx';
 import { useContextMenuStore as useContextMenu } from '../../stores/useContextMenuStore';
+import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { getUnitDetails, type ListUnit } from '@shared/listTypes';
 import { Eye, Trash2, GripVertical, Link } from 'lucide-react';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -18,10 +19,12 @@ export function DraggableUnitRow({
 }: {
     listUnit: ListUnit;
     groupIndex: number;
-    onViewUnit: (unit: Unit, profileGroupId?: number) => void;
+    onViewUnit: (unit: Unit, profileGroupId?: number, listUnitId?: string) => void;
     onRemove: () => void;
 }) {
     const { showMenu } = useContextMenu();
+    const highlightedListUnitId = useListBuilderUIStore(s => s.highlightedListUnitId);
+    const isHighlighted = highlightedListUnitId === listUnit.id;
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: listUnit.id,
         data: { type: 'unit', groupIndex, listUnit },
@@ -44,7 +47,7 @@ export function DraggableUnitRow({
     const optionModsAndSkills = (option?.skills || []).map(s =>
         s.displayName || s.name
     );
-    let displayName = profileGroup?.isc || listUnit.unit.isc;
+    let displayName = option?.name || profileGroup?.isc || listUnit.unit.isc;
     if (optionModsAndSkills.length > 0) {
         displayName = `${displayName} (${optionModsAndSkills.join(', ')})`;
     }
@@ -52,9 +55,9 @@ export function DraggableUnitRow({
     if (listUnit.isPeripheral) {
         return (
             <div
-                className={clsx(styles.unitRow, 'cursor-pointer')}
+                className={clsx(styles.unitRow, isHighlighted && styles.unitRowHighlighted, 'cursor-pointer')}
                 style={{ paddingLeft: '2.5rem', background: '#0a1020', borderLeft: '2px solid rgba(59, 130, 246, 0.3)' }}
-                onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId)}
+                onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId, listUnit.id)}
             >
                 <div className={clsx(styles.colDrag, 'flex items-center justify-center')} style={{ width: 30 }}>
                     <Link size={10} className="text-blue-500/40" />
@@ -90,8 +93,8 @@ export function DraggableUnitRow({
             style={style}
             {...attributes}
             {...listeners}
-            className={clsx(styles.unitRow, isDragging && styles.dragging, 'cursor-pointer active:cursor-grabbing')}
-            onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId)}
+            className={clsx(styles.unitRow, isDragging && styles.dragging, isHighlighted && styles.unitRowHighlighted, 'cursor-pointer active:cursor-grabbing')}
+            onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId, listUnit.id)}
             onContextMenu={(e) => {
                 e.preventDefault();
                 showMenu(e.clientX, e.clientY, [

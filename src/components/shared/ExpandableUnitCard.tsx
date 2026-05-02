@@ -157,7 +157,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
 
                                 const optionModsAndSkills = (opt.skills || []).map(s => s.displayName || s.name);
 
-                                let optName = activeGroup.isc || unit.isc;
+                                let optName = opt.name || activeGroup.isc || unit.isc;
                                 if (optionModsAndSkills.length > 0) {
                                     optName = `${optName} (${optionModsAndSkills.join(', ')})`;
                                 }
