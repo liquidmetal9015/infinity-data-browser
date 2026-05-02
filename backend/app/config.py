@@ -1,7 +1,8 @@
-"""Application configuration via Pydantic Settings.
+"""Configuration for Alembic migrations and the JSON ETL importer.
 
-Reads from environment variables (or a .env file in development).
-Cloud Run injects these as env vars; locally you use a .env file.
+The runtime API service is now `backend-ts/`; the only Python code that remains
+is Alembic and `app/etl/import_json.py`, both of which only need a database URL
+and the data directory.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,29 +15,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Database
     database_url: str = "postgresql+asyncpg://postgres:dev@localhost:5432/infinity"
-
-    # App
-    app_title: str = "Infinity Data Explorer API"
-    app_version: str = "0.1.0"
     debug: bool = False
-
-    # CORS — origins allowed to call the API
-    # In production this will be the Cloud Run URL; in dev, the Vite dev server
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:8080"]
-
-    # Data directory (where the JSON files live, relative to project root)
     data_dir: str = "../data"
-
-    # Dev auth bypass — skip Firebase token verification in local development
-    dev_auth: bool = False
-
-    # AI / LLM settings
-    anthropic_api_key: str = ""
-    llm_provider: str = "anthropic"
-    llm_model: str = "claude-haiku-4-5-20251001"
-    ai_monthly_limit: int = 100
 
 
 settings = Settings()

@@ -140,10 +140,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                         <div className="text-xs text-gray-400 leading-relaxed px-1">
                             <span className="font-bold text-gray-500 uppercase tracking-widest mr-2 text-[10px]">Skills & Eq:</span>
                             {[
-                                ...(activeProfile.skills || []).map(s => {
-                                    const mods = s.modifiers?.length ? ` (${s.modifiers.join(', ')})` : '';
-                                    return `${s.displayName || s.name}${mods}`;
-                                }),
+                                ...(activeProfile.skills || []).map(s => s.displayName || s.name),
                                 ...(activeProfile.equipment || []).map(e => e.name)
                             ].join(' • ') || 'None'}
                         </div>
@@ -154,17 +151,11 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                 const orders = getProfileOrders(activeProfile, opt);
 
                                 const weapsAndEq = [
-                                    ...(opt.weapons || []).map(w => {
-                                        const mods = w.modifiers?.length ? ` (${w.modifiers.join(', ')})` : '';
-                                        return `${w.name}${mods}`;
-                                    }),
+                                    ...(opt.weapons || []).map(w => w.displayName || w.name),
                                     ...(opt.equipment || []).map(e => e.name)
                                 ];
 
-                                const optionModsAndSkills = (opt.skills || []).map(s => {
-                                    const mods = s.modifiers?.length ? ` (${s.modifiers.join(', ')})` : '';
-                                    return `${s.displayName || s.name}${mods}`;
-                                });
+                                const optionModsAndSkills = (opt.skills || []).map(s => s.displayName || s.name);
 
                                 let optName = activeGroup.isc || unit.isc;
                                 if (optionModsAndSkills.length > 0) {

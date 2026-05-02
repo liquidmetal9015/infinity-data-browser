@@ -1,5 +1,5 @@
 // Classification constants for Infinity unit types
-// Verified mapping from profile.type values in faction data
+// Verified mapping from profile.unitType values in faction data
 
 export const CLASSIFICATION_LABELS: Record<number, string> = {
     1: 'LI', 2: 'MI', 3: 'HI', 4: 'TAG', 5: 'REM', 6: 'SK', 7: 'WB', 8: 'VH'

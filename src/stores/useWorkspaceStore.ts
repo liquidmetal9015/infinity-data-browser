@@ -239,11 +239,19 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
         case 'SET_COLUMN_COUNT': {
             const newWidths = action.count === 2 ? [1, 1] : [1, 1, 1];
             const maxIndex = action.count - 1;
+            // When dropping to 2 columns, close panel windows not in the new layout
+            // (e.g. UNIT_DETAIL) so they don't pop out as floating windows.
+            const newPanels = new Set(getColumnPanels(action.count));
+            const allColumnPanels = new Set(getColumnPanels(3));
+            const windows = state.windows.filter(
+                w => newPanels.has(w.type) || !allColumnPanels.has(w.type)
+            );
             return {
                 ...state,
                 columnCount: action.count,
                 columnWidths: newWidths,
                 activeColumnIndex: Math.min(state.activeColumnIndex, maxIndex),
+                windows,
             };
         }
 

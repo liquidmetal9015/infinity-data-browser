@@ -39,6 +39,43 @@
     margin-top: 0.1rem;
 }
 
+/* Unsaved changes banner — full-width bar between header and content */
+.unsaved-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    color: #fbbf24;
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: slide-in 0.2s ease;
+}
+
+@keyframes slide-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.unsaved-banner-save {
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.15s;
+}
+
+.unsaved-banner-save:hover {
+    background: rgba(251, 191, 36, 0.25);
+}
+
 .unsaved-badge {
     display: inline-flex;
     align-items: center;

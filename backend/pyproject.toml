@@ -6,19 +6,13 @@ authors = [{ name = "clindbeck9" }]
 readme = "README.md"
 requires-python = ">=3.12, <3.14"
 dependencies = [
-    "fastapi==0.115.12",
-    "uvicorn[standard]==0.34.3",
+    # Schema source-of-truth (Alembic migrations) + game-data ETL importer.
+    # The runtime API service is in backend-ts/; nothing here serves traffic.
     "sqlalchemy[asyncio]==2.0.41",
     "asyncpg==0.31.0",
     "alembic==1.15.2",
     "pydantic==2.11.4",
     "pydantic-settings==2.9.1",
-    "pytest==8.4.0",
-    "pytest-asyncio==1.0.0",
-    "httpx==0.28.1",
-    "google-auth==2.40.3",
-    "firebase-admin==7.4.0",
-    "anthropic>=0.43.0",
 ]
 
 [dependency-groups]
@@ -26,11 +20,6 @@ dev = [
     "ruff",
     "mypy",
 ]
-
-[tool.pytest.ini_options]
-asyncio_mode = "strict"
-asyncio_default_fixture_loop_scope = "session"
-asyncio_default_test_loop_scope = "session"
 
 [tool.ruff]
 line-length = 88
@@ -45,19 +34,6 @@ python_version = "3.12"
 strict = true
 
 [[tool.mypy.overrides]]
-# firebase_admin and asyncpg do not ship py.typed or stubs
-module = ["firebase_admin", "firebase_admin.*", "asyncpg", "asyncpg.*", "anthropic", "anthropic.*"]
+# asyncpg does not ship py.typed
+module = ["asyncpg", "asyncpg.*"]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["app.auth"]
-# firebase_admin.auth.verify_id_token() is typed as returning Any
-disable_error_code = ["no-any-return"]
-
-[[tool.mypy.overrides]]
-# The agent module and its endpoint are slated for deletion at TS-backend cutover.
-# Skip strict checks during the parallel-running window — the runtime path is
-# validated by integration tests, and the canonical implementation lives in
-# backend-ts/src/agent/.
-module = ["app.agent.*", "app.routers.agent"]
-ignore_errors = true

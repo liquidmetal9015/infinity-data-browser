@@ -121,14 +121,7 @@ export function UnitDetailPanel() {
                         <div className="flex flex-wrap gap-2">
                             {activeProfile.skills?.map((s, i) => {
                                 const wikiLink = db.getWikiLink('skill', s.id);
-                                const content = (
-                                    <>
-                                        {s.displayName || s.name}
-                                        {s.modifiers && s.modifiers.length > 0 &&
-                                            <span className="ml-1">({s.modifiers.join(', ')})</span>
-                                        }
-                                    </>
-                                );
+                                const content = s.displayName || s.name;
                                 return (
                                     <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
                                         {wikiLink ? (
@@ -183,7 +176,6 @@ export function UnitDetailPanel() {
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Equip</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">SWC</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center w-16"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -197,8 +189,7 @@ export function UnitDetailPanel() {
                                             <div className="flex flex-col gap-1">
                                                 {opt.weapons?.map((w, i) => (
                                                     <span key={i} className={`text-xs ${i === 0 ? "text-gray-200 font-medium" : "text-gray-400"}`}>
-                                                        {w.name}
-                                                        {w.modifiers && w.modifiers.length > 0 && <span className="ml-1">({w.modifiers.join(', ')})</span>}
+                                                        {w.displayName || w.name}
                                                     </span>
                                                 ))}
                                             </div>
@@ -215,18 +206,6 @@ export function UnitDetailPanel() {
                                         </td>
                                         <td className="px-3 py-3 align-top text-right font-mono font-bold text-blue-400 text-sm">
                                             {opt.points}
-                                        </td>
-                                        <td className="px-3 py-3 align-top text-center">
-                                            <button
-                                                className="px-2 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded text-[10px] font-medium transition-colors flex items-center gap-1 mx-auto"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleAddLoadout(opt.id);
-                                                }}
-                                            >
-                                                <CheckCircle size={12} />
-                                                Add
-                                            </button>
                                         </td>
                                     </tr>
                                 ))}

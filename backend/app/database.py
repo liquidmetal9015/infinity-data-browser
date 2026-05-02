@@ -1,11 +1,8 @@
 """SQLAlchemy async engine and session factory.
 
-Usage in route handlers:
-    async def get_units(session: AsyncSession = Depends(get_session)):
-        ...
+Used by Alembic migrations and `app/etl/import_json.py`. The runtime API is
+in `backend-ts/`; this module is intentionally minimal.
 """
-
-from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -22,9 +19,3 @@ async_session_factory = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
-
-
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that yields a database session per request."""
-    async with async_session_factory() as session:
-        yield session

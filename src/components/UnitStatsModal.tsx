@@ -184,14 +184,7 @@ export function UnitStatsModal({ selectionMode }: UnitStatsModalProps = {}) {
                                         <div className="flex flex-wrap gap-3">
                                             {activeProfile.skills?.map((s, i) => {
                                                 const wikiLink = db.getWikiLink('skill', s.id);
-                                                const content = (
-                                                    <>
-                                                        {s.displayName || s.name}
-                                                        {s.modifiers && s.modifiers.length > 0 &&
-                                                            <span className="ml-1">({s.modifiers.join(', ')})</span>
-                                                        }
-                                                    </>
-                                                );
+                                                const content = s.displayName || s.name;
 
                                                 return (
                                                     <span key={i} className="inline-flex items-center px-3 py-1.5 bg-[#162032] border border-white/5 rounded-md text-sm text-gray-300 shadow-sm transition-colors hover:border-white/10 hover:bg-[#1e293b]">

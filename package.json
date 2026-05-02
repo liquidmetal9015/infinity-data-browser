@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "generate:types": "cd backend && uv run python -m scripts.export_openapi && cd .. && npx openapi-typescript backend/openapi.json -o src/types/schema.d.ts",
+    "generate:types": "echo 'TODO: re-enable with @hono/zod-openapi in backend-ts/. Frontend src/types/schema.d.ts is the current source of truth — edit by hand or regenerate when the OpenAPI export lands.' && exit 1",
     "etl": "tsx scripts/process-data.ts",
     "mcp": "tsx mcp-server/index.ts",
     "dev": "vite",

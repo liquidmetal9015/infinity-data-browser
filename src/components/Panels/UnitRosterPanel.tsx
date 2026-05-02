@@ -168,7 +168,7 @@ export function UnitRosterPanel() {
     const groupedRoster = useMemo(() => {
         const groups = new Map<number, Unit[]>();
         for (const unit of filteredRoster) {
-            const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.type ?? 0;
+            const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
             if (!groups.has(primaryType)) groups.set(primaryType, []);
             groups.get(primaryType)!.push(unit);
         }

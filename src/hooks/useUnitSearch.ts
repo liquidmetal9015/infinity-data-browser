@@ -165,20 +165,21 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
 
         // Apply text query
         if (textQuery.trim()) {
-            const lowerTerm = textQuery.trim().toLowerCase();
+            const normalize = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+            const lowerTerm = normalize(textQuery.trim());
             results = results.filter(unit => {
-                if (unit.name?.toLowerCase().includes(lowerTerm) || unit.isc.toLowerCase().includes(lowerTerm)) return true;
+                if (normalize(unit.name ?? '') .includes(lowerTerm) || normalize(unit.isc).includes(lowerTerm)) return true;
 
                 for (const group of unit.raw.profileGroups) {
                     for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => s.name.toLowerCase().includes(lowerTerm))) return true;
-                        if (profile.equipment?.some(e => e.name.toLowerCase().includes(lowerTerm))) return true;
+                        if (profile.skills?.some(s => normalize(s.name).includes(lowerTerm))) return true;
+                        if (profile.equipment?.some(e => normalize(e.name).includes(lowerTerm))) return true;
                     }
                     for (const opt of group.options) {
-                        if (opt.weapons?.some(w => w.name.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.equipment?.some(e => e.name.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.skills?.some(s => s.name.toLowerCase().includes(lowerTerm))) return true;
-                        if (opt.name?.toLowerCase().includes(lowerTerm) || group.isc?.toLowerCase().includes(lowerTerm)) return true;
+                        if (opt.weapons?.some(w => normalize(w.name).includes(lowerTerm))) return true;
+                        if (opt.equipment?.some(e => normalize(e.name).includes(lowerTerm))) return true;
+                        if (opt.skills?.some(s => normalize(s.name).includes(lowerTerm))) return true;
+                        if (normalize(opt.name ?? '').includes(lowerTerm) || normalize(group.isc ?? '').includes(lowerTerm)) return true;
                     }
                 }
                 return false;

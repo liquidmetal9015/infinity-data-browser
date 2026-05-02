@@ -184,7 +184,7 @@ export function SearchPage() {
                                 </div>
                                 {/* Compact rows */}
                                 {filteredUnits.slice(0, 200).map(unit => {
-                                    const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.type ?? 0;
+                                    const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
                                     const factionNames = unit.factions
                                         .map(fid => db.factionMap.get(fid))
                                         .filter(Boolean)

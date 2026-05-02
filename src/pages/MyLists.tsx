@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
-import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
 import { ArmyLogo } from '../components/shared/ArmyLogo';
 import { Download, Upload } from 'lucide-react';
 import { getSafeLogo } from '../utils/assets';
@@ -17,6 +16,7 @@ import type { ArmyList, CombatGroup, ListUnit } from '@shared/listTypes';
 import { indexList, type ListIndex } from '@shared/list-similarity';
 import type { SearchSuggestion } from '@shared/types';
 import { ListContentFilter } from '../components/MyLists/ListContentFilter';
+import { NewListModal } from '../components/ListBuilder/NewListModal';
 
 type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc';
 
@@ -526,6 +526,7 @@ export function MyLists() {
                     />
                 )}
 
+
                 {/* ── List cards ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {displayedLists.map(list => {
@@ -973,74 +974,6 @@ function ImportFromCodeModal({ onImport, onCancel }: {
     );
 }
 
-function NewListModal({ db, globalFactionId, setGlobalFactionId, onConfirm, onCancel }: {
-    db: ReturnType<typeof import('../hooks/useDatabase').useDatabase>;
-    globalFactionId: number | null;
-    setGlobalFactionId: (id: number | null) => void;
-    onConfirm: (name: string, factionId: number, points: number) => void;
-    onCancel: () => void;
-}) {
-    const [name, setName] = useState('');
-    const [points, setPoints] = useState(300);
-    const groupedFactions = db.getGroupedFactions();
-    const factionName = globalFactionId ? db.getFactionName(globalFactionId) : '';
-    const defaultName = globalFactionId ? `New ${factionName} List` : '';
-
-    return (
-        <div
-            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
-            onClick={onCancel}
-        >
-            <div
-                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}
-                onClick={e => e.stopPropagation()}
-            >
-                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>Create New Army List</h2>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Faction</label>
-                    <CompactFactionSelector groupedFactions={groupedFactions} value={globalFactionId} onChange={setGlobalFactionId} />
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>List Name</label>
-                    <input
-                        autoFocus
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder={defaultName || 'My Army List'}
-                        onKeyDown={e => { if (e.key === 'Enter' && globalFactionId) onConfirm(name.trim() || defaultName, globalFactionId, points); }}
-                        style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '0.6rem 0.75rem', fontSize: '0.9rem' }}
-                    />
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Points Limit</label>
-                    <select
-                        value={points}
-                        onChange={e => setPoints(Number(e.target.value))}
-                        style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', padding: '0.6rem 0.75rem', fontSize: '0.9rem' }}
-                    >
-                        {[150, 200, 250, 300, 400].map(p => <option key={p} value={p}>{p} pts</option>)}
-                    </select>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                    <button onClick={onCancel} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>
-                        Cancel
-                    </button>
-                    <button
-                        disabled={!globalFactionId}
-                        onClick={() => { if (globalFactionId) onConfirm(name.trim() || defaultName, globalFactionId, points); }}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: '8px', border: 'none', background: globalFactionId ? 'var(--accent, #6366f1)' : 'var(--bg-tertiary)', color: '#fff', cursor: globalFactionId ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: '0.875rem', opacity: globalFactionId ? 1 : 0.5 }}
-                    >
-                        Create List
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function actionBtn(accentColor: string, disabled: boolean): React.CSSProperties {
     return {

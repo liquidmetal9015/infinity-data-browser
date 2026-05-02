@@ -484,7 +484,9 @@ function transformUnit(
         isc: raw.isc,
         name: raw.name,
         slug: raw.slug,
-        ...(raw.logo ? { logo: raw.logo } : {}),
+        ...(raw.logo ?? raw.profileGroups?.[0]?.profiles?.[0]?.logo
+            ? { logo: raw.logo ?? raw.profileGroups[0].profiles[0].logo }
+            : {}),
         factionIds: raw.factions ?? [],
         profileGroups,
         allWeaponIds,
