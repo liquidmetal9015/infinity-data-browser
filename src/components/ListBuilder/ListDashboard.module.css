@@ -288,15 +288,6 @@
     opacity: 0.8 !important;
 }
 
-@keyframes unit-row-flash {
-    0%   { box-shadow: inset 3px 0 0 #f59e0b, inset 0 0 18px rgba(245, 158, 11, 0.18); }
-    60%  { box-shadow: inset 3px 0 0 rgba(245, 158, 11, 0.5), inset 0 0 8px rgba(245, 158, 11, 0.08); }
-    100% { box-shadow: none; }
-}
-
-.unit-row-highlighted {
-    animation: unit-row-flash 800ms ease-out forwards;
-}
 
 .drag-handle {
     cursor: grab;

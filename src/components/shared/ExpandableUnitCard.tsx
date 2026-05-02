@@ -20,6 +20,8 @@ interface ExpandableUnitCardProps {
     searchQuery?: string;
     activeFilters?: QueryFilter[];
     isHighlighted?: boolean;
+    /** Option to flash-highlight when navigated from the army list. tick changes on each request to force animation restart. */
+    highlightOption?: { id: number; tick: number };
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
 }
@@ -38,7 +40,7 @@ const ATTRIBUTES = [
 
 
 
-export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
+export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, highlightOption, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
     const profileGroups = unit.raw.profileGroups || [];
@@ -162,6 +164,12 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                     optName = `${optName} (${optionModsAndSkills.join(', ')})`;
                                 }
 
+                                // Peripheral names included with this loadout (e.g. "DRUMBOT_3")
+                                const includedPeripheralNames = (opt.includes || []).map(inc => {
+                                    const pg = profileGroups[inc.group - 1];
+                                    return pg?.options[inc.option - 1]?.name ?? null;
+                                }).filter((n): n is string => n !== null);
+
                                 const weapsAndEqStr = weapsAndEq.join(' ').toLowerCase();
                                 const optionModsAndSkillsStr = optionModsAndSkills.join(' ').toLowerCase();
 
@@ -198,9 +206,10 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                     }
                                 }
 
+                                const isThisOptionHighlighted = highlightOption?.id === opt.id;
                                 return (
                                     <div
-                                        key={opt.id}
+                                        key={isThisOptionHighlighted ? `h-${opt.id}-t${highlightOption!.tick}` : `opt-${opt.id}`}
                                         onClick={(e) => {
                                             if (onAddUnit) {
                                                 e.stopPropagation();
@@ -210,7 +219,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                                 onViewUnit(unit);
                                             }
                                         }}
-                                        className={`group relative flex items-stretch border rounded-md overflow-hidden transition-colors ${(onAddUnit || onViewUnit) ? 'cursor-pointer ' : ''}${matchesSearch ? 'bg-blue-500/10 border-blue-500/50 hover:bg-blue-500/20' : 'bg-black/10 border-white/5 hover:bg-black/30 hover:border-white/10'}`}
+                                        className={`group relative flex items-stretch border rounded-md overflow-hidden transition-colors ${(onAddUnit || onViewUnit) ? 'cursor-pointer ' : ''}${matchesSearch ? 'bg-blue-500/10 border-blue-500/50 hover:bg-blue-500/20' : 'bg-black/10 border-white/5 hover:bg-black/30 hover:border-white/10'} ${isThisOptionHighlighted ? 'option-row-highlighted' : ''}`}
                                     >
                                         <div className="flex items-center justify-center px-3 bg-black/20 border-r border-white/5">
                                             {orders.map((o, i) => (
@@ -222,6 +231,14 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                             <span className="text-gray-400 text-[11px] truncate">
                                                 {weapsAndEq.join(', ') || '—'}
                                             </span>
+                                            {includedPeripheralNames.length > 0 && (
+                                                <>
+                                                    <span className="text-gray-600 flex-shrink-0 text-[11px]">||</span>
+                                                    <span className="text-[11px] flex-shrink-0 font-medium" style={{ color: CLASSIFICATION_COLORS[5] }}>
+                                                        {includedPeripheralNames.join(', ')}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="flex flex-col items-center justify-center p-2 border-l border-white/5 bg-black/10 min-w-[50px]">
                                             <div className="text-[10px] text-gray-500 font-bold">SWC</div>
@@ -247,31 +264,58 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                             })}
                         </div>
 
-                        {/* Peripheral Units (e.g., Crabbot, Auxbot) */}
+                        {/* Peripheral Units — full option listing */}
                         {profileGroups.map((pg, idx) => {
                             if (!isPeripheralGroup(unit, idx)) return null;
                             const pProfile = pg.profiles[0];
-                            const pOption = pg.options[0];
-                            if (!pProfile || !pOption) return null;
+                            if (!pProfile) return null;
                             return (
-                                <div key={pg.id} className="mt-2 p-2.5 bg-black/15 border border-white/5 rounded-md">
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
-                                            style={{ color: CLASSIFICATION_COLORS[5], background: `${CLASSIFICATION_COLORS[5]}15`, border: `1px solid ${CLASSIFICATION_COLORS[5]}30` }}>
-                                            REM
-                                        </span>
-                                        <span className="text-xs font-bold text-gray-400">{pg.isc || pProfile.name}</span>
-                                        <span className="text-[10px] text-gray-500">Attached</span>
+                                <div key={pg.id} className="mt-2 border border-white/10 rounded-md overflow-hidden">
+                                    {/* Header: badge, name, stats, shared skills */}
+                                    <div className="px-2.5 py-2 bg-black/20 space-y-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                                style={{ color: CLASSIFICATION_COLORS[5], background: `${CLASSIFICATION_COLORS[5]}15`, border: `1px solid ${CLASSIFICATION_COLORS[5]}30` }}>
+                                                REM
+                                            </span>
+                                            <span className="text-xs font-bold text-gray-300">{pg.isc || pProfile.name}</span>
+                                        </div>
+                                        <div className="flex gap-3 text-[10px]">
+                                            {ATTRIBUTES.map((attr) => {
+                                                const rec = pProfile as unknown as Record<string, unknown>;
+                                                let val: string | number | undefined = rec[attr.key] as string | number | undefined;
+                                                if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
+                                                return (
+                                                    <div key={attr.key} className="flex flex-col items-center">
+                                                        <div className="font-bold text-gray-600">{attr.label}</div>
+                                                        <div className="font-mono text-gray-400">{val ?? '-'}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        {((pProfile.skills && pProfile.skills.length > 0) || (pProfile.equipment && pProfile.equipment.length > 0)) && (
+                                            <div className="text-[10px] text-gray-500 leading-relaxed">
+                                                <span className="font-bold uppercase tracking-widest mr-1">Skills & Eq:</span>
+                                                {[
+                                                    ...(pProfile.skills || []).map(s => s.displayName || s.name),
+                                                    ...(pProfile.equipment || []).map(e => e.name)
+                                                ].join(' • ')}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex gap-3 text-[10px]">
-                                        {ATTRIBUTES.map((attr) => {
-                                            const rec = pProfile as unknown as Record<string, unknown>;
-                                            let val: string | number | undefined = rec[attr.key] as string | number | undefined;
-                                            if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
+                                    {/* One row per option */}
+                                    <div className="divide-y divide-white/[0.04]">
+                                        {pg.options.map((pOpt) => {
+                                            const pItems = [
+                                                ...(pOpt.weapons || []).map(w => w.displayName || w.name),
+                                                ...(pOpt.skills || []).map(s => s.displayName || s.name),
+                                                ...(pOpt.equipment || []).map(e => e.name),
+                                            ];
                                             return (
-                                                <div key={attr.key} className="flex flex-col items-center">
-                                                    <div className="font-bold text-gray-600">{attr.label}</div>
-                                                    <div className="font-mono text-gray-400">{val ?? '-'}</div>
+                                                <div key={pOpt.id} className="flex items-center px-2.5 py-1.5 gap-2 bg-black/10 text-[11px]">
+                                                    <span className="font-bold text-gray-400 flex-shrink-0 w-24">{pOpt.name}</span>
+                                                    <span className="flex-1 text-gray-500 truncate">{pItems.join(', ') || '—'}</span>
+                                                    <span className="font-mono text-blue-400/70 flex-shrink-0">{pOpt.points}pts</span>
                                                 </div>
                                             );
                                         })}

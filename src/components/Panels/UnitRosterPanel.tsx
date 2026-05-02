@@ -59,16 +59,20 @@ export function UnitRosterPanel() {
         : windows.some(w => w.type === 'UNIT_DETAIL' && !w.isMinimized);
 
     const rosterListRef = useRef<HTMLDivElement>(null);
+    const optionHighlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [rosterQuery, setRosterQuery] = useState<QueryState>({ filters: [], operator: 'or' });
     const [rosterTextQuery, setRosterTextQuery] = useState('');
     const [expandedUnitIds, setExpandedUnitIds] = useState<Set<number>>(new Set());
     const [expandMode, setExpandMode] = useState<'single' | 'multiple'>('single');
     const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+    const [highlightedOptionId, setHighlightedOptionId] = useState<number | null>(null);
+    const [highlightedOptionTick, setHighlightedOptionTick] = useState(0);
+    const [highlightTargetUnitId, setHighlightTargetUnitId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!rosterScrollTarget) return;
-        const { unitId } = rosterScrollTarget;
+        const { unitId, optionId } = rosterScrollTarget;
 
         const unit = db.units.find(u => u.id === unitId);
         if (!unit) { setRosterScrollTarget(null); return; }
@@ -88,6 +92,18 @@ export function UnitRosterPanel() {
             next.add(unitId);
             return next;
         });
+
+        if (optionId != null) {
+            if (optionHighlightTimeoutRef.current) clearTimeout(optionHighlightTimeoutRef.current);
+            setHighlightTargetUnitId(unitId);
+            setHighlightedOptionId(optionId);
+            setHighlightedOptionTick(t => t + 1);
+            optionHighlightTimeoutRef.current = setTimeout(() => {
+                setHighlightedOptionId(null);
+                setHighlightTargetUnitId(null);
+                optionHighlightTimeoutRef.current = null;
+            }, 900);
+        }
 
         requestAnimationFrame(() => {
             const el = rosterListRef.current?.querySelector<HTMLElement>(`[data-unit-id="${unitId}"]`);
@@ -269,6 +285,7 @@ export function UnitRosterPanel() {
                 searchQuery={rosterTextQuery.trim()}
                 activeFilters={rosterQuery.filters}
                 isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}
+                highlightOption={unit.id === highlightTargetUnitId && highlightedOptionId != null ? { id: highlightedOptionId, tick: highlightedOptionTick } : undefined}
                 onMouseEnter={() => setHoveredUnitISC(unit.isc)}
                 onMouseLeave={() => setHoveredUnitISC(null)}
                 onAddUnit={handleAddUnit}

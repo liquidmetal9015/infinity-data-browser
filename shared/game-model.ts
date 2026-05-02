@@ -742,6 +742,24 @@ export interface ProfileGroup {
     isPeripheral: boolean;
     peripheralType?: PeripheralType; // Set when isPeripheral=true
 
+    /**
+     * True when this peripheral is automatically included with its parent unit —
+     * i.e. it is NOT independently purchasable.
+     *
+     * Always false when `isPeripheral` is false.
+     *
+     * The distinguishing data point is `profile.ava === AVA_PERIPHERAL (-1)`:
+     *   - Auto-attached (isAutoAttached=true): Crabbots, Turtlemeks, Synchronized REMs —
+     *     come bundled with a specific parent loadout, ava=-1, no list slot consumed.
+     *   - Purchasable (isAutoAttached=false): Palbots, Yudbots — bought separately,
+     *     attach to any eligible controller at the start of the game, ava≥1.
+     *
+     * UI implication: auto-attached peripherals cannot be directly added via the list
+     * builder; purchasable peripherals can. The "Linked unit" banner and disabled
+     * loadout rows in UnitDetailPanel should only apply when isAutoAttached=true.
+     */
+    isAutoAttached: boolean;
+
     /** True when any profile or ISC name contains "FTO" (Fire Team Option).
      *  When present on a unit, ONLY FTO profiles may join fireteams. */
     isFTO: boolean;

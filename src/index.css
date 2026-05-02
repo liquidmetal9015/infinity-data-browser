@@ -1847,3 +1847,12 @@ body {
 .tooltip-value.denied {
   color: var(--error);
 }
+@keyframes option-row-flash {
+    0%   { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.8), 0 0 12px rgba(245, 158, 11, 0.25); background-color: rgba(245, 158, 11, 0.12); }
+    60%  { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35), 0 0 6px rgba(245, 158, 11, 0.1); background-color: rgba(245, 158, 11, 0.05); }
+    100% { box-shadow: none; background-color: transparent; }
+}
+
+.option-row-highlighted {
+    animation: option-row-flash 900ms ease-out forwards;
+}

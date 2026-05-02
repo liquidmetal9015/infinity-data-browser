@@ -34,6 +34,7 @@ import type {
     FireteamComposition,
     PeripheralInclude,
 } from '../shared/game-model.js';
+import { AVA_PERIPHERAL } from '../shared/game-model.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, '../data');
@@ -395,6 +396,9 @@ function transformProfileGroup(
     // Peripheral detection: any profile has Peripheral skill
     const isPeripheral = profiles.some(p => p.peripheralType !== undefined);
     const peripheralType = profiles.find(p => p.peripheralType !== undefined)?.peripheralType;
+    // Auto-attached peripherals have ava=-1 (AVA_PERIPHERAL) — not independently purchasable.
+    // Purchasable peripherals (e.g. Palbots) have ava≥1 and are bought as separate list entries.
+    const isAutoAttached = isPeripheral && profiles.every(p => p.ava === AVA_PERIPHERAL);
 
     // FTO detection: ISC contains "FTO" or profile name contains "FTO"
     const isFTO = raw.isc?.includes('FTO') ||
@@ -414,6 +418,7 @@ function transformProfileGroup(
         options,
         ...(raw.notes ? { notes: raw.notes } : {}),
         isPeripheral,
+        isAutoAttached,
         ...(isPeripheral && peripheralType ? { peripheralType: peripheralType as ProfileGroup['peripheralType'] } : {}),
         isFTO,
     };

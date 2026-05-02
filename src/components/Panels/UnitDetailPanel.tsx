@@ -21,14 +21,18 @@ export function UnitDetailPanel() {
     const db = useDatabase();
     const unit = useListBuilderUIStore(s => s.selectedUnitForDetail);
     const selectedProfileGroupId = useListBuilderUIStore(s => s.selectedProfileGroupId);
+    const selectedOptionId = useListBuilderUIStore(s => s.selectedOptionId);
+    const highlightTick = useListBuilderUIStore(s => s.highlightTick);
     const targetGroupIndex = useListBuilderUIStore(s => s.targetGroupIndex);
     const addUnit = useListStore(s => s.addUnit);
 
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
     const [highlightedGroupIndex, setHighlightedGroupIndex] = useState<number | null>(null);
+    const [highlightedOptionId, setHighlightedOptionId] = useState<number | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const optionHighlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // When a unit is selected from the army list, jump to the right profile group tab
+    // When a unit is selected from the army list, jump to the right profile group and highlight the specific option
     useEffect(() => {
         if (!unit) return;
         const profileGroups = unit.raw.profileGroups || [];
@@ -36,15 +40,21 @@ export function UnitDetailPanel() {
             const idx = profileGroups.findIndex(g => g.id === selectedProfileGroupId);
             if (idx !== -1 && idx !== activeGroupIndex) {
                 setActiveGroupIndex(idx);
-                // Brief highlight to draw attention to the tab
                 setHighlightedGroupIndex(idx);
                 setTimeout(() => setHighlightedGroupIndex(null), 800);
             }
         }
-        // Scroll to top when switching to a newly selected unit
+        if (selectedOptionId != null) {
+            if (optionHighlightTimeoutRef.current) clearTimeout(optionHighlightTimeoutRef.current);
+            setHighlightedOptionId(selectedOptionId);
+            optionHighlightTimeoutRef.current = setTimeout(() => {
+                setHighlightedOptionId(null);
+                optionHighlightTimeoutRef.current = null;
+            }, 900);
+        }
         scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [unit, selectedProfileGroupId]);
+    }, [unit, selectedProfileGroupId, selectedOptionId, highlightTick]);
 
     if (!unit) {
         return (
@@ -63,15 +73,16 @@ export function UnitDetailPanel() {
 
     if (!activeProfile) return null;
 
-    const isPeripheralGroup = activeGroup.isPeripheral === true;
+    const isAutoAttachedPeripheral = activeGroup.isAutoAttached;
 
     const handleAddLoadout = (optionId: number) => {
-        if (isPeripheralGroup) return;
+        if (isAutoAttachedPeripheral) return;
         addUnit(unit, targetGroupIndex, activeGroup.id, activeProfile.id, optionId);
     };
 
     return (
-        <div ref={scrollRef} className="overflow-y-auto h-full bg-[#0b1221]">
+        <div className="h-full flex flex-col overflow-hidden bg-[#0b1221]">
+        <div ref={scrollRef} className="overflow-y-auto flex-1 min-h-0">
             <div className="p-6 space-y-6">
                 {/* Header */}
                 <div className="space-y-2">
@@ -194,7 +205,7 @@ export function UnitDetailPanel() {
                         <Crosshair size={12} className="text-red-500/80" />
                         Loadout Options
                     </h3>
-                    {isPeripheralGroup && (
+                    {isAutoAttachedPeripheral && (
                         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300">
                             <Link size={12} />
                             Linked unit — auto-attached to its parent, not independently purchasable
@@ -215,11 +226,16 @@ export function UnitDetailPanel() {
                                     const optMods = (opt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name);
                                     let optName = opt.name || activeGroup.isc || unit.isc;
                                     if (optMods.length > 0) optName = `${optName} (${optMods.join(', ')})`;
+                                    const includedPeripheralNames = (opt.includes || []).map(inc => {
+                                        const pg = profileGroups[inc.group - 1];
+                                        return pg?.options[inc.option - 1]?.name ?? null;
+                                    }).filter((n): n is string => n !== null);
+                                    const isThisOptionHighlighted = highlightedOptionId === opt.id;
                                     return (
                                     <tr
-                                        key={idx}
-                                        className={isPeripheralGroup ? 'opacity-60' : 'transition-colors hover:bg-blue-500/10 cursor-pointer'}
-                                        onClick={isPeripheralGroup ? undefined : () => handleAddLoadout(opt.id)}
+                                        key={isThisOptionHighlighted ? `h-${opt.id}-t${highlightTick}` : `opt-${opt.id}`}
+                                        className={`${isAutoAttachedPeripheral ? 'opacity-60' : 'transition-colors hover:bg-blue-500/10 cursor-pointer'} ${isThisOptionHighlighted ? 'option-row-highlighted' : ''}`}
+                                        onClick={isAutoAttachedPeripheral ? undefined : () => handleAddLoadout(opt.id)}
                                     >
                                         <td className="px-4 py-3 align-top">
                                             <div className="text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wide">
@@ -231,6 +247,14 @@ export function UnitDetailPanel() {
                                                         {w.displayName || w.name}
                                                     </span>
                                                 ))}
+                                                {includedPeripheralNames.length > 0 && (
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <span className="text-gray-600 text-xs">||</span>
+                                                        <span className="text-xs font-medium" style={{ color: '#22c55ecc' }}>
+                                                            {includedPeripheralNames.join(', ')}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-3 py-3 align-top text-xs text-gray-400">
@@ -253,7 +277,76 @@ export function UnitDetailPanel() {
                         </table>
                     </div>
                 </div>
+
+                {/* Inline Auto-Attached Peripherals — full first-class profile listing */}
+                {!isAutoAttachedPeripheral && profileGroups.filter(pg => pg.isAutoAttached).map(pg => {
+                    const pProfile = pg.profiles[0];
+                    if (!pProfile) return null;
+                    return (
+                        <div key={pg.id} className="space-y-3">
+                            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
+                                <Link size={12} className="text-blue-400/60" />
+                                Attached: {pg.isc || pProfile.name}
+                            </h3>
+                            <div className="rounded-xl bg-[#0f172a] border border-white/5 overflow-hidden">
+                                {/* Stats + shared skills */}
+                                <div className="p-4 space-y-3 border-b border-white/5">
+                                    <div className="grid grid-cols-9 gap-2">
+                                        {ATTRIBUTES.map((attr) => {
+                                            const rec = pProfile as unknown as Record<string, unknown>;
+                                            let val: string | number | undefined = rec[attr.key] as string | number | undefined;
+                                            if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
+                                            return (
+                                                <div key={attr.key} className="flex flex-col items-center gap-1">
+                                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.15em]">{attr.label}</span>
+                                                    <span className="text-sm font-bold text-gray-400 font-mono">{val ?? '-'}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {((pProfile.skills && pProfile.skills.length > 0) || (pProfile.equipment && pProfile.equipment.length > 0)) && (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {[
+                                                ...(pProfile.skills || []).map(s => s.displayName || s.name),
+                                                ...(pProfile.equipment || []).map(e => e.name)
+                                            ].map((item, i) => (
+                                                <span key={i} className="px-2 py-0.5 bg-[#162032] border border-white/5 rounded text-[11px] text-gray-400">{item}</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* One row per option */}
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-[#162032] border-b border-white/5">
+                                        <tr>
+                                            <th className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Option</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Weapons & Skills</th>
+                                            <th className="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-right">Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {pg.options.map((pOpt) => {
+                                            const pItems = [
+                                                ...(pOpt.weapons || []).map((w: { displayName?: string; name: string }) => w.displayName || w.name),
+                                                ...(pOpt.skills || []).map((s: { displayName?: string; name: string }) => s.displayName || s.name),
+                                                ...(pOpt.equipment || []).map((e: { name: string }) => e.name),
+                                            ];
+                                            return (
+                                                <tr key={pOpt.id} className="hover:bg-white/[0.02]">
+                                                    <td className="px-4 py-2.5 text-xs font-bold text-gray-300 whitespace-nowrap">{pOpt.name}</td>
+                                                    <td className="px-3 py-2.5 text-xs text-gray-400">{pItems.join(', ') || '—'}</td>
+                                                    <td className="px-3 py-2.5 text-xs font-mono text-blue-400 text-right">{pOpt.points}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
+        </div>
         </div>
     );
 }
