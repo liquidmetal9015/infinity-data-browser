@@ -8,7 +8,7 @@ import type { WidgetType } from '../types/workspace';
 import { useAuth } from '../hooks/useAuth';
 import { STATIC_MODE } from '../services/listService';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppModeStore } from '../stores/useAppModeStore';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -16,17 +16,7 @@ import { NewListModal } from './ListBuilder/NewListModal';
 import { calculateListPoints } from '@shared/listTypes';
 import styles from './NavBar.module.css';
 
-function useIsMobile() {
-    const [isMobile, setIsMobile] = useState(() =>
-        typeof window !== 'undefined' ? window.innerWidth < 768 : false
-    );
-    useEffect(() => {
-        const handler = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handler);
-        return () => window.removeEventListener('resize', handler);
-    }, []);
-    return isMobile;
-}
+import { useIsMobile } from '../hooks/useIsMobile';
 
 const EXPLORE_LINKS = [
     { label: 'Units', path: '/search' },

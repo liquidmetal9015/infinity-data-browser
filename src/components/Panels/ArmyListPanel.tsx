@@ -25,7 +25,7 @@ import { getColumnPanels } from '../../types/workspace';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
 import { useAuth } from '../../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
+import { listService } from '../../services/listService';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit, type FireteamDef } from '@shared/listTypes';
 import { Plus, Trash2, Users, Copy, Check, CloudUpload, CloudCheck } from 'lucide-react';
 import { ArmyLogo } from '../shared/ArmyLogo';
@@ -86,32 +86,15 @@ export function ArmyListPanel() {
     const saveListMutation = useMutation({
         mutationFn: async () => {
             if (!currentList) return null;
-            const body = {
-                name: currentList.name,
-                description: currentList.description ?? null,
-                tags: currentList.tags ?? [],
-                rating: currentList.rating ?? 0,
-                faction_id: currentList.factionId,
-                points: calculateListPoints(currentList),
-                swc: calculateListSWC(currentList),
-                units_json: currentList as unknown as Record<string, unknown>,
-            };
             if (currentList.serverId) {
-                const { data, error } = await api.PUT('/api/lists/{listId}', {
-                    params: { path: { listId: String(currentList.serverId) } },
-                    body,
-                });
-                if (error) throw error;
-                return data;
+                return listService.updateList(String(currentList.serverId), currentList);
             } else {
-                const { data, error } = await api.POST('/api/lists', { body });
-                if (error) throw error;
-                return data;
+                return listService.createList(currentList, currentList.factionId);
             }
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['my-lists'] });
-            if (data && !currentList?.serverId) setServerId(data.id);
+            if (data && !currentList?.serverId) setServerId(Number(data.id));
             recordSave();
         },
     });

@@ -1,5 +1,5 @@
 // WorkspaceView - Main canvas component that renders active windows + launcher bar
-import { useRef, useCallback, Fragment, useState, useEffect } from 'react';
+import { useRef, useCallback, Fragment } from 'react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { useContextMenuStore as useContextMenu } from '../../stores/useContextMenuStore';
 import { WindowFrame } from './WindowFrame';
@@ -7,19 +7,8 @@ import { widgetRegistry } from './widgetRegistry';
 import { getColumnPanels } from '../../types/workspace';
 import type { WidgetType } from '../../types/workspace';
 import { clsx } from 'clsx';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import styles from './WorkspaceView.module.css';
-
-function useIsMobile(): boolean {
-    const [isMobile, setIsMobile] = useState(() =>
-        typeof window !== 'undefined' ? window.innerWidth < 768 : false
-    );
-    useEffect(() => {
-        const handler = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handler);
-        return () => window.removeEventListener('resize', handler);
-    }, []);
-    return isMobile;
-}
 
 interface DragDividerProps {
     index: number;

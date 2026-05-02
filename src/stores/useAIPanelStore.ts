@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { auth } from '../services/firebase';
 import { STATIC_MODE } from '../services/listService';
+import { getAuthHeaders } from '../utils/authHeaders';
 
 export interface ChatMessage {
     id: string;
@@ -30,18 +30,6 @@ interface AIPanelStore {
 
 const BASE_URL = import.meta.env.VITE_API_URL ||
     (typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-    if (import.meta.env.VITE_DEV_AUTH === 'true') {
-        return { Authorization: 'Bearer dev-token' };
-    }
-    const user = auth?.currentUser;
-    if (user) {
-        const token = await user.getIdToken();
-        return { Authorization: `Bearer ${token}` };
-    }
-    return {};
-}
 
 function makeId(): string {
     return Math.random().toString(36).slice(2, 10);

@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import type { paths } from "../types/schema";
-import { auth } from "./firebase";
+import { getAuthHeaders } from "../utils/authHeaders";
 
 const baseUrl = import.meta.env.VITE_API_URL ||
     (typeof window !== "undefined" ? window.location.origin : "http://localhost");
@@ -9,14 +9,9 @@ const client = createClient<paths>({ baseUrl });
 
 client.use({
     async onRequest({ request }) {
-        if (import.meta.env.VITE_DEV_AUTH === 'true') {
-            request.headers.set("Authorization", "Bearer dev-token");
-            return request;
-        }
-        const user = auth?.currentUser;
-        if (user) {
-            const token = await user.getIdToken();
-            request.headers.set("Authorization", `Bearer ${token}`);
+        const headers = await getAuthHeaders();
+        for (const [key, value] of Object.entries(headers)) {
+            request.headers.set(key, value);
         }
         return request;
     },

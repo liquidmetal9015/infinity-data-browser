@@ -1,17 +1,7 @@
 /**
- * Skill Summary Extraction Utility
- * Parses wiki markdown files and extracts one-line summaries for skills and equipment
+ * Skill Summary Utility
+ * Provides one-line summaries for skills and equipment for agent context
  */
-
-import { promises as fs } from 'fs';
-import * as path from 'path';
-
-interface SkillSummary {
-    name: string;
-    summary: string;
-    type: 'skill' | 'equipment' | 'ammo' | 'state';
-    wikiSlug: string;
-}
 
 // Pre-built summaries for common skills/equipment that agents need to understand
 // These are carefully distilled from the wiki to be accurate and concise
@@ -92,20 +82,20 @@ const BUILT_IN_SUMMARIES: Record<string, string> = {
     'Plasma': 'Combines AP+DA. Halve ARM and 2 saves.',
 };
 
-let skillSummariesCache: Map<string, SkillSummary> | null = null;
+// Keys sorted longest-first to prevent shorter keys from matching as substrings
+// (e.g., "Martial Arts" must match before "Arts" if both existed)
+const SORTED_KEYS = Object.keys(BUILT_IN_SUMMARIES).sort((a, b) => b.length - a.length);
 
 /**
  * Get a one-line summary for a skill or equipment
  */
 export function getSkillSummary(name: string): string | undefined {
-    // Normalize the name
-    const normalizedName = name.replace(/[-_]/g, ' ').trim();
+    const normalizedName = name.replace(/[-_]/g, ' ').trim().toLowerCase();
 
-    // Check built-in summaries first (case-insensitive)
-    for (const [key, summary] of Object.entries(BUILT_IN_SUMMARIES)) {
-        if (key.toLowerCase() === normalizedName.toLowerCase() ||
-            normalizedName.toLowerCase().includes(key.toLowerCase())) {
-            return summary;
+    for (const key of SORTED_KEYS) {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey === normalizedName || normalizedName.includes(lowerKey)) {
+            return BUILT_IN_SUMMARIES[key];
         }
     }
 
@@ -113,87 +103,15 @@ export function getSkillSummary(name: string): string | undefined {
 }
 
 /**
- * Get summaries for multiple skills at once  
+ * Get summaries for multiple skills at once
  */
 export function getSkillSummaries(names: string[]): Map<string, string> {
     const result = new Map<string, string>();
-
     for (const name of names) {
         const summary = getSkillSummary(name);
-        if (summary) {
-            result.set(name, summary);
-        }
+        if (summary) result.set(name, summary);
     }
-
     return result;
-}
-
-/**
- * Parse wiki markdown to extract the EFFECTS section
- */
-export function extractEffectsFromWiki(content: string): string | undefined {
-    // Look for EFFECTS section
-    const effectsMatch = content.match(/EFFECTS\s*\n([\s\S]*?)(?=\n(?:REQUIREMENTS|SEE ALSO|REMEMBER|IMPORTANT|\*\*\[|FAQs|---)|$)/i);
-
-    if (effectsMatch) {
-        const effects = effectsMatch[1]
-            .replace(/\*\s+/g, '')  // Remove bullet points
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // Remove markdown links
-            .replace(/\n+/g, ' ')  // Join lines
-            .trim();
-
-        // Return first sentence or first 200 chars
-        const firstSentence = effects.match(/^[^.!?]+[.!?]/);
-        if (firstSentence) {
-            return firstSentence[0].trim();
-        }
-        return effects.substring(0, 200).trim() + '...';
-    }
-
-    return undefined;
-}
-
-/**
- * Load and cache skill summaries from wiki files
- * This is more expensive so only call when needed
- */
-export async function loadSkillSummariesFromWiki(wikiDir: string): Promise<Map<string, SkillSummary>> {
-    if (skillSummariesCache) {
-        return skillSummariesCache;
-    }
-
-    skillSummariesCache = new Map();
-
-    try {
-        const files = await fs.readdir(wikiDir);
-
-        for (const file of files) {
-            if (!file.endsWith('.md')) continue;
-
-            const filePath = path.join(wikiDir, file);
-            const content = await fs.readFile(filePath, 'utf-8');
-
-            // Extract title from first line
-            const titleMatch = content.match(/^#\s+(.+)/);
-            if (!titleMatch) continue;
-
-            const title = titleMatch[1];
-            const effects = extractEffectsFromWiki(content);
-
-            if (effects) {
-                skillSummariesCache.set(title.toLowerCase(), {
-                    name: title,
-                    summary: effects,
-                    type: 'skill',
-                    wikiSlug: file.replace('.md', '')
-                });
-            }
-        }
-    } catch (e) {
-        console.error('Failed to load wiki summaries:', e);
-    }
-
-    return skillSummariesCache;
 }
 
 /**
