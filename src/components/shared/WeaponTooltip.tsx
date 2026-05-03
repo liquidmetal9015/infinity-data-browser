@@ -93,7 +93,7 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
                     { label: 'B', value: weapon.burst },
                     { label: 'DAM', value: weapon.damage },
                     { label: 'AMMO', value: weapon.ammunition },
-                    { label: 'SAVE', value: weapon.saving + (weapon.savingNum && weapon.savingNum !== '-' ? `/${weapon.savingNum}` : '') },
+                    { label: 'SAVE', value: weapon.saving + (weapon.savingNum && weapon.savingNum !== '-' && weapon.savingNum !== '1' ? `/${weapon.savingNum}` : '') },
                 ].map(({ label, value }) => (
                     <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                         <span style={{ fontSize: 9, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>

@@ -9,6 +9,7 @@ import type { Loadout as Option, ProfileGroup, Profile } from '@shared/game-mode
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 import { getSafeLogo } from '../../utils/assets';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, isPeripheralGroup } from '../../utils/classifications';
+import { WeaponTooltip } from './WeaponTooltip';
 
 interface ExpandableUnitCardProps {
     unit: Unit;
@@ -96,7 +97,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
             <div className="flex flex-col gap-1.5">
                 {group.options.map((opt: Option) => {
                     const orders = getProfileOrders(profile, opt);
-                    const weaponNames = (opt.weapons || []).map(w => w.displayName || w.name);
+                    const weapons = opt.weapons || [];
                     const equipNames = (opt.equipment || []).map(e => e.name);
                     const optionModsAndSkills = (opt.skills || []).map(s => s.displayName || s.name);
                     let optName = opt.name || group.isc || unit.isc;
@@ -113,7 +114,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                         const q = searchQuery.toLowerCase();
                         if (
                             optName.toLowerCase().includes(q) ||
-                            [...weaponNames, ...equipNames].join(' ').toLowerCase().includes(q) ||
+                            [...weapons.map(w => w.displayName || w.name), ...equipNames].join(' ').toLowerCase().includes(q) ||
                             optionModsAndSkills.join(' ').toLowerCase().includes(q)
                         ) matchesSearch = true;
                     }
@@ -144,7 +145,16 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                             </div>
                             <div className="flex-1 px-2.5 py-2.5 flex items-center gap-1.5 min-w-0 flex-wrap">
                                 <span className="font-bold text-gray-100 text-xs whitespace-nowrap">{optName}</span>
-                                <span className="text-gray-200 text-xs truncate">{weaponNames.join(', ') || '—'}</span>
+                                <span className="text-gray-200 text-xs">
+                                    {weapons.length > 0
+                                        ? weapons.map((w, i) => (
+                                            <span key={w.id}>
+                                                {i > 0 && ', '}
+                                                <WeaponTooltip weaponId={w.id}>{w.displayName || w.name}</WeaponTooltip>
+                                            </span>
+                                        ))
+                                        : '—'}
+                                </span>
                                 {equipNames.length > 0 && (
                                     <>
                                         <span className="text-gray-500 flex-shrink-0 text-xs">|</span>
