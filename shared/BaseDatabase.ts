@@ -2,6 +2,7 @@ import { parseWeapon } from './weapon-utils.js';
 import type { ParsedWeapon } from './types.js';
 import type {
     Unit,
+    ItemWithModifier,
     DatabaseMetadata,
     SearchSuggestion,
     FireteamChart,
@@ -223,17 +224,18 @@ export abstract class BaseDatabase {
                 });
                 existing.factions = Array.from(existingFactions);
                 this.unitIdMap.set(u.id, existing);
+
+                // Merge this faction's items/options into the cross-faction search index.
+                const itemsMap = new Map(
+                    existing.allItemsWithMods.map(item => [
+                        `${item.type}-${item.id}-${item.modifiers.join(',')}`,
+                        item,
+                    ])
+                );
+                this.collectItemsFromProcessedUnit(u, existing, itemsMap);
+                existing.allItemsWithMods = Array.from(itemsMap.values());
                 continue;
             }
-
-            const itemsWithModsMap = new Map<string, { id: number; type: 'skill' | 'equipment' | 'weapon'; name: string; modifiers: string[] }>();
-
-            const addItem = (id: number, type: 'skill' | 'equipment' | 'weapon', name: string, modifiers: string[]) => {
-                const key = `${type}-${id}-${modifiers.join(',')}`;
-                if (!itemsWithModsMap.has(key)) {
-                    itemsWithModsMap.set(key, { id, type, name, modifiers });
-                }
-            };
 
             const unit: Unit = {
                 id: u.id,
@@ -254,56 +256,53 @@ export abstract class BaseDatabase {
             this.unitsBySlug.set(u.isc, unit);
             this.unitsBySlug.set(u.isc.toLowerCase().replace(/[^a-z0-9]+/g, '-'), unit);
 
-            let minPts = Infinity;
-            let maxPts = -Infinity;
-
-            for (const pg of u.profileGroups) {
-                for (const p of pg.profiles) {
-                    for (const s of p.skills) {
-                        unit.allSkillIds.add(s.id);
-                        addItem(s.id, 'skill', s.name, s.modifiers);
-                    }
-                    for (const e of p.equipment) {
-                        unit.allEquipmentIds.add(e.id);
-                        addItem(e.id, 'equipment', e.name, e.modifiers);
-                    }
-                    for (const w of p.weapons) {
-                        unit.allWeaponIds.add(w.id);
-                        addItem(w.id, 'weapon', w.name, w.modifiers);
-                    }
-                }
-
-                for (const o of pg.options) {
-                    for (const s of o.skills) {
-                        unit.allSkillIds.add(s.id);
-                        addItem(s.id, 'skill', s.name, s.modifiers);
-                    }
-                    for (const e of o.equipment) {
-                        unit.allEquipmentIds.add(e.id);
-                        addItem(e.id, 'equipment', e.name, e.modifiers);
-                    }
-                    for (const w of o.weapons) {
-                        unit.allWeaponIds.add(w.id);
-                        addItem(w.id, 'weapon', w.name, w.modifiers);
-                    }
-
-                    // Only count non-disabled options toward points range
-                    if (!pg.isPeripheral && !o.disabled && o.points > 0) {
-                        if (o.points < minPts) minPts = o.points;
-                        if (o.points > maxPts) maxPts = o.points;
-                    }
-                }
-            }
-
-            unit.allItemsWithMods = Array.from(itemsWithModsMap.values());
-            unit.pointsRange = [
-                minPts === Infinity ? 0 : minPts,
-                maxPts === -Infinity ? 0 : maxPts,
-            ];
+            const itemsMap = new Map<string, ItemWithModifier>();
+            this.collectItemsFromProcessedUnit(u, unit, itemsMap);
+            unit.allItemsWithMods = Array.from(itemsMap.values());
 
             this.unitsByISC.set(u.isc, unit);
             this.unitIdMap.set(u.id, unit);
         }
+    }
+
+    /**
+     * Traverses all profiles and options in a ProcessedUnit, adding weapons/skills/equipment
+     * to the unit's search index sets and the dedup itemsMap. Also extends unit.pointsRange.
+     * Safe to call multiple times for the same unit (merges, never resets).
+     */
+    private collectItemsFromProcessedUnit(
+        u: ProcessedUnit,
+        unit: Unit,
+        itemsMap: Map<string, ItemWithModifier>,
+    ): void {
+        const addItem = (id: number, type: 'skill' | 'equipment' | 'weapon', name: string, modifiers: string[]) => {
+            const key = `${type}-${id}-${modifiers.join(',')}`;
+            if (!itemsMap.has(key)) itemsMap.set(key, { id, type, name, modifiers });
+        };
+
+        // Treat pointsRange [0, 0] as unset; use Infinity sentinels internally.
+        let minPts = unit.pointsRange[0] === 0 ? Infinity : unit.pointsRange[0];
+        let maxPts = unit.pointsRange[1];
+
+        for (const pg of u.profileGroups) {
+            for (const p of pg.profiles) {
+                for (const s of p.skills)    { unit.allSkillIds.add(s.id);    addItem(s.id, 'skill',     s.name, s.modifiers); }
+                for (const e of p.equipment) { unit.allEquipmentIds.add(e.id); addItem(e.id, 'equipment', e.name, e.modifiers); }
+                for (const w of p.weapons)   { unit.allWeaponIds.add(w.id);   addItem(w.id, 'weapon',    w.name, w.modifiers); }
+            }
+            for (const o of pg.options) {
+                for (const s of o.skills)    { unit.allSkillIds.add(s.id);    addItem(s.id, 'skill',     s.name, s.modifiers); }
+                for (const e of o.equipment) { unit.allEquipmentIds.add(e.id); addItem(e.id, 'equipment', e.name, e.modifiers); }
+                for (const w of o.weapons)   { unit.allWeaponIds.add(w.id);   addItem(w.id, 'weapon',    w.name, w.modifiers); }
+
+                if (!pg.isPeripheral && !o.disabled && o.points > 0) {
+                    if (o.points < minPts) minPts = o.points;
+                    if (o.points > maxPts) maxPts = o.points;
+                }
+            }
+        }
+
+        unit.pointsRange = [minPts === Infinity ? 0 : minPts, maxPts];
     }
 
     // ========================================================================

@@ -252,6 +252,115 @@ describe('BaseDatabase - init', () => {
         expect(unit!.rawByFaction.get(101)!.profileGroups[0].profiles[0].ava).toBe(2);
     });
 
+    it('merges weapon/skill IDs from all faction entries into the cross-faction search index', async () => {
+        // PanO entry: has weapon 1 (Combi Rifle) only
+        // Yu Jing entry: same ISC, has weapon 2 (Heavy Machine Gun) only
+        function makeUnitWithWeapon(id: number, isc: string, factionIds: number[], weaponId: number, weaponName: string): ProcessedUnit {
+            const base = makeMockUnit(id, isc, factionIds);
+            return {
+                ...base,
+                profileGroups: [{
+                    ...base.profileGroups[0],
+                    options: [{
+                        ...base.profileGroups[0].options[0],
+                        weapons: [{ id: weaponId, name: weaponName, modifiers: [], displayName: weaponName }],
+                    }],
+                }],
+                allWeaponIds: [weaponId],
+            } as unknown as ProcessedUnit;
+        }
+
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [makeUnitWithWeapon(10, 'Dronbot', [101], 1, 'Combi Rifle')],
+        } as unknown as ProcessedFactionFile;
+
+        const yjFile: ProcessedFactionFile = {
+            faction: YU_JING_FACTION_FILE.faction,
+            units: [makeUnitWithWeapon(20, 'Dronbot', [201], 2, 'Heavy Machine Gun')],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([
+            ['panoceania', panoFile],
+            ['yu-jing', yjFile],
+        ]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Dronbot');
+        expect(unit).toBeDefined();
+        // Should contain weapons from both faction entries
+        expect(unit!.allWeaponIds.has(1)).toBe(true);
+        expect(unit!.allWeaponIds.has(2)).toBe(true);
+        // allItemsWithMods should include both weapons
+        const weaponNames = unit!.allItemsWithMods.filter(i => i.type === 'weapon').map(i => i.name);
+        expect(weaponNames).toContain('Combi Rifle');
+        expect(weaponNames).toContain('Heavy Machine Gun');
+    });
+
+    it('deduplicates allItemsWithMods when the same item appears in multiple faction entries', async () => {
+        // Both factions have the same weapon — should not appear twice in allItemsWithMods
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [makeMockUnit(10, 'Shared', [101])],
+        } as unknown as ProcessedFactionFile;
+
+        const yjFile: ProcessedFactionFile = {
+            faction: YU_JING_FACTION_FILE.faction,
+            units: [makeMockUnit(20, 'Shared', [201])],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([
+            ['panoceania', panoFile],
+            ['yu-jing', yjFile],
+        ]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Shared');
+        expect(unit).toBeDefined();
+        // Combi Rifle (id=1) should appear exactly once in allItemsWithMods
+        const combiEntries = unit!.allItemsWithMods.filter(i => i.type === 'weapon' && i.id === 1);
+        expect(combiEntries).toHaveLength(1);
+    });
+
+    it('extends pointsRange to cover all faction entries', async () => {
+        function makeUnitWithPoints(id: number, isc: string, factionIds: number[], points: number): ProcessedUnit {
+            const base = makeMockUnit(id, isc, factionIds);
+            return {
+                ...base,
+                profileGroups: [{
+                    ...base.profileGroups[0],
+                    options: [{
+                        ...base.profileGroups[0].options[0],
+                        points,
+                    }],
+                }],
+                pointsRange: [points, points],
+            } as unknown as ProcessedUnit;
+        }
+
+        // PanO: unit costs 20pts; Yu Jing: same ISC costs 35pts
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [makeUnitWithPoints(10, 'Mercenary', [101], 20)],
+        } as unknown as ProcessedFactionFile;
+
+        const yjFile: ProcessedFactionFile = {
+            faction: YU_JING_FACTION_FILE.faction,
+            units: [makeUnitWithPoints(20, 'Mercenary', [201], 35)],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([
+            ['panoceania', panoFile],
+            ['yu-jing', yjFile],
+        ]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Mercenary');
+        expect(unit).toBeDefined();
+        expect(unit!.pointsRange[0]).toBe(20); // min across factions
+        expect(unit!.pointsRange[1]).toBe(35); // max across factions
+    });
+
     it('only initializes once (idempotent)', async () => {
         const db = new TestDatabase(new Map([['panoceania', PANO_FACTION_FILE]]));
 
