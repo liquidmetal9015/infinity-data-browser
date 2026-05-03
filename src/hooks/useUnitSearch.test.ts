@@ -36,7 +36,8 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as unknown as Unit['raw']
+        } as unknown as Unit['raw'],
+        rawByFaction: new Map(),
     },
     {
         id: 2,
@@ -67,7 +68,8 @@ const mockUnits: Unit[] = [
                     options: []
                 }
             ]
-        } as unknown as Unit['raw']
+        } as unknown as Unit['raw'],
+        rawByFaction: new Map(),
     }
 ];
 

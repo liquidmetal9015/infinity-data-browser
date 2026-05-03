@@ -106,9 +106,9 @@ export function FireteamsPage() {
                         </div>
                     </div>
 
-                    {viewMode === 'teams' && <FireteamListView chart={fireteamChart} />}
+                    {viewMode === 'teams' && <FireteamListView chart={fireteamChart} factionId={globalFactionId} />}
                     {viewMode === 'units' && <UnitPerspectiveView chart={fireteamChart} db={db} factionId={globalFactionId} />}
-                    {viewMode === 'builder' && <FireteamBuilder key={globalFactionId} chart={fireteamChart} />}
+                    {viewMode === 'builder' && <FireteamBuilder key={globalFactionId} chart={fireteamChart} factionId={globalFactionId} />}
                 </div>
             )}
         </div>

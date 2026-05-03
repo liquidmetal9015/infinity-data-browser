@@ -78,7 +78,7 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
                             {unit.name}
                             <button
                                 className={styles.infoBtn}
-                                onClick={() => { selectUnitForDetail(unit); openWindow('UNIT_DETAIL'); }}
+                                onClick={() => { selectUnitForDetail(unit, null, null, factionId); openWindow('UNIT_DETAIL'); }}
                                 title="View Unit Stats"
                             >
                                 <Info size={16} />

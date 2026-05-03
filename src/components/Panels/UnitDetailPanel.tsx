@@ -6,6 +6,7 @@ import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { formatMove } from '../../utils/conversions';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../../utils/classifications';
 import type { ProfileGroup, Profile, Loadout } from '@shared/game-model';
+import { getRawForFaction } from '@shared/types';
 import { WeaponTooltip } from '../shared/WeaponTooltip';
 
 const ATTRIBUTES = [
@@ -185,6 +186,7 @@ export function UnitDetailPanel() {
     const unit = useListBuilderUIStore(s => s.selectedUnitForDetail);
     const selectedProfileGroupId = useListBuilderUIStore(s => s.selectedProfileGroupId);
     const selectedOptionId = useListBuilderUIStore(s => s.selectedOptionId);
+    const detailFactionId = useListBuilderUIStore(s => s.detailFactionId);
     const highlightTick = useListBuilderUIStore(s => s.highlightTick);
     const targetGroupIndex = useListBuilderUIStore(s => s.targetGroupIndex);
     const addUnit = useListStore(s => s.addUnit);
@@ -198,7 +200,7 @@ export function UnitDetailPanel() {
 
     useEffect(() => {
         if (!unit) return;
-        const profileGroups = unit.raw.profileGroups || [];
+        const profileGroups = getRawForFaction(unit, detailFactionId).profileGroups || [];
 
         // Always reset to first non-peripheral group when the unit changes
         setActiveGroupIndex(0);
@@ -252,7 +254,7 @@ export function UnitDetailPanel() {
         );
     }
 
-    const profileGroups = unit.raw.profileGroups || [];
+    const profileGroups = getRawForFaction(unit, detailFactionId).profileGroups || [];
     const activeGroup = profileGroups[activeGroupIndex] || profileGroups[0];
     const activeProfile = activeGroup?.profiles[0];
 

@@ -10,9 +10,10 @@ import styles from './FireteamsPage.module.css';
 
 interface FireteamBuilderProps {
     chart: FireteamChart;
+    factionId?: number;
 }
 
-export function FireteamBuilder({ chart }: FireteamBuilderProps) {
+export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
     const db = useDatabase();
     const selectUnitForDetail = useListBuilderUIStore(s => s.selectUnitForDetail);
     const openWindow = useWorkspaceStore(s => s.openWindow);
@@ -267,7 +268,7 @@ export function FireteamBuilder({ chart }: FireteamBuilderProps) {
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 const fullUnit = db.getUnitBySlug(member.slug);
-                                                                if (fullUnit) { selectUnitForDetail(fullUnit); openWindow('UNIT_DETAIL'); }
+                                                                if (fullUnit) { selectUnitForDetail(fullUnit, null, null, factionId ?? null); openWindow('UNIT_DETAIL'); }
                                                             }}
                                                             style={{ marginTop: '0.25rem' }}
                                                             title="View Unit Stats"

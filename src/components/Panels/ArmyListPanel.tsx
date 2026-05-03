@@ -188,7 +188,7 @@ export function ArmyListPanel() {
     }, [currentList, db]);
 
     const handleViewUnit = (unit: Unit, profileGroupId?: number, optionId?: number, _listUnitId?: string) => {
-        selectUnitForDetail(unit, profileGroupId, optionId);
+        selectUnitForDetail(unit, profileGroupId, optionId, currentList?.factionId ?? null);
 
         if (layoutMode === 'columns') {
             const panels = getColumnPanels(columnCount ?? 3);

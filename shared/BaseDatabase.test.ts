@@ -184,6 +184,74 @@ describe('BaseDatabase - init', () => {
         expect(fusiliers[0].factions).toContain(201);
     });
 
+    it('stores faction-specific raw data in rawByFaction', async () => {
+        // Simulate a unit that has different AVA in two factions (same ISC, different ids/data).
+        // PanO has the unit with AVA=2; Yu Jing has the same ISC with AVA=4.
+        function makeUnitWithAva(id: number, isc: string, factionIds: number[], ava: number): ProcessedUnit {
+            const base = makeMockUnit(id, isc, factionIds);
+            const unit = { ...base };
+            unit.profileGroups = [{
+                ...base.profileGroups[0],
+                profiles: [{ ...base.profileGroups[0].profiles[0], ava }],
+            }];
+            return unit as unknown as ProcessedUnit;
+        }
+
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [makeUnitWithAva(10, 'Sierra Dronbot', [101], 1)],
+        } as unknown as ProcessedFactionFile;
+
+        const yjFile: ProcessedFactionFile = {
+            faction: YU_JING_FACTION_FILE.faction,
+            units: [makeUnitWithAva(20, 'Sierra Dronbot', [201], 2)],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([
+            ['panoceania', panoFile],
+            ['yu-jing', yjFile],
+        ]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Sierra Dronbot');
+        expect(unit).toBeDefined();
+        // rawByFaction should map each faction to its specific ProcessedUnit
+        expect(unit!.rawByFaction.get(101)!.profileGroups[0].profiles[0].ava).toBe(1);
+        expect(unit!.rawByFaction.get(201)!.profileGroups[0].profiles[0].ava).toBe(2);
+        // raw (faction-agnostic fallback) is whichever was ingested first
+        expect(unit!.raw.profileGroups[0].profiles[0].ava).toBe(1);
+    });
+
+    it('handles units with empty factionIds using currentFactionId fallback', async () => {
+        // Simulate the Yuan Yuan pattern: one entry has factionIds=[] in a faction file.
+        function makeUnitEmptyFactions(id: number, isc: string, ava: number): ProcessedUnit {
+            const base = makeMockUnit(id, isc, []);
+            const unit = { ...base };
+            unit.profileGroups = [{
+                ...base.profileGroups[0],
+                profiles: [{ ...base.profileGroups[0].profiles[0], ava }],
+            }];
+            return unit as unknown as ProcessedUnit;
+        }
+
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [
+                makeMockUnit(10, 'Yuan Yuan', [101]),           // AVA=4 from makeMockUnit default
+                makeUnitEmptyFactions(11, 'Yuan Yuan', 2),      // AVA=2, factionIds=[]
+            ],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([['panoceania', panoFile]]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Yuan Yuan');
+        expect(unit).toBeDefined();
+        // The empty-factionIds entry should be attributed to the file's faction (101)
+        // and override the rawByFaction entry for faction 101 with AVA=2.
+        expect(unit!.rawByFaction.get(101)!.profileGroups[0].profiles[0].ava).toBe(2);
+    });
+
     it('only initializes once (idempotent)', async () => {
         const db = new TestDatabase(new Map([['panoceania', PANO_FACTION_FILE]]));
 

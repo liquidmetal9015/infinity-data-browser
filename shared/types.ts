@@ -50,7 +50,21 @@ export interface Unit {
     allItemsWithMods: ItemWithModifier[];
     // Pre-computed points range [min, max] across all options
     pointsRange: [number, number];
-    raw: import('./game-model.js').ProcessedUnit; // Processed unit data for display
+    raw: import('./game-model.js').ProcessedUnit; // Processed unit data for display (faction-agnostic fallback)
+    /** Per-faction raw data for units whose stats (e.g. AVA) differ by faction. */
+    rawByFaction: Map<number, import('./game-model.js').ProcessedUnit>;
+}
+
+/**
+ * Returns the faction-specific ProcessedUnit for a unit if available, falling back to unit.raw.
+ * Use this whenever displaying profile stats (especially AVA) in a faction context.
+ */
+export function getRawForFaction(
+    unit: Unit,
+    factionId: number | null | undefined,
+): import('./game-model.js').ProcessedUnit {
+    if (factionId != null) return unit.rawByFaction.get(factionId) ?? unit.raw;
+    return unit.raw;
 }
 
 export interface DatabaseMetadata {

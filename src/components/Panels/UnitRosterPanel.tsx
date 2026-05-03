@@ -306,7 +306,7 @@ export function UnitRosterPanel() {
     };
 
     const handleViewUnit = (unit: Unit) => {
-        selectUnitForDetail(unit);
+        selectUnitForDetail(unit, null, null, activeFactionId ?? null);
     };
 
     const renderUnitCard = (unit: Unit) => (
@@ -316,6 +316,7 @@ export function UnitRosterPanel() {
                 isExpanded={!hasDetailPanel && effectiveExpandedUnitIds.has(unit.id)}
                 onToggle={() => toggleExpand(unit.id)}
                 detailMode={hasDetailPanel}
+                factionId={activeFactionId ?? undefined}
                 searchQuery={rosterTextQuery.trim()}
                 activeFilters={rosterQuery.filters}
                 isHighlighted={validISCsForHoveredFireteam.has(unit.isc)}

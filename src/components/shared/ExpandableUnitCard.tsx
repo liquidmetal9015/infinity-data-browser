@@ -4,6 +4,7 @@ import { formatMove } from '../../utils/conversions';
 import { getProfileOrders } from '../../utils/orderUtils';
 import { OrderIcon } from './OrderIcon';
 import type { Unit } from '@shared/types';
+import { getRawForFaction } from '@shared/types';
 import type { Loadout as Option, ProfileGroup, Profile } from '@shared/game-model';
 import type { QueryFilter, ItemFilter } from './UnifiedSearchBar';
 import { getSafeLogo } from '../../utils/assets';
@@ -25,6 +26,8 @@ interface ExpandableUnitCardProps {
     highlightOption?: { id: number; tick: number; profileGroupId?: number };
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
+    /** When provided, selects faction-specific profile data (e.g. correct AVA). */
+    factionId?: number;
 }
 
 const ATTRIBUTES = [
@@ -183,10 +186,10 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, highlightOption, onMouseEnter, onMouseLeave }: ExpandableUnitCardProps) {
+export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, highlightOption, onMouseEnter, onMouseLeave, factionId }: ExpandableUnitCardProps) {
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
-    const profileGroups = unit.raw.profileGroups || [];
+    const profileGroups = getRawForFaction(unit, factionId).profileGroups || [];
     const activeGroup = profileGroups[activeGroupIndex];
     const activeProfile = activeGroup?.profiles[0];
 

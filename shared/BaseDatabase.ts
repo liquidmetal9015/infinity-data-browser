@@ -112,7 +112,7 @@ export abstract class BaseDatabase {
                         this.fireteamData.set(faction.id, chart);
                     }
 
-                    this.ingestUnits(data.units);
+                    this.ingestUnits(data.units, faction.id);
                     return faction.slug;
                 } catch {
                     return null;
@@ -205,14 +205,22 @@ export abstract class BaseDatabase {
     // Unit ingestion - shared logic
     // ========================================================================
 
-    protected ingestUnits(processedUnits: ProcessedUnit[]): void {
+    protected ingestUnits(processedUnits: ProcessedUnit[], currentFactionId?: number): void {
         for (const u of processedUnits) {
+            // Units with empty factionIds (CB data artifact) fall back to the file's faction.
+            const effectiveFactionIds = u.factionIds.length > 0
+                ? u.factionIds
+                : (currentFactionId != null ? [currentFactionId] : []);
+
             const existing = this.unitsByISC.get(u.isc);
 
             if (existing) {
-                // Merge faction lists
+                // Merge faction lists and record faction-specific raw data (e.g. AVA may differ).
                 const existingFactions = new Set(existing.factions);
-                u.factionIds.forEach(fid => existingFactions.add(fid));
+                effectiveFactionIds.forEach(fid => {
+                    existingFactions.add(fid);
+                    existing.rawByFaction.set(fid, u);
+                });
                 existing.factions = Array.from(existingFactions);
                 this.unitIdMap.set(u.id, existing);
                 continue;
@@ -231,13 +239,14 @@ export abstract class BaseDatabase {
                 id: u.id,
                 isc: u.isc,
                 name: u.name,
-                factions: [...u.factionIds],
+                factions: [...effectiveFactionIds],
                 allWeaponIds: new Set(),
                 allSkillIds: new Set(),
                 allEquipmentIds: new Set(),
                 allItemsWithMods: [],
                 pointsRange: [0, 0],
                 raw: u,
+                rawByFaction: new Map(effectiveFactionIds.map(fid => [fid, u])),
             };
 
             // Index by slug
