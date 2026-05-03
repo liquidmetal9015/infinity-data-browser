@@ -7,6 +7,59 @@
     display: flex;
     align-items: center;
 }
+
+.listFilterToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-secondary);
+    user-select: none;
+    transition: color 0.15s;
+}
+
+.listFilterToggle:hover {
+    color: var(--text-primary);
+}
+
+.listFilterToggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.listFilterToggleTrack {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--border);
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.listFilterToggle input:checked ~ .listFilterToggleTrack {
+    background: var(--accent);
+}
+
+.listFilterToggleThumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.listFilterToggle input:checked ~ .listFilterToggleTrack .listFilterToggleThumb {
+    transform: translateX(14px);
+}
 .classifieds-grid {
     display: grid;
     grid-template-columns: 350px 1fr;

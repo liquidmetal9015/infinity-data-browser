@@ -1,0 +1,42 @@
+.wounds-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.wounds-table h4 {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.wounds-table table {
+    width: 100%;
+    font-size: 0.8rem;
+    border-collapse: collapse;
+}
+
+.wounds-table th,
+.wounds-table td {
+    padding: 0.35rem 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.wounds-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.wound-row td:first-child {
+    font-weight: 600;
+}
+
+@media (max-width: 800px) {
+    .wounds-tables {
+        grid-template-columns: 1fr;
+    }
+}

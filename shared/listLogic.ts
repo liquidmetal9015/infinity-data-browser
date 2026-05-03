@@ -96,6 +96,12 @@ export function listReducer(state: ListState, action: ListAction): ListState {
             if (!state.currentList) return state;
 
             const { unit, groupIndex, profileGroupId, profileId, optionId } = action;
+
+            if (!unit.factions.includes(state.currentList.factionId)) {
+                console.warn('Rejected out-of-faction unit', unit.isc, 'for faction', state.currentList.factionId);
+                return state;
+            }
+
             const { option } = getUnitDetails(unit, profileGroupId, profileId, optionId);
 
             if (!option) {

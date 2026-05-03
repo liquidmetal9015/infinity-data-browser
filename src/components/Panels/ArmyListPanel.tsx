@@ -36,7 +36,6 @@ import { countGroupOrders } from '../../utils/orderUtils';
 import { SortableFireteamContainer } from '../ListBuilder/SortableFireteamContainer';
 import { DraggableUnitRow } from '../ListBuilder/DraggableUnitRow';
 import { DragOverlayUnit } from '../ListBuilder/DragOverlayUnit';
-import { CompactFactionSelector } from '../shared/CompactFactionSelector';
 import { clsx } from 'clsx';
 import styles from '../ListBuilder/ListDashboard.module.css';
 
@@ -79,7 +78,7 @@ export function ArmyListPanel() {
     const [nameValue, setNameValue] = useState('');
     const [editingTags, setEditingTags] = useState(false);
     const [tagInput, setTagInput] = useState('');
-    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
+    const { setGlobalFactionId } = useGlobalFactionStore();
     const { user } = useAuth();
     const queryClient = useQueryClient();
 
@@ -122,8 +121,7 @@ export function ArmyListPanel() {
     const { layoutMode, columnCount, windows, openWindow, setActiveColumn } = useWorkspaceStore();
 
     const {
-        codeCopied, importCode, importError, setImportCode,
-        handleImportCode, handleCopyCode, handleOpenInArmy,
+        codeCopied, handleCopyCode, handleOpenInArmy,
     } = useArmyListImportExport({ db, currentList, createList, setGlobalFactionId, addCombatGroup, addUnit });
 
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -320,73 +318,7 @@ export function ArmyListPanel() {
         }
     };
 
-    // No list — show faction selection / import
-    if (!currentList) {
-        const groupedFactions = db.getGroupedFactions();
-
-        const handleCreateList = () => {
-            if (!globalFactionId) return;
-            const factionName = db.getFactionName(globalFactionId);
-            createList(globalFactionId, factionName, 300);
-        };
-
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '3rem', paddingBottom: '3rem', height: '100%', minHeight: '50vh', gap: '1.5rem', maxWidth: '600px', margin: '0 auto', padding: '1.5rem', overflowY: 'auto' }}>
-                <div style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Create New Army List</h2>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Use <strong>+ New</strong> in the nav bar above, or select a faction here to jump right in.</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%', alignItems: 'stretch' }}>
-                        <div style={{ flex: 1 }}>
-                            <CompactFactionSelector
-                                groupedFactions={groupedFactions}
-                                value={globalFactionId}
-                                onChange={setGlobalFactionId}
-                            />
-                        </div>
-                        <button
-                            className="px-6 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-base flex items-center justify-center whitespace-nowrap"
-                            onClick={handleCreateList}
-                            disabled={!globalFactionId}
-                        >
-                            Create List
-                        </button>
-                    </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '1rem' }}>
-                    <hr style={{ flex: 1, borderColor: 'var(--border-color)', borderTop: 'none' }} />
-                    <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>OR</span>
-                    <hr style={{ flex: 1, borderColor: 'var(--border-color)', borderTop: 'none' }} />
-                </div>
-
-                <div style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Import Existing List</h2>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Paste an army code from the official Infinity builder.</p>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
-                        <textarea
-                            value={importCode}
-                            onChange={e => setImportCode(e.target.value)}
-                            placeholder="Paste army code here..."
-                            rows={3}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', resize: 'none' }}
-                        />
-                        {importError && <div style={{ color: 'var(--error-color)', fontSize: '0.85rem', textAlign: 'center' }}>{importError}</div>}
-                        <button
-                            className="px-6 py-3 bg-[#18181b] hover:bg-[#1f1f23] border border-[#ffffff14] text-white font-bold rounded-xl transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-base w-full flex items-center justify-center whitespace-nowrap"
-                            onClick={handleImportCode}
-                            disabled={!importCode.trim()}
-                        >
-                            Import Code
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (!currentList) return null;
 
     const list = currentList;
     const totalPoints = calculateListPoints(list);

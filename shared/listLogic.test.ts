@@ -198,6 +198,25 @@ describe('listReducer', () => {
             expect(result).toBe(initialState);
         });
 
+        it('rejects a unit whose factions do not include the list factionId', () => {
+            const unit = createMockUnit({ factionIds: [999] });
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            const action: ListAction = {
+                type: 'ADD_UNIT',
+                unit,
+                groupIndex: 0,
+                profileGroupId: 1,
+                profileId: 1,
+                optionId: 1
+            };
+
+            const result = listReducer(stateWithList, action);
+
+            expect(result).toBe(stateWithList);
+            expect(warnSpy).toHaveBeenCalled();
+            warnSpy.mockRestore();
+        });
+
         it('returns unchanged state if option not found', () => {
             const unit = createMockUnit();
             const action: ListAction = {

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -11,7 +11,6 @@ import { getSafeLogo } from '../utils/assets';
 import { listService } from '../services/listService';
 import type { ListSummary } from '../services/listService';
 import { encodeArmyList, decodeArmyCode } from '@shared/armyCode';
-import { calculateListPoints } from '@shared/listTypes';
 import type { ArmyList } from '@shared/listTypes';
 import { indexList, type ListIndex } from '@shared/list-similarity';
 import type { SearchSuggestion } from '@shared/types';
@@ -32,7 +31,13 @@ export function MyLists() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const db = useDatabase();
-    const { loadList, createList, currentList: activeList, isDirty: isActiveDirty } = useListStore();
+    const { loadList, createList, resetList, currentList: activeList } = useListStore();
+
+    const clearStoreIfActive = (deletedId: string) => {
+        if (activeList?.serverId !== undefined && String(activeList.serverId) === String(deletedId)) {
+            resetList();
+        }
+    };
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const [showNewModal, setShowNewModal] = useState(false);
@@ -162,7 +167,10 @@ export function MyLists() {
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => listService.deleteList(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
+        onSuccess: (_data, id) => {
+            clearStoreIfActive(id);
+            queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+        },
     });
 
     const renameMutation = useMutation({
@@ -287,6 +295,7 @@ export function MyLists() {
         if (selectedIds.length === 0) return;
         if (!confirm(`Delete ${selectedIds.length} list${selectedIds.length > 1 ? 's' : ''}? This cannot be undone.`)) return;
         await Promise.all(selectedIds.map(id => listService.deleteList(id)));
+        selectedIds.forEach(clearStoreIfActive);
         setSelectedIds([]);
         queryClient.invalidateQueries({ queryKey: ['my-lists'] });
     };
@@ -333,47 +342,11 @@ export function MyLists() {
         <div className="flex-1 overflow-y-auto px-4 py-10 min-h-0">
             <div className="max-w-[1100px] mx-auto">
 
-                {/* ── Currently editing banner ── */}
-                {activeList && (
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '0.5rem',
-                        marginBottom: '1.5rem',
-                        padding: '0.65rem 1rem',
-                        background: 'rgba(245,158,11,0.08)',
-                        border: '1px solid rgba(245,158,11,0.3)',
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                    }}>
-                        <span style={{ color: '#f59e0b', fontWeight: 600 }}>Editing:</span>
-                        <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{activeList.name}</span>
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
-                            {calculateListPoints(activeList)}/{activeList.pointsLimit} pts
-                            {isActiveDirty && ' · unsaved changes'}
-                        </span>
-                        <Link
-                            to="/"
-                            style={{
-                                marginLeft: 'auto',
-                                color: '#f59e0b',
-                                fontWeight: 600,
-                                fontSize: '0.82rem',
-                                textDecoration: 'none',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            Resume editing ↗
-                        </Link>
-                    </div>
-                )}
-
                 {/* ── Page header ── */}
                 <div className="flex items-end justify-between mb-8 gap-4">
                     <div>
                         <h1 className="text-[1.75rem] font-bold text-text-primary tracking-tight">
-                            My Army Lists
+                            My Lists
                         </h1>
                         <p className="text-text-secondary text-sm mt-1">
                             {count === 0 ? 'No lists saved yet' : `${count} list${count === 1 ? '' : 's'} saved`}

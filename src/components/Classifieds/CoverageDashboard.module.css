@@ -1,0 +1,110 @@
+/* ============================================================================
+   Coverage Dashboard (Mode A) — summary bar + layout
+   ============================================================================ */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* --- Summary Bar --- */
+
+.summaryBar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.summaryHeader {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+}
+
+.summaryCount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.summaryLabel {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.summaryPercent {
+    margin-left: auto;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+/* Segmented progress bar */
+.progressTrack {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    display: flex;
+    overflow: hidden;
+    gap: 2px;
+}
+
+.progressSegment {
+    height: 100%;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+}
+
+.progressSegmentFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.progressSegmentEmpty {
+    background: var(--bg-tertiary);
+}
+
+/* Category breakdown row */
+.categoryBreakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    font-size: 0.75rem;
+}
+
+.categoryItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--text-muted);
+}
+
+.categoryDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.categoryCount {
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.categoryCount.full {
+    color: var(--success);
+}

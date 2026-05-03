@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../components/shared/CompactFactionSelector';
@@ -6,6 +6,8 @@ import { ClassifiedItem } from '../components/Classifieds/ClassifiedItem';
 import { useClassifiedsStore } from '../stores/useClassifiedsStore';
 import { clsx } from 'clsx';
 import { useClassifiedMatches } from '../hooks/useClassifiedMatches';
+import { useAppModeStore } from '../stores/useAppModeStore';
+import { useListStore } from '../stores/useListStore';
 import styles from './ClassifiedsPage.module.css';
 
 export function ClassifiedsPage() {
@@ -15,19 +17,40 @@ export function ClassifiedsPage() {
         selectedClassified, selectedUnitISC, selectedProfileId,
         setSelectedClassified, setSelectedUnitISC, setSelectedProfileId,
     } = useClassifiedsStore();
+    const { appMode } = useAppModeStore();
+    const { currentList } = useListStore();
+    const [filterToList, setFilterToList] = useState(true);
+
+    const inBuilderWithList = appMode === 'builder' && !!currentList;
+    const effectiveFactionId = inBuilderWithList ? currentList.factionId : globalFactionId;
+
+    const listUnitIscs = useMemo(() => {
+        if (!currentList) return null;
+        const iscs = new Set<string>();
+        for (const group of currentList.groups) {
+            for (const lu of group.units) {
+                if (!lu.isPeripheral) iscs.add(lu.unit.isc);
+            }
+        }
+        return iscs;
+    }, [currentList]);
 
     // Filter units for the selected faction
     const factionUnits = useMemo(() => {
-        if (!globalFactionId) return [];
-        return db.units
-            .filter(u => u.factions.includes(globalFactionId))
+        if (!effectiveFactionId) return [];
+        const base = db.units
+            .filter(u => u.factions.includes(effectiveFactionId))
             .sort((a, b) => a.name.localeCompare(b.name));
-    }, [db.units, globalFactionId]);
+        if (filterToList && listUnitIscs) {
+            return base.filter(u => listUnitIscs.has(u.isc));
+        }
+        return base;
+    }, [db.units, effectiveFactionId, filterToList, listUnitIscs]);
 
-    const unitMatches = useClassifiedMatches(db, globalFactionId ? factionUnits : []);
+    const unitMatches = useClassifiedMatches(db, effectiveFactionId ? factionUnits : []);
 
 
-    if (!globalFactionId) {
+    if (!effectiveFactionId) {
         return (
             <div className="page-container">
                 <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '50vh', gap: '2rem' }}>
@@ -50,11 +73,26 @@ export function ClassifiedsPage() {
         <div className="page-container">
             {/* Header */}
             <div className={clsx(styles.searchHeader, 'flex-row items-center border-b border-border pb-4 mb-6')}>
-                <CompactFactionSelector
-                    groupedFactions={db.getGroupedFactions()}
-                    value={globalFactionId}
-                    onChange={setGlobalFactionId}
-                />
+                {!inBuilderWithList && (
+                    <CompactFactionSelector
+                        groupedFactions={db.getGroupedFactions()}
+                        value={globalFactionId}
+                        onChange={setGlobalFactionId}
+                    />
+                )}
+                {inBuilderWithList && listUnitIscs && listUnitIscs.size > 0 && (
+                    <label className={styles.listFilterToggle}>
+                        <input
+                            type="checkbox"
+                            checked={filterToList}
+                            onChange={e => setFilterToList(e.target.checked)}
+                        />
+                        <span className={styles.listFilterToggleTrack}>
+                            <span className={styles.listFilterToggleThumb} />
+                        </span>
+                        List units only
+                    </label>
+                )}
             </div>
 
             {/* Main Content Grid */}

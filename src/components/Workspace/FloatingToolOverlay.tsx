@@ -1,5 +1,6 @@
 // FloatingToolOverlay - Renders floating tool windows on non-workspace routes (Explorer mode)
 import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAppModeStore } from '../../stores/useAppModeStore';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { widgetRegistry, TOOL_WIDGETS } from './widgetRegistry';
@@ -8,7 +9,16 @@ import { WindowFrame } from './WindowFrame';
 export function FloatingToolOverlay() {
     const { appMode } = useAppModeStore();
     const location = useLocation();
-    const { windows } = useWorkspaceStore();
+    const { windows, layoutMode, setLayoutMode } = useWorkspaceStore();
+
+    // Tabbed/maximized mode is list-builder-only. If the user somehow arrives in
+    // explorer mode with tabbed state persisted (e.g. from localStorage), reset it
+    // so tool windows never render as full-screen overlays covering the nav bar.
+    useEffect(() => {
+        if (appMode === 'explorer' && layoutMode === 'tabbed') {
+            setLayoutMode('multi-window');
+        }
+    }, [appMode, layoutMode, setLayoutMode]);
 
     // Only render on non-workspace routes in Explorer mode
     if (appMode !== 'explorer' || location.pathname === '/') return null;
@@ -23,7 +33,7 @@ export function FloatingToolOverlay() {
 
     return (
         <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
-            <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'auto' }}>
+            <div style={{ position: 'relative', width: '100%', height: '100%', pointerEvents: 'none' }}>
                 {toolWindows.map(win => {
                     const entry = widgetRegistry[win.type];
                     if (!entry) return null;

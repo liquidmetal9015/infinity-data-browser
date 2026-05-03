@@ -1,4 +1,6 @@
 // Visual Bar Graph for wounds distribution
+import { clsx } from 'clsx';
+import styles from './WoundsBar.module.css';
 
 interface WoundsDistribution {
     wounds: Map<number, number>;
@@ -16,6 +18,8 @@ interface Segment {
     type: string;
 }
 
+const wSegClass = [styles.segW1, styles.segW2, styles.segW3, styles.segW4, styles.segW5];
+
 export const WoundsBar = ({ active, reactive, fail }: WoundsBarProps) => {
     const getSegs = (wounds: Map<number, number>, type: string): Segment[] =>
         Array.from(wounds.entries())
@@ -27,12 +31,12 @@ export const WoundsBar = ({ active, reactive, fail }: WoundsBarProps) => {
     const rSegs = getSegs(reactive.wounds, 'reactive').reverse();
 
     return (
-        <div className="wounds-bar-container">
-            <div className="wounds-bar">
+        <div className={styles.woundsBarContainer}>
+            <div className={styles.woundsBar}>
                 {aSegs.map(s => (
                     <div
                         key={`a${s.w}`}
-                        className={`bar-seg seg-active seg-w${Math.min(s.w, 5)}`}
+                        className={clsx(styles.barSeg, styles.segActive, wSegClass[Math.min(s.w, 5) - 1])}
                         style={{ width: `${s.p * 100}%` }}
                         title={`Active: ${s.w} wounds (${(s.p * 100).toFixed(1)}%)`}
                     >
@@ -41,7 +45,7 @@ export const WoundsBar = ({ active, reactive, fail }: WoundsBarProps) => {
                 ))}
                 {fail > 0.01 && (
                     <div
-                        className="bar-seg seg-fail"
+                        className={clsx(styles.barSeg, styles.segFail)}
                         style={{ width: `${fail * 100}%` }}
                         title={`No result (${(fail * 100).toFixed(1)}%)`}
                     />
@@ -49,7 +53,7 @@ export const WoundsBar = ({ active, reactive, fail }: WoundsBarProps) => {
                 {rSegs.map(s => (
                     <div
                         key={`r${s.w}`}
-                        className={`bar-seg seg-reactive seg-w${Math.min(s.w, 5)}`}
+                        className={clsx(styles.barSeg, styles.segReactive, wSegClass[Math.min(s.w, 5) - 1])}
                         style={{ width: `${s.p * 100}%` }}
                         title={`Reactive: ${s.w} wounds (${(s.p * 100).toFixed(1)}%)`}
                     >

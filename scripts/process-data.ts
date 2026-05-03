@@ -610,6 +610,16 @@ async function main() {
         ammoMap.set(a.id, { id: a.id, name: a.name, wikiUrl: a.wiki });
     }
 
+    // Filter out Reinforcement factions: separate force lists used in reinforcement
+    // missions, not playable as standalone armies. Their IDs end in 99 with a
+    // phantom parent ending in 91 (e.g. id=199, parent=191).
+    const isReinforcementFaction = (id: number, parent: number): boolean =>
+        id % 100 === 99 || parent % 100 === 91;
+
+    metadata.factions = metadata.factions.filter(
+        f => !isReinforcementFaction(f.id, f.parent),
+    );
+
     const factionSlugs = metadata.factions.map(f => f.slug);
 
     // Build global extras map (merged across all factions)

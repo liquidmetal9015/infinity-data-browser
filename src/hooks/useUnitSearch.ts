@@ -103,8 +103,8 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
                 // If OR: Start with empty to union with stat matches.
                 results = query.operator === 'and' ? db.units : [];
             } else {
-                // No item or stat filters — seed with all units only if there's a text query
-                results = textQuery.trim() ? db.units : [];
+                // No item or stat filters — seed with all units if there's a text query or faction filter
+                results = (textQuery.trim() || filters.factions.length > 0) ? db.units : [];
             }
         } else {
             results = db.searchWithModifiers(
@@ -183,6 +183,6 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
         textQuery,
         setTextQuery,
         filteredUnits,
-        hasSearch: query.filters.length > 0 || textQuery.trim().length > 0
+        hasSearch: query.filters.length > 0 || textQuery.trim().length > 0 || filters.factions.length > 0
     };
 };

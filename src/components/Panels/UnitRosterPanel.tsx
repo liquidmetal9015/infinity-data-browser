@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { Settings2, ChevronDown } from 'lucide-react';
@@ -49,7 +48,6 @@ export function UnitRosterPanel() {
     const db = useDatabase();
     const currentList = useListStore(s => s.currentList);
     const addUnit = useListStore(s => s.addUnit);
-    const { globalFactionId } = useGlobalFactionStore();
     const { hoveredFireteamId, targetGroupIndex, selectUnitForDetail, setHoveredUnitISC, rosterScrollTarget, setRosterScrollTarget } = useListBuilderUIStore();
     const windows = useWorkspaceStore(s => s.windows);
     const layoutMode = useWorkspaceStore(s => s.layoutMode);
@@ -168,9 +166,9 @@ export function UnitRosterPanel() {
         return iscs;
     }, [hoveredFireteamData, db.units, currentList]);
 
-    const activeFactionId = currentList?.factionId ?? globalFactionId;
+    const activeFactionId = currentList?.factionId ?? null;
     const factionUnits = useMemo(() => {
-        if (!activeFactionId) return db.units;
+        if (!activeFactionId) return [];
         return db.units.filter(unit => unit.factions.includes(activeFactionId));
     }, [db.units, activeFactionId]);
 

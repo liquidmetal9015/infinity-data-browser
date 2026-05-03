@@ -160,17 +160,17 @@ export function FactionSelector({
                                             <ListboxOption
                                                 key={s.id}
                                                 value={s.id}
-                                                className="group relative cursor-default select-none py-1.5 pl-7 pr-8 text-gray-300 data-[focus]:bg-gray-700 data-[focus]:text-white transition-colors"
+                                                className="group relative cursor-default select-none py-1.5 px-3 text-gray-100 data-[focus]:bg-gray-700 data-[focus]:text-white transition-colors"
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <img
                                                         src={`${import.meta.env.BASE_URL}${s.logo.slice(1)}`}
                                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                         alt=""
-                                                        className="h-5 w-5 flex-shrink-0 object-contain"
+                                                        className="h-6 w-6 flex-shrink-0 object-contain"
                                                     />
                                                     <div>
-                                                        <div className="font-medium text-sm leading-tight group-data-[selected]:text-white group-data-[selected]:font-semibold">
+                                                        <div className="font-semibold text-sm leading-tight group-data-[selected]:text-white">
                                                             {s.name}
                                                         </div>
                                                         <div className="text-[10px] text-gray-500">Sectorial</div>

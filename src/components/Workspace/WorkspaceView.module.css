@@ -25,6 +25,7 @@
 .workspace-windows {
     position: absolute;
     inset: 0;
+    pointer-events: none;
 }
 
 /* Empty state */

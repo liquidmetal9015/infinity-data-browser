@@ -19,12 +19,20 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
     const wildcards = chart.teams.find((t: Fireteam) => t.name.toLowerCase().includes('wildcard'));
     const regularTeams = chart.teams.filter((t: Fireteam) => !t.name.toLowerCase().includes('wildcard'));
 
+    // Pick the strongest type for the accent stripe (CORE > HARIS > DUO)
+    const accentClassFor = (team: Fireteam) => {
+        if (team.type.includes('CORE')) return styles.accentCore;
+        if (team.type.includes('HARIS')) return styles.accentHaris;
+        if (team.type.includes('DUO')) return styles.accentDuo;
+        return '';
+    };
+
     return (
         <div className={styles.fireteamGrid}>
             {regularTeams.map((team: Fireteam, idx: number) => (
-                <div key={idx} className={styles.fireteamCard}>
+                <div key={idx} className={clsx(styles.fireteamCard, accentClassFor(team))}>
                     <div className={styles.cardHeader}>
-                        <h4>{team.name}</h4>
+                        <h4>{team.name.replace(/\s*fireteams?\s*$/i, '').trim() || team.name}</h4>
                         <div className={styles.typesRow}>
                             {team.type.includes('CORE') && <span className={clsx(styles.badge, styles.core)}>CORE</span>}
                             {team.type.includes('HARIS') && <span className={clsx(styles.badge, styles.haris)}>HARIS</span>}
@@ -64,7 +72,14 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
                                 </div>
                                 {wildcards.units.map((u: FireteamUnit, wIdx: number) => (
                                     <div key={`w-${wIdx} `} className={styles.unitRow}>
-                                        <span>{u.name}</span>
+                                        <span>
+                                            {u.name}
+                                            {u.comment && (
+                                                <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '6px', opacity: 0.8 }}>
+                                                    {u.comment}
+                                                </span>
+                                            )}
+                                        </span>
                                         <span className={styles.minMax}>{u.min}-{u.max}</span>
                                     </div>
                                 ))}

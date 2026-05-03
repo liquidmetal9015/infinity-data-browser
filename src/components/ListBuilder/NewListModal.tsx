@@ -57,8 +57,8 @@ export function NewListModal({
         >
             <div
                 style={{
-                    background: 'var(--surface-elevated)',
-                    border: '1px solid var(--border-default)',
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-hover)',
                     borderRadius: '16px',
                     padding: '2rem',
                     width: '100%',
@@ -94,8 +94,8 @@ export function NewListModal({
                         placeholder={defaultName || 'My Army List'}
                         onKeyDown={e => { if (e.key === 'Enter' && globalFactionId) handleConfirm(); }}
                         style={{
-                            background: 'var(--surface-base)',
-                            border: '1px solid var(--border-default)',
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border)',
                             color: 'var(--text-primary)',
                             borderRadius: '8px',
                             padding: '0.65rem 0.85rem',
@@ -111,8 +111,8 @@ export function NewListModal({
                         value={points}
                         onChange={e => setPoints(Number(e.target.value))}
                         style={{
-                            background: 'var(--surface-base)',
-                            border: '1px solid var(--border-default)',
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border)',
                             color: 'var(--text-primary)',
                             borderRadius: '8px',
                             padding: '0.65rem 0.85rem',
@@ -128,7 +128,7 @@ export function NewListModal({
                     {onCancel ? (
                         <button
                             onClick={onCancel}
-                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: '1px solid var(--border-default)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
+                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
                         >
                             Cancel
                         </button>
@@ -147,7 +147,7 @@ export function NewListModal({
                             padding: '0.6rem 1.5rem',
                             borderRadius: '8px',
                             border: 'none',
-                            background: globalFactionId ? 'var(--color-primary, #6366f1)' : 'var(--surface-base)',
+                            background: globalFactionId ? 'var(--color-primary, #6366f1)' : 'var(--bg-secondary)',
                             color: '#fff',
                             cursor: globalFactionId ? 'pointer' : 'not-allowed',
                             fontWeight: 700,
@@ -181,8 +181,8 @@ export function NewListModal({
                                         width: '100%',
                                         padding: '0.65rem 0.85rem',
                                         borderRadius: '8px',
-                                        border: '1px solid var(--border-default)',
-                                        background: 'var(--surface-base)',
+                                        border: '1px solid var(--border)',
+                                        background: 'var(--bg-secondary)',
                                         color: 'var(--text-primary)',
                                         resize: 'none',
                                         fontSize: '0.85rem',
@@ -200,8 +200,8 @@ export function NewListModal({
                                     style={{
                                         padding: '0.6rem 1rem',
                                         borderRadius: '8px',
-                                        border: '1px solid var(--border-default)',
-                                        background: (importCode ?? '').trim() ? 'var(--surface-elevated)' : 'var(--surface-base)',
+                                        border: '1px solid var(--border)',
+                                        background: (importCode ?? '').trim() ? 'var(--bg-elevated)' : 'var(--bg-secondary)',
                                         color: 'var(--text-primary)',
                                         cursor: (importCode ?? '').trim() ? 'pointer' : 'not-allowed',
                                         fontWeight: 600,

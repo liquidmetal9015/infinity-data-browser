@@ -23,7 +23,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
 
     return (
         <div className="filter-bar flex items-center gap-4 bg-gray-900 border border-gray-800 rounded-xl p-3">
-            <div className="flex-1 w-full max-w-sm">
+            <div className="flex-1 w-full">
                 <MultiFactionSelector
                     value={filters.factions}
                     onChange={handleFactionsChange}

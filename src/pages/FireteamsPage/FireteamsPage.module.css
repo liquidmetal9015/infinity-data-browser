@@ -131,8 +131,8 @@
 /* List View Styles */
 .fireteam-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.75rem;
 }
 
 .fireteam-card {
@@ -142,35 +142,56 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    border-top-width: 3px;
+    border-top-style: solid;
+}
+
+.fireteam-card.accent-core {
+    border-top-color: #ef4444;
+}
+
+.fireteam-card.accent-haris {
+    border-top-color: #f97316;
+}
+
+.fireteam-card.accent-duo {
+    border-top-color: #3b82f6;
 }
 
 .card-header {
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.03);
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.15);
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .card-header h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.2;
 }
 
 .types-row {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    flex-shrink: 0;
 }
 
 .card-content {
-    padding: 1rem;
+    padding: 0.5rem 0.75rem;
     flex: 1;
 }
 
 .fireteam-grid .unit-row {
     display: flex;
     justify-content: space-between;
-    padding: 0.4rem 0;
+    padding: 0.2rem 0;
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
 }
 
 .fireteam-grid .unit-row:last-child {
@@ -197,7 +218,7 @@
 .unit-perspective-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.25rem;
 }
 
 .unit-perspective-card {
@@ -205,34 +226,35 @@
     align-items: center;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-    gap: 2rem;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    gap: 0.75rem;
     justify-content: space-between;
 }
 
 .unit-info {
-    min-width: 200px;
+    min-width: 180px;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
 }
 
 .teams-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.25rem;
     flex: 1;
 }
 
 .team-tag {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    padding: 0.3rem 0.6rem;
+    padding: 0.15rem 0.4rem;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
 }
 
 .team-types {

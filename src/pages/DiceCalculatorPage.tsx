@@ -265,6 +265,7 @@ export function DiceCalculatorPage() {
                         )}
                         <CompactNumber label="PS" value={activeParams.damage} onChange={v => updateActive('damage', v)} readOnly={mode === 'simulator'} />
                         <CompactNumber label="ARM" value={activeParams.armor} onChange={v => updateActive('armor', v)} readOnly={mode === 'simulator'} />
+                        <CompactNumber label="BTS" value={activeParams.bts} onChange={v => updateActive('bts', v)} readOnly={mode === 'simulator'} />
                     </div>
 
                     <BurstSelector
@@ -344,6 +345,7 @@ export function DiceCalculatorPage() {
                         )}
                         <CompactNumber label="PS" value={reactiveParams.damage} onChange={v => updateReactive('damage', v)} readOnly={mode === 'simulator'} />
                         <CompactNumber label="ARM" value={reactiveParams.armor} onChange={v => updateReactive('armor', v)} readOnly={mode === 'simulator'} />
+                        <CompactNumber label="BTS" value={reactiveParams.bts} onChange={v => updateReactive('bts', v)} readOnly={mode === 'simulator'} />
                     </div>
 
                     <BurstSelector

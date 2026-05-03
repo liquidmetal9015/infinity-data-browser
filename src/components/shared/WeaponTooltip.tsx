@@ -175,8 +175,7 @@ export function WeaponTooltip({ weaponId, children }: { weaponId: number; childr
                 onMouseEnter={(e) => setPos({ x: e.clientX, y: e.clientY })}
                 onMouseMove={(e) => setPos({ x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => setPos(null)}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
+    
             >
                 {children}
             </span>

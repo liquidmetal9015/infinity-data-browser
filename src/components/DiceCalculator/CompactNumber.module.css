@@ -1,0 +1,58 @@
+.compact-input {
+    flex: 1;
+}
+
+.label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s;
+    color: var(--text-primary);
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--accent);
+    color: white;
+}
+
+.btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.zero-btn {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.value {
+    width: 40px;
+    height: 28px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+}

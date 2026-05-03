@@ -1,4 +1,5 @@
 // Wounds Distribution Table
+import styles from './WoundsTable.module.css';
 
 interface WoundsDistribution {
     wounds: Map<number, number>;
@@ -35,8 +36,8 @@ export const WoundsTable = ({ active, reactive }: WoundsTableProps) => {
     const reactiveRows = buildRows(reactive.wounds);
 
     return (
-        <div className="wounds-tables">
-            <div className="wounds-table">
+        <div className={styles.woundsTables}>
+            <div className={styles.woundsTable}>
                 <h4>Active Wounds Distribution</h4>
                 <table>
                     <thead>
@@ -48,7 +49,7 @@ export const WoundsTable = ({ active, reactive }: WoundsTableProps) => {
                     </thead>
                     <tbody>
                         {activeRows.map(r => (
-                            <tr key={r.wounds} className={r.wounds > 0 ? 'wound-row' : ''}>
+                            <tr key={r.wounds} className={r.wounds > 0 ? styles.woundRow : ''}>
                                 <td>{r.wounds}</td>
                                 <td>{(r.prob * 100).toFixed(1)}%</td>
                                 <td>{(r.cumulative * 100).toFixed(1)}%</td>
@@ -58,7 +59,7 @@ export const WoundsTable = ({ active, reactive }: WoundsTableProps) => {
                 </table>
             </div>
 
-            <div className="wounds-table">
+            <div className={styles.woundsTable}>
                 <h4>Reactive Wounds Distribution</h4>
                 <table>
                     <thead>
@@ -70,7 +71,7 @@ export const WoundsTable = ({ active, reactive }: WoundsTableProps) => {
                     </thead>
                     <tbody>
                         {reactiveRows.map(r => (
-                            <tr key={r.wounds} className={r.wounds > 0 ? 'wound-row' : ''}>
+                            <tr key={r.wounds} className={r.wounds > 0 ? styles.woundRow : ''}>
                                 <td>{r.wounds}</td>
                                 <td>{(r.prob * 100).toFixed(1)}%</td>
                                 <td>{(r.cumulative * 100).toFixed(1)}%</td>

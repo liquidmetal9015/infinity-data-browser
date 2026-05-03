@@ -40,7 +40,7 @@
 .tool-tabs {
     border-left: 1px solid var(--border);
     padding-left: 0.5rem;
-    margin-left: 0.25rem;
+    margin-left: auto;
 }
 
 .workspace-tabs::-webkit-scrollbar,
@@ -87,10 +87,6 @@
 .tool-tab:hover,
 .tool-tab.open {
     opacity: 1;
-}
-
-.tool-tab .tab-label {
-    display: none;
 }
 
 .tab-indicator {

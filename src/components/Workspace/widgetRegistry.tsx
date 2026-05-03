@@ -122,12 +122,11 @@ export const PANEL_WIDGETS: WidgetType[] = [
 ];
 
 // Tool widgets — launchable as floating windows from the NavBar
+// Note: RANGES is excluded here because it has its own dedicated /ranges explore route
 export const TOOL_WIDGETS: WidgetType[] = [
     'FIRETEAMS',
-    'RANGES',
-    'DICE_CALCULATOR',
-    'DICE_ANALYTICS',
     'CLASSIFIEDS',
+    'DICE_CALCULATOR',
 ];
 
 // Legacy export — PANEL_WIDGETS is now the source of truth for the columns layout

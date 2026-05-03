@@ -4,6 +4,7 @@
     position: absolute;
     display: flex;
     flex-direction: column;
+    pointer-events: auto;
     background: var(--bg-secondary, #1e293b);
     border: 1px solid var(--border, #334155);
     border-radius: 10px;

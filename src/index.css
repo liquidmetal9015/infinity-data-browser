@@ -32,6 +32,16 @@
   --accent: #6366f1;
   --accent-hover: #818cf8;
   --accent-muted: rgba(99, 102, 241, 0.15);
+  --accent-transparent: rgba(99, 102, 241, 0.15);
+  --color-primary: #6366f1;
+  --color-primary-rgb: 99, 102, 241;
+
+  /* Secondary accent (reactive/defensive) */
+  --cyber-primary: #22d3ee;
+  --cyber-primary-muted: rgba(34, 211, 238, 0.15);
+
+  /* Border variants */
+  --border-subtle: rgba(255, 255, 255, 0.04);
 
   /* Semantic Colors */
   --success: #22c55e;

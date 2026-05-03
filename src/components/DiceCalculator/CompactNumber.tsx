@@ -1,5 +1,7 @@
 // Compact Number Input with +/- buttons
 import { Plus, Minus } from 'lucide-react';
+import { clsx } from 'clsx';
+import styles from './CompactNumber.module.css';
 
 interface CompactNumberProps {
     label: string;
@@ -20,11 +22,11 @@ export const CompactNumber = ({
     showZero = false,
     readOnly = false
 }: CompactNumberProps) => (
-    <div className="compact-input">
-        <span className="compact-label">{label}</span>
-        <div className="compact-controls">
+    <div className={styles.compactInput}>
+        <span className={styles.label}>{label}</span>
+        <div className={styles.controls}>
             <button
-                className="compact-btn"
+                className={styles.btn}
                 onClick={() => onChange(Math.max(min, value - 1))}
                 disabled={value <= min || readOnly}
             >
@@ -32,13 +34,13 @@ export const CompactNumber = ({
             </button>
             <input
                 type="number"
-                className="compact-value"
+                className={styles.value}
                 value={value}
                 onChange={e => onChange(Math.max(min, Math.min(max, parseInt(e.target.value) || 0)))}
                 readOnly={readOnly}
             />
             <button
-                className="compact-btn"
+                className={styles.btn}
                 onClick={() => onChange(Math.min(max, value + 1))}
                 disabled={value >= max || readOnly}
             >
@@ -46,7 +48,7 @@ export const CompactNumber = ({
             </button>
             {showZero && (
                 <button
-                    className="compact-btn zero-btn"
+                    className={clsx(styles.btn, styles.zeroBtn)}
                     onClick={() => onChange(0)}
                     title="Set to 0"
                 >

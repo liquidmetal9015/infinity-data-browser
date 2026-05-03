@@ -1,0 +1,42 @@
+.wounds-bar-container {
+    margin: 1rem 0;
+}
+
+.wounds-bar {
+    display: flex;
+    height: 28px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg-tertiary);
+}
+
+.bar-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.seg-active {
+    background: var(--accent);
+}
+
+.seg-reactive {
+    background: var(--cyber-primary);
+    color: var(--bg-primary);
+}
+
+.seg-fail {
+    background: var(--text-secondary);
+    opacity: 0.3;
+}
+
+.seg-w1 { opacity: 0.7; }
+.seg-w2 { opacity: 0.8; }
+.seg-w3 { opacity: 0.9; }
+.seg-w4 { opacity: 0.95; }
+.seg-w5 { opacity: 1; }

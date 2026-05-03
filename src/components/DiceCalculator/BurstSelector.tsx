@@ -1,4 +1,6 @@
 // Burst Selector with visual buttons
+import { clsx } from 'clsx';
+import styles from './BurstSelector.module.css';
 
 interface BurstSelectorProps {
     value: number;
@@ -8,12 +10,12 @@ interface BurstSelectorProps {
 }
 
 export const BurstSelector = ({ value, onChange, isReactive = false, readOnly = false }: BurstSelectorProps) => (
-    <div className="burst-selector">
-        <span className="compact-label">Burst</span>
-        <div className="burst-buttons">
+    <div className={styles.burstSelector}>
+        <span className={styles.label}>Burst</span>
+        <div className={styles.buttons}>
             {isReactive && (
                 <button
-                    className={`burst-btn ${value === 0 ? 'active' : ''}`}
+                    className={clsx(styles.btn, value === 0 && (isReactive ? styles.reactiveActive : styles.active))}
                     onClick={() => onChange(0)}
                     disabled={readOnly}
                 >
@@ -23,7 +25,7 @@ export const BurstSelector = ({ value, onChange, isReactive = false, readOnly = 
             {[1, 2, 3, 4, 5].map(n => (
                 <button
                     key={n}
-                    className={`burst-btn ${value === n ? 'active' : ''}`}
+                    className={clsx(styles.btn, value === n && (isReactive ? styles.reactiveActive : styles.active))}
                     onClick={() => onChange(n)}
                     disabled={readOnly}
                 >

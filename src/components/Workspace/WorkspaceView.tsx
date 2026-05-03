@@ -2,8 +2,10 @@
 import { useRef, useCallback, Fragment } from 'react';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { useContextMenuStore as useContextMenu } from '../../stores/useContextMenuStore';
+import { useListStore } from '../../stores/useListStore';
 import { WindowFrame } from './WindowFrame';
 import { widgetRegistry } from './widgetRegistry';
+import { NoActiveListView } from './NoActiveListView';
 import { getColumnPanels } from '../../types/workspace';
 import type { WidgetType } from '../../types/workspace';
 import { clsx } from 'clsx';
@@ -60,6 +62,7 @@ export function WorkspaceView() {
         closeWindow, setColumnWidths, setActiveColumn,
     } = useWorkspaceStore();
     const { showMenu } = useContextMenu();
+    const currentList = useListStore(s => s.currentList);
     const columnsRef = useRef<HTMLDivElement>(null);
     const isMobile = useIsMobile();
     const touchStartX = useRef(0);
@@ -67,6 +70,12 @@ export function WorkspaceView() {
     const visibleWindows = windows.filter(w => !w.isMinimized);
     const topZIndex = windows.length > 0 ? Math.max(...windows.map(w => w.zIndex)) : 0;
     const activeColumns = getColumnPanels(columnCount);
+
+    const LIST_BUILDER_TYPES: WidgetType[] = ['UNIT_ROSTER', 'ARMY_LIST'];
+    const isInListBuilder =
+        layoutMode === 'columns'
+            ? activeColumns.some(t => LIST_BUILDER_TYPES.includes(t))
+            : windows.some(w => LIST_BUILDER_TYPES.includes(w.type));
 
     const contextMenuItems = [
         { label: 'Force Reload App', action: () => window.location.reload(), icon: <span className="text-lg">↻</span> },
@@ -87,6 +96,17 @@ export function WorkspaceView() {
             setActiveColumn(Math.max(activeColumnIndex - 1, 0));
         }
     }, [activeColumnIndex, activeColumns.length, setActiveColumn]);
+
+    if (isInListBuilder && !currentList) {
+        return (
+            <div
+                className={styles.workspaceView}
+                onContextMenu={(e) => { e.preventDefault(); showMenu(e.clientX, e.clientY, contextMenuItems); }}
+            >
+                <NoActiveListView />
+            </div>
+        );
+    }
 
     // ── Columns mode ────────────────────────────────────────────────────────
     if (layoutMode === 'columns') {

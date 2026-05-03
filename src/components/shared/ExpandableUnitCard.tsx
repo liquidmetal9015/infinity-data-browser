@@ -216,10 +216,10 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
         >
             {/* Card Header (Always Visible) */}
             <div
-                className={`flex items-center justify-between px-3 py-2 cursor-pointer ${detailMode && onViewUnit ? 'hover:bg-white/5' : ''} ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
+                className={`flex items-center justify-between px-3 py-1.5 cursor-pointer ${detailMode && onViewUnit ? 'hover:bg-white/5' : ''} ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
                 onClick={detailMode && onViewUnit ? () => onViewUnit(unit) : onToggle}
             >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     {logoPath ? (
                         <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                             <img src={logoPath} alt={unit.isc} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -231,7 +231,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                     )}
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="font-bold text-base text-gray-100 tracking-wide leading-tight">{unit.isc}</span>
+                            <span className="font-bold text-sm text-gray-100 tracking-wide leading-tight">{unit.isc}</span>
                             {activeProfile?.unitType != null && CLASSIFICATION_LABELS[activeProfile.unitType] && (
                                 <span
                                     className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
@@ -245,7 +245,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                 </span>
                             )}
                         </div>
-                        <div className="font-mono text-sm text-blue-400 mt-0.5">
+                        <div className="font-mono text-xs text-blue-400 mt-0.5">
                             {unit.pointsRange[0] === unit.pointsRange[1] ? `${unit.pointsRange[0]} pts` : `${unit.pointsRange[0]} - ${unit.pointsRange[1]} pts`}
                         </div>
                     </div>

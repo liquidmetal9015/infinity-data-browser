@@ -18,6 +18,8 @@ import { DEFAULT_SIZES, WIDGET_LABELS, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT, getC
 
 const STORAGE_KEY = 'infinity-workspace-state';
 const CASCADE_OFFSET = 30;
+// Must be above the app header z-index (100) so windows are never hidden behind it
+const BASE_Z_INDEX = 200;
 
 // ============================================================================
 // Helpers
@@ -104,7 +106,7 @@ function getInitialPlacement(windows: WindowState[], type: WidgetType): { positi
 
 export const initialState: WorkspaceState = {
     windows: [],
-    nextZIndex: 1,
+    nextZIndex: BASE_Z_INDEX,
     layoutMode: 'columns',
     maximizedWindowId: null,
     columnWidths: [1, 1, 1],
@@ -273,10 +275,19 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
                     nextZIndex: state.nextZIndex + columnWindows.length,
                 };
             }
+            let maximizedWindowId = state.maximizedWindowId;
+            if (action.mode === 'tabbed' && !maximizedWindowId) {
+                const topWindow = state.windows
+                    .filter(w => !w.isMinimized)
+                    .sort((a, b) => b.zIndex - a.zIndex)[0];
+                maximizedWindowId = topWindow?.id ?? null;
+            } else if (action.mode !== 'tabbed') {
+                maximizedWindowId = null;
+            }
             return {
                 ...state,
                 layoutMode: action.mode,
-                maximizedWindowId: action.mode === 'multi-window' ? null : state.maximizedWindowId,
+                maximizedWindowId,
             };
         }
 
@@ -357,6 +368,9 @@ function loadFromStorage(): WorkspaceState | null {
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.windows) && typeof parsed.nextZIndex === 'number') {
             const columnCount: 2 | 3 = parsed.columnCount === 2 ? 2 : 3;
+            // Migrate: bump z-indexes that predate the BASE_Z_INDEX floor so windows
+            // are never rendered behind the sticky app header (z-index: 100).
+            const zOffset = parsed.nextZIndex < BASE_Z_INDEX ? BASE_Z_INDEX - 1 : 0;
             return {
                 ...parsed,
                 layoutMode: parsed.layoutMode || 'columns',
@@ -364,6 +378,11 @@ function loadFromStorage(): WorkspaceState | null {
                 columnWidths: parsed.columnWidths ?? (columnCount === 2 ? [1, 1] : [1, 1, 1]),
                 columnCount,
                 activeColumnIndex: parsed.activeColumnIndex ?? 0,
+                nextZIndex: Math.max(BASE_Z_INDEX, parsed.nextZIndex),
+                windows: (parsed.windows as WindowState[]).map(w => ({
+                    ...w,
+                    zIndex: w.zIndex + zOffset,
+                })),
             } as WorkspaceState;
         }
     } catch {

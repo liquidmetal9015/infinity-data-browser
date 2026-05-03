@@ -1,4 +1,4 @@
-import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass, Plus, Menu, X } from 'lucide-react';
+import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass, Plus, Menu, X, ListChecks } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
@@ -42,6 +42,11 @@ export function NavBar() {
         if (mode === appMode) return;
         setLastPath(appMode, location.pathname);
         setAppMode(mode);
+        // Tabbed/maximized is a list-builder concept; ensure tool windows
+        // float normally when entering explorer mode.
+        if (mode === 'explorer' && layoutMode === 'tabbed') {
+            setLayoutMode('multi-window');
+        }
         navigate(mode === 'builder' ? lastBuilderPath : lastExplorerPath);
     };
 
@@ -120,14 +125,14 @@ export function NavBar() {
                                         onClick={() => setColumnCount(2)}
                                         title="Two Columns (Roster + List)"
                                     >
-                                        <span className={styles.layoutLabel}>2</span>
+                                        <span className={styles.layoutLabel}>2-col</span>
                                     </button>
                                     <button
                                         className={clsx(styles.segmentedBtn, columnCount === 3 && styles.active)}
                                         onClick={() => setColumnCount(3)}
                                         title="Three Columns"
                                     >
-                                        <span className={styles.layoutLabel}>3</span>
+                                        <span className={styles.layoutLabel}>3-col</span>
                                     </button>
                                 </div>
                             )}
@@ -151,7 +156,12 @@ export function NavBar() {
                                 </button>
                                 <button
                                     className={clsx(styles.segmentedBtn, layoutMode === 'tabbed' && styles.active)}
-                                    onClick={() => setLayoutMode('tabbed')}
+                                    onClick={() => {
+                                        if (layoutMode !== 'tabbed' && windows.filter(w => !w.isMinimized).length === 0) {
+                                            openWindow(PANEL_WIDGETS[0]);
+                                        }
+                                        setLayoutMode('tabbed');
+                                    }}
                                     title="Maximized (Tabbed) Mode"
                                 >
                                     <Maximize size={14} />
@@ -193,8 +203,10 @@ export function NavBar() {
                                     <Link
                                         to="/lists"
                                         className={styles.navActionBtn}
-                                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}
+                                        title="View your saved army lists"
+                                        style={{ color: 'var(--accent)', borderColor: 'rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)' }}
                                     >
+                                        <ListChecks size={13} />
                                         <span className={styles.tabLabel}>My Lists</span>
                                     </Link>
                                 </>
@@ -398,14 +410,14 @@ export function NavBar() {
                                         onClick={() => setColumnCount(2)}
                                         title="Two Columns (Roster + List)"
                                     >
-                                        <span className={styles.layoutLabel}>2</span>
+                                        <span className={styles.layoutLabel}>2-col</span>
                                     </button>
                                     <button
                                         className={clsx(styles.segmentedBtn, columnCount === 3 && styles.active)}
                                         onClick={() => setColumnCount(3)}
                                         title="Three Columns"
                                     >
-                                        <span className={styles.layoutLabel}>3</span>
+                                        <span className={styles.layoutLabel}>3-col</span>
                                     </button>
                                 </div>
                             )}
@@ -428,7 +440,12 @@ export function NavBar() {
                                 </button>
                                 <button
                                     className={clsx(styles.segmentedBtn, layoutMode === 'tabbed' && styles.active)}
-                                    onClick={() => setLayoutMode('tabbed')}
+                                    onClick={() => {
+                                        if (layoutMode !== 'tabbed' && windows.filter(w => !w.isMinimized).length === 0) {
+                                            openWindow(PANEL_WIDGETS[0]);
+                                        }
+                                        setLayoutMode('tabbed');
+                                    }}
                                     title="Maximized (Tabbed) Mode"
                                 >
                                     <Maximize size={14} />

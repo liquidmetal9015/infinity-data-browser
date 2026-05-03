@@ -69,8 +69,31 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
 
                 if (exactTeams.length === 0) return null;
 
-                // Sort teams by name
-                exactTeams.sort((a, b) => a.name.localeCompare(b.name));
+                // Compute per-team nominal-membership for sorting and rendering
+                const wildTeam = chart.teams.find((t: Fireteam) => t.name.toLowerCase().includes('wildcard'));
+                const isNominalMemberOf = (team: Fireteam) => {
+                    let definition = team.units.find(u => u.slug === slug);
+                    if (!definition) definition = wildTeam?.units.find((u: FireteamUnit) => u.slug === slug);
+                    const tags = getUnitTags(unit.name, definition?.comment);
+                    const teamSimple = team.name.toLowerCase();
+                    const teamWords = teamSimple.split(' ').filter(w => w.length > 3 && w !== 'fireteam' && w !== 'fireteams');
+                    const checkList = [unit.name, ...tags];
+                    return checkList.some(tag => {
+                        const tagLower = tag.toLowerCase();
+                        return teamWords.some(w => tagLower.includes(w) || w.includes(tagLower));
+                    });
+                };
+
+                // Sort: nominal members first, then by name
+                exactTeams.sort((a, b) => {
+                    const an = isNominalMemberOf(a) ? 0 : 1;
+                    const bn = isNominalMemberOf(b) ? 0 : 1;
+                    if (an !== bn) return an - bn;
+                    return a.name.localeCompare(b.name);
+                });
+
+                const stripFireteamSuffix = (name: string) =>
+                    name.replace(/\s*fireteams?\s*$/i, '').trim() || name;
 
                 return (
                     <div key={unit.id} className={styles.unitPerspectiveCard}>
@@ -86,29 +109,10 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
                         </div>
                         <div className={styles.teamsList}>
                             {exactTeams.map((team: Fireteam, idx) => {
-                                const teamSimple = team.name.toLowerCase();
-
-                                let definition = team.units.find(u => u.slug === slug);
-                                if (!definition) {
-                                    const wildTeam = chart.teams.find((t: Fireteam) => t.name.toLowerCase().includes('wildcard'));
-                                    definition = wildTeam?.units.find((u: FireteamUnit) => u.slug === slug);
-                                }
-
-                                const tags = getUnitTags(unit.name, definition?.comment);
-
-                                const teamWords = teamSimple.split(' ').filter(w => w.length > 3 && w !== 'fireteam');
-                                const checkList = [unit.name, ...tags];
-
-                                const countsAsMatch = checkList.some(tag => {
-                                    const tagLower = tag.toLowerCase();
-                                    return teamWords.some(w => tagLower.includes(w) || w.includes(tagLower));
-                                });
-
-                                const isNominalMember = countsAsMatch;
-
+                                const isNominalMember = isNominalMemberOf(team);
                                 return (
                                     <div key={idx} className={clsx(styles.teamTag, isNominalMember && styles.nominalMember)}>
-                                        <div className={styles.teamName}>{team.name}</div>
+                                        <div className={styles.teamName}>{stripFireteamSuffix(team.name)}</div>
                                         <div className={styles.teamTypes}>
                                             {team.type.includes('CORE') && <span className={clsx(styles.typeBadge, styles.core)} title="Core">C</span>}
                                             {team.type.includes('HARIS') && <span className={clsx(styles.typeBadge, styles.haris)} title="Haris">H</span>}

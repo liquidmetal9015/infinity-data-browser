@@ -7,12 +7,19 @@ import { CompactFactionSelector } from '../../components/shared/CompactFactionSe
 import { FireteamListView } from './FireteamListView';
 import { UnitPerspectiveView } from './UnitPerspectiveView';
 import { FireteamBuilder } from './FireteamBuilder';
+import { useAppModeStore } from '../../stores/useAppModeStore';
+import { useListStore } from '../../stores/useListStore';
 import styles from './FireteamsPage.module.css';
 
 export function FireteamsPage() {
     const db = useDatabase();
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
-    const [viewMode, setViewMode] = useState<'teams' | 'units' | 'builder'>('builder');
+    const [viewMode, setViewMode] = useState<'teams' | 'units' | 'builder'>('teams');
+    const { appMode } = useAppModeStore();
+    const { currentList } = useListStore();
+
+    const inBuilderWithList = appMode === 'builder' && !!currentList;
+    const effectiveFactionId = inBuilderWithList ? currentList.factionId : globalFactionId;
 
     // Get all factions with fireteam data, grouped by super-faction
     const groupedOptions = useMemo(() => {
@@ -28,62 +35,63 @@ export function FireteamsPage() {
     }, [db]);
 
     const fireteamChart = useMemo(() => {
-        if (!globalFactionId) return null;
-        return db.getFireteamChart(globalFactionId);
-    }, [globalFactionId, db]);
+        if (!effectiveFactionId) return null;
+        return db.getFireteamChart(effectiveFactionId);
+    }, [effectiveFactionId, db]);
 
     const activeFaction = useMemo(() => {
-        if (!globalFactionId) return null;
-        return db.getFactionInfo(globalFactionId);
-    }, [globalFactionId, db]);
+        if (!effectiveFactionId) return null;
+        return db.getFactionInfo(effectiveFactionId);
+    }, [effectiveFactionId, db]);
 
     const handleSelectFaction = (factionId: number) => {
         if (factionId) {
             setGlobalFactionId(factionId);
-            // Reset view mode to builder when changing faction
-            setViewMode('builder');
+            setViewMode('teams');
         }
     };
 
     return (
         <div className={clsx('page-container', styles.fireteamsPage)}>
             <div className={styles.controlsSection}>
-                <div className={styles.selectorContainer}>
-                    <CompactFactionSelector
-                        groupedFactions={groupedOptions}
-                        value={globalFactionId}
-                        onChange={handleSelectFaction}
-                    />
-                </div>
+                {!inBuilderWithList && (
+                    <div className={styles.selectorContainer}>
+                        <CompactFactionSelector
+                            groupedFactions={groupedOptions}
+                            value={globalFactionId}
+                            onChange={handleSelectFaction}
+                        />
+                    </div>
+                )}
 
                 {fireteamChart && (
                     <div className={styles.viewToggles}>
+                        <button
+                            className={clsx(styles.toggleBtn, viewMode === 'teams' && styles.active)}
+                            onClick={() => setViewMode('teams')}
+                        >
+                            <Layers size={18} />
+                            Table
+                        </button>
                         <button
                             className={clsx(styles.toggleBtn, viewMode === 'builder' && styles.active)}
                             onClick={() => setViewMode('builder')}
                         >
                             <Calculator size={18} />
-                            Team Builder
+                            Builder
                         </button>
                         <button
                             className={clsx(styles.toggleBtn, viewMode === 'units' && styles.active)}
                             onClick={() => setViewMode('units')}
                         >
                             <Users size={18} />
-                            Unit Analysis
-                        </button>
-                        <button
-                            className={clsx(styles.toggleBtn, viewMode === 'teams' && styles.active)}
-                            onClick={() => setViewMode('teams')}
-                        >
-                            <Layers size={18} />
-                            Reference Lists
+                            By Unit
                         </button>
                     </div>
                 )}
             </div>
 
-            {!globalFactionId ? (
+            {!effectiveFactionId ? (
                 <div className={styles.emptyState}>
                     <Shield size={48} className="text-secondary" />
                     <p>Select a Sectorial Army to view its Fireteams.</p>
@@ -95,10 +103,8 @@ export function FireteamsPage() {
                 </div>
             ) : (
                 <div className="content-area">
-                    {/* Header for Faction */}
                     <div className={styles.factionHeader}>
                         <h3>{activeFaction?.name} Fireteams</h3>
-                        {/* Legend */}
                         <div className={styles.legend}>
                             <span className={clsx(styles.badge, styles.duo)}>DUO (2)</span>
                             <span className={clsx(styles.badge, styles.haris)}>HARIS (3)</span>
@@ -106,9 +112,9 @@ export function FireteamsPage() {
                         </div>
                     </div>
 
-                    {viewMode === 'teams' && <FireteamListView chart={fireteamChart} factionId={globalFactionId} />}
-                    {viewMode === 'units' && <UnitPerspectiveView chart={fireteamChart} db={db} factionId={globalFactionId} />}
-                    {viewMode === 'builder' && <FireteamBuilder key={globalFactionId} chart={fireteamChart} factionId={globalFactionId} />}
+                    {viewMode === 'teams' && <FireteamListView chart={fireteamChart} factionId={effectiveFactionId} />}
+                    {viewMode === 'units' && <UnitPerspectiveView chart={fireteamChart} db={db} factionId={effectiveFactionId} />}
+                    {viewMode === 'builder' && <FireteamBuilder key={effectiveFactionId} chart={fireteamChart} factionId={effectiveFactionId} />}
                 </div>
             )}
         </div>
