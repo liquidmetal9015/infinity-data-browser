@@ -1,4 +1,4 @@
-import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass, Plus } from 'lucide-react';
+import { Trash2, AppWindow, Maximize, Columns3, Hammer, Compass, Plus, Menu, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
@@ -8,7 +8,7 @@ import type { WidgetType } from '../types/workspace';
 import { useAuth } from '../hooks/useAuth';
 import { STATIC_MODE } from '../services/listService';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppModeStore } from '../stores/useAppModeStore';
 import { useListStore } from '../stores/useListStore';
 import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
@@ -36,6 +36,7 @@ export function NavBar() {
     const { currentList, createList } = useListStore();
     const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
     const [showNewModal, setShowNewModal] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleModeSwitch = (mode: typeof appMode) => {
         if (mode === appMode) return;
@@ -56,8 +57,17 @@ export function NavBar() {
 
     const isWorkspace = location.pathname === '/';
 
+    // Row 2 / hamburger only exist when there's contextual nav content
+    const hasNavRowContent = appMode === 'explorer' || (appMode === 'builder' && isWorkspace);
+
+    // Close mobile menu on route change or resize to desktop
+    useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
+    useEffect(() => { if (!isMobile) setMobileMenuOpen(false); }, [isMobile]);
+
     return (
         <header className="app-header">
+
+            {/* ── ROW 1: Brand bar ─────────────────────────────────────────── */}
             <div className="header-content">
                 <div className="logo-section">
                     <Link to="/" className={styles.appTitleLink}>
@@ -86,87 +96,19 @@ export function NavBar() {
                     </button>
                 </div>
 
-                {/* Explore links — only in Explorer mode */}
-                {appMode === 'explorer' && (
-                    <nav className={styles.exploreTabs}>
-                        {EXPLORE_LINKS.map(({ label, path }) => (
-                            <Link
-                                key={path}
-                                to={path}
-                                className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
-                            >
-                                <span className={styles.tabLabel}>{label}</span>
-                            </Link>
-                        ))}
-                    </nav>
+                {/* Hamburger — shown on mobile only via CSS, only when Row 2 has content */}
+                {hasNavRowContent && (
+                    <button
+                        className={clsx(styles.mobileMenuBtn, mobileMenuOpen && styles.open)}
+                        onClick={() => setMobileMenuOpen(o => !o)}
+                        aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
+                        aria-expanded={mobileMenuOpen}
+                    >
+                        {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+                    </button>
                 )}
 
-                {/* Panel launcher tabs — Builder mode, multi-window/tabbed on workspace */}
-                {appMode === 'builder' && isWorkspace && layoutMode !== 'columns' && (
-                    <nav className={styles.workspaceTabs}>
-                        {PANEL_WIDGETS.map((widgetType: WidgetType) => {
-                            const entry = widgetRegistry[widgetType];
-                            const IconComponent = entry.icon;
-                            const windowInstance = windows.find(w => w.type === widgetType);
-                            const isOpen = !!windowInstance;
-                            const isActive = activeWidgetType === widgetType;
-
-                            return (
-                                <button
-                                    key={widgetType}
-                                    className={clsx(styles.tabBtn, isOpen && styles.open, isActive && styles.active)}
-                                    onClick={() => {
-                                        if (windowInstance) {
-                                            focusWindow(windowInstance.id);
-                                        } else {
-                                            openWindow(widgetType);
-                                        }
-                                    }}
-                                    title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
-                                >
-                                    <IconComponent size={16} />
-                                    <span className={styles.tabLabel}>{entry.label}</span>
-                                    {isOpen && <div className={styles.tabIndicator} />}
-                                </button>
-                            );
-                        })}
-                    </nav>
-                )}
-
-                {/* Tool launcher — Builder: workspace only; Explorer: always visible */}
-                {(appMode === 'builder' ? isWorkspace : true) && (
-                    <nav className={styles.toolTabs}>
-                        {TOOL_WIDGETS.map((widgetType: WidgetType) => {
-                            const entry = widgetRegistry[widgetType];
-                            const IconComponent = entry.icon;
-                            const windowInstance = windows.find(w => w.type === widgetType);
-                            const isOpen = !!windowInstance;
-                            const isActive = activeWidgetType === widgetType;
-
-                            return (
-                                <button
-                                    key={widgetType}
-                                    className={clsx(styles.tabBtn, styles.toolTab, isOpen && styles.open, isActive && styles.active)}
-                                    onClick={() => {
-                                        if (windowInstance) {
-                                            focusWindow(windowInstance.id);
-                                        } else {
-                                            openWindow(widgetType, {
-                                                contextMode: appMode === 'builder' ? 'list' : 'standalone',
-                                            });
-                                        }
-                                    }}
-                                    title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
-                                >
-                                    <IconComponent size={16} />
-                                    <span className={styles.tabLabel}>{entry.label}</span>
-                                    {isOpen && <div className={styles.tabIndicator} />}
-                                </button>
-                            );
-                        })}
-                    </nav>
-                )}
-
+                {/* Controls nav — always in Row 1 */}
                 <div className={clsx(styles.mainNav, styles.controlsNav)}>
                     {appMode === 'builder' && isWorkspace && !isMobile && (
                         <>
@@ -269,6 +211,235 @@ export function NavBar() {
                     </button>
                 </div>
             </div>
+
+            {/* ── ROW 2: Navigation tabs — desktop visible, mobile hidden via CSS ── */}
+            {hasNavRowContent && (
+                <div className={clsx('header-nav-row', styles.navRowHiddenMobile)}>
+                    <div className="header-nav-row-inner">
+
+                        {/* Explorer tabs */}
+                        {appMode === 'explorer' && (
+                            <nav className={styles.exploreTabs}>
+                                {EXPLORE_LINKS.map(({ label, path }) => (
+                                    <Link
+                                        key={path}
+                                        to={path}
+                                        className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
+                                    >
+                                        <span className={styles.tabLabel}>{label}</span>
+                                    </Link>
+                                ))}
+                            </nav>
+                        )}
+
+                        {/* Workspace panel tabs — Builder mode, multi-window/tabbed on workspace */}
+                        {appMode === 'builder' && isWorkspace && layoutMode !== 'columns' && (
+                            <nav className={styles.workspaceTabs}>
+                                {PANEL_WIDGETS.map((widgetType: WidgetType) => {
+                                    const entry = widgetRegistry[widgetType];
+                                    const IconComponent = entry.icon;
+                                    const windowInstance = windows.find(w => w.type === widgetType);
+                                    const isOpen = !!windowInstance;
+                                    const isActive = activeWidgetType === widgetType;
+
+                                    return (
+                                        <button
+                                            key={widgetType}
+                                            className={clsx(styles.tabBtn, isOpen && styles.open, isActive && styles.active)}
+                                            onClick={() => {
+                                                if (windowInstance) {
+                                                    focusWindow(windowInstance.id);
+                                                } else {
+                                                    openWindow(widgetType);
+                                                }
+                                            }}
+                                            title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
+                                        >
+                                            <IconComponent size={16} />
+                                            <span className={styles.tabLabel}>{entry.label}</span>
+                                            {isOpen && <div className={styles.tabIndicator} />}
+                                        </button>
+                                    );
+                                })}
+                            </nav>
+                        )}
+
+                        {/* Tool launcher */}
+                        {(appMode === 'builder' ? isWorkspace : true) && (
+                            <nav className={styles.toolTabs}>
+                                {TOOL_WIDGETS.map((widgetType: WidgetType) => {
+                                    const entry = widgetRegistry[widgetType];
+                                    const IconComponent = entry.icon;
+                                    const windowInstance = windows.find(w => w.type === widgetType);
+                                    const isOpen = !!windowInstance;
+                                    const isActive = activeWidgetType === widgetType;
+
+                                    return (
+                                        <button
+                                            key={widgetType}
+                                            className={clsx(styles.tabBtn, styles.toolTab, isOpen && styles.open, isActive && styles.active)}
+                                            onClick={() => {
+                                                if (windowInstance) {
+                                                    focusWindow(windowInstance.id);
+                                                } else {
+                                                    openWindow(widgetType, {
+                                                        contextMode: appMode === 'builder' ? 'list' : 'standalone',
+                                                    });
+                                                }
+                                            }}
+                                            title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
+                                        >
+                                            <IconComponent size={16} />
+                                            <span className={styles.tabLabel}>{entry.label}</span>
+                                            {isOpen && <div className={styles.tabIndicator} />}
+                                        </button>
+                                    );
+                                })}
+                            </nav>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── MOBILE DROPDOWN: Row 2 content shown on mobile when hamburger is open ── */}
+            {hasNavRowContent && (
+                <div className={clsx(styles.mobileNavDropdown, mobileMenuOpen && styles.visible)}>
+
+                    {/* Explorer tabs */}
+                    {appMode === 'explorer' && (
+                        <nav className={styles.exploreTabs} onClick={() => setMobileMenuOpen(false)}>
+                            {EXPLORE_LINKS.map(({ label, path }) => (
+                                <Link
+                                    key={path}
+                                    to={path}
+                                    className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
+                                >
+                                    <span className={styles.tabLabel}>{label}</span>
+                                </Link>
+                            ))}
+                        </nav>
+                    )}
+
+                    {/* Workspace panel tabs */}
+                    {appMode === 'builder' && isWorkspace && layoutMode !== 'columns' && (
+                        <nav className={styles.workspaceTabs}>
+                            {PANEL_WIDGETS.map((widgetType: WidgetType) => {
+                                const entry = widgetRegistry[widgetType];
+                                const IconComponent = entry.icon;
+                                const windowInstance = windows.find(w => w.type === widgetType);
+                                const isOpen = !!windowInstance;
+                                const isActive = activeWidgetType === widgetType;
+
+                                return (
+                                    <button
+                                        key={widgetType}
+                                        className={clsx(styles.tabBtn, isOpen && styles.open, isActive && styles.active)}
+                                        onClick={() => {
+                                            if (windowInstance) {
+                                                focusWindow(windowInstance.id);
+                                            } else {
+                                                openWindow(widgetType);
+                                            }
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
+                                    >
+                                        <IconComponent size={16} />
+                                        <span className={styles.tabLabel}>{entry.label}</span>
+                                        {isOpen && <div className={styles.tabIndicator} />}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    )}
+
+                    {/* Tool tabs */}
+                    {(appMode === 'builder' ? isWorkspace : true) && (
+                        <nav className={styles.toolTabs}>
+                            {TOOL_WIDGETS.map((widgetType: WidgetType) => {
+                                const entry = widgetRegistry[widgetType];
+                                const IconComponent = entry.icon;
+                                const windowInstance = windows.find(w => w.type === widgetType);
+                                const isOpen = !!windowInstance;
+                                const isActive = activeWidgetType === widgetType;
+
+                                return (
+                                    <button
+                                        key={widgetType}
+                                        className={clsx(styles.tabBtn, styles.toolTab, isOpen && styles.open, isActive && styles.active)}
+                                        onClick={() => {
+                                            if (windowInstance) {
+                                                focusWindow(windowInstance.id);
+                                            } else {
+                                                openWindow(widgetType, {
+                                                    contextMode: appMode === 'builder' ? 'list' : 'standalone',
+                                                });
+                                            }
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
+                                    >
+                                        <IconComponent size={16} />
+                                        <span className={styles.tabLabel}>{entry.label}</span>
+                                        {isOpen && <div className={styles.tabIndicator} />}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    )}
+
+                    {/* Layout controls — mobile only, builder workspace only */}
+                    {appMode === 'builder' && isWorkspace && (
+                        <div className={styles.mobileLayoutControls}>
+                            {layoutMode === 'columns' && (
+                                <div className={styles.layoutSegmentedControl} role="group" aria-label="Column Count">
+                                    <button
+                                        className={clsx(styles.segmentedBtn, columnCount === 2 && styles.active)}
+                                        onClick={() => setColumnCount(2)}
+                                        title="Two Columns (Roster + List)"
+                                    >
+                                        <span className={styles.layoutLabel}>2</span>
+                                    </button>
+                                    <button
+                                        className={clsx(styles.segmentedBtn, columnCount === 3 && styles.active)}
+                                        onClick={() => setColumnCount(3)}
+                                        title="Three Columns"
+                                    >
+                                        <span className={styles.layoutLabel}>3</span>
+                                    </button>
+                                </div>
+                            )}
+                            <div className={styles.layoutSegmentedControl} role="group" aria-label="Layout Mode">
+                                <button
+                                    className={clsx(styles.segmentedBtn, layoutMode === 'columns' && styles.active)}
+                                    onClick={() => setLayoutMode('columns')}
+                                    title="Columns Mode"
+                                >
+                                    <Columns3 size={14} />
+                                    <span className={styles.layoutLabel}>Columns</span>
+                                </button>
+                                <button
+                                    className={clsx(styles.segmentedBtn, layoutMode === 'multi-window' && styles.active)}
+                                    onClick={() => setLayoutMode('multi-window')}
+                                    title="Multi-Window Mode"
+                                >
+                                    <AppWindow size={14} />
+                                    <span className={styles.layoutLabel}>Windows</span>
+                                </button>
+                                <button
+                                    className={clsx(styles.segmentedBtn, layoutMode === 'tabbed' && styles.active)}
+                                    onClick={() => setLayoutMode('tabbed')}
+                                    title="Maximized (Tabbed) Mode"
+                                >
+                                    <Maximize size={14} />
+                                    <span className={styles.layoutLabel}>Maximized</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {showNewModal && (
                 <NewListModal
                     db={db}

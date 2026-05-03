@@ -3,7 +3,7 @@
     grid-template-columns: minmax(380px, 440px) 1fr;
     gap: 1rem;
     min-height: 400px;
-    height: calc(100vh - 70px);
+    height: 100%;
 }
 
 .list-dashboard-root {

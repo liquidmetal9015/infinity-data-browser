@@ -74,7 +74,7 @@
   --transition-base: 200ms ease;
 
   /* Layout */
-  --navbar-height: 41px;
+  --navbar-height: 80px;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -172,7 +172,6 @@
 .app-header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  padding: 0.625rem var(--space-6);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -183,7 +182,21 @@
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  padding: 0.5rem var(--space-6);
+}
+
+.header-nav-row {
+  border-top: 1px solid var(--border);
+  padding: 0 var(--space-6);
+}
+
+.header-nav-row-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  min-height: 36px;
 }
 
 .logo-section {
