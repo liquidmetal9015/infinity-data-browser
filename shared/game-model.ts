@@ -380,12 +380,12 @@ export interface FireteamSpec {
  * the Reverend sub-tag requirement). NOT a machine-readable constraint.
  */
 export interface FireteamSlot {
-    slug:     string;    // Unit slug — matches unit.slug for lookup
-    name:     string;    // Display name (ISC) for the unit
-    min:      number;    // Minimum count of this unit in the fireteam
-    max:      number;    // Maximum count of this unit in the fireteam
-    required: boolean;   // Must at least one of this unit be present?
-    comment:  string;    // Display annotation, not a machine-readable constraint
+    slug:      string;    // Unit slug — matches unit.slug for lookup
+    name:      string;    // Display name (ISC) for the unit
+    min:       number;    // Minimum count of this unit in the fireteam
+    max:       number;    // Maximum count of this unit in the fireteam
+    required?: boolean;   // Must at least one of this unit be present? (default false)
+    comment?:  string;    // Display annotation, not a machine-readable constraint
 }
 
 /**

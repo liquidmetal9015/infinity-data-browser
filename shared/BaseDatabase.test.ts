@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { BaseDatabase } from './BaseDatabase';
 import type { ProcessedMetadataFile, ProcessedFactionsFile, ProcessedFactionFile, ProcessedUnit } from './game-model';
 
@@ -7,9 +7,10 @@ import type { ProcessedMetadataFile, ProcessedFactionsFile, ProcessedFactionFile
 // ============================================================================
 
 const MOCK_METADATA: ProcessedMetadataFile = {
+    version: '2.0',
     weapons: [
-        { id: 1, name: 'Combi Rifle', wikiUrl: 'https://wiki/combi', weaponType: 'BS', burst: '3', damage: '13', saving: 'ARM', savingNum: '', ammunition: 1, properties: [], distance: null },
-        { id: 2, name: 'Heavy Machine Gun', wikiUrl: '', weaponType: 'BS', burst: '4', damage: '15', saving: 'ARM', savingNum: '', ammunition: 1, properties: [], distance: null },
+        { id: 1, name: 'Combi Rifle', wikiUrl: 'https://wiki/combi', weaponType: 'BS', burst: '3', damage: '13', saving: 'ARM', savingNum: '', ammunition: 1, properties: [], distance: undefined },
+        { id: 2, name: 'Heavy Machine Gun', wikiUrl: '', weaponType: 'BS', burst: '4', damage: '15', saving: 'ARM', savingNum: '', ammunition: 1, properties: [], distance: undefined },
     ],
     skills: [
         { id: 10, name: 'Camouflage', wikiUrl: 'https://wiki/camo' },
@@ -24,9 +25,10 @@ const MOCK_METADATA: ProcessedMetadataFile = {
 };
 
 const MOCK_FACTIONS: ProcessedFactionsFile = {
+    version: '2.0',
     factions: [
-        { id: 101, parentId: 101, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '', fireteams: null },
-        { id: 201, parentId: 201, name: 'Yu Jing', slug: 'yu-jing', discontinued: false, logo: '', fireteams: null },
+        { id: 101, parentId: 101, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '', fireteams: null, isVanilla: true },
+        { id: 201, parentId: 201, name: 'Yu Jing', slug: 'yu-jing', discontinued: false, logo: '', fireteams: null, isVanilla: true },
     ],
 };
 
@@ -82,7 +84,7 @@ function makeMockUnit(id: number, isc: string, factionIds: number[]): ProcessedU
 }
 
 const PANO_FACTION_FILE: ProcessedFactionFile = {
-    faction: { id: 101, parentId: 101, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '', fireteams: null },
+    faction: { id: 101, parentId: 101, name: 'PanOceania', slug: 'panoceania', discontinued: false, logo: '', fireteams: null, isVanilla: true },
     units: [
         makeMockUnit(1, 'Fusiliers', [101]),
         makeMockUnit(2, 'Orc Troops', [101]),
@@ -90,7 +92,7 @@ const PANO_FACTION_FILE: ProcessedFactionFile = {
 } as unknown as ProcessedFactionFile;
 
 const YU_JING_FACTION_FILE: ProcessedFactionFile = {
-    faction: { id: 201, parentId: 201, name: 'Yu Jing', slug: 'yu-jing', discontinued: false, logo: '', fireteams: null },
+    faction: { id: 201, parentId: 201, name: 'Yu Jing', slug: 'yu-jing', discontinued: false, logo: '', fireteams: null, isVanilla: true },
     units: [
         makeMockUnit(3, 'Zhanshi', [201]),
         makeMockUnit(4, 'Hsien', [201]),

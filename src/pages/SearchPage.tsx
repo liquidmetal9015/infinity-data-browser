@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UnifiedSearchBar } from '../components/shared/UnifiedSearchBar'
 import { FilterBar } from '../components/FilterBar'
@@ -8,14 +8,19 @@ import { ExpandableUnitCard } from '../components/shared/ExpandableUnitCard'
 import { LayoutGrid, List, Circle, AlignJustify } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { useUnitSearch } from '../hooks/useUnitSearch'
-import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../utils/classifications'
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } from '../utils/classifications'
+import { CharacteristicId } from '@shared/game-model'
 
 type ViewMode = 'compact' | 'list' | 'faction' | 'bubble';
+type SortOption = 'default' | 'name-asc' | 'name-desc' | 'points-asc' | 'points-desc';
 
 export function SearchPage() {
     const db = useDatabase();
     const [viewMode, setViewMode] = useState<ViewMode>('compact');
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+    const [selectedTypes, setSelectedTypes] = useState<Set<number>>(new Set());
+    const [selectedOrderTypes, setSelectedOrderTypes] = useState<Set<'REGULAR' | 'IRREGULAR'>>(new Set());
+    const [sortBy, setSortBy] = useState<SortOption>('default');
 
     // Use the custom hook for search logic
     const {
@@ -29,6 +34,46 @@ export function SearchPage() {
         hasSearch
     } = useUnitSearch(db, false);
 
+    const hasAnyFilter = hasSearch || selectedTypes.size > 0 || selectedOrderTypes.size > 0;
+
+    const displayedUnits = useMemo(() => {
+        let results = filteredUnits;
+
+        if (selectedTypes.size > 0) {
+            results = results.filter(unit => {
+                const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
+                return selectedTypes.has(primaryType);
+            });
+        }
+
+        if (selectedOrderTypes.size > 0) {
+            results = results.filter(unit => {
+                for (const pg of unit.raw.profileGroups) {
+                    if (pg.isPeripheral) continue;
+                    for (const profile of pg.profiles) {
+                        const chars = profile.characteristics ?? [];
+                        if (selectedOrderTypes.has('REGULAR') && chars.includes(CharacteristicId.REGULAR)) return true;
+                        if (selectedOrderTypes.has('IRREGULAR') && chars.includes(CharacteristicId.IRREGULAR)) return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        if (sortBy !== 'default') {
+            results = [...results].sort((a, b) => {
+                switch (sortBy) {
+                    case 'name-asc':    return a.isc.localeCompare(b.isc);
+                    case 'name-desc':   return b.isc.localeCompare(a.isc);
+                    case 'points-asc':  return (a.pointsRange[0] ?? 999) - (b.pointsRange[0] ?? 999);
+                    case 'points-desc': return (b.pointsRange[1] ?? 0) - (a.pointsRange[1] ?? 0);
+                }
+            });
+        }
+
+        return results;
+    }, [filteredUnits, selectedTypes, selectedOrderTypes, sortBy]);
+
     const toggleExpand = (id: number) => {
         setExpandedIds(prev => {
             const next = new Set(prev);
@@ -40,13 +85,13 @@ export function SearchPage() {
 
     // Auto-expand only when few results
     useEffect(() => {
-        if (filteredUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
+        if (displayedUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setExpandedIds(new Set(filteredUnits.map(u => u.id)));
+            setExpandedIds(new Set(displayedUnits.map(u => u.id)));
         } else {
             setExpandedIds(new Set());
         }
-    }, [textQuery, query.filters.length, filteredUnits]);
+    }, [textQuery, query.filters.length, displayedUnits]);
 
     return (
         <div className="search-page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1.5rem' }}>
@@ -64,16 +109,67 @@ export function SearchPage() {
                     </div>
                 </div>
 
-                {/* Filters */}
-                {hasSearch && (
-                    <div className="mb-6">
-                        <FilterBar filters={filters} setFilters={setFilters} />
-                    </div>
-                )}
+                {/* Filters + type/order chips — always visible */}
+                <div className="mb-4 space-y-3">
+                    <FilterBar filters={filters} setFilters={setFilters} />
+                    <div className="flex flex-wrap items-center gap-1.5 px-1">
+                            {CLASSIFICATION_ORDER.map(type => {
+                                const active = selectedTypes.has(type);
+                                const color = CLASSIFICATION_COLORS[type];
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => setSelectedTypes(prev => {
+                                            const next = new Set(prev);
+                                            if (next.has(type)) next.delete(type); else next.add(type);
+                                            return next;
+                                        })}
+                                        className="text-xs font-bold px-2 py-1 rounded border transition-colors"
+                                        style={active
+                                            ? { color, background: `${color}20`, borderColor: `${color}60` }
+                                            : { color: '#475569', background: 'transparent', borderColor: '#334155' }
+                                        }
+                                    >
+                                        {CLASSIFICATION_LABELS[type]}
+                                    </button>
+                                );
+                            })}
+                            <div className="w-px h-4 bg-white/10 mx-1" />
+                            {(['REGULAR', 'IRREGULAR'] as const).map(ot => {
+                                const active = selectedOrderTypes.has(ot);
+                                const color = ot === 'REGULAR' ? '#4ade80' : '#facc15';
+                                return (
+                                    <button
+                                        key={ot}
+                                        onClick={() => setSelectedOrderTypes(prev => {
+                                            const next = new Set(prev);
+                                            if (next.has(ot)) next.delete(ot); else next.add(ot);
+                                            return next;
+                                        })}
+                                        className="text-xs font-bold px-2 py-1 rounded border transition-colors"
+                                        style={active
+                                            ? { color, background: `${color}20`, borderColor: `${color}50` }
+                                            : { color: '#475569', background: 'transparent', borderColor: '#334155' }
+                                        }
+                                    >
+                                        {ot === 'REGULAR' ? 'REG' : 'IRR'}
+                                    </button>
+                                );
+                            })}
+                            {(selectedTypes.size > 0 || selectedOrderTypes.size > 0) && (
+                                <button
+                                    onClick={() => { setSelectedTypes(new Set()); setSelectedOrderTypes(new Set()); }}
+                                    className="text-xs px-2 py-1 rounded border border-white/10 text-gray-500 hover:text-gray-300 transition-colors"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                </div>
 
                 {/* Empty state — inside search-section so it centres under the search bar */}
                 <AnimatePresence>
-                    {!hasSearch && (
+                    {!hasAnyFilter && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -90,7 +186,7 @@ export function SearchPage() {
                             </div>
                         </motion.div>
                     )}
-                    {hasSearch && filteredUnits.length === 0 && (
+                    {hasAnyFilter && displayedUnits.length === 0 && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -113,7 +209,7 @@ export function SearchPage() {
                 </AnimatePresence>
 
                 {/* View Toggle */}
-                {hasSearch && filteredUnits.length > 0 && (
+                {hasAnyFilter && displayedUnits.length > 0 && (
                     <div className="view-controls flex justify-between items-end border-b border-white/10 pb-4 mb-6">
                         <div className="view-toggle flex gap-2">
                             <button
@@ -145,27 +241,40 @@ export function SearchPage() {
                                 <span>Stats Bubble</span>
                             </button>
                         </div>
-                        <div className="text-gray-400 text-sm font-medium">
-                            {filteredUnits.length} {filteredUnits.length === 1 ? 'match' : 'matches'}
-                            {query.operator === 'and' && query.filters.length > 1 && (
-                                <span className="text-blue-400 opacity-80"> (matching ALL rules)</span>
-                            )}
+                        <div className="flex items-center gap-3">
+                            <select
+                                value={sortBy}
+                                onChange={e => setSortBy(e.target.value as SortOption)}
+                                className="text-xs bg-black/30 border border-white/10 rounded px-2 py-1.5 text-gray-400"
+                            >
+                                <option value="default">Sort: Default</option>
+                                <option value="name-asc">Name A→Z</option>
+                                <option value="name-desc">Name Z→A</option>
+                                <option value="points-asc">Cost ↑ (min)</option>
+                                <option value="points-desc">Cost ↓ (max)</option>
+                            </select>
+                            <div className="text-gray-400 text-sm font-medium">
+                                {displayedUnits.length} {displayedUnits.length === 1 ? 'match' : 'matches'}
+                                {query.operator === 'and' && query.filters.length > 1 && (
+                                    <span className="text-blue-400 opacity-80"> (matching ALL rules)</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
             </section>
 
             {/* Results Section — only rendered when there are actual results */}
-            {hasSearch && filteredUnits.length > 0 && (
+            {hasAnyFilter && displayedUnits.length > 0 && (
             <section className="results-section pb-12" style={{ width: '100%', maxWidth: '64rem' }}>
                 <AnimatePresence mode='wait'>
                     {viewMode === 'bubble' ? (
                         <motion.div key="bubble-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <BubbleChart units={filteredUnits} />
+                            <BubbleChart units={displayedUnits} />
                         </motion.div>
                     ) : viewMode === 'faction' ? (
                         <motion.div key="faction-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <FactionView units={filteredUnits} />
+                            <FactionView units={displayedUnits} />
                         </motion.div>
                     ) : viewMode === 'compact' ? (
                         <motion.div
@@ -183,7 +292,7 @@ export function SearchPage() {
                                     <div className="w-[80px] text-right">Points</div>
                                 </div>
                                 {/* Compact rows */}
-                                {filteredUnits.slice(0, 200).map(unit => {
+                                {displayedUnits.slice(0, 200).map(unit => {
                                     const primaryType = unit.raw.profileGroups[0]?.profiles[0]?.unitType ?? 0;
                                     const factionNames = unit.factions
                                         .map(fid => db.factionMap.get(fid))
@@ -242,9 +351,9 @@ export function SearchPage() {
                                     );
                                 })}
                             </div>
-                            {filteredUnits.length > 200 && (
+                            {displayedUnits.length > 200 && (
                                 <div className="text-center text-gray-500 py-6 border border-dashed border-white/10 rounded-xl mt-4">
-                                    Displaying first 200 of {filteredUnits.length} results. Please refine your search.
+                                    Displaying first 200 of {displayedUnits.length} results. Please refine your search.
                                 </div>
                             )}
                         </motion.div>
@@ -256,7 +365,7 @@ export function SearchPage() {
                             exit={{ opacity: 0 }}
                             className="flex flex-col gap-3"
                         >
-                            {filteredUnits.slice(0, 100).map(unit => (
+                            {displayedUnits.slice(0, 100).map(unit => (
                                 <ExpandableUnitCard
                                     key={unit.id}
                                     unit={unit}
@@ -266,9 +375,9 @@ export function SearchPage() {
                                     activeFilters={query.filters}
                                 />
                             ))}
-                            {filteredUnits.length > 100 && (
+                            {displayedUnits.length > 100 && (
                                 <div className="text-center text-gray-500 py-6 border border-dashed border-white/10 rounded-xl mt-4">
-                                    Displaying first 100 of {filteredUnits.length} results. Please refine your search.
+                                    Displaying first 100 of {displayedUnits.length} results. Please refine your search.
                                 </div>
                             )}
                         </motion.div>

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
     createInfinityDie,
     solveF2F,
-    calculateExpectedWounds,
     calculateF2F,
 } from './dice-engine';
 import type { CombatantInput } from './dice-engine';
@@ -68,7 +67,7 @@ describe('solveF2F', () => {
         const dieB = createInfinityDie(10);
         const dist = solveF2F(0, 0, dieA, dieB);
         // All outcomes should be draw (aSuccess=0, bSuccess=0)
-        for (const [key, prob] of dist.entries()) {
+        for (const [key] of dist.entries()) {
             const ev = JSON.parse(key);
             expect(ev.aSuccess).toBe(0);
             expect(ev.bSuccess).toBe(0);

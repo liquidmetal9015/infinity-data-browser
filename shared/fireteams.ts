@@ -72,13 +72,13 @@ export function assignMembersToSlots(
             if (members[memberIndex].slug && slot.slug && members[memberIndex].slug === slot.slug) {
                 matchesSlot = true;
             } else {
-                sTags = getUnitTags(slot.name, '');
+                sTags = getUnitTags(slot.name, slot.comment);
                 matchesSlot = mTags.some(t => sTags.some(rt => t.includes(rt) || rt.includes(t)));
             }
 
             let canFill = isWildcard || matchesSlot;
             if (!canFill && matchesTeam) {
-                if (sTags.length === 0) sTags = getUnitTags(slot.name, '');
+                if (sTags.length === 0) sTags = getUnitTags(slot.name, slot.comment);
                 const slotMatchesTeam = sTags.some(st => teamTags.some(tt => st.includes(tt) || tt.includes(st)));
                 canFill = slotMatchesTeam;
             }
@@ -127,10 +127,16 @@ export function calculateFireteamLevel(team: Fireteam, members: { name: string, 
 
     let matchingCount = 0;
     assignments.forEach(a => {
-        const isMatch = a.providedTags.some(t => {
-            if (t === 'wildcard') return true;
-            return normalizedTeamName.includes(t) || t.includes(normalizedTeamName);
-        });
+        const memberTags = getUnitTags(members[a.memberIndex].name, members[a.memberIndex].comment);
+        const isUniversalWildcard = memberTags.includes('wildcard');
+
+        // Universal wildcards only count via their own explicit identity (e.g. BIPANDRA with "(Fennec)").
+        // They must NOT inherit the slot's name tags, since they only fill the slot opportunistically.
+        const levelTags = isUniversalWildcard
+            ? memberTags.filter(t => t !== 'wildcard')
+            : [...new Set([...memberTags, ...getUnitTags(team.units[a.slotIndex].name, team.units[a.slotIndex].comment)])];
+
+        const isMatch = levelTags.some(t => normalizedTeamName.includes(t) || t.includes(normalizedTeamName));
         if (isMatch) matchingCount++;
     });
 
@@ -195,45 +201,34 @@ export function getFireteamBonuses(
 
     const bonuses: FireteamBonus[] = [];
 
-    // Example Bonus structure (simplified, actual game rules require cross-referencing)
-    const bonusChart = [
-        { level: 1, desc: 'Coherency' },
-        { level: 2, desc: '+1 B (Requires 3+ active members)' },
-        { level: 3, desc: '+3 BS (Requires 4+ active members)' },
-        { level: 4, desc: 'Sixth Sense (Requires 5 active members)' },
-        { level: 5, desc: '+1 BS, Sixth Sense (Requires 5 active members)' }
-    ];
-
-    // Assuming DUO just gives Coherency, 3 gives up to Level 2
-    // Formed checks:
     bonuses.push({
         level: 1,
-        description: bonusChart[0].desc,
-        isActive: isFormed && size >= 2
+        description: 'Activate with single Regular Order',
+        isActive: isFormed
     });
 
     bonuses.push({
         level: 2,
-        description: bonusChart[1].desc,
-        isActive: isFormed && size >= 3 && levelCount >= 2
+        description: 'BS Attack (+1 SD)',
+        isActive: isFormed && levelCount >= 2
     });
 
     bonuses.push({
         level: 3,
-        description: bonusChart[2].desc,
-        isActive: isFormed && size >= 4 && levelCount >= 3
+        description: '+3 Discover, +1 Dodge',
+        isActive: isFormed && levelCount >= 3
     });
 
     bonuses.push({
         level: 4,
-        description: bonusChart[3].desc,
-        isActive: isFormed && size >= 5 && levelCount >= 4
+        description: '+1 BS',
+        isActive: isFormed && levelCount >= 4
     });
 
     bonuses.push({
         level: 5,
-        description: bonusChart[4].desc,
-        isActive: isFormed && size === 5 && levelCount === 5
+        description: 'Sixth Sense',
+        isActive: isFormed && levelCount >= 5
     });
 
     return bonuses;

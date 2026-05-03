@@ -161,12 +161,23 @@ export const useListStore = create<ListStore>()(
                     const list = stored.state.currentList;
                     // If the list already has resolved `unit` fields (legacy format), pass through
                     const firstUnit = list.groups?.[0]?.units?.[0];
-                    if (firstUnit && 'unit' in firstUnit && (firstUnit as any).unit?.raw) {
+                    if (firstUnit && 'unit' in firstUnit && (firstUnit as unknown as Record<string, unknown>).unit) {
                         return stored as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>;
                     }
 
                     // Hydrate from database
                     const db = DatabaseImplementation.getInstance();
+
+                    // If the DB hasn't finished loading yet, skip hydration now.
+                    // DatabaseInitializer will call useListStore.persist.rehydrate()
+                    // once db.init() resolves, at which point we'll try again.
+                    if (db.units.length === 0) {
+                        return {
+                            ...stored,
+                            state: { ...stored.state, currentList: null },
+                        } as StorageValue<{ currentList: ArmyList | null; lastSavedAt: number | null }>;
+                    }
+
                     const hydrated = hydrateList(
                         list as DehydratedArmyList,
                         (id) => db.getUnitById(id),

@@ -61,14 +61,15 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
     const interactive = !!(onAddUnit || onViewUnit);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {/* Stats Row */}
-            <div className="flex gap-4 p-3 bg-black/20 rounded-lg justify-between overflow-x-auto">
+            <div className="flex gap-1 p-1.5 bg-black/20 rounded-lg justify-between overflow-x-auto">
                 {ATTRIBUTES.map((attr) => {
                     const rec = profile as unknown as Record<string, unknown>;
                     let val: string | number | undefined = rec[attr.key] as string | number | undefined;
                     if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
-                    if (attr.key === 'ava') val = val === 255 ? '∞' : val === -1 ? '-' : val;
+                    if (typeof val === 'number' && val === -1) val = '-';
+                    if (attr.key === 'ava') val = val === 255 ? '∞' : val;
                     const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
                     return (
                         <div key={attr.key} className="flex flex-col items-center min-w-[32px]">
@@ -202,16 +203,16 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
         >
             {/* Card Header (Always Visible) */}
             <div
-                className={`flex items-center justify-between px-4 py-3.5 cursor-pointer ${detailMode && onViewUnit ? 'hover:bg-white/5' : ''} ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
+                className={`flex items-center justify-between px-3 py-2 cursor-pointer ${detailMode && onViewUnit ? 'hover:bg-white/5' : ''} ${isExpanded ? 'bg-blue-500/10 border-b border-blue-500/20' : ''}`}
                 onClick={detailMode && onViewUnit ? () => onViewUnit(unit) : onToggle}
             >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     {logoPath ? (
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                             <img src={logoPath} alt={unit.isc} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         </div>
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                             <span className="text-gray-500 text-xs font-bold">{unit.isc[0]}</span>
                         </div>
                     )}
@@ -244,25 +245,28 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
             {/* Expanded Body */}
             {isExpanded && activeGroup && activeProfile && (
                 <div className="flex flex-col">
-                    {/* Profile group tabs (for units with multiple main profiles) */}
-                    {profileGroups.length > 1 && (
-                        <div className="flex gap-2 px-3 pt-3 bg-[#0a0f18]">
-                            {profileGroups.map((group, idx) => (
-                                <button
-                                    key={group.id}
-                                    onClick={(e) => { e.stopPropagation(); setActiveGroupIndex(idx); }}
-                                    className={`px-4 py-1.5 text-xs font-bold rounded-t-lg transition-all ${activeGroupIndex === idx
-                                        ? 'bg-[#0f172a] text-blue-400 border-t border-x border-blue-500/20 shadow-[0_-4px_10px_-5px_rgba(59,130,246,0.2)]'
-                                        : 'bg-[#162032] text-gray-500 border-t border-x border-transparent hover:text-gray-300'
-                                        }`}
-                                >
-                                    {group.isc || `PROFILE ${idx + 1}`}
-                                </button>
-                            ))}
+                    {/* Profile group tabs — peripheral groups are shown inline below, not as tabs */}
+                    {profileGroups.filter((_, idx) => !isPeripheralGroup(unit, idx)).length > 1 && (
+                        <div className="flex gap-2 px-3 pt-2 bg-[#0a0f18]">
+                            {profileGroups.map((group, idx) => {
+                                if (isPeripheralGroup(unit, idx)) return null;
+                                return (
+                                    <button
+                                        key={group.id}
+                                        onClick={(e) => { e.stopPropagation(); setActiveGroupIndex(idx); }}
+                                        className={`px-3 py-1 text-xs font-bold rounded-t-lg transition-all ${activeGroupIndex === idx
+                                            ? 'bg-[#0f172a] text-blue-400 border-t border-x border-blue-500/20 shadow-[0_-4px_10px_-5px_rgba(59,130,246,0.2)]'
+                                            : 'bg-[#162032] text-gray-500 border-t border-x border-transparent hover:text-gray-300'
+                                            }`}
+                                    >
+                                        {group.isc || `PROFILE ${idx + 1}`}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
 
-                    <div className="p-4 space-y-4">
+                    <div className="p-2 space-y-2">
                         {/* Main unit profile */}
                         <ProfileSection
                             group={activeGroup}

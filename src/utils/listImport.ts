@@ -15,7 +15,7 @@ export function armyListFromDecodedCode(
             const unit = db.units.find(u => u.id === member.unitId || u.idArmy === member.unitId);
             if (!unit) continue;
             const { option } = getUnitDetails(unit, member.groupChoice, member.groupChoice, member.optionChoice);
-            units.push({
+            const newUnit: ListUnit = {
                 id: generateId(),
                 unitId: unit.id,
                 unit,
@@ -24,7 +24,30 @@ export function armyListFromDecodedCode(
                 optionId: member.optionChoice,
                 points: Number(option?.points ?? 0),
                 swc: Number(option?.swc ?? 0),
-            });
+            };
+            units.push(newUnit);
+
+            for (const inc of (option?.includes || [])) {
+                const pg = unit.raw.profileGroups[inc.group - 1];
+                if (!pg?.isAutoAttached) continue;
+                const pProfile = pg.profiles?.[0];
+                const pOption = pg.options?.[inc.option - 1];
+                if (!pProfile || !pOption) continue;
+                for (let q = 0; q < (inc.q || 1); q++) {
+                    units.push({
+                        id: generateId(),
+                        unitId: unit.id,
+                        unit,
+                        profileGroupId: pg.id,
+                        profileId: pProfile.id,
+                        optionId: pOption.id,
+                        points: Number(pOption.points || 0),
+                        swc: Number(pOption.swc || 0),
+                        parentId: newUnit.id,
+                        isPeripheral: true,
+                    });
+                }
+            }
         }
         return { id: generateId(), name: `Combat Group ${i + 1}`, units };
     });
@@ -40,6 +63,19 @@ export function armyListFromDecodedCode(
         createdAt: now,
         updatedAt: now,
     };
+}
+
+/**
+ * Returns a name that doesn't conflict with existingNames.
+ * If base is empty/whitespace, falls back to "Unnamed List".
+ * Conflicts get " 2", " 3", etc. appended.
+ */
+export function uniqueListName(base: string, existingNames: string[]): string {
+    const trimmed = base.trim() || 'Unnamed List';
+    if (!existingNames.includes(trimmed)) return trimmed;
+    let n = 2;
+    while (existingNames.includes(`${trimmed} ${n}`)) n++;
+    return `${trimmed} ${n}`;
 }
 
 /** Split a textarea blob (newline or comma-delimited) into trimmed army codes. */

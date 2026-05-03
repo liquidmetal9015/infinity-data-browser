@@ -147,7 +147,7 @@ export function ArmyListPanel() {
                 const testMembers = [...members, { name: hoveredUnitISC, comment: '' }];
 
                 if (ft.selectedTeamName) {
-                    const activeTeamDef = chart.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)));
+                    const activeTeamDef = chart.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || (t.type as string[]).includes(ft.selectedTeamType)));
                     if (activeTeamDef) {
                         const possible = getPossibleFireteams({ teams: [activeTeamDef], spec: chart.spec }, testMembers);
                         if (possible.length > 0) validIds.add(ft.id);

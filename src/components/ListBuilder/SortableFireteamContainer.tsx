@@ -1,10 +1,10 @@
 import React, { useMemo, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Users, Trash2, Check, ShieldCheck, Shield } from 'lucide-react';
+import { GripVertical, Users, Trash2, Check, Shield } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { getPossibleFireteams, getFireteamBonuses, calculateFireteamLevel, assignMembersToSlots, getMemberWithChartData, type SlotAssignment } from '@shared/fireteams';
+import { getPossibleFireteams, getFireteamBonuses, calculateFireteamLevel, assignMembersToSlots, getMemberWithChartData, getUnitTags, type SlotAssignment } from '@shared/fireteams';
 import type { ListUnit } from '@shared/listTypes';
 import type { Fireteam } from '@shared/types';
 
@@ -118,7 +118,7 @@ export function SortableFireteamContainer({
     }
 
     const activeTeamDef = selectedTeamName
-        ? chart?.teams.find(t => t.name === selectedTeamName && (!selectedTeamType || t.type.includes(selectedTeamType)))
+        ? chart?.teams.find(t => t.name === selectedTeamName && (!selectedTeamType || (t.type as string[]).includes(selectedTeamType)))
         : (possibleTeams.length === 1 && members.length > 0 ? possibleTeams[0] : null);
 
     const bonuses = useMemo(() => {
@@ -127,7 +127,6 @@ export function SortableFireteamContainer({
     }, [activeTeamDef, members]);
 
     const activeLevel = activeTeamDef ? calculateFireteamLevel(activeTeamDef, members) : 0;
-    const isPure = activeTeamDef && isActiveLevelPure(activeLevel, members.length);
     const activeBonuses = bonuses.filter(b => b.isActive);
 
     const assignments = useMemo(() => activeTeamDef ? assignMembersToSlots(activeTeamDef, members) : null, [activeTeamDef, members]);
@@ -137,24 +136,23 @@ export function SortableFireteamContainer({
         const normalizedTeamName = activeTeamDef.name.toLowerCase().replace(/ fireteam| core| haris| duo/g, '').trim();
         const indices = new Set<number>();
         assignments.forEach((a: SlotAssignment) => {
-            const isMatch = a.providedTags.some((t: string) => {
-                if (t === 'wildcard') return true;
-                return normalizedTeamName.includes(t) || t.includes(normalizedTeamName);
-            });
-            if (isMatch) indices.add(a.memberIndex);
+            const memberTags = getUnitTags(members[a.memberIndex].name, members[a.memberIndex].comment);
+            const isUniversalWildcard = memberTags.includes('wildcard');
+            const levelTags = isUniversalWildcard
+                ? memberTags.filter(t => t !== 'wildcard')
+                : [...new Set([...memberTags, ...getUnitTags(activeTeamDef.units[a.slotIndex].name, activeTeamDef.units[a.slotIndex].comment)])];
+            if (levelTags.some(t => normalizedTeamName.includes(t) || t.includes(normalizedTeamName))) {
+                indices.add(a.memberIndex);
+            }
         });
         return indices;
-    }, [activeTeamDef, assignments]);
+    }, [activeTeamDef, assignments, members]);
 
     const contributorNames = Array.from(contributingMemberIndices).map(idx => listUnits[idx].unit.name).join(', ');
 
     const isInvalid = activeTeamDef ? (assignments === null) : (members.length > 0 && possibleTeams.length === 0);
     const isFormed = bonuses.some(b => b.isActive);
     const isIncomplete = activeTeamDef && !isInvalid && !isFormed;
-
-    function isActiveLevelPure(level: number, size: number) {
-        return level >= size; // All members count as the team primary type
-    }
 
     return (
         <div
@@ -223,9 +221,9 @@ export function SortableFireteamContainer({
                                 Incomplete ({members.length} units)
                             </span>
                         ) : (
-                            <span className={`flex items-center gap-1 mr-2 px-1.5 py-0.5 rounded shadow-sm ${isPure ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}`} title={isPure ? `Pure Fireteam\nContributors:\n${contributorNames}` : `Standard Fireteam (Level ${activeLevel})\nContributors:\n${contributorNames}`}>
-                                {isPure ? <ShieldCheck size={12} /> : <Shield size={12} />}
-                                {isPure ? 'Pure' : `Lvl ${activeLevel}`}
+                            <span className="flex items-center gap-1 mr-2 px-1.5 py-0.5 rounded shadow-sm bg-yellow-500/20 text-yellow-300 border border-yellow-500/30" title={`Fireteam Level ${activeLevel}\nContributors:\n${contributorNames}`}>
+                                <Shield size={12} />
+                                {`Lvl ${activeLevel}`}
                             </span>
                         )}
                         {activeBonuses.map((b, i) => (

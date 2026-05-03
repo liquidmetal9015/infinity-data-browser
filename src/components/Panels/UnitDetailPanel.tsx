@@ -41,15 +41,16 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
     return (
         <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-10 gap-3 p-4 rounded-xl bg-[#0f172a] border border-white/5">
+            <div className="grid grid-cols-10 gap-1.5 p-2.5 rounded-xl bg-[#0f172a] border border-white/5">
                 {ATTRIBUTES.map((attr) => {
                     const rec = profile as unknown as Record<string, unknown>;
                     let val: string | number | undefined = rec[attr.key] as string | number | undefined;
                     if (attr.key === 'move' && Array.isArray(rec[attr.key])) val = formatMove(rec[attr.key] as number[]);
-                    if (attr.key === 'ava') val = val === 255 ? '∞' : val === -1 ? '-' : val;
+                    if (typeof val === 'number' && val === -1) val = '-';
+                    if (attr.key === 'ava') val = val === 255 ? '∞' : val;
                     const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
                     return (
-                        <div key={attr.key} className="flex flex-col items-center gap-1.5">
+                        <div key={attr.key} className="flex flex-col items-center gap-1">
                             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">{label}</span>
                             <span className="text-lg font-bold text-gray-100 font-mono tracking-tight">{val ?? '-'}</span>
                         </div>
@@ -58,8 +59,8 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
             </div>
 
             {/* Special Skills & Equipment */}
-            <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3">
+                <div className="space-y-2">
                     <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
                         <Zap size={12} className="text-yellow-500/80" />
                         Special Skills
@@ -83,7 +84,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                         }
                     </div>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
                         <Shield size={12} className="text-blue-500/80" />
                         Equipment
@@ -109,7 +110,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
             </div>
 
             {/* Profile Options */}
-            <div className="space-y-3">
+            <div className="space-y-2">
                 <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 pb-2 border-b border-white/5">
                     <Crosshair size={12} className="text-red-500/80" />
                     Profile Options
@@ -118,7 +119,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#162032] border-b border-white/5">
                             <tr>
-                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0' }}>Profile</th>
+                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0.75rem' }}>Profile</th>
                                 <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>SWC</th>
                                 <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>Pts</th>
                             </tr>
@@ -139,7 +140,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                                         className={`${interactive ? 'transition-colors hover:bg-blue-500/10 cursor-pointer' : ''} ${isHighlighted ? 'option-row-highlighted' : ''}`}
                                         onClick={interactive ? () => onAddLoadout!(opt.id) : undefined}
                                     >
-                                        <td style={{ padding: '2.5rem 1rem 2.5rem 0', verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
+                                        <td style={{ padding: '2.5rem 1rem 2.5rem 0.75rem', verticalAlign: 'middle' }}>
                                             <div className="text-base font-bold text-gray-100 mb-2 tracking-wide">{optName}</div>
                                             <div className="flex items-center flex-wrap gap-x-2 text-sm">
                                                 <span className="text-gray-200">
@@ -277,7 +278,7 @@ export function UnitDetailPanel() {
     return (
         <div className="h-full flex flex-col overflow-hidden bg-[#0b1221]">
         <div ref={scrollRef} className="overflow-y-auto flex-1 min-h-0">
-            <div className="p-6 space-y-6">
+            <div className="p-3 space-y-3">
                 {/* Header */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -344,7 +345,7 @@ export function UnitDetailPanel() {
                     const typeLabel = CLASSIFICATION_LABELS[pProfile.unitType];
                     const typeColor = CLASSIFICATION_COLORS[pProfile.unitType];
                     return (
-                        <div key={pg.id} ref={(el) => { peripheralSectionRefs.current.set(pg.id, el); }} className="space-y-6 pt-6 border-t border-white/10">
+                        <div key={pg.id} ref={(el) => { peripheralSectionRefs.current.set(pg.id, el); }} className="space-y-4 pt-4 border-t border-white/10">
                             {/* Peripheral header — mirrors main unit header style */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3 flex-wrap">

@@ -20,6 +20,7 @@ function mockUnit(id: number): Unit {
         allEquipmentIds: new Set(),
         allItemsWithMods: [],
         pointsRange: [20, 40],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         raw: {} as any,
     };
 }

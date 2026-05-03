@@ -167,10 +167,10 @@ describe('scoreList', () => {
         // A unit with Forward Observer skill matches the first classified
         const units = [
             makeEntry({}, {
-                skills: [{ name: 'Forward Observer', id: 100 }] as any,
+                skills: [{ id: 100, name: 'Forward Observer', modifiers: [], displayName: 'Forward Observer' }],
                 equipment: [],
             }, {
-                skills: [] as any,
+                skills: [],
                 equipment: [],
             }),
         ];

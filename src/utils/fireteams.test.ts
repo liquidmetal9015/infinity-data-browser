@@ -53,13 +53,13 @@ describe('calculateFireteamLevel', () => {
         expect(level).toBe(3);
     });
 
-    it('counts wildcards as matching', () => {
+    it('does not count universal wildcards toward level', () => {
         const members = [
             { name: 'Fusilier' },
             { name: 'Some Wildcard', comment: 'Wildcard' },
         ];
         const level = calculateFireteamLevel(mockFusilierTeam, members);
-        expect(level).toBe(2);
+        expect(level).toBe(1); // Wildcard fills a slot but has no Fusilier identity
     });
 
     it('does not count non-matching members', () => {
@@ -172,7 +172,56 @@ describe('Integration Scenarios', () => {
         expect(bonuses[1].isActive).toBe(true); // Formed Size 3
 
         const level = calculateFireteamLevel(mockFennecTeam, members);
-        expect(level).toBe(3); // Wildcard counts towards level
+        expect(level).toBe(2); // Universal wildcard fills a slot but does not contribute to level
+    });
+
+    it('FTO units in a Fennec fireteam do not inflate the level beyond the Fennec count', () => {
+        // Mirrors the real FENNECS Fireteam chart which has dedicated BLACK A.I.R. FTO slots
+        const mockFennecFull: Fireteam = {
+            name: 'FENNECS Fireteam',
+            type: ['HARIS', 'CORE'],
+            units: [
+                { min: 1, max: 5, name: 'FENNEC', slug: 'fennec-fusiliers', comment: '' },
+                { min: 0, max: 2, name: 'BLACK A.I.R. FTO', slug: 'black-a-i-r', comment: '' },
+                { min: 0, max: 1, name: 'GRIFFIN', comment: '(Fennec)', slug: 'griffin-troops' },
+                { min: 0, max: 1, name: 'MAGISTRATE', slug: 'bca-magistrates', comment: '' },
+            ]
+        };
+        // BLACK A.I.R. FTO fills its own dedicated slot (not wildcard) — still not a Fennec
+        // CRUX KNIGHT has comment:'wildcard' (injected by getMemberWithChartData from Wildcards chart)
+        const members = [
+            { name: 'BLACK A.I.R. FTO', slug: 'black-a-i-r', comment: '' },
+            { name: 'FENNEC Fusiliers', slug: 'fennec-fusiliers', comment: '' },
+            { name: 'FENNEC Fusiliers', slug: 'fennec-fusiliers', comment: '' },
+            { name: 'CRUX KNIGHT', slug: 'team-crux-father-knights', comment: 'wildcard' },
+        ];
+
+        const level = calculateFireteamLevel(mockFennecFull, members);
+        expect(level).toBe(2); // Only the two FENNECs share the Fennec identity
+    });
+
+    it('GRIFFIN + BIPANDRA (Fennec, Kestrel) forms a valid Kestrel Duo at level 2', () => {
+        // Regression: slot comments like "(Kestrel)" were ignored when matching members to slots,
+        // so BIPANDRA could not fill any KESTREL slot even though she has the Kestrel tag.
+        const mockKestrelTeam: Fireteam = {
+            name: 'KESTREL Fireteams',
+            type: ['DUO', 'HARIS'],
+            units: [
+                { min: 0, max: 3, name: 'GRIFFIN', comment: '(Kestrel)', required: true, slug: 'griffin-troops' },
+                { min: 0, max: 3, name: 'FIREFLY', comment: '(Kestrel)', required: true, slug: 'fireflies-clandestine-demo-squad' },
+                { min: 0, max: 1, name: 'HETKARI', comment: '', required: true, slug: 'hetkari-shooters' },
+            ]
+        };
+        const members = [
+            { name: 'GRIFFIN', slug: 'griffin-troops', comment: '' },
+            { name: 'BIPANDRA', slug: 'fusilier-indigo-bipandra', comment: '(Fennec, Kestrel)' },
+        ];
+
+        const bonuses = getFireteamBonuses(mockKestrelTeam, members);
+        expect(bonuses[0].isActive).toBe(true); // Formed as a DUO
+
+        const level = calculateFireteamLevel(mockKestrelTeam, members);
+        expect(level).toBe(2); // Both units carry Kestrel identity
     });
 
     it('rejects a 2-man Fennec team since Fennec type is Haris/Core only', () => {

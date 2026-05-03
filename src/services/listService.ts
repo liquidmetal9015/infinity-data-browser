@@ -152,7 +152,7 @@ function unitsJsonAsArmyList(detail: ApiDetail): ArmyList {
     const raw = detail.units_json as unknown as ArmyList | DehydratedArmyList;
     // Check if already hydrated (legacy data stored with full unit objects)
     const firstUnit = raw.groups?.[0]?.units?.[0];
-    if (firstUnit && 'unit' in firstUnit && (firstUnit as any).unit?.raw) {
+    if (firstUnit && 'unit' in firstUnit && (firstUnit as unknown as Record<string, unknown>).unit) {
         return raw as ArmyList;
     }
     // Hydrate dehydrated format

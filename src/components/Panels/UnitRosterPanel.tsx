@@ -146,7 +146,7 @@ export function UnitRosterPanel() {
                 const chart = db.getFireteamChart(currentList.factionId);
                 const possibleTeams = chart ? getPossibleFireteams(chart, members) : [];
                 const activeTeamDef = ft.selectedTeamName
-                    ? chart?.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || t.type.includes(ft.selectedTeamType)))
+                    ? chart?.teams.find(t => t.name === ft.selectedTeamName && (!ft.selectedTeamType || (t.type as string[]).includes(ft.selectedTeamType)))
                     : (possibleTeams.length === 1 && members.length > 0 ? possibleTeams[0] : null);
                 return { activeTeamDef, members };
             }
@@ -385,14 +385,14 @@ export function UnitRosterPanel() {
                                 />
                             </button>
                             {!effectiveCollapsedGroups.has(group.type) && (
-                                <div className="p-2 space-y-1.5">
+                                <div className="py-0.5 px-1 space-y-px">
                                     {group.units.map(renderUnitCard)}
                                 </div>
                             )}
                         </div>
                     ))
                 ) : (
-                    <div className="p-2 space-y-1.5">
+                    <div className="py-0.5 px-1 space-y-px">
                         {filteredRoster.map(renderUnitCard)}
                     </div>
                 )}

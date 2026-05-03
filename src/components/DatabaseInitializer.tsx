@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useDatabaseStore } from '../stores/useDatabaseStore';
+import { useListStore } from '../stores/useListStore';
 import { LoadingScreen } from './LoadingScreen';
 
 export function DatabaseInitializer({ children }: { children: React.ReactNode }) {
@@ -7,7 +8,9 @@ export function DatabaseInitializer({ children }: { children: React.ReactNode })
     const init = useDatabaseStore(s => s.init);
 
     useEffect(() => {
-        init().catch(err => console.error('Database initialization failed', err));
+        init()
+            .then(() => { useListStore.persist.rehydrate(); })
+            .catch(err => console.error('Database initialization failed', err));
     }, [init]);
 
     if (!initialized) return <LoadingScreen />;

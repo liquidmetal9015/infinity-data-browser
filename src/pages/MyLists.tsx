@@ -23,7 +23,7 @@ import { ListUnitsSummary } from '../components/MyLists/ListUnitsSummary';
 import { ImportFromCodeModal } from '../components/MyLists/ImportFromCodeModal';
 import { useFactionMapping } from '../hooks/useFactionMapping';
 import { generateMarkdownExport, serializeListForJson } from '../utils/listExport';
-import { armyListFromDecodedCode } from '../utils/listImport';
+import { armyListFromDecodedCode, uniqueListName } from '../utils/listImport';
 
 type SortKey = 'updated' | 'created' | 'name' | 'points_asc' | 'points_desc' | 'rating';
 
@@ -299,9 +299,12 @@ export function MyLists() {
         setRenamingId(null);
     };
 
-    const handleTagsCommit = (id: string) => {
-        const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
-        tagsMutation.mutate({ id, tags });
+    const handleTagsCommit = (id: string, existingTags: string[]) => {
+        const newTags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
+        const merged = [...new Set([...existingTags, ...newTags])];
+        if (merged.length !== existingTags.length || newTags.some(t => !existingTags.includes(t))) {
+            tagsMutation.mutate({ id, tags: merged });
+        }
         setEditingTagsId(null);
     };
 
@@ -631,9 +634,12 @@ export function MyLists() {
                 {showImportModal && (
                     <ImportFromCodeModal
                         onImport={async (codes) => {
+                            const takenNames = [...(lists ?? []).map(l => l.name)];
                             const results = await Promise.allSettled(
                                 codes.map(code => {
                                     const armyList = armyListFromDecodedCode(decodeArmyCode(code), db);
+                                    armyList.name = uniqueListName(armyList.name, takenNames);
+                                    takenNames.push(armyList.name);
                                     return listService.createList(armyList, armyList.factionId);
                                 })
                             );
@@ -654,7 +660,8 @@ export function MyLists() {
                         setGlobalFactionId={setGlobalFactionId}
                         onConfirm={(name, factionId, points) => {
                             const factionName = db.getFactionName(factionId);
-                            createList(factionId, factionName, points, name);
+                            const uniqueName = uniqueListName(name, (lists ?? []).map(l => l.name));
+                            createList(factionId, factionName, points, uniqueName);
                             setShowNewModal(false);
                             navigate('/');
                         }}
@@ -993,9 +1000,9 @@ export function MyLists() {
                                                         autoFocus
                                                         value={tagInput}
                                                         onChange={e => setTagInput(e.target.value)}
-                                                        onBlur={() => handleTagsCommit(list.id)}
+                                                        onBlur={() => handleTagsCommit(list.id, tags)}
                                                         onKeyDown={e => {
-                                                            if (e.key === 'Enter') handleTagsCommit(list.id);
+                                                            if (e.key === 'Enter') handleTagsCommit(list.id, tags);
                                                             if (e.key === 'Escape') setEditingTagsId(null);
                                                         }}
                                                         placeholder="tag1, tag2, …"
@@ -1011,7 +1018,7 @@ export function MyLists() {
                                                     />
                                                 ) : (
                                                     <button
-                                                        onClick={() => { setEditingTagsId(list.id); setTagInput(tags.join(', ')); }}
+                                                        onClick={() => { setEditingTagsId(list.id); setTagInput(''); }}
                                                         style={{
                                                             padding: '0.15rem 0.55rem',
                                                             borderRadius: '20px',
