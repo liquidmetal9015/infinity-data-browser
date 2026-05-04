@@ -46,7 +46,7 @@ function FactionBadges({ factionIds, getFactionName }: FactionBadgesProps) {
     return (
         <div className="flex flex-wrap gap-2">
             {visible.map(fid => (
-                <span key={fid} className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/5">
+                <span key={fid} className="text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/5">
                     {getFactionName(fid)}
                 </span>
             ))}
@@ -54,7 +54,7 @@ function FactionBadges({ factionIds, getFactionName }: FactionBadgesProps) {
                 <button
                     type="button"
                     onClick={() => setExpanded(true)}
-                    className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/10 hover:bg-white/10 hover:text-gray-200 transition-colors"
+                    className="text-[length:var(--text-2xs)] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/10 hover:bg-white/10 hover:text-gray-200 transition-colors"
                 >
                     +{hidden} more
                 </button>
@@ -63,7 +63,7 @@ function FactionBadges({ factionIds, getFactionName }: FactionBadgesProps) {
                 <button
                     type="button"
                     onClick={() => setExpanded(false)}
-                    className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/10 hover:bg-white/10 hover:text-gray-200 transition-colors"
+                    className="text-[length:var(--text-2xs)] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/20 border border-white/10 hover:bg-white/10 hover:text-gray-200 transition-colors"
                 >
                     show less
                 </button>
@@ -104,7 +104,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                     const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
                     return (
                         <div key={attr.key} className={`flex flex-col items-center ${compact ? 'gap-0' : 'gap-1'}`}>
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">{label}</span>
+                            <span className="text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-[0.15em]">{label}</span>
                             <span className={`${compact ? 'text-base' : 'text-lg'} font-bold text-gray-100 font-mono tracking-tight`}>{val ?? '-'}</span>
                         </div>
                     );
@@ -114,7 +114,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
             {/* Special Skills & Equipment */}
             <div className={`grid grid-cols-1 ${compact ? 'gap-1.5' : 'gap-3'}`}>
                 <div className={compact ? 'space-y-1' : 'space-y-2'}>
-                    <h3 className={`text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
+                    <h3 className={`text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
                         <Zap size={12} className="text-yellow-500/80" />
                         Special Skills
                     </h3>
@@ -138,7 +138,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                     </div>
                 </div>
                 <div className={compact ? 'space-y-1' : 'space-y-2'}>
-                    <h3 className={`text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
+                    <h3 className={`text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
                         <Shield size={12} className="text-blue-500/80" />
                         Equipment
                     </h3>
@@ -164,7 +164,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
 
             {/* Profile Options */}
             <div className={compact ? 'space-y-1' : 'space-y-2'}>
-                <h3 className={`text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
+                <h3 className={`text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 ${compact ? 'pb-1' : 'pb-2'} border-b border-white/5`}>
                     <Crosshair size={12} className="text-red-500/80" />
                     Profile Options
                 </h3>
@@ -172,9 +172,9 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#162032] border-b border-white/5">
                             <tr>
-                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0.75rem' }}>Profile</th>
-                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>SWC</th>
-                                <th className="text-[10px] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>Pts</th>
+                                <th className="text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.5rem 0.5rem 0.75rem' }}>Profile</th>
+                                <th className="text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>SWC</th>
+                                <th className="text-[length:var(--text-2xs)] font-bold text-gray-500 uppercase tracking-wider" style={{ padding: '0.5rem 0.75rem', textAlign: 'right' }}>Pts</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -218,8 +218,8 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                                                 )}
                                             </div>
                                         </td>
-                                        <td style={{ padding: `${rowPadY} 1rem`, verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.875rem', color: '#9ca3af' }}>{opt.swc}</td>
-                                        <td style={{ padding: `${rowPadY} 1rem`, verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.875rem', fontWeight: 700, color: '#60a5fa' }}>{opt.points}</td>
+                                        <td style={{ padding: `${rowPadY} 1rem`, verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: 'var(--text-md)', color: '#9ca3af' }}>{opt.swc}</td>
+                                        <td style={{ padding: `${rowPadY} 1rem`, verticalAlign: 'middle', textAlign: 'right', fontFamily: 'monospace', fontSize: 'var(--text-md)', fontWeight: 'var(--font-bold)', color: '#60a5fa' }}>{opt.points}</td>
                                     </tr>
                                 );
                             })}

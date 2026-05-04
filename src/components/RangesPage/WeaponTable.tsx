@@ -36,7 +36,7 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
                             <tr key={w.id}>
                                 <td className={styles.weaponCellName}>
                                     <div className={styles.colorIndicator} style={{ background: color }}></div>
-                                    <span style={{ fontWeight: 600 }}>{w.name}</span>
+                                    <span style={{ fontWeight: 'var(--font-semibold)' }}>{w.name}</span>
                                 </td>
                                 <td>
                                     <div className={styles.rangeStripRow}>

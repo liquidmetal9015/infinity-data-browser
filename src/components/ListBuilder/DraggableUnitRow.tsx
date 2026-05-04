@@ -73,12 +73,12 @@ export function DraggableUnitRow({
                 <div className={clsx(styles.unitName, styles.colName)}>
                     <div className="flex items-center gap-1.5">
                         <span
-                            className="text-[9px] font-bold px-1 py-0.5 rounded leading-none flex-shrink-0"
+                            className="text-[length:var(--text-2xs)] font-bold px-1 py-0.5 rounded leading-none flex-shrink-0"
                             style={{ color: CLASSIFICATION_COLORS[5], background: `${CLASSIFICATION_COLORS[5]}15` }}
                         >
                             REM
                         </span>
-                        <span className={styles.name} style={{ color: '#8b9ab5', fontStyle: 'italic', fontSize: '0.8rem' }}>{displayName}</span>
+                        <span className={styles.name} style={{ color: '#8b9ab5', fontStyle: 'italic', fontSize: 'var(--text-sm)' }}>{displayName}</span>
                     </div>
                 </div>
                 <div className={clsx(styles.unitWeapons, styles.colWeapons, 'flex items-center gap-1.5 flex-wrap')}>
@@ -143,7 +143,7 @@ export function DraggableUnitRow({
                 <div className="flex items-center gap-1.5">
                     {profile?.unitType != null && CLASSIFICATION_LABELS[profile.unitType] && (
                         <span
-                            className="text-[9px] font-bold px-1 py-0.5 rounded leading-none flex-shrink-0"
+                            className="text-[length:var(--text-2xs)] font-bold px-1 py-0.5 rounded leading-none flex-shrink-0"
                             style={{
                                 color: CLASSIFICATION_COLORS[profile.unitType],
                                 background: `${CLASSIFICATION_COLORS[profile.unitType]}15`

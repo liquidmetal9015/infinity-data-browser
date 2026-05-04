@@ -192,12 +192,12 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
 
                             return (
                                 <div className={styles.unitPool}>
-                                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Team Members</div>
+                                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Team Members</div>
                                     {selectedTeam.units.map((u: FireteamUnit, i: number) => renderPoolItem(u, i, 'member'))}
 
                                     {wildcards.length > 0 && (
                                         <>
-                                            <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Wildcards</div>
+                                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Wildcards</div>
                                             {wildcards.map((u: FireteamUnit, i: number) => renderPoolItem(u, i, 'wildcard'))}
                                         </>
                                     )}
@@ -219,12 +219,12 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
                     <>
                         <div className={styles.activeTeamCard}>
                             <div className={styles.cardHeader} style={{ marginBottom: '1.5rem', background: 'transparent', borderBottom: 'none', padding: 0 }}>
-                                <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{selectedTeam.name} Composition</h3>
+                                <h3 style={{ fontSize: 'var(--text-2xl)', margin: 0 }}>{selectedTeam.name} Composition</h3>
                                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                                     {selectedTeam.type.map(t => (
                                         <span key={t} className={clsx(styles.badge, styles[t.toLowerCase() as keyof typeof styles])}>{t}</span>
                                     ))}
-                                    <span style={{ marginLeft: 'auto', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                    <span style={{ marginLeft: 'auto', fontSize: 'var(--text-md)', color: 'var(--text-secondary)' }}>
                                         Max Size: {maxTeamSize}
                                     </span>
                                 </div>
@@ -256,7 +256,7 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
 
                                                             if (countsAsTag) {
                                                                 return (
-                                                                    <div style={{ fontSize: '0.8rem', opacity: 0.7, fontStyle: 'italic' }}>
+                                                                    <div style={{ fontSize: 'var(--text-sm)', opacity: 0.7, fontStyle: 'italic' }}>
                                                                         ({countsAsTag})
                                                                     </div>
                                                                 );
@@ -305,7 +305,7 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
                                     {bonuses.map((bonus, idx) => (
                                         <div key={idx} className={clsx(styles.bonusItem, bonus.isActive && styles.active)}>
                                             <div className={styles.bonusCheck}>
-                                                {bonus.isActive ? <Check size={14} /> : <span style={{ fontSize: '10px' }}>{bonus.level}</span>}
+                                                {bonus.isActive ? <Check size={14} /> : <span style={{ fontSize: 'var(--text-2xs)' }}>{bonus.level}</span>}
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <strong>Level {bonus.level}: </strong>

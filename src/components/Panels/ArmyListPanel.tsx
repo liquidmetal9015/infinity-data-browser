@@ -396,7 +396,7 @@ export function ArmyListPanel() {
                                 if (e.key === 'Enter') { if (nameValue.trim()) updateListName(nameValue.trim()); setEditingName(false); }
                                 if (e.key === 'Escape') setEditingName(false);
                             }}
-                            style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.15rem 0.45rem', fontSize: '1rem', fontWeight: 700, width: '100%', minWidth: 0 }}
+                            style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.15rem 0.45rem', fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', width: '100%', minWidth: 0 }}
                         />
                     ) : (
                         <span
@@ -404,8 +404,8 @@ export function ArmyListPanel() {
                             onClick={() => { if (isLocked) return; setNameValue(list.name); setEditingName(true); }}
                             style={{
                                 fontFamily: "'Oxanium', sans-serif",
-                                fontSize: '1rem',
-                                fontWeight: 700,
+                                fontSize: 'var(--text-base)',
+                                fontWeight: 'var(--font-bold)',
                                 color: 'var(--text-primary)',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
@@ -415,8 +415,8 @@ export function ArmyListPanel() {
                             }}
                         >{list.name}</span>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                        <span style={{ color: 'var(--color-primary, var(--accent))', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 'var(--text-2xs)', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        <span style={{ color: 'var(--color-primary, var(--accent))', fontWeight: 'var(--font-semibold)', textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {factionName}
                         </span>
                         <span style={{ color: 'var(--text-tertiary, #64748b)' }}>·</span>
@@ -490,7 +490,7 @@ export function ArmyListPanel() {
                     const count = fireteamCounts[type] || 0;
                     return (
                         <div key={type} className={clsx(styles.stat, count > limit && 'text-red-400 border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded')}>
-                            <span className={clsx(styles.label, 'text-gray-400 uppercase text-[10px]')}>{type} LIMIT</span>
+                            <span className={clsx(styles.label, 'text-gray-400 uppercase text-[length:var(--text-2xs)]')}>{type} LIMIT</span>
                             <span className={styles.value}>{count} / {limit}</span>
                         </div>
                     );
@@ -534,11 +534,11 @@ export function ArmyListPanel() {
                                                     <span className={styles.groupCount}>{group.units.filter(u => !u.isPeripheral).length} units</span>
                                                 </div>
                                                 <div className="flex gap-2.5 mt-1.5">
-                                                    {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
-                                                    {groupOrders['irregular'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="irregular" size={12} /> {groupOrders['irregular']}</span>}
-                                                    {groupOrders['impetuous'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="impetuous" size={12} /> {groupOrders['impetuous']}</span>}
-                                                    {groupOrders['lieutenant'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="lieutenant" size={12} /> {groupOrders['lieutenant']}</span>}
-                                                    {groupOrders['tactical-awareness'] > 0 && <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-300"><OrderIcon type="tactical-awareness" size={12} /> {groupOrders['tactical-awareness']}</span>}
+                                                    {groupOrders['regular'] > 0 && <span className="flex items-center gap-1.5 text-[length:var(--text-2xs)] font-bold text-gray-300"><OrderIcon type="regular" size={12} /> {groupOrders['regular']}</span>}
+                                                    {groupOrders['irregular'] > 0 && <span className="flex items-center gap-1.5 text-[length:var(--text-2xs)] font-bold text-gray-300"><OrderIcon type="irregular" size={12} /> {groupOrders['irregular']}</span>}
+                                                    {groupOrders['impetuous'] > 0 && <span className="flex items-center gap-1.5 text-[length:var(--text-2xs)] font-bold text-gray-300"><OrderIcon type="impetuous" size={12} /> {groupOrders['impetuous']}</span>}
+                                                    {groupOrders['lieutenant'] > 0 && <span className="flex items-center gap-1.5 text-[length:var(--text-2xs)] font-bold text-gray-300"><OrderIcon type="lieutenant" size={12} /> {groupOrders['lieutenant']}</span>}
+                                                    {groupOrders['tactical-awareness'] > 0 && <span className="flex items-center gap-1.5 text-[length:var(--text-2xs)] font-bold text-gray-300"><OrderIcon type="tactical-awareness" size={12} /> {groupOrders['tactical-awareness']}</span>}
                                                 </div>
                                             </div>
                                         </div>

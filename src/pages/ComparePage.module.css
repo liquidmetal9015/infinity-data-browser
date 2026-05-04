@@ -42,8 +42,8 @@
 }
 
 .selection-header .label {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: var(--text-md);
+    font-weight: var(--font-semibold);
     color: var(--text-secondary);
 }
 
@@ -58,7 +58,7 @@
 
 .placeholder-text {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: var(--text-md);
     font-style: italic;
     width: 100%;
     text-align: center;
@@ -73,8 +73,8 @@
     color: white;
     padding: 0.4rem 0.8rem;
     border-radius: 100px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: var(--text-md);
+    font-weight: var(--font-medium);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -99,8 +99,8 @@
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: var(--text-md);
+    font-weight: var(--font-medium);
     margin-left: 0.5rem;
     transition: all 0.2s;
 }
@@ -139,7 +139,7 @@
     background: var(--bg-primary);
     color: var(--text-primary);
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: var(--text-md);
     min-width: 200px;
 }
 
@@ -151,7 +151,7 @@
 }
 
 .super-faction-actions .label {
-    font-size: 0.9rem;
+    font-size: var(--text-md);
     color: var(--text-secondary);
     margin-right: 0.5rem;
 }
@@ -161,7 +161,7 @@
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     cursor: pointer;
     transition: all 0.2s;
     color: var(--text-primary);
@@ -202,7 +202,7 @@
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
-    font-size: 1.2rem;
+    font-size: var(--text-xl);
     color: var(--text-primary);
 }
 
@@ -210,7 +210,7 @@
     background: var(--bg-primary);
     padding: 0.2rem 0.6rem;
     border-radius: 100px;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     border: 1px solid var(--border-color);
 }
 
@@ -225,7 +225,7 @@
     background: var(--bg-primary);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: var(--text-md);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease;
 }
@@ -293,8 +293,8 @@
 }
 
 .group-tag {
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
     padding: 0.1rem 0.5rem;
     background: var(--bg-secondary);
     border-radius: 4px;
@@ -330,12 +330,12 @@
 
 .column-header h4 {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
 }
 
 .column-header .count {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--text-secondary);
 }
 
@@ -350,7 +350,7 @@
     padding: 0.5rem 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(0, 0, 0, 0.2);
-    font-size: 0.9rem;
+    font-size: var(--text-md);
     border-radius: 6px;
     margin-bottom: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -371,7 +371,7 @@
 .empty-col {
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     font-style: italic;
     margin-top: 2rem;
 }

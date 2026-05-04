@@ -7,6 +7,23 @@ import './index.css'
 import App from './App.tsx'
 import { DatabaseInitializer } from './components/DatabaseInitializer.tsx'
 
+// Dev-only theme exploration: load alt palettes and honor ?theme=<name> /
+// localStorage.themePreview. Production always renders dark.
+if (import.meta.env.DEV) {
+  await Promise.all([
+    import('./themes/cyberpunk.css'),
+    import('./themes/clean.css'),
+  ])
+  const allowed = new Set(['dark', 'cyberpunk', 'clean'])
+  const fromUrl = new URLSearchParams(window.location.search).get('theme')
+  const fromStorage = localStorage.getItem('themePreview')
+  const next = (fromUrl && allowed.has(fromUrl) && fromUrl)
+    || (fromStorage && allowed.has(fromStorage) && fromStorage)
+    || 'dark'
+  document.documentElement.dataset.theme = next
+  if (fromUrl && allowed.has(fromUrl)) localStorage.setItem('themePreview', fromUrl)
+}
+
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(

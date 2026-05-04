@@ -72,7 +72,7 @@ export function FactionSelector({
                                     <div className="text-sm font-semibold text-white leading-tight truncate pr-2">
                                         {selectedFaction.name}
                                     </div>
-                                    <div className="text-[10px] text-gray-400">
+                                    <div className="text-[length:var(--text-2xs)] text-gray-400">
                                         {selectedFaction.isVanilla ? 'Vanilla Faction' : 'Sectorial'}
                                     </div>
                                 </div>
@@ -119,7 +119,7 @@ export function FactionSelector({
                                     <span className="flex-1 text-xs font-bold text-gray-200 uppercase tracking-widest leading-none">
                                         {group.name}
                                     </span>
-                                    <span className="text-[10px] text-gray-500 mr-1">{childCount}</span>
+                                    <span className="text-[length:var(--text-2xs)] text-gray-500 mr-1">{childCount}</span>
                                     {isCollapsed
                                         ? <ChevronRight className="h-3 w-3 text-gray-500 flex-shrink-0" />
                                         : <ChevronDown className="h-3 w-3 text-gray-500 flex-shrink-0" />
@@ -146,7 +146,7 @@ export function FactionSelector({
                                                         <div className="font-semibold text-sm leading-tight group-data-[selected]:text-white">
                                                             {vanilla.name}
                                                         </div>
-                                                        <div className="text-[10px] text-gray-500">Vanilla</div>
+                                                        <div className="text-[length:var(--text-2xs)] text-gray-500">Vanilla</div>
                                                     </div>
                                                 </div>
                                                 <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-accent-500 hidden group-data-[selected]:flex">
@@ -173,7 +173,7 @@ export function FactionSelector({
                                                         <div className="font-semibold text-sm leading-tight group-data-[selected]:text-white">
                                                             {s.name}
                                                         </div>
-                                                        <div className="text-[10px] text-gray-500">Sectorial</div>
+                                                        <div className="text-[length:var(--text-2xs)] text-gray-500">Sectorial</div>
                                                     </div>
                                                 </div>
                                                 <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-accent-500 hidden group-data-[selected]:flex">

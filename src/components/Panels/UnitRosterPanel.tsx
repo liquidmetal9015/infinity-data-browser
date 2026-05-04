@@ -376,7 +376,7 @@ export function UnitRosterPanel() {
                                     >
                                         {group.label}
                                     </span>
-                                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{group.units.length}</span>
+                                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{group.units.length}</span>
                                 </div>
                                 <ChevronDown
                                     size={16}

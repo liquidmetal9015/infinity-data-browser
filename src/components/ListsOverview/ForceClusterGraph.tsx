@@ -180,7 +180,7 @@ export function ForceClusterGraph({ lists, matrix, threshold, factionShortName, 
             <svg ref={svgRef} width={dim.w} height={dim.h} style={{ display: 'block' }} />
             <div style={{
                 display: 'flex', flexWrap: 'wrap', gap: '0.4rem 0.85rem',
-                marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)',
+                marginTop: '0.5rem', fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)',
             }}>
                 {legend.map(l => (
                     <span key={l.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>

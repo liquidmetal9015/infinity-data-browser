@@ -67,7 +67,7 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
 
                         {wildcards && (
                             <div className="wildcard-section" style={{ marginTop: '1rem', borderTop: '1px dashed var(--border-color)', paddingTop: '0.5rem' }}>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>
+                                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>
                                     + Wildcards (up to limit):
                                 </div>
                                 {wildcards.units.map((u: FireteamUnit, wIdx: number) => (

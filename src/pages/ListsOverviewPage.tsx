@@ -120,12 +120,12 @@ export function ListsOverviewPage() {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                     <div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
+                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
                             {mode === 'similar' && ranked
                                 ? `Lists similar to ${ranked.focus.name}`
                                 : 'Lists Overview'}
                         </h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', margin: '0.2rem 0 0' }}>
                             {mode === 'matrix' && 'All-pairs similarity matrix. Click any cell to drill into the comparison.'}
                             {mode === 'cluster' && 'Force-directed clusters. Tightly-bound nodes share more in common; drag to rearrange.'}
                             {mode === 'similar' && 'Ranked by composite similarity. Cross-faction pairs use capability-weighted scoring.'}
@@ -160,8 +160,8 @@ export function ListsOverviewPage() {
                                             border: 'none',
                                             background: active ? 'var(--accent, #6366f1)' : 'transparent',
                                             color: active ? '#fff' : 'var(--text-secondary)',
-                                            fontSize: '0.78rem',
-                                            fontWeight: 600,
+                                            fontSize: 'var(--text-sm)',
+                                            fontWeight: 'var(--font-semibold)',
                                             cursor: 'pointer',
                                             borderRadius: '6px',
                                             textTransform: 'capitalize',
@@ -178,7 +178,7 @@ export function ListsOverviewPage() {
                                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                                 padding: '0.25rem 0.75rem', background: 'var(--bg-tertiary)',
                                 border: '1px solid var(--border)', borderRadius: '8px',
-                                fontSize: '0.78rem', color: 'var(--text-secondary)',
+                                fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
                             }}>
                                 Edge threshold
                                 <input
@@ -201,7 +201,7 @@ export function ListsOverviewPage() {
                 {/* Faction-scope filter */}
                 {activeSuperFactions.length > 1 && mode !== 'similar' && (
                     <div style={filterBarStyle}>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary, #64748b)', marginRight: '0.25rem' }}>Scope:</span>
+                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary, #64748b)', marginRight: '0.25rem' }}>Scope:</span>
                         <ScopePill active={scope === 'all'} label="All factions" onClick={() => setScope('all')} />
                         {activeSuperFactions.map(sf => (
                             <ScopePill
@@ -212,7 +212,7 @@ export function ListsOverviewPage() {
                                 onClick={() => setScope(sf.id)}
                             />
                         ))}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
                             {filteredSummaries.length} list{filteredSummaries.length === 1 ? '' : 's'}
                         </span>
                     </div>
@@ -271,8 +271,8 @@ function ScopePill({ active, label, logo, onClick }: {
                 gap: '0.4rem',
                 padding: '0.25rem 0.65rem 0.25rem 0.4rem',
                 borderRadius: '20px',
-                fontSize: '0.78rem',
-                fontWeight: 500,
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--font-medium)',
                 cursor: 'pointer',
                 border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
                 background: active ? 'rgba(99,102,241,0.15)' : 'var(--bg-tertiary)',
@@ -388,7 +388,7 @@ function MatrixHeatmap({ lists, matrix, onPick, onFocus }: {
                 }))}
             </svg>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--text-tertiary, #64748b)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #64748b)' }}>
                 <span>Less similar</span>
                 <div style={{
                     flex: '0 0 200px',
@@ -415,7 +415,7 @@ function RankedTable({ rows, db, onPick }: {
         <div style={cardStyle}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                    <tr style={{ textAlign: 'left', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-tertiary, #64748b)' }}>
+                    <tr style={{ textAlign: 'left', fontSize: 'var(--text-2xs)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-tertiary, #64748b)' }}>
                         <th style={thStyle}>List</th>
                         <th style={thStyle}>Faction</th>
                         <th style={thNumStyle}>Composite</th>
@@ -432,9 +432,9 @@ function RankedTable({ rows, db, onPick }: {
                         return (
                             <tr key={list.id} style={{ borderTop: '1px solid var(--border)' }}>
                                 <td style={tdStyle}>
-                                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{list.name}</span>
+                                    <span style={{ fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' }}>{list.name}</span>
                                 </td>
-                                <td style={{ ...tdStyle, color: 'var(--accent)', fontWeight: 600 }}>
+                                <td style={{ ...tdStyle, color: 'var(--accent)', fontWeight: 'var(--font-semibold)' }}>
                                     {f?.shortName || f?.name || `#${list.factionId}`}
                                 </td>
                                 <td style={tdNumStrong}>{Math.round(sim.composite * 100)}%</td>
@@ -491,7 +491,7 @@ const chipBtnStyle: React.CSSProperties = {
     border: '1px solid var(--border)',
     color: 'var(--text-secondary)',
     borderRadius: '8px',
-    fontSize: '0.8rem',
+    fontSize: 'var(--text-sm)',
     cursor: 'pointer',
 };
 
@@ -506,12 +506,12 @@ const filterBarStyle: React.CSSProperties = {
     borderRadius: '10px',
 };
 
-const thStyle: React.CSSProperties = { padding: '0.5rem 0.6rem', fontWeight: 600 };
+const thStyle: React.CSSProperties = { padding: '0.5rem 0.6rem', fontWeight: 'var(--font-semibold)' };
 const thNumStyle: React.CSSProperties = { ...thStyle, textAlign: 'right' };
 
 const tdStyle: React.CSSProperties = {
     padding: '0.55rem 0.6rem',
-    fontSize: '0.85rem',
+    fontSize: 'var(--text-sm)',
     color: 'var(--text-secondary)',
     verticalAlign: 'middle',
 };
@@ -520,7 +520,7 @@ const tdNumStrong: React.CSSProperties = {
     ...tdStyle,
     textAlign: 'right',
     fontVariantNumeric: 'tabular-nums',
-    fontWeight: 700,
+    fontWeight: 'var(--font-bold)',
     color: 'var(--text-primary)',
 };
 

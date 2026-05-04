@@ -12,7 +12,7 @@ export function ListUnitsSummary({ listId, fallback }: { listId: string; fallbac
         staleTime: 60_000,
     });
 
-    const muted: React.CSSProperties = { fontSize: '0.78rem', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' };
+    const muted: React.CSSProperties = { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' };
     if (isLoading && !data) return <div style={muted}>Loading units…</div>;
     if (!data) return <div style={muted}>(unable to load)</div>;
 
@@ -24,8 +24,8 @@ export function ListUnitsSummary({ listId, fallback }: { listId: string; fallbac
             {groups.map((g, idx) => {
                 const realUnits = g.units.filter(u => !u.isPeripheral);
                 return (
-                    <div key={g.id} style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                        <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 600, marginRight: '0.4rem', fontSize: '0.72rem' }}>
+                    <div key={g.id} style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                        <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 'var(--font-semibold)', marginRight: '0.4rem', fontSize: 'var(--text-2xs)' }}>
                             G{idx + 1}
                         </span>
                         {realUnits.map((u, i) => {

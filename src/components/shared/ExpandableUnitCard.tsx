@@ -77,7 +77,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                     const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
                     return (
                         <div key={attr.key} className="flex flex-col items-center min-w-[32px]">
-                            <div className="text-[10px] font-bold text-gray-500">{label}</div>
+                            <div className="text-[length:var(--text-2xs)] font-bold text-gray-500">{label}</div>
                             <div className="font-mono text-gray-200 font-bold">{val ?? '-'}</div>
                         </div>
                     );
@@ -86,7 +86,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
 
             {/* Combined Skills & Equipment */}
             <div className="text-xs text-gray-400 leading-relaxed px-1">
-                <span className="font-bold text-gray-500 uppercase tracking-widest mr-2 text-[10px]">Skills & Eq:</span>
+                <span className="font-bold text-gray-500 uppercase tracking-widest mr-2 text-[length:var(--text-2xs)]">Skills & Eq:</span>
                 {[
                     ...(profile.skills || []).map(s => s.displayName || s.name),
                     ...(profile.equipment || []).map(e => e.name)
@@ -171,11 +171,11 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                                 )}
                             </div>
                             <div className="flex flex-col items-center justify-center p-2 border-l border-white/5 bg-black/10 min-w-[50px]">
-                                <div className="text-[10px] text-gray-500 font-bold">SWC</div>
+                                <div className="text-[length:var(--text-2xs)] text-gray-500 font-bold">SWC</div>
                                 <div className="font-mono text-yellow-500/90 text-sm">{opt.swc}</div>
                             </div>
                             <div className="flex flex-col items-center justify-center p-2 border-l border-white/5 bg-black/10 min-w-[50px]">
-                                <div className="text-[10px] text-gray-500 font-bold">PTS</div>
+                                <div className="text-[length:var(--text-2xs)] text-gray-500 font-bold">PTS</div>
                                 <div className="font-mono text-blue-400 text-sm font-bold">{opt.points}</div>
                             </div>
                             {onViewUnit && (
@@ -234,7 +234,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                             <span className="font-bold text-sm text-gray-100 tracking-wide leading-tight">{unit.isc}</span>
                             {activeProfile?.unitType != null && CLASSIFICATION_LABELS[activeProfile.unitType] && (
                                 <span
-                                    className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                    className="text-[length:var(--text-2xs)] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
                                     style={{
                                         color: CLASSIFICATION_COLORS[activeProfile.unitType],
                                         background: `${CLASSIFICATION_COLORS[activeProfile.unitType]}15`,
@@ -308,13 +308,13 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                                         </span>
                                         {typeLabel && (
                                             <span
-                                                className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                                className="text-[length:var(--text-2xs)] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
                                                 style={{ color: typeColor, background: `${typeColor}15`, border: `1px solid ${typeColor}30` }}
                                             >
                                                 {typeLabel}
                                             </span>
                                         )}
-                                        <span className="text-[10px] font-medium text-blue-400/70 flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                                        <span className="text-[length:var(--text-2xs)] font-medium text-blue-400/70 flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
                                             <Link size={9} /> Attached
                                         </span>
                                     </div>

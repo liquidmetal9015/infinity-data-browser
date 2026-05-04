@@ -72,21 +72,21 @@ export function NewListModal({
                 onClick={e => e.stopPropagation()}
             >
                 <div>
-                    <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Oxanium', sans-serif", textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h2 style={{ margin: '0 0 0.25rem', fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', fontFamily: "'Oxanium', sans-serif", textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Create Army List
                     </h2>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
                         Choose your faction and give your list a name.
                     </p>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Faction</label>
+                    <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 'var(--font-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Faction</label>
                     <CompactFactionSelector groupedFactions={groupedFactions} value={globalFactionId} onChange={setGlobalFactionId} />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>List Name</label>
+                    <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 'var(--font-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>List Name</label>
                     <input
                         autoFocus
                         value={name}
@@ -99,14 +99,14 @@ export function NewListModal({
                             color: 'var(--text-primary)',
                             borderRadius: '8px',
                             padding: '0.65rem 0.85rem',
-                            fontSize: '0.9rem',
+                            fontSize: 'var(--text-md)',
                             outline: 'none',
                         }}
                     />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Points Limit</label>
+                    <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 'var(--font-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Points Limit</label>
                     <select
                         value={points}
                         onChange={e => setPoints(Number(e.target.value))}
@@ -116,7 +116,7 @@ export function NewListModal({
                             color: 'var(--text-primary)',
                             borderRadius: '8px',
                             padding: '0.65rem 0.85rem',
-                            fontSize: '0.9rem',
+                            fontSize: 'var(--text-md)',
                             cursor: 'pointer',
                         }}
                     >
@@ -128,14 +128,14 @@ export function NewListModal({
                     {onCancel ? (
                         <button
                             onClick={onCancel}
-                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
+                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'var(--text-md)' }}
                         >
                             Cancel
                         </button>
                     ) : (
                         <button
                             onClick={() => navigate('/lists')}
-                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: 'none', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', textDecoration: 'underline' }}
+                            style={{ padding: '0.6rem 1.1rem', borderRadius: '8px', border: 'none', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'var(--text-md)', textDecoration: 'underline' }}
                         >
                             My Lists
                         </button>
@@ -150,8 +150,8 @@ export function NewListModal({
                             background: globalFactionId ? 'var(--color-primary, #6366f1)' : 'var(--bg-secondary)',
                             color: '#fff',
                             cursor: globalFactionId ? 'pointer' : 'not-allowed',
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
+                            fontWeight: 'var(--font-bold)',
+                            fontSize: 'var(--text-md)',
                             opacity: globalFactionId ? 1 : 0.5,
                             transition: 'all 0.15s',
                         }}
@@ -165,9 +165,9 @@ export function NewListModal({
                     <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
                         <button
                             onClick={() => setShowImport(v => !v)}
-                            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'var(--text-sm)', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                         >
-                            <span style={{ fontWeight: 600 }}>{showImport ? '▾' : '▸'}</span>
+                            <span style={{ fontWeight: 'var(--font-semibold)' }}>{showImport ? '▾' : '▸'}</span>
                             Import from army code
                         </button>
                         {showImport && (
@@ -185,14 +185,14 @@ export function NewListModal({
                                         background: 'var(--bg-secondary)',
                                         color: 'var(--text-primary)',
                                         resize: 'none',
-                                        fontSize: '0.85rem',
+                                        fontSize: 'var(--text-sm)',
                                         fontFamily: 'monospace',
                                         boxSizing: 'border-box',
                                         outline: 'none',
                                     }}
                                 />
                                 {importError && (
-                                    <div style={{ color: 'var(--color-error, #ef4444)', fontSize: '0.8rem' }}>{importError}</div>
+                                    <div style={{ color: 'var(--color-error, #ef4444)', fontSize: 'var(--text-sm)' }}>{importError}</div>
                                 )}
                                 <button
                                     disabled={!(importCode ?? '').trim()}
@@ -204,8 +204,8 @@ export function NewListModal({
                                         background: (importCode ?? '').trim() ? 'var(--bg-elevated)' : 'var(--bg-secondary)',
                                         color: 'var(--text-primary)',
                                         cursor: (importCode ?? '').trim() ? 'pointer' : 'not-allowed',
-                                        fontWeight: 600,
-                                        fontSize: '0.875rem',
+                                        fontWeight: 'var(--font-semibold)',
+                                        fontSize: 'var(--text-md)',
                                         opacity: (importCode ?? '').trim() ? 1 : 0.5,
                                     }}
                                 >

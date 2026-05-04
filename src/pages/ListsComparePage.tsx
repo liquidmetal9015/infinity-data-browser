@@ -120,10 +120,10 @@ export function ListsComparePage({ ids: idsProp }: Props = {}) {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                     <div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
+                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
                             Compare Lists
                         </h1>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', margin: '0.2rem 0 0' }}>
                             Composite similarity score combines unit overlap, composition, and strategic profile.
                         </p>
                     </div>
@@ -170,8 +170,8 @@ export function ListsComparePage({ ids: idsProp }: Props = {}) {
                 {/* Delta bars */}
                 <Section title="Per-Axis Delta">
                     <p style={hintStyle}>
-                        Bars to the right favor <span style={{ color: COLOR_A, fontWeight: 600 }}>{listA.name}</span>;
-                        to the left favor <span style={{ color: COLOR_B, fontWeight: 600 }}>{listB.name}</span>.
+                        Bars to the right favor <span style={{ color: COLOR_A, fontWeight: 'var(--font-semibold)' }}>{listA.name}</span>;
+                        to the left favor <span style={{ color: COLOR_B, fontWeight: 'var(--font-semibold)' }}>{listB.name}</span>.
                     </p>
                     <div style={{ width: '100%', height: 240 }}>
                         <ResponsiveContainer>
@@ -287,10 +287,10 @@ function ListBadge({ list, factionName, factionLogo, color, align }: {
         }}>
             {align === 'left' && logoSrc && <FactionLogo src={logoSrc} />}
             <div style={{ textAlign: align }}>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>
                     {list.name}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: color, fontWeight: 600 }}>
+                <div style={{ fontSize: 'var(--text-sm)', color: color, fontWeight: 'var(--font-semibold)' }}>
                     {factionName ?? `Faction ${list.factionId}`}
                 </div>
             </div>
@@ -315,9 +315,9 @@ function CompositeScore({ sim }: { sim: number }) {
     return (
         <div style={{ textAlign: 'center', padding: '0 1rem' }}>
             <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
-                {pct}<span style={{ fontSize: '1.25rem', color: 'var(--text-secondary)' }}>%</span>
+                {pct}<span style={{ fontSize: 'var(--text-xl)', color: 'var(--text-secondary)' }}>%</span>
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.25rem' }}>
                 Similarity
             </div>
         </div>
@@ -333,14 +333,14 @@ function SubScore({ label, value, weight }: { label: string; value: number; weig
             style={{
                 padding: '0.35rem 0.75rem',
                 borderRadius: '20px',
-                fontSize: '0.78rem',
+                fontSize: 'var(--text-sm)',
                 background: 'var(--bg-tertiary)',
                 border: '1px solid var(--border)',
                 color: dim ? 'var(--text-tertiary, #64748b)' : 'var(--text-secondary)',
                 opacity: dim ? 0.5 : 1,
             }}
         >
-            <span style={{ fontWeight: 600 }}>{label}</span>
+            <span style={{ fontWeight: 'var(--font-semibold)' }}>{label}</span>
             <span style={{ marginLeft: '0.5rem', fontVariantNumeric: 'tabular-nums', color: 'var(--text-primary)' }}>{pct}%</span>
         </div>
     );
@@ -349,7 +349,7 @@ function SubScore({ label, value, weight }: { label: string; value: number; weig
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div style={cardStyle}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 0.75rem' }}>
+            <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', margin: '0 0 0.75rem' }}>
                 {title}
             </h2>
             {children}
@@ -365,11 +365,11 @@ function DiffColumn({ heading, entries, color, showCount }: {
 }) {
     return (
         <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-                {heading} <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 500 }}>({entries.length})</span>
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                {heading} <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 'var(--font-medium)' }}>({entries.length})</span>
             </div>
             {entries.length === 0 ? (
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' }}>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' }}>
                     None
                 </div>
             ) : (
@@ -380,14 +380,14 @@ function DiffColumn({ heading, entries, color, showCount }: {
                             background: 'var(--bg-tertiary)',
                             border: '1px solid var(--border)',
                             borderRadius: '6px',
-                            fontSize: '0.82rem',
+                            fontSize: 'var(--text-sm)',
                             color: 'var(--text-secondary)',
                         }}>
-                            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 'var(--font-semibold)' }}>
                                 {showCount === 'both' ? <CountChip a={e.countA} b={e.countB} /> : (e.countA + e.countB > 1 ? `${e.countA + e.countB}× ` : '')}
                                 {e.unitName}
                             </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)' }}>
+                            <div style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)' }}>
                                 {e.optionName} · {e.points}pts
                             </div>
                         </li>
@@ -414,8 +414,8 @@ function ModeToggle({ mode, onChange, crossFactionDetected }: {
                     border: 'none',
                     background: active ? 'var(--accent, #6366f1)' : 'transparent',
                     color: active ? '#fff' : 'var(--text-secondary)',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
                     cursor: 'pointer',
                     borderRadius: '6px',
                 }}
@@ -470,11 +470,11 @@ function CapabilityTagCloud({ heading, entries, color, db, side }: {
 
     return (
         <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-                {heading} <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 500 }}>({entries.length})</span>
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                {heading} <span style={{ color: 'var(--text-tertiary, #64748b)', fontWeight: 'var(--font-medium)' }}>({entries.length})</span>
             </div>
             {entries.length === 0 ? (
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' }}>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary, #64748b)', fontStyle: 'italic' }}>
                     None
                 </div>
             ) : (
@@ -511,7 +511,7 @@ function CapabilityTagCloud({ heading, entries, color, db, side }: {
 function CountChip({ a, b }: { a: number; b: number }) {
     if (a === 1 && b === 1) return null;
     return (
-        <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary, #64748b)', marginRight: '0.35rem', fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)', marginRight: '0.35rem', fontVariantNumeric: 'tabular-nums' }}>
             {a}vs{b}
         </span>
     );
@@ -595,14 +595,14 @@ const msgStyle: React.CSSProperties = {
 };
 
 const panelTitleStyle: React.CSSProperties = {
-    fontSize: '0.85rem',
-    fontWeight: 600,
+    fontSize: 'var(--text-sm)',
+    fontWeight: 'var(--font-semibold)',
     color: 'var(--text-secondary)',
     marginBottom: '0.5rem',
 };
 
 const hintStyle: React.CSSProperties = {
-    fontSize: '0.78rem',
+    fontSize: 'var(--text-sm)',
     color: 'var(--text-tertiary, #64748b)',
     margin: '0 0 0.5rem',
 };
@@ -611,7 +611,7 @@ const tooltipStyle: React.CSSProperties = {
     backgroundColor: 'var(--bg-secondary)',
     border: '1px solid var(--border)',
     borderRadius: '6px',
-    fontSize: '0.8rem',
+    fontSize: 'var(--text-sm)',
 };
 
 const backBtnStyle: React.CSSProperties = {
@@ -620,7 +620,7 @@ const backBtnStyle: React.CSSProperties = {
     border: '1px solid var(--border)',
     color: 'var(--text-secondary)',
     borderRadius: '8px',
-    fontSize: '0.85rem',
+    fontSize: 'var(--text-sm)',
     cursor: 'pointer',
 };
 

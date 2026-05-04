@@ -275,7 +275,7 @@ export const UnifiedSearchBar: React.FC<UnifiedSearchBarProps> = ({
                             className="query-input"
                             style={{
                                 padding: '12px 14px 12px 36px',
-                                fontSize: '1rem',
+                                fontSize: 'var(--text-base)',
                                 backgroundColor: 'var(--bg-secondary)'
                             }}
                         />

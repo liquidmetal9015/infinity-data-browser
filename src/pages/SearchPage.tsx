@@ -310,7 +310,7 @@ export function SearchPage() {
                         >
                             <div className="bg-[#0d1117] border border-[#1e293b] rounded-lg overflow-hidden">
                                 {/* Compact table header */}
-                                <div className="flex items-center px-3 py-2 bg-[#161b22] border-b border-[#1e293b] text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                <div className="flex items-center px-3 py-2 bg-[#161b22] border-b border-[#1e293b] text-[length:var(--text-2xs)] font-semibold text-gray-500 uppercase tracking-wider">
                                     <div className="w-[50px]">Type</div>
                                     <div className="flex-1 min-w-0">Unit</div>
                                     <div className="w-[200px] text-right">Factions</div>
@@ -334,7 +334,7 @@ export function SearchPage() {
                                                 <div className="w-[50px]">
                                                     {primaryType > 0 && CLASSIFICATION_LABELS[primaryType] && (
                                                         <span
-                                                            className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase"
+                                                            className="text-[length:var(--text-2xs)] font-bold px-1.5 py-0.5 rounded uppercase"
                                                             style={{
                                                                 color: CLASSIFICATION_COLORS[primaryType],
                                                                 background: `${CLASSIFICATION_COLORS[primaryType]}15`,

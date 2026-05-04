@@ -14,12 +14,12 @@ function getRangeModifier(bands: { start: number; end: number; mod: number }[], 
 function RangeCellStyle(mod: number | null, isTemplate: boolean, templateCovers: boolean): React.CSSProperties {
     if (isTemplate) {
         return templateCovers
-            ? { background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', fontWeight: 700 }
+            ? { background: 'rgba(234, 179, 8, 0.2)', color: '#eab308', fontWeight: 'var(--font-bold)' }
             : { background: 'rgba(255,255,255,0.03)', color: '#334155' };
     }
     if (mod === null) return { background: 'rgba(255,255,255,0.03)', color: '#334155' };
-    if (mod > 0) return { background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontWeight: 700 };
-    if (mod < 0) return { background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 };
+    if (mod > 0) return { background: 'rgba(34, 197, 94, 0.15)', color: 'var(--success)', fontWeight: 'var(--font-bold)' };
+    if (mod < 0) return { background: 'rgba(239, 68, 68, 0.15)', color: 'var(--error)', fontWeight: 'var(--font-semibold)' };
     return { background: 'rgba(255,255,255,0.06)', color: '#94a3b8' };
 }
 
@@ -61,20 +61,20 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
         >
             {/* Header */}
             <div style={{
-                padding: '8px 12px 6px',
+                padding: 'var(--space-2) var(--space-3) var(--space-1)',
                 borderBottom: '1px solid rgba(255,255,255,0.07)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 8,
+                gap: 'var(--space-2)',
             }}>
-                <span style={{ fontWeight: 700, fontSize: 13, color: '#e2e8f0' }}>{weapon.name}</span>
+                <span style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-sm)', color: '#e2e8f0' }}>{weapon.name}</span>
                 {wikiUrl && (
                     <a
                         href={wikiUrl}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ color: '#6366f1', flexShrink: 0, pointerEvents: 'auto' }}
+                        style={{ color: 'var(--accent)', flexShrink: 0, pointerEvents: 'auto' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <ExternalLink size={12} />
@@ -84,9 +84,9 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
 
             {/* Stats row */}
             <div style={{
-                padding: '6px 12px',
+                padding: 'var(--space-1) var(--space-3)',
                 display: 'flex',
-                gap: 16,
+                gap: 'var(--space-4)',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
             }}>
                 {[
@@ -96,14 +96,14 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
                     { label: 'SAVE', value: weapon.saving + (weapon.savingNum && weapon.savingNum !== '-' && weapon.savingNum !== '1' ? `/${weapon.savingNum}` : '') },
                 ].map(({ label, value }) => (
                     <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                        <span style={{ fontSize: 9, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
-                        <span style={{ fontSize: 12, color: '#cbd5e1', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+                        <span style={{ fontSize: 'var(--text-2xs)', color: '#475569', fontWeight: 'var(--font-semibold)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: '#cbd5e1', fontWeight: 'var(--font-semibold)', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
                     </div>
                 ))}
             </div>
 
             {/* Range strip */}
-            <div style={{ padding: '6px 12px' }}>
+            <div style={{ padding: 'var(--space-1) var(--space-3)' }}>
                 <div style={{ display: 'flex', gap: 2, marginBottom: 4 }}>
                     {RANGE_BANDS.slice(0, 7).map((band, idx) => {
                         const samplePoint = band.start + 1;
@@ -121,7 +121,7 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
                                 style={{
                                     flex: 1,
                                     textAlign: 'center',
-                                    fontSize: 10,
+                                    fontSize: 'var(--text-2xs)',
                                     padding: '3px 0',
                                     borderRadius: 3,
                                     ...cellStyle,
@@ -134,7 +134,7 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
                 </div>
                 <div style={{ display: 'flex', gap: 2 }}>
                     {RANGE_BANDS.slice(0, 7).map((band) => (
-                        <div key={band.label} style={{ flex: 1, textAlign: 'center', fontSize: 8, color: '#334155' }}>
+                        <div key={band.label} style={{ flex: 1, textAlign: 'center', fontSize: 'var(--text-2xs)', color: '#334155' }}>
                             {band.label.replace('"', '')}
                         </div>
                     ))}
@@ -144,16 +144,16 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
             {/* Properties */}
             {weapon.properties.length > 0 && (
                 <div style={{
-                    padding: '0 12px 8px',
+                    padding: '0 var(--space-3) var(--space-2)',
                     display: 'flex',
                     flexWrap: 'wrap',
-                    gap: 4,
+                    gap: 'var(--space-1)',
                 }}>
                     {weapon.properties.map(p => (
                         <span key={p} style={{
-                            fontSize: 10,
+                            fontSize: 'var(--text-2xs)',
                             padding: '2px 6px',
-                            borderRadius: 4,
+                            borderRadius: 'var(--radius-sm)',
                             background: 'rgba(99,102,241,0.12)',
                             color: '#818cf8',
                         }}>{p}</span>

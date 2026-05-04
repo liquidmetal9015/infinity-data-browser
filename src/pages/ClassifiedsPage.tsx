@@ -30,7 +30,7 @@ export function ClassifiedsPage() {
             <div className="page-container">
                 <div className="empty-state-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '50vh', gap: '2rem' }}>
                     <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Classifieds Analysis</h2>
+                        <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: '1rem', color: 'var(--text-primary)' }}>Classifieds Analysis</h2>
                         <p style={{ color: 'var(--text-secondary)' }}>Select a faction to view which units can complete which classified objectives.</p>
                     </div>
                     <CompactFactionSelector

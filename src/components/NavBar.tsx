@@ -76,10 +76,9 @@ export function NavBar() {
             {/* ── ROW 1: Brand bar ─────────────────────────────────────────── */}
             <div className="header-content">
                 <div className="logo-section">
-                    <Link to="/" className={styles.appTitleLink}>
+                    <Link to="/" className={styles.appTitleLink} aria-label="Home">
                         <h1 className="app-title">Infinity Explorer</h1>
                     </Link>
-                    <span className="unit-count">{db.units.length} units</span>
                 </div>
 
                 {/* Mode switcher */}
@@ -102,17 +101,15 @@ export function NavBar() {
                     </button>
                 </div>
 
-                {/* Hamburger — shown on mobile only via CSS, only when Row 2 has content */}
-                {hasNavRowContent && (
-                    <button
-                        className={clsx(styles.mobileMenuBtn, mobileMenuOpen && styles.open)}
-                        onClick={() => setMobileMenuOpen(o => !o)}
-                        aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
-                        aria-expanded={mobileMenuOpen}
-                    >
-                        {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-                    </button>
-                )}
+                {/* Hamburger — shown on mobile only via CSS */}
+                <button
+                    className={clsx(styles.mobileMenuBtn, mobileMenuOpen && styles.open)}
+                    onClick={() => setMobileMenuOpen(o => !o)}
+                    aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
+                    aria-expanded={mobileMenuOpen}
+                >
+                    {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
 
                 {/* Controls nav — always in Row 1 */}
                 <div className={clsx(styles.mainNav, styles.controlsNav)}>
@@ -183,9 +180,9 @@ export function NavBar() {
                                             to="/"
                                             className={styles.navActionBtn}
                                             title={`Resume editing: ${currentList.name}`}
-                                            style={{ color: '#f59e0b', borderColor: 'rgba(245,158,11,0.4)', background: 'rgba(245,158,11,0.08)' }}
+                                            style={{ color: 'var(--warning)', borderColor: 'rgba(245,158,11,0.4)', background: 'rgba(245,158,11,0.08)' }}
                                         >
-                                            <span style={{ fontSize: '0.9rem', lineHeight: 1 }}>↩</span>
+                                            <span style={{ fontSize: 'var(--text-md)', lineHeight: 1 }}>↩</span>
                                             <span className={styles.tabLabel}>
                                                 {currentList.name.length > 20 ? currentList.name.slice(0, 20) + '…' : currentList.name}
                                                 {' '}({calculateListPoints(currentList)}/{currentList.pointsLimit})
@@ -212,16 +209,20 @@ export function NavBar() {
                                     </Link>
                                 </>
                             )}
-                            {!STATIC_MODE && <button className={styles.navLink} onClick={logout} title="Sign Out">Sign Out</button>}
+                            {!STATIC_MODE && !isMobile && <button className={styles.navLink} onClick={logout} title="Sign Out">Sign Out</button>}
                         </>
                     ) : (
-                        !STATIC_MODE && <button className={styles.navLink} onClick={login} disabled={loading}>Sign In</button>
+                        !STATIC_MODE && !isMobile && <button className={styles.navLink} onClick={login} disabled={loading}>Sign In</button>
                     )}
 
-                    <div className={styles.navDivider} />
-                    <button className={clsx(styles.navLink, styles.clearDataBtn)} onClick={handleClearData} title="Clear all saved data">
-                        <Trash2 size={16} />
-                    </button>
+                    {!isMobile && (
+                        <>
+                            <div className={styles.navDivider} />
+                            <button className={clsx(styles.navLink, styles.clearDataBtn)} onClick={handleClearData} title="Clear all saved data">
+                                <Trash2 size={16} />
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -314,149 +315,54 @@ export function NavBar() {
                 </div>
             )}
 
-            {/* ── MOBILE DROPDOWN: Row 2 content shown on mobile when hamburger is open ── */}
-            {hasNavRowContent && (
-                <div className={clsx(styles.mobileNavDropdown, mobileMenuOpen && styles.visible)}>
+            {/* ── MOBILE DROPDOWN: navigation + account actions, shown on mobile when hamburger is open ── */}
+            <div className={clsx(styles.mobileNavDropdown, mobileMenuOpen && styles.visible)}>
 
-                    {/* Explorer tabs */}
-                    {appMode === 'explorer' && (
-                        <nav className={styles.exploreTabs} onClick={() => setMobileMenuOpen(false)}>
-                            {EXPLORE_LINKS.map(({ label, path }) => (
-                                <Link
-                                    key={path}
-                                    to={path}
-                                    className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
-                                >
-                                    <span className={styles.tabLabel}>{label}</span>
-                                </Link>
-                            ))}
-                        </nav>
-                    )}
+                {/* Explorer tabs */}
+                {appMode === 'explorer' && (
+                    <nav className={styles.exploreTabs} onClick={() => setMobileMenuOpen(false)}>
+                        {EXPLORE_LINKS.map(({ label, path }) => (
+                            <Link
+                                key={path}
+                                to={path}
+                                className={clsx(styles.tabBtn, location.pathname === path && styles.active)}
+                            >
+                                <span className={styles.tabLabel}>{label}</span>
+                            </Link>
+                        ))}
+                    </nav>
+                )}
 
-                    {/* Workspace panel tabs */}
-                    {appMode === 'builder' && isWorkspace && layoutMode !== 'columns' && (
-                        <nav className={styles.workspaceTabs}>
-                            {PANEL_WIDGETS.map((widgetType: WidgetType) => {
-                                const entry = widgetRegistry[widgetType];
-                                const IconComponent = entry.icon;
-                                const windowInstance = windows.find(w => w.type === widgetType);
-                                const isOpen = !!windowInstance;
-                                const isActive = activeWidgetType === widgetType;
-
-                                return (
-                                    <button
-                                        key={widgetType}
-                                        className={clsx(styles.tabBtn, isOpen && styles.open, isActive && styles.active)}
-                                        onClick={() => {
-                                            if (windowInstance) {
-                                                focusWindow(windowInstance.id);
-                                            } else {
-                                                openWindow(widgetType);
-                                            }
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
-                                    >
-                                        <IconComponent size={16} />
-                                        <span className={styles.tabLabel}>{entry.label}</span>
-                                        {isOpen && <div className={styles.tabIndicator} />}
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    )}
-
-                    {/* Tool tabs */}
-                    {(appMode === 'builder' ? isWorkspace : true) && (
-                        <nav className={styles.toolTabs}>
-                            {TOOL_WIDGETS.map((widgetType: WidgetType) => {
-                                const entry = widgetRegistry[widgetType];
-                                const IconComponent = entry.icon;
-                                const windowInstance = windows.find(w => w.type === widgetType);
-                                const isOpen = !!windowInstance;
-                                const isActive = activeWidgetType === widgetType;
-
-                                return (
-                                    <button
-                                        key={widgetType}
-                                        className={clsx(styles.tabBtn, styles.toolTab, isOpen && styles.open, isActive && styles.active)}
-                                        onClick={() => {
-                                            if (windowInstance) {
-                                                focusWindow(windowInstance.id);
-                                            } else {
-                                                openWindow(widgetType, {
-                                                    contextMode: appMode === 'builder' ? 'list' : 'standalone',
-                                                });
-                                            }
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        title={`${isOpen ? 'Focus' : 'Open'} ${entry.label}`}
-                                    >
-                                        <IconComponent size={16} />
-                                        <span className={styles.tabLabel}>{entry.label}</span>
-                                        {isOpen && <div className={styles.tabIndicator} />}
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    )}
-
-                    {/* Layout controls — mobile only, builder workspace only */}
-                    {appMode === 'builder' && isWorkspace && (
-                        <div className={styles.mobileLayoutControls}>
-                            {layoutMode === 'columns' && (
-                                <div className={styles.layoutSegmentedControl} role="group" aria-label="Column Count">
-                                    <button
-                                        className={clsx(styles.segmentedBtn, columnCount === 2 && styles.active)}
-                                        onClick={() => setColumnCount(2)}
-                                        title="Two Columns (Roster + List)"
-                                    >
-                                        <span className={styles.layoutLabel}>2-col</span>
-                                    </button>
-                                    <button
-                                        className={clsx(styles.segmentedBtn, columnCount === 3 && styles.active)}
-                                        onClick={() => setColumnCount(3)}
-                                        title="Three Columns"
-                                    >
-                                        <span className={styles.layoutLabel}>3-col</span>
-                                    </button>
-                                </div>
-                            )}
-                            <div className={styles.layoutSegmentedControl} role="group" aria-label="Layout Mode">
-                                <button
-                                    className={clsx(styles.segmentedBtn, layoutMode === 'columns' && styles.active)}
-                                    onClick={() => setLayoutMode('columns')}
-                                    title="Columns Mode"
-                                >
-                                    <Columns3 size={14} />
-                                    <span className={styles.layoutLabel}>Columns</span>
-                                </button>
-                                <button
-                                    className={clsx(styles.segmentedBtn, layoutMode === 'multi-window' && styles.active)}
-                                    onClick={() => setLayoutMode('multi-window')}
-                                    title="Multi-Window Mode"
-                                >
-                                    <AppWindow size={14} />
-                                    <span className={styles.layoutLabel}>Windows</span>
-                                </button>
-                                <button
-                                    className={clsx(styles.segmentedBtn, layoutMode === 'tabbed' && styles.active)}
-                                    onClick={() => {
-                                        if (layoutMode !== 'tabbed' && windows.filter(w => !w.isMinimized).length === 0) {
-                                            openWindow(PANEL_WIDGETS[0]);
-                                        }
-                                        setLayoutMode('tabbed');
-                                    }}
-                                    title="Maximized (Tabbed) Mode"
-                                >
-                                    <Maximize size={14} />
-                                    <span className={styles.layoutLabel}>Maximized</span>
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                {/* Account / data actions — always available on mobile */}
+                <div className={styles.mobileAccountActions}>
+                    {user
+                        ? !STATIC_MODE && (
+                            <button
+                                className={styles.navLink}
+                                onClick={() => { logout(); setMobileMenuOpen(false); }}
+                            >
+                                Sign Out
+                            </button>
+                        )
+                        : !STATIC_MODE && (
+                            <button
+                                className={styles.navLink}
+                                onClick={() => { login(); setMobileMenuOpen(false); }}
+                                disabled={loading}
+                            >
+                                Sign In
+                            </button>
+                        )
+                    }
+                    <button
+                        className={clsx(styles.navLink, styles.clearDataBtn)}
+                        onClick={() => { setMobileMenuOpen(false); handleClearData(); }}
+                    >
+                        <Trash2 size={16} />
+                        <span>Clear Data</span>
+                    </button>
                 </div>
-            )}
+            </div>
 
             {showNewModal && (
                 <NewListModal
@@ -479,9 +385,9 @@ export function NavBar() {
                     style={{
                         background: 'rgba(245, 158, 11, 0.12)',
                         borderTop: '1px solid rgba(245, 158, 11, 0.4)',
-                        color: '#f59e0b',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
+                        color: 'var(--warning)',
+                        fontSize: 'var(--text-2xs)',
+                        fontWeight: 'var(--font-semibold)',
                         textAlign: 'center',
                         padding: '0.2rem 0.5rem',
                         letterSpacing: '0.02em',

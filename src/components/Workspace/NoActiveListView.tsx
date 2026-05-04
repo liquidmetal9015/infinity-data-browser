@@ -17,8 +17,8 @@ const cardStyle: React.CSSProperties = {
     background: 'var(--bg-tertiary)',
     color: 'var(--text-primary)',
     cursor: 'pointer',
-    fontSize: '0.95rem',
-    fontWeight: 600,
+    fontSize: 'var(--text-md)',
+    fontWeight: 'var(--font-semibold)',
     textAlign: 'left',
     width: '100%',
     transition: 'background 0.15s, border-color 0.15s',
@@ -45,7 +45,7 @@ function ActionCard({ icon, label, description, onClick }: {
             {icon}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span>{label}</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 400 }}>{description}</span>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: 400 }}>{description}</span>
             </div>
         </button>
     );
@@ -76,10 +76,10 @@ export function NoActiveListView() {
         <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', overflowY: 'auto' }}>
             <div style={{ width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ fontFamily: "'Oxanium', sans-serif", fontSize: '1.4rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-primary)', margin: '0 0 0.5rem' }}>
+                    <h1 style={{ fontFamily: "'Oxanium', sans-serif", fontSize: '1.4rem', fontWeight: 'var(--font-bold)', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-primary)', margin: '0 0 0.5rem' }}>
                         No active list
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-md)', margin: 0 }}>
                         Open one of your saved lists, create a new one, or import an army code.
                     </p>
                 </div>

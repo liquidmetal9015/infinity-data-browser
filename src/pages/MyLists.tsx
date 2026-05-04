@@ -363,8 +363,8 @@ export function MyLists() {
                                     color: 'var(--accent, #6366f1)',
                                     border: '1px solid rgba(99,102,241,0.35)',
                                     borderRadius: '8px',
-                                    fontWeight: 600,
-                                    fontSize: '0.875rem',
+                                    fontWeight: 'var(--font-semibold)',
+                                    fontSize: 'var(--text-md)',
                                     cursor: 'pointer',
                                 }}
                             >
@@ -382,7 +382,7 @@ export function MyLists() {
                                         padding: '0.5rem 1rem',
                                         background: 'rgba(242,145,7,0.1)', color: '#F29107',
                                         border: '1px solid rgba(242,145,7,0.35)', borderRadius: '8px',
-                                        fontWeight: 600, fontSize: '0.875rem',
+                                        fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-md)',
                                         cursor: isExporting ? 'not-allowed' : 'pointer',
                                         opacity: isExporting ? 0.6 : 1,
                                     }}
@@ -399,7 +399,7 @@ export function MyLists() {
                                         padding: '0.5rem 1rem',
                                         background: 'rgba(242,145,7,0.1)', color: '#F29107',
                                         border: '1px solid rgba(242,145,7,0.35)', borderRadius: '8px',
-                                        fontWeight: 600, fontSize: '0.875rem',
+                                        fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-md)',
                                         cursor: isExporting ? 'not-allowed' : 'pointer',
                                         opacity: isExporting ? 0.6 : 1,
                                     }}
@@ -421,8 +421,8 @@ export function MyLists() {
                                 color: '#10b981',
                                 border: '1px solid rgba(16,185,129,0.35)',
                                 borderRadius: '8px',
-                                fontWeight: 600,
-                                fontSize: '0.875rem',
+                                fontWeight: 'var(--font-semibold)',
+                                fontSize: 'var(--text-md)',
                                 cursor: 'pointer',
                             }}
                         >
@@ -437,8 +437,8 @@ export function MyLists() {
                                 color: '#fff',
                                 border: 'none',
                                 borderRadius: '8px',
-                                fontWeight: 600,
-                                fontSize: '0.875rem',
+                                fontWeight: 'var(--font-semibold)',
+                                fontSize: 'var(--text-md)',
                                 cursor: 'pointer',
                             }}
                         >
@@ -469,7 +469,7 @@ export function MyLists() {
                                     background: 'var(--bg-tertiary)',
                                     border: '1px solid var(--border)',
                                     color: 'var(--text-secondary)',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     borderRadius: '6px',
                                     padding: '0.3rem 0.6rem',
                                     cursor: 'pointer',
@@ -499,8 +499,8 @@ export function MyLists() {
                                                     gap: '0.4rem',
                                                     padding: '0.25rem 0.65rem 0.25rem 0.4rem',
                                                     borderRadius: '20px',
-                                                    fontSize: '0.78rem',
-                                                    fontWeight: 500,
+                                                    fontSize: 'var(--text-sm)',
+                                                    fontWeight: 'var(--font-medium)',
                                                     cursor: 'pointer',
                                                     border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
                                                     background: active ? 'rgba(99,102,241,0.15)' : 'var(--bg-tertiary)',
@@ -524,8 +524,8 @@ export function MyLists() {
                                     style={{
                                         padding: '0.25rem 0.65rem',
                                         borderRadius: '20px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 500,
+                                        fontSize: 'var(--text-xs)',
+                                        fontWeight: 'var(--font-medium)',
                                         cursor: 'pointer',
                                         border: filterTag === tag ? '1px solid var(--accent)' : '1px solid var(--border)',
                                         background: filterTag === tag ? 'rgba(99,102,241,0.15)' : 'transparent',
@@ -547,8 +547,8 @@ export function MyLists() {
                                     gap: '0.25rem',
                                     padding: '0.25rem 0.65rem',
                                     borderRadius: '20px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 500,
+                                    fontSize: 'var(--text-xs)',
+                                    fontWeight: 'var(--font-medium)',
                                     cursor: 'pointer',
                                     border: minRating > 0 ? '1px solid #f59e0b' : '1px solid var(--border)',
                                     background: minRating > 0 ? 'rgba(245,158,11,0.15)' : 'transparent',
@@ -563,13 +563,13 @@ export function MyLists() {
                             {(filterSuperFaction !== null || filterTag !== null || minRating > 0) && (
                                 <button
                                     onClick={() => { setFilterSuperFaction(null); setFilterTag(null); setMinRating(0); }}
-                                    style={{ fontSize: '0.75rem', color: 'var(--text-tertiary, #64748b)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', textDecoration: 'underline' }}
+                                    style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #64748b)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', textDecoration: 'underline' }}
                                 >
                                     Clear
                                 </button>
                             )}
 
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
+                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
                                 {displayedLists.length} / {count}
                             </span>
                         </div>
@@ -717,7 +717,7 @@ export function MyLists() {
                                                 onError={e => { e.currentTarget.style.display = 'none'; }}
                                             />
                                         ) : (
-                                            <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                                            <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-bold)', color: 'var(--text-secondary)' }}>
                                                 {(factionInfo?.shortName || factionInfo?.name || '?')[0]}
                                             </div>
                                         )}
@@ -741,8 +741,8 @@ export function MyLists() {
                                                     color: 'var(--text-primary)',
                                                     borderRadius: '4px',
                                                     padding: '0.15rem 0.4rem',
-                                                    fontSize: '0.9rem',
-                                                    fontWeight: 600,
+                                                    fontSize: 'var(--text-md)',
+                                                    fontWeight: 'var(--font-semibold)',
                                                     width: '100%',
                                                 }}
                                             />
@@ -751,8 +751,8 @@ export function MyLists() {
                                                 onClick={() => { setRenamingId(list.id); setRenameValue(list.name); }}
                                                 title={list.name}
                                                 style={{
-                                                    fontSize: '0.9rem',
-                                                    fontWeight: 600,
+                                                    fontSize: 'var(--text-md)',
+                                                    fontWeight: 'var(--font-semibold)',
                                                     color: 'var(--text-primary)',
                                                     cursor: 'text',
                                                     overflow: 'hidden',
@@ -762,7 +762,7 @@ export function MyLists() {
                                             >
                                                 {list.name}
                                                 {notes && (
-                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-tertiary, #64748b)' }} title={notes}>
+                                                    <span style={{ marginLeft: '0.4rem', fontSize: 'var(--text-xs)', fontWeight: 400, color: 'var(--text-tertiary, #64748b)' }} title={notes}>
                                                         — {notes.length > 60 ? notes.slice(0, 60) + '…' : notes}
                                                     </span>
                                                 )}
@@ -771,7 +771,7 @@ export function MyLists() {
                                     </div>
 
                                     {/* Stats */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--text-secondary)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                                         <span>{list.points}<span style={{ color: 'var(--text-tertiary, #64748b)' }}>/{list.swc}</span></span>
                                         <span style={{ color: 'var(--border)' }}>·</span>
                                         <span>{list.unit_count ?? 0}u</span>
@@ -786,8 +786,8 @@ export function MyLists() {
                                                     style={{
                                                         padding: '0.1rem 0.45rem',
                                                         borderRadius: '20px',
-                                                        fontSize: '0.68rem',
-                                                        fontWeight: 500,
+                                                        fontSize: 'var(--text-2xs)',
+                                                        fontWeight: 'var(--font-medium)',
                                                         background: 'rgba(99,102,241,0.1)',
                                                         border: '1px solid rgba(99,102,241,0.3)',
                                                         color: '#a5b4fc',
@@ -886,7 +886,7 @@ export function MyLists() {
                                     }}>
                                         {/* Notes */}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                            <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
                                                 Notes
                                             </div>
                                             {isEditingNotes ? (
@@ -907,7 +907,7 @@ export function MyLists() {
                                                         color: 'var(--text-primary)',
                                                         borderRadius: '6px',
                                                         padding: '0.4rem 0.55rem',
-                                                        fontSize: '0.82rem',
+                                                        fontSize: 'var(--text-sm)',
                                                         width: '100%',
                                                         boxSizing: 'border-box',
                                                         resize: 'vertical',
@@ -919,7 +919,7 @@ export function MyLists() {
                                                     onClick={() => { setEditingNotesId(list.id); setNotesValue(notes); }}
                                                     title="Click to edit"
                                                     style={{
-                                                        fontSize: '0.82rem',
+                                                        fontSize: 'var(--text-sm)',
                                                         color: notes ? 'var(--text-secondary)' : 'var(--text-tertiary, #64748b)',
                                                         fontStyle: notes ? 'normal' : 'italic',
                                                         cursor: 'text',
@@ -937,7 +937,7 @@ export function MyLists() {
 
                                         {/* Units summary (per-group dot list) */}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                            <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
                                                 Units
                                             </div>
                                             <ListUnitsSummary listId={list.id} fallback={fullListMap?.get(list.id)} />
@@ -945,7 +945,7 @@ export function MyLists() {
 
                                         {/* Tags editor */}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+                                            <div style={{ fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
                                                 Tags
                                             </div>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.3rem' }}>
@@ -957,8 +957,8 @@ export function MyLists() {
                                                         style={{
                                                             padding: '0.15rem 0.55rem',
                                                             borderRadius: '20px',
-                                                            fontSize: '0.72rem',
-                                                            fontWeight: 500,
+                                                            fontSize: 'var(--text-2xs)',
+                                                            fontWeight: 'var(--font-medium)',
                                                             background: 'rgba(99,102,241,0.1)',
                                                             border: '1px solid rgba(99,102,241,0.3)',
                                                             color: '#a5b4fc',
@@ -985,7 +985,7 @@ export function MyLists() {
                                                             color: 'var(--text-primary)',
                                                             borderRadius: '6px',
                                                             padding: '0.15rem 0.5rem',
-                                                            fontSize: '0.75rem',
+                                                            fontSize: 'var(--text-xs)',
                                                             width: '160px',
                                                         }}
                                                     />
@@ -995,7 +995,7 @@ export function MyLists() {
                                                         style={{
                                                             padding: '0.15rem 0.55rem',
                                                             borderRadius: '20px',
-                                                            fontSize: '0.72rem',
+                                                            fontSize: 'var(--text-2xs)',
                                                             border: '1px dashed var(--border)',
                                                             background: 'none',
                                                             color: 'var(--text-tertiary, #64748b)',
@@ -1009,8 +1009,8 @@ export function MyLists() {
                                         </div>
 
                                         {/* Meta */}
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 0.75rem', fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)' }}>
-                                            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 0.75rem', fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)' }}>
+                                            <span style={{ color: 'var(--accent)', fontWeight: 'var(--font-semibold)' }}>
                                                 {factionInfo?.name ?? db.getFactionName(list.faction_id)}
                                             </span>
                                             <span>·</span>
@@ -1040,10 +1040,10 @@ export function MyLists() {
                         boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
                         zIndex: 10,
                     }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontWeight: 'var(--font-semibold)' }}>
                             {selectedIds.length} selected
                             {selectedIds.length === 2 && (
-                                <span style={{ marginLeft: '0.5rem', color: 'var(--text-tertiary, #64748b)', fontWeight: 400, fontSize: '0.78rem' }}>
+                                <span style={{ marginLeft: '0.5rem', color: 'var(--text-tertiary, #64748b)', fontWeight: 400, fontSize: 'var(--text-sm)' }}>
                                     — ready to compare
                                 </span>
                             )}
@@ -1057,7 +1057,7 @@ export function MyLists() {
                                     border: '1px solid var(--border)',
                                     color: 'var(--text-secondary)',
                                     borderRadius: '8px',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     cursor: 'pointer',
                                 }}
                             >
@@ -1072,7 +1072,7 @@ export function MyLists() {
                                     border: '1px solid var(--border)',
                                     color: 'var(--text-secondary)',
                                     borderRadius: '8px',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     cursor: isExporting ? 'not-allowed' : 'pointer',
                                     opacity: isExporting ? 0.5 : 1,
                                 }}
@@ -1088,7 +1088,7 @@ export function MyLists() {
                                     border: '1px solid var(--border)',
                                     color: 'var(--text-secondary)',
                                     borderRadius: '8px',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     cursor: isExporting ? 'not-allowed' : 'pointer',
                                     opacity: isExporting ? 0.5 : 1,
                                 }}
@@ -1101,9 +1101,9 @@ export function MyLists() {
                                     padding: '0.4rem 0.85rem',
                                     background: 'none',
                                     border: '1px solid #ef4444',
-                                    color: '#ef4444',
+                                    color: 'var(--error)',
                                     borderRadius: '8px',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     cursor: 'pointer',
                                 }}
                             >
@@ -1118,8 +1118,8 @@ export function MyLists() {
                                     color: '#fff',
                                     border: 'none',
                                     borderRadius: '8px',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
+                                    fontSize: 'var(--text-sm)',
+                                    fontWeight: 'var(--font-semibold)',
                                     cursor: selectedIds.length === 2 ? 'pointer' : 'not-allowed',
                                     opacity: selectedIds.length === 2 ? 1 : 0.5,
                                 }}
@@ -1137,8 +1137,8 @@ function actionBtnSm(accentColor: string, disabled: boolean): React.CSSPropertie
     return {
         padding: '0.2rem 0.65rem',
         borderRadius: '5px',
-        fontSize: '0.72rem',
-        fontWeight: 600,
+        fontSize: 'var(--text-2xs)',
+        fontWeight: 'var(--font-semibold)',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
         border: `1px solid ${accentColor}40`,

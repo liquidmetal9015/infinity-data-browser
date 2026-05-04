@@ -4,58 +4,42 @@
 
 @import "tailwindcss";
 
-/* ---------- CSS Variables / Design Tokens ---------- */
+/* ---------- CSS Variables / Design Tokens ----------
+   Theme-agnostic tokens (typography, spacing, radii, shadows, transitions, layout)
+   live under :root. Color tokens live under [data-theme="<name>"] so themes can
+   be swapped by changing a single attribute on <html>. */
+
 :root {
-  /* Core Colors */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #111113;
-  --bg-tertiary: #18181b;
-  --bg-elevated: #1f1f23;
-
-  /* Surface Colors */
-  --surface: rgba(255, 255, 255, 0.03);
-  --surface-hover: rgba(255, 255, 255, 0.06);
-  --surface-active: rgba(255, 255, 255, 0.08);
-
-  /* Border Colors */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
-  --border-focus: rgba(99, 102, 241, 0.5);
-
-  /* Text Colors */
-  --text-primary: #fafafa;
-  --text-secondary: #b4b4be;
-  --text-muted: #8a8a94;
-  --text-disabled: #52525b;
-
-  /* Accent Colors */
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-muted: rgba(99, 102, 241, 0.15);
-  --accent-transparent: rgba(99, 102, 241, 0.15);
-  --color-primary: #6366f1;
-  --color-primary-rgb: 99, 102, 241;
-
-  /* Secondary accent (reactive/defensive) */
-  --cyber-primary: #22d3ee;
-  --cyber-primary-muted: rgba(34, 211, 238, 0.15);
-
-  /* Border variants */
-  --border-subtle: rgba(255, 255, 255, 0.04);
-
-  /* Semantic Colors */
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
-
-  /* Category Colors */
-  --weapon-color: #f97316;
-  --skill-color: #8b5cf6;
-  --equip-color: #06b6d4;
-
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Font Sizes (base 15px → 1rem). Migration scale. */
+  --text-2xs:  0.6875rem;  /* ~11px — labels, microcopy */
+  --text-xs:   0.75rem;    /* 12px  — chips, helper text */
+  --text-sm:   0.8125rem;  /* ~13px — secondary text */
+  --text-md:   0.875rem;   /* ~14px — body-small */
+  --text-base: 1rem;       /* 15px  — body */
+  --text-lg:   1.125rem;   /* ~18px — sub-headers */
+  --text-xl:   1.25rem;    /* ~20px — h1/page titles */
+  --text-2xl:  1.5rem;     /* 24px  — large headings */
+
+  /* Font Weights */
+  --font-regular:  400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  /* Line Heights */
+  --leading-tight:  1.2;
+  --leading-normal: 1.5;
+  --leading-loose:  1.7;
+
+  /* Letter Spacing */
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.05em;
+  --tracking-widest:  0.15em;
 
   /* Spacing */
   --space-1: 4px;
@@ -85,6 +69,103 @@
 
   /* Layout */
   --navbar-height: 80px;
+}
+
+/* Mobile token step-bump.
+   The same tokens are referenced ~520x app-wide; overriding them under a single
+   media query is the cheapest way to make the type/spacing scale touch-friendly
+   without per-component edits. Desktop is untouched. */
+@media (max-width: 767px) {
+  :root {
+    /* Type — each token shifts ~one step up so 11px micro-labels read at 13px,
+       12px chips at 14px, and form controls at 16px (avoids iOS focus zoom). */
+    --text-2xs:  0.8125rem;  /* 11px → 13px */
+    --text-xs:   0.875rem;   /* 12px → 14px */
+    --text-sm:   0.9375rem;  /* 13px → 15px */
+    --text-md:   1rem;       /* 14px → 16px */
+    --text-base: 1.0625rem;  /* 15px → 17px */
+    --text-lg:   1.1875rem;  /* 18px → ~19px */
+    --text-xl:   1.3125rem;  /* 20px → 21px */
+    --text-2xl:  1.625rem;   /* 24px → 26px */
+
+    /* Control-padding spacing tokens. --space-5+ are layout gaps; leaving them
+       alone avoids inflating page chrome unnecessarily. */
+    --space-1: 6px;   /* was 4px */
+    --space-2: 10px;  /* was 8px */
+    --space-3: 14px;  /* was 12px */
+    --space-4: 18px;  /* was 16px */
+  }
+
+  /* Form controls hit 16px so iOS Safari doesn't auto-zoom on focus. */
+  input, select, textarea {
+    font-size: max(16px, var(--text-md));
+  }
+}
+
+[data-theme="dark"] {
+  /* Core Colors — surface ramp widened for stronger card/panel separation
+     (Phase 2: was #0a0a0b → #1f1f23, ~14 luma units; now ~30) */
+  --bg-primary: #08080a;
+  --bg-secondary: #131318;
+  --bg-tertiary: #1c1c22;
+  --bg-elevated: #26262e;
+
+  /* Surface Colors */
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --surface-active: rgba(255, 255, 255, 0.08);
+
+  /* Border Colors — slightly stronger so cards read as cards */
+  --border: rgba(255, 255, 255, 0.10);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-focus: rgba(99, 102, 241, 0.5);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+
+  /* Text Colors — Phase 2: --text-secondary and --text-muted lifted for AA contrast */
+  --text-primary: #fafafa;
+  --text-secondary: #c4c4ce;
+  --text-tertiary: #64748b;
+  --text-muted: #a1a1ad;
+  --text-disabled: #52525b;
+
+  /* Accent Colors */
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-muted: rgba(99, 102, 241, 0.15);
+  --accent-transparent: rgba(99, 102, 241, 0.15);
+  --color-primary: #6366f1;
+  --color-primary-rgb: 99, 102, 241;
+
+  /* Secondary accent (reactive/defensive) */
+  --cyber-primary: #22d3ee;
+  --cyber-primary-muted: rgba(34, 211, 238, 0.15);
+
+  /* Semantic Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Category Colors */
+  --weapon-color: #f97316;
+  --skill-color: #8b5cf6;
+  --equip-color: #06b6d4;
+
+  /* Fireteam Badge Colors (arbitrary; tweak centrally) */
+  --badge-core: #ef4444;
+  --badge-haris: #f97316;
+  --badge-duo: #3b82f6;
+  --badge-neutral: #64748b;
+
+  /* Unit Classification Colors — mirror src/utils/classifications.ts.
+     JS keeps hex source-of-truth because callers append alpha (e.g. `${color}15`). */
+  --classification-li:  #94a3b8; /* 1 LI  */
+  --classification-mi:  #60a5fa; /* 2 MI  */
+  --classification-hi:  #f59e0b; /* 3 HI  */
+  --classification-tag: #ef4444; /* 4 TAG */
+  --classification-rem: #22c55e; /* 5 REM */
+  --classification-sk:  #8b5cf6; /* 6 SK  */
+  --classification-wb:  #ec4899; /* 7 WB  */
+  --classification-vh:  #06b6d4; /* 8 VH  */
 }
 
 /* ---------- Reset & Base ---------- */
@@ -120,6 +201,7 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: var(--text-base);
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.5;
@@ -131,6 +213,21 @@
     background: var(--accent);
     color: white;
   }
+
+  /* Global focus-visible fallback. Components that already define their own
+     :focus / :focus-visible styles will continue to win via specificity. */
+  :focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Reusable utility class for uppercase label/eyebrow text.
+   Replaces the mixed inline `text-transform: uppercase` + Tailwind `tracking-*` patterns. */
+.label-caps {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-weight: var(--font-semibold);
 }
 
 /* ---------- App Container ---------- */
@@ -222,14 +319,10 @@
   letter-spacing: -0.02em;
 }
 
-.unit-count {
-  font-size: 0.75rem;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
-  background: var(--surface);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+@media (max-width: 767px) {
+  .app-title {
+    display: none;
+  }
 }
 
 /* ---------- Main Content ---------- */

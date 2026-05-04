@@ -86,7 +86,7 @@ export function ListContentFilter({
         border: '1px solid var(--border)',
         borderRadius: '6px',
         color: 'var(--text-primary)',
-        fontSize: '0.8rem',
+        fontSize: 'var(--text-sm)',
     };
 
     return (
@@ -152,20 +152,20 @@ export function ListContentFilter({
                                         width: '100%', padding: '0.4rem 0.6rem',
                                         background: idx === selectedIndex ? 'var(--bg-tertiary)' : 'transparent',
                                         border: 'none', cursor: 'pointer',
-                                        textAlign: 'left', fontSize: '0.8rem',
+                                        textAlign: 'left', fontSize: 'var(--text-sm)',
                                         color: 'var(--text-primary)',
                                     }}
                                 >
                                     <span style={{
                                         background: TYPE_COLORS[s.type], color: '#fff',
-                                        borderRadius: 3, padding: '1px 5px', fontSize: '0.65rem',
-                                        fontWeight: 700,
+                                        borderRadius: 3, padding: '1px 5px', fontSize: 'var(--text-2xs)',
+                                        fontWeight: 'var(--font-bold)',
                                     }}>
                                         {s.type[0].toUpperCase()}
                                     </span>
                                     <span>{s.displayName}</span>
                                     {s.isAnyVariant && (
-                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
+                                        <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)', marginLeft: 'auto' }}>
                                             all variants
                                         </span>
                                     )}
@@ -176,7 +176,7 @@ export function ListContentFilter({
                 </div>
 
                 {busy && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)' }}>
+                    <span style={{ fontSize: 'var(--text-2xs)', color: 'var(--text-tertiary, #64748b)' }}>
                         Indexing list contents…
                     </span>
                 )}
@@ -190,13 +190,13 @@ export function ListContentFilter({
                             style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                                 padding: '0.2rem 0.55rem', borderRadius: '14px',
-                                fontSize: '0.75rem', fontWeight: 500,
+                                fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)',
                                 background: `${TYPE_COLORS[f.type]}22`,
                                 border: `1px solid ${TYPE_COLORS[f.type]}55`,
                                 color: 'var(--text-primary)',
                             }}
                         >
-                            <span style={{ color: TYPE_COLORS[f.type], fontWeight: 700, fontSize: '0.65rem' }}>
+                            <span style={{ color: TYPE_COLORS[f.type], fontWeight: 'var(--font-bold)', fontSize: 'var(--text-2xs)' }}>
                                 {f.type[0].toUpperCase()}
                             </span>
                             {f.displayName}
@@ -214,7 +214,7 @@ export function ListContentFilter({
                         style={{
                             background: 'none', border: 'none',
                             color: 'var(--text-tertiary, #64748b)', cursor: 'pointer',
-                            fontSize: '0.72rem', textDecoration: 'underline',
+                            fontSize: 'var(--text-2xs)', textDecoration: 'underline',
                         }}
                     >
                         Clear all

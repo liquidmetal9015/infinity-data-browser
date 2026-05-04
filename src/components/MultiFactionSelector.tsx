@@ -153,11 +153,11 @@ export function MultiFactionSelector({
                                     <span className="flex-1 text-xs font-bold text-gray-200 uppercase tracking-widest leading-none">
                                         {group.name}
                                     </span>
-                                    <span className="text-[10px] text-gray-500 mr-1">{childCount}</span>
+                                    <span className="text-[length:var(--text-2xs)] text-gray-500 mr-1">{childCount}</span>
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); handleGroupToggle(e); }}
-                                        className="text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors mr-1"
+                                        className="text-[length:var(--text-2xs)] font-semibold px-2 py-0.5 rounded bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors mr-1"
                                     >
                                         {allGroupSelected ? 'Deselect All' : 'Select All'}
                                     </button>
@@ -189,7 +189,7 @@ export function MultiFactionSelector({
                                                         <div className="font-semibold text-sm leading-tight group-data-[selected]:text-white">
                                                             {vanilla.name}
                                                         </div>
-                                                        <div className="text-[10px] text-gray-500">Vanilla</div>
+                                                        <div className="text-[length:var(--text-2xs)] text-gray-500">Vanilla</div>
                                                     </div>
                                                 </div>
                                             </ListboxOption>
@@ -215,7 +215,7 @@ export function MultiFactionSelector({
                                                         <div className="font-semibold text-sm leading-tight group-data-[selected]:text-white">
                                                             {s.name}
                                                         </div>
-                                                        <div className="text-[10px] text-gray-500">Sectorial</div>
+                                                        <div className="text-[length:var(--text-2xs)] text-gray-500">Sectorial</div>
                                                     </div>
                                                 </div>
                                             </ListboxOption>

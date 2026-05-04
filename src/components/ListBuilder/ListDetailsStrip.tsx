@@ -40,8 +40,8 @@ export function ListDetailsStrip({
                     background: 'none',
                     border: 'none',
                     color: 'var(--text-tertiary, #64748b)',
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
+                    fontSize: 'var(--text-2xs)',
+                    fontWeight: 'var(--font-semibold)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em',
                     cursor: 'pointer',
@@ -60,7 +60,7 @@ export function ListDetailsStrip({
                     {/* Notes */}
                     <div>
                         <div style={{
-                            fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)',
+                            fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary, #64748b)',
                             textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem',
                         }}>
                             Notes
@@ -90,7 +90,7 @@ export function ListDetailsStrip({
                                     color: 'var(--text-primary)',
                                     borderRadius: '6px',
                                     padding: '0.4rem 0.55rem',
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     resize: 'vertical',
                                     fontFamily: 'inherit',
                                 }}
@@ -100,7 +100,7 @@ export function ListDetailsStrip({
                                 onClick={() => { setNotesDraft(notes); setEditingNotes(true); }}
                                 title="Click to edit"
                                 style={{
-                                    fontSize: '0.8rem',
+                                    fontSize: 'var(--text-sm)',
                                     color: notes ? 'var(--text-secondary)' : 'var(--text-tertiary, #64748b)',
                                     fontStyle: notes ? 'normal' : 'italic',
                                     cursor: 'text',
@@ -119,7 +119,7 @@ export function ListDetailsStrip({
                     {/* Tags */}
                     <div>
                         <div style={{
-                            fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)',
+                            fontSize: 'var(--text-2xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary, #64748b)',
                             textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem',
                         }}>
                             Tags
@@ -133,8 +133,8 @@ export function ListDetailsStrip({
                                     style={{
                                         padding: '0.1rem 0.5rem',
                                         borderRadius: '20px',
-                                        fontSize: '0.7rem',
-                                        fontWeight: 500,
+                                        fontSize: 'var(--text-2xs)',
+                                        fontWeight: 'var(--font-medium)',
                                         background: 'rgba(99,102,241,0.1)',
                                         border: '1px solid rgba(99,102,241,0.25)',
                                         color: '#a5b4fc',
@@ -167,7 +167,7 @@ export function ListDetailsStrip({
                                         color: 'var(--text-primary)',
                                         borderRadius: '4px',
                                         padding: '0.1rem 0.4rem',
-                                        fontSize: '0.7rem',
+                                        fontSize: 'var(--text-2xs)',
                                         width: '140px',
                                     }}
                                 />
@@ -177,7 +177,7 @@ export function ListDetailsStrip({
                                     style={{
                                         padding: '0.1rem 0.5rem',
                                         borderRadius: '20px',
-                                        fontSize: '0.7rem',
+                                        fontSize: 'var(--text-2xs)',
                                         border: '1px dashed var(--border)',
                                         background: 'none',
                                         color: 'var(--text-secondary)',

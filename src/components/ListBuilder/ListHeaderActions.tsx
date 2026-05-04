@@ -29,7 +29,7 @@ export function SaveStatusPill({ saveState, lastSavedAt, onSaveNow }: SaveStatus
     }, []);
 
     const palette = saveState === 'dirty'
-        ? { color: '#f59e0b', border: 'rgba(245,158,11,0.35)', bg: 'rgba(245,158,11,0.10)' }
+        ? { color: 'var(--warning)', border: 'rgba(245,158,11,0.35)', bg: 'rgba(245,158,11,0.10)' }
         : saveState === 'saving'
             ? { color: '#60a5fa', border: 'rgba(96,165,250,0.35)', bg: 'rgba(96,165,250,0.10)' }
             : { color: '#10b981', border: 'rgba(16,185,129,0.35)', bg: 'rgba(16,185,129,0.10)' };
@@ -67,8 +67,8 @@ export function SaveStatusPill({ saveState, lastSavedAt, onSaveNow }: SaveStatus
                 background: palette.bg,
                 color: palette.color,
                 borderRadius: '6px',
-                fontSize: '0.72rem',
-                fontWeight: 600,
+                fontSize: 'var(--text-2xs)',
+                fontWeight: 'var(--font-semibold)',
                 cursor: clickable ? 'pointer' : 'default',
                 whiteSpace: 'nowrap',
             }}
@@ -96,7 +96,7 @@ export function DiscardButton({ onDiscard }: DiscardButtonProps) {
                 height: 28,
                 border: '1px solid rgba(239,68,68,0.35)',
                 background: 'rgba(239,68,68,0.08)',
-                color: '#ef4444',
+                color: 'var(--error)',
                 borderRadius: '6px',
                 cursor: 'pointer',
             }}
@@ -147,7 +147,7 @@ export function ListOverflowMenu({
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '0.35rem 0.6rem', gap: '0.5rem',
                     }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Points limit</span>
+                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Points limit</span>
                         <select
                             value={pointsLimit}
                             onChange={e => onPointsLimitChange(Number(e.target.value))}
@@ -157,7 +157,7 @@ export function ListOverflowMenu({
                                 color: 'var(--text-primary)',
                                 borderRadius: '4px',
                                 padding: '0.15rem 0.35rem',
-                                fontSize: '0.75rem',
+                                fontSize: 'var(--text-xs)',
                             }}
                         >
                             <option value={150}>150</option>

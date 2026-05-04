@@ -69,11 +69,19 @@ export function WorkspaceView() {
 
     const visibleWindows = windows.filter(w => !w.isMinimized);
     const topZIndex = windows.length > 0 ? Math.max(...windows.map(w => w.zIndex)) : 0;
-    const activeColumns = getColumnPanels(columnCount);
+
+    // On mobile, always render the columns carousel with the 2-column layout —
+    // multi-window/tabbed assume a desktop canvas, and the 3-column variant
+    // adds Unit Detail which is more usefully reached on demand on a phone.
+    // We override the render branch only; persisted layoutMode/columnCount are
+    // preserved for desktop.
+    const effectiveLayoutMode = isMobile ? 'columns' : layoutMode;
+    const effectiveColumnCount = isMobile ? 2 : columnCount;
+    const activeColumns = getColumnPanels(effectiveColumnCount);
 
     const LIST_BUILDER_TYPES: WidgetType[] = ['UNIT_ROSTER', 'ARMY_LIST'];
     const isInListBuilder =
-        layoutMode === 'columns'
+        effectiveLayoutMode === 'columns'
             ? activeColumns.some(t => LIST_BUILDER_TYPES.includes(t))
             : windows.some(w => LIST_BUILDER_TYPES.includes(w.type));
 
@@ -109,9 +117,13 @@ export function WorkspaceView() {
     }
 
     // ── Columns mode ────────────────────────────────────────────────────────
-    if (layoutMode === 'columns') {
+    if (effectiveLayoutMode === 'columns') {
         const columnTypes = new Set<WidgetType>(activeColumns);
-        const floatingWindows = visibleWindows.filter(w => !columnTypes.has(w.type));
+        // On mobile we never want floating windows on top of the carousel —
+        // they assume a draggable desktop canvas and can leave users trapped.
+        const floatingWindows = isMobile
+            ? []
+            : visibleWindows.filter(w => !columnTypes.has(w.type));
         const trackStyle = isMobile
             ? { transform: `translateX(-${activeColumnIndex * 100}vw)` }
             : undefined;
