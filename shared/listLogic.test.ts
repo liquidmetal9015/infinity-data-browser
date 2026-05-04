@@ -467,6 +467,52 @@ describe('listReducer', () => {
         });
     });
 
+    describe('UPDATE_NOTES', () => {
+        it('updates list notes', () => {
+            const state = listReducer(initialState, {
+                type: 'CREATE_LIST',
+                factionId: 101,
+                factionName: 'Test'
+            });
+
+            const result = listReducer(state, {
+                type: 'UPDATE_NOTES',
+                notes: 'Bring an extra hacker for ITS season X'
+            });
+
+            expect(result.currentList?.notes).toBe('Bring an extra hacker for ITS season X');
+        });
+    });
+
+    describe('UPDATE_LOCK', () => {
+        it('toggles isLocked on the list', () => {
+            const state = listReducer(initialState, {
+                type: 'CREATE_LIST',
+                factionId: 101,
+                factionName: 'Test'
+            });
+
+            const locked = listReducer(state, { type: 'UPDATE_LOCK', isLocked: true });
+            expect(locked.currentList?.isLocked).toBe(true);
+
+            const unlocked = listReducer(locked, { type: 'UPDATE_LOCK', isLocked: false });
+            expect(unlocked.currentList?.isLocked).toBe(false);
+        });
+    });
+
+    describe('UPDATE_RATING', () => {
+        it('sets the list rating', () => {
+            const state = listReducer(initialState, {
+                type: 'CREATE_LIST',
+                factionId: 101,
+                factionName: 'Test'
+            });
+
+            const result = listReducer(state, { type: 'UPDATE_RATING', rating: 4 });
+            expect(result.currentList?.rating).toBe(4);
+        });
+    });
+
     describe('RESET_LIST', () => {
         it('resets the current list to null', () => {
             const state = listReducer(initialState, {

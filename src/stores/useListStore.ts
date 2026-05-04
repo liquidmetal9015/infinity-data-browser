@@ -14,9 +14,13 @@ import { DatabaseImplementation } from '../services/Database';
 // Store Interface
 // ============================================================================
 
+type DirtyKind = 'metadata' | 'text' | null;
+
 interface ListStore extends ListState {
     lastSavedAt: number | null;
     isDirty: boolean;
+    /** Hint for the auto-save debounce — metadata changes save quickly, text/unit edits coalesce. */
+    lastDirtyKind: DirtyKind;
     recordSave: () => void;
     // Actions (same API as the old ListContext)
     createList: (factionId: number, factionName: string, pointsLimit?: number, name?: string) => void;
@@ -35,8 +39,10 @@ interface ListStore extends ListState {
     moveFireteam: (fromGroupIndex: number, toGroupIndex: number, fireteamId: string, toIndex?: number) => void;
     updateListName: (name: string) => void;
     updatePointsLimit: (pointsLimit: number) => void;
-    updateDescription: (description: string) => void;
+    updateNotes: (notes: string) => void;
     updateTags: (tags: string[]) => void;
+    updateRating: (rating: number) => void;
+    setLocked: (isLocked: boolean) => void;
     resetList: () => void;
     loadList: (list: ArmyList) => void;
     setServerId: (serverId: number) => void;
@@ -46,10 +52,17 @@ interface ListStore extends ListState {
 // Dispatch helper — delegates to the existing pure reducer
 // ============================================================================
 
+const METADATA_ACTIONS = new Set<ListAction['type']>([
+    'UPDATE_LOCK', 'UPDATE_RATING', 'UPDATE_TAGS', 'UPDATE_POINTS_LIMIT',
+]);
+
 function dispatch(state: ListStore, action: ListAction): Partial<ListStore> {
     const next = listReducer(state, action);
     const isDirty = next.currentList !== null && next.currentList.updatedAt > (state.lastSavedAt ?? 0);
-    return { currentList: next.currentList, isDirty };
+    const lastDirtyKind: DirtyKind = isDirty
+        ? (METADATA_ACTIONS.has(action.type) ? 'metadata' : 'text')
+        : null;
+    return { currentList: next.currentList, isDirty, lastDirtyKind };
 }
 
 // ============================================================================
@@ -63,11 +76,13 @@ export const useListStore = create<ListStore>()(
             ...initialState,
             lastSavedAt: null,
             isDirty: false,
+            lastDirtyKind: null,
 
             recordSave: () =>
                 set(s => ({
                     lastSavedAt: s.currentList?.updatedAt ?? Date.now(),
                     isDirty: false,
+                    lastDirtyKind: null,
                 })),
 
             // Actions
@@ -122,17 +137,24 @@ export const useListStore = create<ListStore>()(
             updatePointsLimit: (pointsLimit) =>
                 set(s => dispatch(s, { type: 'UPDATE_POINTS_LIMIT', pointsLimit })),
 
-            updateDescription: (description) =>
-                set(s => dispatch(s, { type: 'UPDATE_DESCRIPTION', description })),
+            updateNotes: (notes) =>
+                set(s => dispatch(s, { type: 'UPDATE_NOTES', notes })),
 
             updateTags: (tags) =>
                 set(s => dispatch(s, { type: 'UPDATE_TAGS', tags })),
+
+            updateRating: (rating) =>
+                set(s => dispatch(s, { type: 'UPDATE_RATING', rating })),
+
+            setLocked: (isLocked) =>
+                set(s => dispatch(s, { type: 'UPDATE_LOCK', isLocked })),
 
             resetList: () =>
                 set(s => ({
                     ...dispatch(s, { type: 'RESET_LIST' }),
                     lastSavedAt: null,
                     isDirty: false,
+                    lastDirtyKind: null,
                 })),
 
             loadList: (list) =>
@@ -140,6 +162,7 @@ export const useListStore = create<ListStore>()(
                     currentList: list,
                     lastSavedAt: list.updatedAt,
                     isDirty: false,
+                    lastDirtyKind: null,
                 })),
 
             setServerId: (serverId) =>

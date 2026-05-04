@@ -74,12 +74,14 @@ export interface ArmyList {
     id: string;
     /** User-defined name for the list */
     name: string;
-    /** Optional description */
-    description?: string;
+    /** Optional notes (free-form user text) */
+    notes?: string;
     /** User-defined tags for organization */
     tags: string[];
     /** Star rating 0–5 (0 = unrated) */
     rating?: number;
+    /** Soft UI lock — when true, the builder hides edit affordances */
+    isLocked?: boolean;
     /** The faction ID this list is built for */
     factionId: number;
     /** Target points limit (e.g., 300) */
@@ -152,9 +154,10 @@ export interface DehydratedCombatGroup {
 export interface DehydratedArmyList {
     id: string;
     name: string;
-    description?: string;
+    notes?: string;
     tags: string[];
     rating?: number;
+    isLocked?: boolean;
     factionId: number;
     pointsLimit: number;
     swcLimit: number;

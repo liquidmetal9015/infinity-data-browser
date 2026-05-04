@@ -161,6 +161,25 @@
     border: 1px solid var(--border-color);
 }
 
+.count-btn {
+    background: var(--bg-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: monospace;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+
+.count-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--bg-hover);
+}
+
 .examples-list {
     display: flex;
     flex-wrap: wrap;

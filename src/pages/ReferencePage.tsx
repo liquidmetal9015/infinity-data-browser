@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { useDatabase } from '../hooks/useDatabase';
 import { Search, ExternalLink, Shield, Zap, Crosshair, Atom } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { UnitLink } from '../components/UnitLink';
+import { useNavigate } from 'react-router-dom';
 import styles from './ReferencePage.module.css';
 
 type ItemType = 'skill' | 'weapon' | 'equipment';
@@ -22,6 +22,7 @@ interface ReferenceRow {
 
 export function ReferencePage() {
     const db = useDatabase();
+    const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState<'name' | 'count' | 'type'>('name');
     const [sortDesc, setSortDesc] = useState(false);
@@ -89,6 +90,18 @@ export function ReferencePage() {
             });
     }, [allRows, search, sortField, sortDesc]);
 
+
+    const navigateToSearch = (row: ReferenceRow) => {
+        const params = new URLSearchParams({
+            filterType: row.type,
+            filterName: row.name,
+            filterId: String(row.baseId),
+        });
+        if (row.modifiers.length > 0) {
+            params.set('filterModifiers', row.modifiers.join(','));
+        }
+        navigate(`/search?${params.toString()}`);
+    };
 
     const handleSort = (field: typeof sortField) => {
         if (sortField === field) {
@@ -202,16 +215,18 @@ export function ReferencePage() {
                                     </div>
                                 </td>
                                 <td className={styles.countCell}>
-                                    <span className={styles.countBadge}>{row.count}</span>
+                                    <button
+                                        className={styles.countBtn}
+                                        onClick={() => navigateToSearch(row)}
+                                        title="See all units with this item"
+                                    >
+                                        {row.count} units →
+                                    </button>
                                 </td>
                                 <td className={styles.examplesCell}>
                                     <div className={styles.examplesList}>
                                         {row.examples.map((ex, i) => (
-                                            <UnitLink
-                                                key={i}
-                                                name={ex}
-                                                className={clsx(styles.exampleTag, 'hover:border-accent', 'hover:text-accent')}
-                                            />
+                                            <span key={i} className={styles.exampleTag}>{ex}</span>
                                         ))}
                                         {row.count > 5 && <span className={styles.moreTag}>+{row.count - 5} more</span>}
                                     </div>

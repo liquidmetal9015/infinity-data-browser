@@ -25,10 +25,9 @@ import { getColumnPanels } from '../../types/workspace';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
 import { useAuth } from '../../hooks/useAuth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { listService } from '../../services/listService';
+import { listService, forkListLocally } from '../../services/listService';
 import { calculateListPoints, calculateListSWC, getUnitDetails, type ListUnit, type FireteamDef } from '@shared/listTypes';
-import { Plus, Trash2, Users, Copy, Check, CloudUpload, CloudCheck } from 'lucide-react';
-import { ArmyLogo } from '../shared/ArmyLogo';
+import { Plus, Trash2, Users, Lock, Unlock } from 'lucide-react';
 import { getPossibleFireteams } from '@shared/fireteams';
 import type { Unit } from '@shared/types';
 import { OrderIcon } from '../shared/OrderIcon';
@@ -36,6 +35,10 @@ import { countGroupOrders } from '../../utils/orderUtils';
 import { SortableFireteamContainer } from '../ListBuilder/SortableFireteamContainer';
 import { DraggableUnitRow } from '../ListBuilder/DraggableUnitRow';
 import { DragOverlayUnit } from '../ListBuilder/DragOverlayUnit';
+import { StarRating } from '../MyLists/StarRating';
+import { SaveStatusPill, DiscardButton, ListOverflowMenu } from '../ListBuilder/ListHeaderActions';
+import { ListDetailsStrip } from '../ListBuilder/ListDetailsStrip';
+import { getSafeLogo } from '../../utils/assets';
 import { clsx } from 'clsx';
 import styles from '../ListBuilder/ListDashboard.module.css';
 
@@ -71,13 +74,12 @@ export function ArmyListPanel() {
         createList, addUnit, removeUnit, addCombatGroup, removeCombatGroup,
         reorderUnit, moveUnitToGroup, assignToFireteam, removeFromFireteam,
         addFireteamDef, removeFireteamDef, moveFireteam, resetList, updatePointsLimit, setServerId,
-        updateListName, updateTags, isDirty, recordSave,
+        updateListName, updateTags, updateNotes, updateRating, setLocked, loadList,
+        lastSavedAt, isDirty, lastDirtyKind, recordSave,
     } = useListStore();
 
     const [editingName, setEditingName] = useState(false);
     const [nameValue, setNameValue] = useState('');
-    const [editingTags, setEditingTags] = useState(false);
-    const [tagInput, setTagInput] = useState('');
     const { setGlobalFactionId } = useGlobalFactionStore();
     const { user } = useAuth();
     const queryClient = useQueryClient();
@@ -102,7 +104,8 @@ export function ArmyListPanel() {
 
     useEffect(() => {
         if (!user || !currentList || !isDirty || saveListMutation.isPending) return;
-        saveTimerRef.current = setTimeout(() => saveListMutation.mutate(), 3500);
+        const delay = lastDirtyKind === 'metadata' ? 300 : 3500;
+        saveTimerRef.current = setTimeout(() => saveListMutation.mutate(), delay);
         return () => {
             if (saveTimerRef.current !== null) {
                 clearTimeout(saveTimerRef.current);
@@ -110,12 +113,13 @@ export function ArmyListPanel() {
             }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentList?.updatedAt, isDirty, user, saveListMutation.isPending]);
+    }, [currentList?.updatedAt, isDirty, lastDirtyKind, user, saveListMutation.isPending]);
 
     const {
         hoveredUnitISC, targetGroupIndex,
         setHoveredFireteamId, setTargetGroupIndex, selectUnitForDetail,
         setRosterScrollTarget,
+        detailsExpanded, setDetailsExpanded,
     } = useListBuilderUIStore();
 
     const { layoutMode, columnCount, windows, openWindow, setActiveColumn } = useWorkspaceStore();
@@ -321,6 +325,7 @@ export function ArmyListPanel() {
     if (!currentList) return null;
 
     const list = currentList;
+    const isLocked = !!list.isLocked;
     const totalPoints = calculateListPoints(list);
     const totalSWC = calculateListSWC(list);
     const pointsOver = totalPoints > list.pointsLimit;
@@ -331,20 +336,56 @@ export function ArmyListPanel() {
     })).lieutenant, 0);
     const ltInvalid = totalLt !== 1;
 
+    const factionInfo = db.getFactionInfo(list.factionId);
+    const factionLogo = factionInfo?.logo ? getSafeLogo(factionInfo.logo) : undefined;
+    const factionName = db.getFactionName(list.factionId);
+
+    const saveState: 'saving' | 'dirty' | 'saved' = saveListMutation.isPending
+        ? 'saving'
+        : isDirty ? 'dirty' : 'saved';
+
+    const handleSaveAsNew = () => {
+        const forked = forkListLocally(list);
+        loadList(forked);
+        if (user) {
+            // Persist immediately so the new list lands on the server.
+            // Use a short timeout to ensure the loaded list has propagated through the store.
+            setTimeout(() => saveListMutation.mutate(), 0);
+        }
+        queryClient.invalidateQueries({ queryKey: ['my-lists'] });
+    };
+
+    const handleDiscard = async () => {
+        if (!list.serverId) return;
+        try {
+            const fresh = await listService.getList(String(list.serverId));
+            loadList(fresh);
+        } catch (err) {
+            console.error('Failed to discard changes:', err);
+        }
+    };
+
     return (
         <div className={styles.listPanel} style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* List Header - compact single-line */}
+            {/* Identity row */}
             <div style={{
                 flexShrink: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 0.75rem',
-                background: 'var(--surface-elevated)',
-                borderBottom: '1px solid var(--border-subtle)',
-                minHeight: 0,
+                gap: '0.6rem',
+                padding: '0.55rem 0.75rem',
+                background: 'var(--surface-elevated, var(--bg-secondary))',
+                borderBottom: '1px solid var(--border-subtle, var(--border))',
             }}>
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden' }}>
+                {factionLogo && (
+                    <img
+                        src={factionLogo}
+                        alt=""
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }}
+                    />
+                )}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
                     {editingName ? (
                         <input
                             autoFocus
@@ -355,122 +396,75 @@ export function ArmyListPanel() {
                                 if (e.key === 'Enter') { if (nameValue.trim()) updateListName(nameValue.trim()); setEditingName(false); }
                                 if (e.key === 'Escape') setEditingName(false);
                             }}
-                            style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.1rem 0.4rem', fontSize: '0.85rem', fontWeight: 700, width: '100%', minWidth: 0 }}
+                            style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.15rem 0.45rem', fontSize: '1rem', fontWeight: 700, width: '100%', minWidth: 0 }}
                         />
                     ) : (
                         <span
-                            title="Click to rename"
-                            onClick={() => { setNameValue(list.name); setEditingName(true); }}
+                            title={isLocked ? 'List is locked — unlock to rename' : 'Click to rename'}
+                            onClick={() => { if (isLocked) return; setNameValue(list.name); setEditingName(true); }}
                             style={{
                                 fontFamily: "'Oxanium', sans-serif",
-                                fontSize: '0.85rem',
+                                fontSize: '1rem',
                                 fontWeight: 700,
                                 color: 'var(--text-primary)',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                cursor: 'text',
+                                cursor: isLocked ? 'default' : 'text',
+                                lineHeight: 1.2,
                             }}
                         >{list.name}</span>
                     )}
-                    <span style={{ color: '#475569', fontSize: '0.75rem', flexShrink: 0 }}>|</span>
-                    <span style={{
-                        color: 'var(--color-primary)',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.3px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        flexShrink: 0,
-                    }}>{db.getFactionName(list.factionId)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        <span style={{ color: 'var(--color-primary, var(--accent))', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {factionName}
+                        </span>
+                        <span style={{ color: 'var(--text-tertiary, #64748b)' }}>·</span>
+                        <span>{list.pointsLimit} pts</span>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
-                    <select
-                        className={styles.pointsDropdownInline}
-                        value={list.pointsLimit}
-                        onChange={e => updatePointsLimit(Number(e.target.value))}
-                        style={{ padding: '0.2rem 0.4rem', fontSize: '0.8rem', minWidth: 0 }}
-                    >
-                        <option value={150}>150</option>
-                        <option value={200}>200</option>
-                        <option value={250}>250</option>
-                        <option value={300}>300</option>
-                        <option value={400}>400</option>
-                    </select>
-                    {user && (
-                        <button
-                            className={styles.codeButton}
-                            onClick={() => saveListMutation.mutate()}
-                            disabled={saveListMutation.isPending}
-                            title={
-                                saveListMutation.isPending ? 'Saving…'
-                                : isDirty ? 'Unsaved changes — click to save now'
-                                : 'Saved'
-                            }
-                            style={{
-                                padding: '0.35rem 0.5rem',
-                                fontSize: '0.75rem',
-                                color: saveListMutation.isPending ? undefined : isDirty ? '#f59e0b' : '#10b981',
-                                borderColor: saveListMutation.isPending ? undefined : isDirty ? 'rgba(245,158,11,0.35)' : 'rgba(16,185,129,0.35)',
-                                background: saveListMutation.isPending ? undefined : isDirty ? 'rgba(245,158,11,0.08)' : 'rgba(16,185,129,0.08)',
-                            }}
-                        >
-                            {saveListMutation.isPending
-                                ? <CloudUpload size={14} className="animate-pulse" />
-                                : isDirty
-                                    ? <CloudUpload size={14} />
-                                    : <CloudCheck size={14} />}
-                        </button>
-                    )}
-                    <button className={styles.codeButton} onClick={handleOpenInArmy} title="Open in Infinity Army" style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', color: '#F29107', borderColor: 'rgba(242,145,7,0.35)', background: 'rgba(242,145,7,0.1)' }}>
-                        <ArmyLogo size={14} backdrop />
-                    </button>
-                    <button className={styles.codeButton} onClick={handleCopyCode} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
-                        {codeCopied ? <Check size={14} /> : <Copy size={14} />}
-                    </button>
-                    <button className={styles.resetButton} onClick={resetList} style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem' }}>
-                        <Trash2 size={14} />
-                    </button>
-                </div>
-            </div>
-
-            {/* Tags row */}
-            <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.3rem', padding: '0.3rem 0.75rem', borderBottom: '1px solid var(--border, #1e293b)', minHeight: '30px' }}>
-                {(list.tags ?? []).map(tag => (
-                    <span
-                        key={tag}
-                        onClick={() => updateTags((list.tags ?? []).filter(t => t !== tag))}
-                        title="Click to remove"
-                        style={{ padding: '0.1rem 0.5rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 500, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#a5b4fc', cursor: 'pointer' }}
-                    >
-                        #{tag}
-                    </span>
-                ))}
-                {editingTags ? (
-                    <input
-                        autoFocus
-                        value={tagInput}
-                        onChange={e => setTagInput(e.target.value)}
-                        onBlur={() => { updateTags(tagInput.split(',').map(t => t.trim()).filter(Boolean)); setEditingTags(false); }}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter') { updateTags(tagInput.split(',').map(t => t.trim()).filter(Boolean)); setEditingTags(false); }
-                            if (e.key === 'Escape') setEditingTags(false);
-                        }}
-                        placeholder="tag1, tag2, …"
-                        style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent)', color: 'var(--text-primary)', borderRadius: '4px', padding: '0.1rem 0.4rem', fontSize: '0.7rem', width: '110px' }}
-                    />
-                ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                    <StarRating value={list.rating ?? 0} onChange={updateRating} />
                     <button
-                        onClick={() => { setTagInput((list.tags ?? []).join(', ')); setEditingTags(true); }}
-                        style={{ padding: '0.1rem 0.5rem', borderRadius: '20px', fontSize: '0.7rem', border: '1px dashed var(--border, #334155)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                        onClick={() => setLocked(!isLocked)}
+                        title={isLocked ? 'Unlock — allow edits' : 'Lock — read-only view'}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 28,
+                            height: 28,
+                            border: `1px solid ${isLocked ? 'rgba(245,158,11,0.35)' : 'var(--border)'}`,
+                            background: isLocked ? 'rgba(245,158,11,0.10)' : 'var(--surface, rgba(255,255,255,0.03))',
+                            color: isLocked ? '#f59e0b' : 'var(--text-secondary)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                        }}
                     >
-                        + tag
+                        {isLocked ? <Lock size={14} /> : <Unlock size={14} />}
                     </button>
-                )}
+                    {user && (
+                        <>
+                            <SaveStatusPill
+                                saveState={saveState}
+                                lastSavedAt={lastSavedAt}
+                                onSaveNow={() => saveListMutation.mutate()}
+                            />
+                            {isDirty && list.serverId && !saveListMutation.isPending && (
+                                <DiscardButton onDiscard={handleDiscard} />
+                            )}
+                        </>
+                    )}
+                    <ListOverflowMenu
+                        pointsLimit={list.pointsLimit}
+                        onPointsLimitChange={updatePointsLimit}
+                        codeCopied={codeCopied}
+                        onCopyCode={handleCopyCode}
+                        onOpenInArmy={handleOpenInArmy}
+                        onFork={handleSaveAsNew}
+                        onReset={resetList}
+                    />
+                </div>
             </div>
 
             {/* Summary Bar */}
@@ -502,6 +496,16 @@ export function ArmyListPanel() {
                     );
                 })}
             </div>
+
+            {/* Collapsible Details strip (notes + tags) */}
+            <ListDetailsStrip
+                expanded={detailsExpanded}
+                onToggle={() => setDetailsExpanded(!detailsExpanded)}
+                notes={list.notes ?? ''}
+                onNotesChange={updateNotes}
+                tags={list.tags ?? []}
+                onTagsChange={updateTags}
+            />
 
             {/* Scrollable combat groups area */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -538,44 +542,48 @@ export function ArmyListPanel() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={clsx(styles.groupActions, 'self-start')}>
-                                            <div className="flex items-center">
+                                        {!isLocked && (
+                                            <div className={clsx(styles.groupActions, 'self-start')}>
+                                                <div className="flex items-center">
+                                                    <button
+                                                        className={clsx(styles.targetBtn, 'mr-1')}
+                                                        title="Add a fireteam container"
+                                                        onClick={() => {
+                                                            const id = `ft-${Date.now()}`;
+                                                            const hue = Math.floor(Math.random() * 360);
+                                                            const color = `hsl(${hue}, 80%, 65%)`;
+                                                            addFireteamDef(groupIndex, id, color, '');
+                                                        }}
+                                                    >
+                                                        <Users size={12} className="inline mr-1" /> Add Fireteam
+                                                    </button>
+                                                </div>
                                                 <button
-                                                    className={clsx(styles.targetBtn, 'mr-1')}
-                                                    title="Add a fireteam container"
-                                                    onClick={() => {
-                                                        const id = `ft-${Date.now()}`;
-                                                        const hue = Math.floor(Math.random() * 360);
-                                                        const color = `hsl(${hue}, 80%, 65%)`;
-                                                        addFireteamDef(groupIndex, id, color, '');
-                                                    }}
+                                                    className={clsx(styles.targetBtn, targetGroupIndex === groupIndex && styles.active)}
+                                                    title="Select as target for added units"
+                                                    onClick={() => setTargetGroupIndex(groupIndex)}
                                                 >
-                                                    <Users size={12} className="inline mr-1" /> Add Fireteam
+                                                    {targetGroupIndex === groupIndex ? 'Targeted' : 'Set Target'}
                                                 </button>
+                                                {list.groups.length > 1 && (
+                                                    <button
+                                                        className={styles.deleteBtn}
+                                                        onClick={() => removeCombatGroup(groupIndex)}
+                                                        title="Remove Combat Group"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <button
-                                                className={clsx(styles.targetBtn, targetGroupIndex === groupIndex && styles.active)}
-                                                title="Select as target for added units"
-                                                onClick={() => setTargetGroupIndex(groupIndex)}
-                                            >
-                                                {targetGroupIndex === groupIndex ? 'Targeted' : 'Set Target'}
-                                            </button>
-                                            {list.groups.length > 1 && (
-                                                <button
-                                                    className={styles.deleteBtn}
-                                                    onClick={() => removeCombatGroup(groupIndex)}
-                                                    title="Remove Combat Group"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
 
                                     {group.units.length === 0 && (!group.fireteams || group.fireteams.length === 0) ? (
-                                        <div className={styles.emptyGroup}>
-                                            Click a unit from the roster to add it here
-                                        </div>
+                                        isLocked ? null : (
+                                            <div className={styles.emptyGroup}>
+                                                Click a unit from the roster to add it here
+                                            </div>
+                                        )
                                     ) : (
                                         <div className={clsx(styles.unitsTable, 'relative')}>
                                             <div className={clsx(styles.unitsThead, 'flex items-center')}>
@@ -627,6 +635,7 @@ export function ArmyListPanel() {
                                                                 groupIndex={groupIndex}
                                                                 onViewUnit={handleViewUnit}
                                                                 onRemove={() => removeUnit(groupIndex, u.id)}
+                                                                locked={isLocked}
                                                             />
                                                             {peripheralsMap.get(u.id)?.map(p => (
                                                                 <DraggableUnitRow
@@ -635,6 +644,7 @@ export function ArmyListPanel() {
                                                                     groupIndex={groupIndex}
                                                                     onViewUnit={handleViewUnit}
                                                                     onRemove={() => {}}
+                                                                    locked={isLocked}
                                                                 />
                                                             ))}
                                                         </React.Fragment>
@@ -693,7 +703,7 @@ export function ArmyListPanel() {
                     </DragOverlay>
                 </DndContext>
 
-                {list.groups.length < 2 && (
+                {!isLocked && list.groups.length < 2 && (
                     <button className={styles.addGroupBtn} onClick={addCombatGroup}>
                         <Plus size={16} />
                         Add Combat Group

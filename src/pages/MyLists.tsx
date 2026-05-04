@@ -51,8 +51,8 @@ export function MyLists() {
     const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
     const [tagInput, setTagInput] = useState('');
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-    const [editingDescId, setEditingDescId] = useState<string | null>(null);
-    const [descValue, setDescValue] = useState('');
+    const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
+    const [notesValue, setNotesValue] = useState('');
     const [openKebabId, setOpenKebabId] = useState<string | null>(null);
 
     const toggleExpanded = (id: string) => {
@@ -201,19 +201,19 @@ export function MyLists() {
         onSettled: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
-    const descMutation = useMutation({
-        mutationFn: ({ id, description }: { id: string; description: string }) =>
-            listService.updateList(id, { description }),
+    const notesMutation = useMutation({
+        mutationFn: ({ id, notes }: { id: string; notes: string }) =>
+            listService.updateList(id, { notes }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-lists'] }),
     });
 
-    const handleDescCommit = (id: string) => {
-        const trimmed = descValue.trim();
-        const current = lists?.find(l => l.id === id)?.description ?? '';
+    const handleNotesCommit = (id: string) => {
+        const trimmed = notesValue.trim();
+        const current = lists?.find(l => l.id === id)?.notes ?? '';
         if (trimmed !== current) {
-            descMutation.mutate({ id, description: trimmed });
+            notesMutation.mutate({ id, notes: trimmed });
         }
-        setEditingDescId(null);
+        setEditingNotesId(null);
     };
 
     const forkMutation = useMutation({
@@ -650,13 +650,13 @@ export function MyLists() {
                         const logoSrc = factionInfo?.logo ? getSafeLogo(factionInfo.logo) : undefined;
                         const isRenaming = renamingId === list.id;
                         const isEditingTags = editingTagsId === list.id;
-                        const isEditingDesc = editingDescId === list.id;
+                        const isEditingNotes = editingNotesId === list.id;
                         const isExpanded = expandedIds.has(list.id);
                         const updatedDate = new Date(list.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                         const tags = list.tags ?? [];
                         const inlineTags = tags.slice(0, 3);
                         const overflowCount = tags.length - inlineTags.length;
-                        const description = list.description ?? '';
+                        const notes = list.notes ?? '';
 
                         return (
                             <div
@@ -761,9 +761,9 @@ export function MyLists() {
                                                 }}
                                             >
                                                 {list.name}
-                                                {description && (
-                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-tertiary, #64748b)' }} title={description}>
-                                                        — {description.length > 60 ? description.slice(0, 60) + '…' : description}
+                                                {notes && (
+                                                    <span style={{ marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-tertiary, #64748b)' }} title={notes}>
+                                                        — {notes.length > 60 ? notes.slice(0, 60) + '…' : notes}
                                                     </span>
                                                 )}
                                             </div>
@@ -884,20 +884,20 @@ export function MyLists() {
                                         gap: '0.65rem',
                                         background: 'var(--bg-primary)',
                                     }}>
-                                        {/* Description */}
+                                        {/* Notes */}
                                         <div>
                                             <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
-                                                Description
+                                                Notes
                                             </div>
-                                            {isEditingDesc ? (
+                                            {isEditingNotes ? (
                                                 <textarea
                                                     autoFocus
-                                                    value={descValue}
-                                                    onChange={e => setDescValue(e.target.value)}
-                                                    onBlur={() => handleDescCommit(list.id)}
+                                                    value={notesValue}
+                                                    onChange={e => setNotesValue(e.target.value)}
+                                                    onBlur={() => handleNotesCommit(list.id)}
                                                     onKeyDown={e => {
-                                                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleDescCommit(list.id);
-                                                        if (e.key === 'Escape') setEditingDescId(null);
+                                                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleNotesCommit(list.id);
+                                                        if (e.key === 'Escape') setEditingNotesId(null);
                                                     }}
                                                     placeholder="Notes about this list — strategy, opponent, occasion…"
                                                     rows={3}
@@ -916,12 +916,12 @@ export function MyLists() {
                                                 />
                                             ) : (
                                                 <div
-                                                    onClick={() => { setEditingDescId(list.id); setDescValue(description); }}
+                                                    onClick={() => { setEditingNotesId(list.id); setNotesValue(notes); }}
                                                     title="Click to edit"
                                                     style={{
                                                         fontSize: '0.82rem',
-                                                        color: description ? 'var(--text-secondary)' : 'var(--text-tertiary, #64748b)',
-                                                        fontStyle: description ? 'normal' : 'italic',
+                                                        color: notes ? 'var(--text-secondary)' : 'var(--text-tertiary, #64748b)',
+                                                        fontStyle: notes ? 'normal' : 'italic',
                                                         cursor: 'text',
                                                         whiteSpace: 'pre-wrap',
                                                         minHeight: '1.2em',
@@ -930,7 +930,7 @@ export function MyLists() {
                                                         border: '1px dashed var(--border)',
                                                     }}
                                                 >
-                                                    {description || 'Click to add a description…'}
+                                                    {notes || 'Click to add notes…'}
                                                 </div>
                                             )}
                                         </div>

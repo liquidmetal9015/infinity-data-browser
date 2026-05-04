@@ -16,17 +16,19 @@ export function DraggableUnitRow({
     groupIndex,
     onViewUnit,
     onRemove,
+    locked = false,
 }: {
     listUnit: ListUnit;
     groupIndex: number;
     onViewUnit: (unit: Unit, profileGroupId?: number, optionId?: number, listUnitId?: string) => void;
     onRemove: () => void;
+    locked?: boolean;
 }) {
     const { showMenu } = useContextMenu();
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: listUnit.id,
         data: { type: 'unit', groupIndex, listUnit },
-        disabled: listUnit.isPeripheral,
+        disabled: listUnit.isPeripheral || locked,
     });
 
     const style = {
@@ -110,13 +112,14 @@ export function DraggableUnitRow({
 
     return (
         <div
-            ref={setNodeRef}
+            ref={locked ? undefined : setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
-            className={clsx(styles.unitRow, isDragging && styles.dragging, 'cursor-pointer active:cursor-grabbing')}
+            {...(locked ? {} : attributes)}
+            {...(locked ? {} : listeners)}
+            className={clsx(styles.unitRow, isDragging && styles.dragging, locked ? 'cursor-pointer' : 'cursor-pointer active:cursor-grabbing')}
             onClick={() => onViewUnit(listUnit.unit, listUnit.profileGroupId, listUnit.optionId, listUnit.id)}
             onContextMenu={(e) => {
+                if (locked) return;
                 e.preventDefault();
                 showMenu(e.clientX, e.clientY, [
                     { label: 'View Attributes & Rules', action: () => onViewUnit(listUnit.unit), icon: <Eye size={14} /> },
@@ -126,9 +129,11 @@ export function DraggableUnitRow({
             }}
         >
             <div className={clsx(styles.dragHandle, styles.colDrag, 'flex items-center justify-center')}>
-                <div className="text-gray-400 p-1">
-                    <GripVertical size={14} />
-                </div>
+                {!locked && (
+                    <div className="text-gray-400 p-1">
+                        <GripVertical size={14} />
+                    </div>
+                )}
             </div>
 
             <div className={clsx(styles.colOrders, 'flex items-center justify-center')}>
@@ -175,14 +180,16 @@ export function DraggableUnitRow({
             <div className={clsx(styles.unitSwc, styles.colSwc)}>{option?.swc || 0}</div>
             <div className={clsx(styles.unitPts, styles.colPts)}>{option?.points || 0}</div>
             <div className={clsx(styles.unitActions, styles.colActions)}>
-                <button
-                    onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    title="Remove"
-                    className={styles.delete}
-                >
-                    <Trash2 size={14} />
-                </button>
+                {!locked && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        title="Remove"
+                        className={styles.delete}
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                )}
             </div>
         </div>
     );

@@ -34,8 +34,10 @@ export type ListAction =
     | { type: 'RESET_LIST' }
     | { type: 'LOAD_LIST'; list: ArmyList }
     | { type: 'SET_SERVER_ID'; serverId: number }
-    | { type: 'UPDATE_DESCRIPTION'; description: string }
-    | { type: 'UPDATE_TAGS'; tags: string[] };
+    | { type: 'UPDATE_NOTES'; notes: string }
+    | { type: 'UPDATE_TAGS'; tags: string[] }
+    | { type: 'UPDATE_LOCK'; isLocked: boolean }
+    | { type: 'UPDATE_RATING'; rating: number };
 
 export const initialState: ListState = {
     currentList: null,
@@ -408,14 +410,24 @@ export function listReducer(state: ListState, action: ListAction): ListState {
             return { ...state, currentList: { ...state.currentList, serverId: action.serverId } };
         }
 
-        case 'UPDATE_DESCRIPTION': {
+        case 'UPDATE_NOTES': {
             if (!state.currentList) return state;
-            return { ...state, currentList: { ...state.currentList, description: action.description, updatedAt: Date.now() } };
+            return { ...state, currentList: { ...state.currentList, notes: action.notes, updatedAt: Date.now() } };
         }
 
         case 'UPDATE_TAGS': {
             if (!state.currentList) return state;
             return { ...state, currentList: { ...state.currentList, tags: action.tags, updatedAt: Date.now() } };
+        }
+
+        case 'UPDATE_LOCK': {
+            if (!state.currentList) return state;
+            return { ...state, currentList: { ...state.currentList, isLocked: action.isLocked, updatedAt: Date.now() } };
+        }
+
+        case 'UPDATE_RATING': {
+            if (!state.currentList) return state;
+            return { ...state, currentList: { ...state.currentList, rating: action.rating, updatedAt: Date.now() } };
         }
 
         default:

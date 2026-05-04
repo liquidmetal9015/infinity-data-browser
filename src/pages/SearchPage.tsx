@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { UnifiedSearchBar } from '../components/shared/UnifiedSearchBar'
 import { FilterBar } from '../components/FilterBar'
 import { FactionView } from '../components/FactionView'
@@ -10,12 +11,14 @@ import { useDatabase } from '../hooks/useDatabase'
 import { useUnitSearch } from '../hooks/useUnitSearch'
 import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS, CLASSIFICATION_ORDER } from '../utils/classifications'
 import { CharacteristicId } from '@shared/game-model'
+import type { ItemFilter } from '../components/shared/UnifiedSearchBar'
 
 type ViewMode = 'compact' | 'list' | 'faction' | 'bubble';
 type SortOption = 'default' | 'name-asc' | 'name-desc' | 'points-asc' | 'points-desc';
 
 export function SearchPage() {
     const db = useDatabase();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [viewMode, setViewMode] = useState<ViewMode>('compact');
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
     const [selectedTypes, setSelectedTypes] = useState<Set<number>>(new Set());
@@ -33,6 +36,29 @@ export function SearchPage() {
         filteredUnits,
         hasSearch
     } = useUnitSearch(db, false);
+
+    // Pre-populate filter from URL params (e.g. from the reference page)
+    useEffect(() => {
+        const filterType = searchParams.get('filterType') as ItemFilter['type'] | null;
+        const filterName = searchParams.get('filterName');
+        const filterId = searchParams.get('filterId');
+
+        if (filterType && filterName && filterId) {
+            const rawModifiers = searchParams.get('filterModifiers');
+            const modifiers = rawModifiers ? rawModifiers.split(',') : [];
+            const filter: ItemFilter = {
+                id: `${filterType}-${filterId}-${Date.now()}`,
+                type: filterType,
+                value: modifiers.length > 0 ? `${filterName} (${modifiers.join(', ')})` : filterName,
+                baseId: Number(filterId),
+                modifiers,
+                matchAnyModifier: modifiers.length === 0,
+            };
+            setQuery({ filters: [filter], operator: 'or' });
+            setSearchParams({}, { replace: true });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const hasAnyFilter = hasSearch || selectedTypes.size > 0 || selectedOrderTypes.size > 0;
 

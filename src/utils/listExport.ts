@@ -33,9 +33,9 @@ export function generateMarkdownExport(items: ListExportItem[]): string {
         if (armyList.tags?.length) lines.push(`**Tags:** ${armyList.tags.join(', ')}  `);
         lines.push(`**Created:** ${fmtDate(armyList.createdAt)} · **Updated:** ${fmtDate(armyList.updatedAt)}`);
 
-        if (armyList.description?.trim()) {
+        if (armyList.notes?.trim()) {
             lines.push('');
-            lines.push(`> ${armyList.description.trim().replace(/\n/g, '\n> ')}`);
+            lines.push(`> ${armyList.notes.trim().replace(/\n/g, '\n> ')}`);
         }
 
         lines.push('');
@@ -84,7 +84,7 @@ export function serializeListForJson(
     return {
         id: armyList.id,
         name: armyList.name,
-        description: armyList.description ?? null,
+        notes: armyList.notes ?? null,
         tags: armyList.tags,
         rating: armyList.rating ?? null,
         factionId: armyList.factionId,

@@ -10,7 +10,7 @@ type ApiDetail = components['schemas']['ArmyListDetail'];
 export interface ListSummary {
     id: string;
     name: string;
-    description: string | null;
+    notes: string | null;
     faction_id: number;
     points: number;
     swc: number;
@@ -65,7 +65,7 @@ function toSummary(list: ArmyList): ListSummary {
     return {
         id: list.id,
         name: list.name,
-        description: list.description ?? null,
+        notes: list.notes ?? null,
         faction_id: list.factionId,
         points: calculateListPoints(list),
         swc: calculateListSWC(list),
@@ -133,7 +133,7 @@ function fromApiSummary(s: ApiSummary): ListSummary {
     return {
         id: String(s.id),
         name: s.name,
-        description: s.description ?? null,
+        notes: s.description ?? null,
         faction_id: s.faction_id,
         points: s.points,
         swc: s.swc,
@@ -150,6 +150,12 @@ function fromApiSummary(s: ApiSummary): ListSummary {
 // (stripping the `unit` field) and hydrate on load (resolving from database).
 function unitsJsonAsArmyList(detail: ApiDetail): ArmyList {
     const raw = detail.units_json as unknown as ArmyList | DehydratedArmyList;
+    // Migrate legacy field name: description → notes
+    const rawAny = raw as unknown as Record<string, unknown>;
+    if (rawAny.notes === undefined && typeof rawAny.description === 'string') {
+        rawAny.notes = rawAny.description;
+        delete rawAny.description;
+    }
     // Check if already hydrated (legacy data stored with full unit objects)
     const firstUnit = raw.groups?.[0]?.units?.[0];
     if (firstUnit && 'unit' in firstUnit && (firstUnit as unknown as Record<string, unknown>).unit) {
@@ -183,7 +189,7 @@ export const apiListService: IListService = {
         const { data, error } = await api.POST('/api/lists', {
             body: {
                 name: list.name,
-                description: list.description ?? null,
+                description: list.notes ?? null,
                 tags: list.tags ?? [],
                 rating: list.rating ?? 0,
                 faction_id: factionId,
@@ -201,7 +207,7 @@ export const apiListService: IListService = {
         if (patch.name !== undefined) body.name = patch.name;
         if (patch.factionId !== undefined) body.faction_id = patch.factionId;
         if (patch.tags !== undefined) body.tags = patch.tags;
-        if (patch.description !== undefined) body.description = patch.description ?? null;
+        if (patch.notes !== undefined) body.description = patch.notes ?? null;
         if (patch.rating !== undefined) body.rating = patch.rating;
         if (patch.groups !== undefined) {
             const fullList = patch as ArmyList;
