@@ -73,7 +73,10 @@ export function useListClassifiedCoverage(
             const { profile, option } = getUnitDetails(lu.unit, lu.profileGroupId, lu.profileId, lu.optionId);
             if (!profile || !option) continue;
 
-            const matches = getClassifiedsForOption(lu.unit, profile, option, classifieds);
+            const pg = lu.unit.raw.profileGroups.find(g => g.id === lu.profileGroupId);
+            const matches = getClassifiedsForOption(lu.unit, profile, option, classifieds, {
+                profileGroupCategory: pg?.category,
+            });
             for (const m of matches) {
                 if (m.canComplete) {
                     objectiveMatches.get(m.objectiveId)!.push({

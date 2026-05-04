@@ -19,6 +19,7 @@ export interface ResolvedListUnit {
     unit: Unit;
     profile: Profile;
     option: Loadout;
+    profileGroupCategory?: number;
 }
 
 /** Resolve all non-peripheral units in a list into {unit, profile, option} triples. */
@@ -29,7 +30,8 @@ export function resolveListUnits(list: ArmyList): ResolvedListUnit[] {
             if (lu.isPeripheral) continue;
             const { profile, option } = getUnitDetails(lu.unit, lu.profileGroupId, lu.profileId, lu.optionId);
             if (!profile || !option) continue;
-            out.push({ listUnit: lu, unit: lu.unit, profile, option });
+            const pg = lu.unit.raw.profileGroups.find(g => g.id === lu.profileGroupId);
+            out.push({ listUnit: lu, unit: lu.unit, profile, option, profileGroupCategory: pg?.category });
         }
     }
     return out;
@@ -150,7 +152,7 @@ export function scoreFromList(list: ArmyList, classifieds: ClassifiedObjective[]
     const units = resolveListUnits(list);
     if (units.length === 0) return null;
     return scoreList(
-        units.map(u => ({ unit: u.unit, profile: u.profile, option: u.option })),
+        units.map(u => ({ unit: u.unit, profile: u.profile, option: u.option, profileGroupCategory: u.profileGroupCategory })),
         classifieds,
         list.pointsLimit
     );

@@ -14,6 +14,7 @@ export interface ScoredListUnit {
     option: Option;
     isc: string;
     roleAnalysis: UnitRoleAnalysis;
+    profileGroupCategory?: number;
 }
 
 export interface ListScore {
@@ -94,16 +95,17 @@ export interface ListAnalysis {
  * Score a list of units on multiple dimensions.
  */
 export function scoreList(
-    units: Array<{ unit: Unit; profile: Profile; option: Option }>,
+    units: Array<{ unit: Unit; profile: Profile; option: Option; profileGroupCategory?: number }>,
     classifieds: ClassifiedObjective[],
     _pointsLimit: number = 300
 ): ListScore {
-    const listUnits: ScoredListUnit[] = units.map(({ unit, profile, option }) => ({
+    const listUnits: ScoredListUnit[] = units.map(({ unit, profile, option, profileGroupCategory }) => ({
         unit,
         profile,
         option,
         isc: unit.isc,
-        roleAnalysis: classifyUnit(unit, profile, option)
+        roleAnalysis: classifyUnit(unit, profile, option),
+        profileGroupCategory,
     }));
 
     // Calculate basic stats
@@ -186,7 +188,9 @@ export function scoreList(
     const completableClassifieds: string[] = [];
 
     for (const u of listUnits) {
-        const matches = getClassifiedsForOption(u.unit, u.profile, u.option, classifieds);
+        const matches = getClassifiedsForOption(u.unit, u.profile, u.option, classifieds, {
+            profileGroupCategory: u.profileGroupCategory,
+        });
         for (const m of matches) {
             if (m.canComplete) {
                 allClassifiedMatches.add(m.objectiveId);

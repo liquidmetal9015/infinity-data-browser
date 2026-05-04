@@ -208,21 +208,23 @@ export abstract class BaseDatabase {
 
     protected ingestUnits(processedUnits: ProcessedUnit[], currentFactionId?: number): void {
         for (const u of processedUnits) {
-            // Units with empty factionIds (CB data artifact) fall back to the file's faction.
-            const effectiveFactionIds = u.factionIds.length > 0
-                ? u.factionIds
-                : (currentFactionId != null ? [currentFactionId] : []);
+            // Only explicit factionIds determine which factions a unit belongs to.
+            // Empty factionIds means this entry carries no faction-membership information
+            // for the current file — don't fall back to currentFactionId.
+            const factionIds = u.factionIds;
 
             const existing = this.unitsByISC.get(u.isc);
 
             if (existing) {
-                // Merge faction lists and record faction-specific raw data (e.g. AVA may differ).
-                const existingFactions = new Set(existing.factions);
-                effectiveFactionIds.forEach(fid => {
-                    existingFactions.add(fid);
-                    existing.rawByFaction.set(fid, u);
-                });
-                existing.factions = Array.from(existingFactions);
+                if (factionIds.length > 0) {
+                    // Merge explicit faction memberships only.
+                    const existingFactions = new Set(existing.factions);
+                    factionIds.forEach(fid => {
+                        existingFactions.add(fid);
+                        existing.rawByFaction.set(fid, u);
+                    });
+                    existing.factions = Array.from(existingFactions);
+                }
                 this.unitIdMap.set(u.id, existing);
 
                 // Merge this faction's items/options into the cross-faction search index.
@@ -241,14 +243,14 @@ export abstract class BaseDatabase {
                 id: u.id,
                 isc: u.isc,
                 name: u.name,
-                factions: [...effectiveFactionIds],
+                factions: [...factionIds],
                 allWeaponIds: new Set(),
                 allSkillIds: new Set(),
                 allEquipmentIds: new Set(),
                 allItemsWithMods: [],
                 pointsRange: [0, 0],
                 raw: u,
-                rawByFaction: new Map(effectiveFactionIds.map(fid => [fid, u])),
+                rawByFaction: new Map(factionIds.map(fid => [fid, u])),
             };
 
             // Index by slug

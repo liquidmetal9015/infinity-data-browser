@@ -38,6 +38,7 @@ export function useClassifiedMatches(
                             profile,
                             option,
                             db.classifieds,
+                            { profileGroupCategory: pg.category },
                         );
 
                         const validMatches = optionMatches.filter(m => m.canComplete);
