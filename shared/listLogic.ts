@@ -69,7 +69,22 @@ function withGroup(
 // Reducer
 // ============================================================================
 
+// Actions that mutate list contents/structure — blocked while the list is locked.
+// Excludes navigation/lifecycle (LOAD/RESET/CREATE/SET_SERVER_ID), the lock
+// toggle itself, and metadata (rating/tags/notes/name) which the UI gates
+// independently.
+const STRUCTURAL_ACTIONS = new Set<ListAction['type']>([
+    'ADD_UNIT', 'REMOVE_UNIT', 'REORDER_UNIT', 'MOVE_UNIT_TO_GROUP',
+    'ADD_COMBAT_GROUP', 'REMOVE_COMBAT_GROUP',
+    'ASSIGN_TO_FIRETEAM', 'REMOVE_FROM_FIRETEAM', 'CLEAR_FIRETEAM',
+    'ADD_FIRETEAM_DEF', 'UPDATE_FIRETEAM_DEF', 'REMOVE_FIRETEAM_DEF', 'MOVE_FIRETEAM',
+    'UPDATE_POINTS_LIMIT',
+]);
+
 export function listReducer(state: ListState, action: ListAction): ListState {
+    if (state.currentList?.isLocked && STRUCTURAL_ACTIONS.has(action.type)) {
+        return state;
+    }
     switch (action.type) {
         case 'CREATE_LIST': {
             const pointsLimit = action.pointsLimit || 300;

@@ -11,44 +11,7 @@ permissions:
 jobs:
   lint:
     name: Lint & Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Frontend ESLint
-        run: npm run lint
-
-      - name: Frontend TypeScript check
-        run: npx tsc --noEmit
-
-      - name: Install backend-ts dependencies
-        working-directory: ./backend-ts
-        run: npm ci
-
-      - name: Backend-ts ESLint
-        working-directory: ./backend-ts
-        run: npm run lint
-
-      - name: Backend-ts TypeScript check
-        working-directory: ./backend-ts
-        run: npm run typecheck
-
-      - name: Frontend & shared tests
-        run: npm test -- --run
-
-      - name: Backend-ts tests
-        working-directory: ./backend-ts
-        run: npm test
+    uses: ./.github/workflows/lint.yml
 
   deploy:
     name: CI/CD - Build, Migrate, and Deploy

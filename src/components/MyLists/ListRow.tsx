@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronRight, Lock, MoreHorizontal } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ArmyLogo } from '../shared/ArmyLogo';
 import { StarRating } from './StarRating';
@@ -135,9 +135,17 @@ export function ListRow(props: ListRowProps) {
                     ) : (
                         <div
                             onClick={onRenameStart}
-                            title={list.name}
+                            title={list.isLocked ? `${list.name} (locked)` : list.name}
                             className={styles.nameDisplay}
                         >
+                            {list.isLocked && (
+                                <Lock
+                                    size={12}
+                                    strokeWidth={2.2}
+                                    style={{ color: '#f59e0b', marginRight: 4, verticalAlign: 'middle' }}
+                                    aria-label="Locked"
+                                />
+                            )}
                             {list.name}
                             {notes && (
                                 <span className={styles.notesPreview} title={notes}>

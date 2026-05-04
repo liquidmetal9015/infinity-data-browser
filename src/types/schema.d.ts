@@ -378,6 +378,7 @@ export interface components {
             points: number;
             swc: number;
             unit_count: number;
+            is_locked: boolean;
             created_at: string;
             updated_at: string;
         };

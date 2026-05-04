@@ -1,0 +1,66 @@
+name: Lint, Type Check & Test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: infinity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Frontend ESLint
+        run: npm run lint
+
+      - name: Frontend TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Install backend-ts dependencies
+        working-directory: ./backend-ts
+        run: npm ci
+
+      - name: Backend-ts ESLint
+        working-directory: ./backend-ts
+        run: npm run lint
+
+      - name: Backend-ts TypeScript check
+        working-directory: ./backend-ts
+        run: npm run typecheck
+
+      - name: Run backend-ts migrations
+        working-directory: ./backend-ts
+        env:
+          DATABASE_URL: postgresql://postgres:password@127.0.0.1:5432/infinity
+        run: npm run db:migrate
+
+      - name: Frontend & shared tests
+        run: npm test -- --run
+
+      - name: Backend-ts tests
+        working-directory: ./backend-ts
+        run: npm test

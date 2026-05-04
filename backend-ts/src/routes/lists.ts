@@ -48,6 +48,7 @@ const ListSummarySchema = z.object({
     points: z.number().int(),
     swc: z.number(),
     unit_count: z.number().int(),
+    is_locked: z.boolean(),
     created_at: z.string(),
     updated_at: z.string(),
 }).openapi('ArmyListSummary');
@@ -64,6 +65,7 @@ const ErrorSchema = z.object({
 
 interface UnitsJson {
     groups?: Array<{ units?: Array<{ isPeripheral?: boolean }> }>;
+    isLocked?: boolean;
 }
 
 function unitCount(unitsJson: unknown): number {
@@ -75,6 +77,10 @@ function unitCount(unitsJson: unknown): number {
         }
     }
     return count;
+}
+
+function isLockedFlag(unitsJson: unknown): boolean {
+    return !!((unitsJson ?? {}) as UnitsJson).isLocked;
 }
 
 function toIso(pgTimestamp: string): string {
@@ -92,6 +98,7 @@ function toSummary(row: typeof army_lists.$inferSelect) {
         points: row.points,
         swc: row.swc,
         unit_count: unitCount(row.units_json),
+        is_locked: isLockedFlag(row.units_json),
         created_at: toIso(row.created_at),
         updated_at: toIso(row.updated_at),
     };

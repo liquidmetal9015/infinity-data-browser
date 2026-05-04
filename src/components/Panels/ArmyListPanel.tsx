@@ -426,7 +426,14 @@ export function ArmyListPanel() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
                     <StarRating value={list.rating ?? 0} onChange={updateRating} />
                     <button
-                        onClick={() => setLocked(!isLocked)}
+                        onClick={() => {
+                            if (isLocked) {
+                                if (!confirm('Unlock this list? It will become editable again.')) return;
+                                setLocked(false);
+                            } else {
+                                setLocked(true);
+                            }
+                        }}
                         title={isLocked ? 'Unlock — allow edits' : 'Lock — read-only view'}
                         style={{
                             display: 'inline-flex',

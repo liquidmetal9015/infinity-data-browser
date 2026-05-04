@@ -60,6 +60,9 @@
           "unit_count": {
             "type": "integer"
           },
+          "is_locked": {
+            "type": "boolean"
+          },
           "created_at": {
             "type": "string"
           },
@@ -77,6 +80,7 @@
           "points",
           "swc",
           "unit_count",
+          "is_locked",
           "created_at",
           "updated_at"
         ]

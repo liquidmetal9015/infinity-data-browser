@@ -17,6 +17,7 @@ export interface ListSummary {
     unit_count: number;
     tags: string[];
     rating: number;
+    isLocked: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -75,6 +76,7 @@ function toSummary(list: ArmyList): ListSummary {
         ),
         tags: list.tags ?? [],
         rating: list.rating ?? 0,
+        isLocked: !!list.isLocked,
         created_at: new Date(list.createdAt).toISOString(),
         updated_at: new Date(list.updatedAt).toISOString(),
     };
@@ -140,6 +142,7 @@ function fromApiSummary(s: ApiSummary): ListSummary {
         unit_count: s.unit_count,
         tags: s.tags,
         rating: s.rating,
+        isLocked: s.is_locked,
         created_at: s.created_at,
         updated_at: s.updated_at,
     };
