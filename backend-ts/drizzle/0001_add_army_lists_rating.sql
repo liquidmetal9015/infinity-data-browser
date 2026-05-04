@@ -1,0 +1,1 @@
+ALTER TABLE "army_lists" ADD COLUMN IF NOT EXISTS "rating" integer DEFAULT 0 NOT NULL;
