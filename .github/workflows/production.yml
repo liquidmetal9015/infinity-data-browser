@@ -16,32 +16,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Python tooling is retained for the Alembic migration step in the deploy
-      # job (and for the ETL script). Lint/typecheck the Python that's left.
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install Python dependencies
-        working-directory: ./backend
-        run: uv sync
-
-      - name: Ruff format check
-        working-directory: ./backend
-        run: uv run ruff format --check .
-
-      - name: Ruff lint
-        working-directory: ./backend
-        run: uv run ruff check .
-
-      - name: Mypy strict type check
-        working-directory: ./backend
-        run: uv run mypy .
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -91,13 +65,14 @@ jobs:
           workload_identity_provider: 'projects/562594391181/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
           service_account: 'github-actions-sa@infinity-os-494622.iam.gserviceaccount.com'
 
-      - name: Set up Python for Database Operations
-        uses: actions/setup-python@v5
+      - name: Set up Node for Migrations
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
+          node-version: '20'
 
-      - name: Install uv for migrations
-        uses: astral-sh/setup-uv@v4
+      - name: Install backend-ts dependencies for migrations
+        working-directory: ./backend-ts
+        run: npm ci
 
       - name: Setup Cloud SQL Proxy
         run: |
@@ -105,15 +80,12 @@ jobs:
           chmod +x cloud-sql-proxy
           ./cloud-sql-proxy infinity-os-494622:us-central1:infinity-db-instance --port 5432 &
           sleep 3
-          
-      - name: Execute Alembic Database Migrations
-        working-directory: ./backend
+
+      - name: Execute Drizzle Database Migrations
+        working-directory: ./backend-ts
         env:
-          # The database URL targets the localhost Cloud SQL proxy tunnel securely
-          DATABASE_URL: 'postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/infinity'
-        run: |
-          uv sync --no-dev
-          uv run alembic upgrade head
+          DATABASE_URL: 'postgresql://postgres:${{ secrets.DB_PASSWORD }}@127.0.0.1:5432/infinity'
+        run: npm run db:migrate
           
       - name: Inject Frontend Firebase Configuration
         # Writes client secrets for Vite to bundle into the frontend remotely
