@@ -1,4 +1,4 @@
-.PHONY: setup dev migrate etl lint test hooks help
+.PHONY: setup dev migrate etl lint test generate-types hooks help
 .DEFAULT_GOAL := help
 
 # Colors
@@ -49,6 +49,10 @@ lint: ## Run linting & type checks across the TypeScript stack
 	cd backend-ts && npm run lint && npm run typecheck
 	@echo "$(YELLOW)Linting & typechecking frontend...$(RESET)"
 	npm run lint && npm run typecheck
+
+generate-types: ## Regenerate OpenAPI spec and frontend schema.d.ts from backend routes
+	@echo "$(YELLOW)Regenerating OpenAPI types...$(RESET)"
+	npm run generate:types
 
 test: ## Execute complete unit test suites
 	@echo "$(YELLOW)Running backend-ts vitest and frontend vitest...$(RESET)"
