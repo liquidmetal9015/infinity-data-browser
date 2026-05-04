@@ -252,6 +252,7 @@
     border-top: 1px solid var(--border);
     animation: nav-dropdown-in 0.18s ease;
 }
+
 @keyframes nav-dropdown-in {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -287,6 +288,7 @@
     .mobile-menu-btn { display: flex; }
     .nav-row-hidden-mobile { display: none; }
 }
+
 @media (min-width: 768px) {
     /* Never show dropdown on desktop even if state is true */
     .mobile-nav-dropdown { display: none !important; }

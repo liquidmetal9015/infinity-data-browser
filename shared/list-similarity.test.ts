@@ -70,6 +70,7 @@ function makeUnit(id: number, isc: string, unitType: 1 | 2 | 3 | 4 | 5 | 6 | 7 |
         allItemsWithMods: [],
         pointsRange: raw.pointsRange,
         raw,
+        rawByFaction: new Map(),
     };
 }
 

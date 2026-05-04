@@ -21,7 +21,7 @@ interface SaveStatusPillProps {
 }
 
 export function SaveStatusPill({ saveState, lastSavedAt, onSaveNow }: SaveStatusPillProps) {
-    const [now, setNow] = useState(Date.now());
+    const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         const id = setInterval(() => setNow(Date.now()), 30_000);

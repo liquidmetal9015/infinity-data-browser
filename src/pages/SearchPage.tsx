@@ -112,7 +112,6 @@ export function SearchPage() {
     // Auto-expand only when few results
     useEffect(() => {
         if (displayedUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setExpandedIds(new Set(displayedUnits.map(u => u.id)));
         } else {
             setExpandedIds(new Set());

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getClassifiedsForOption, type ClassifiedObjective, type ClassifiedMatch } from '../../shared/classifieds';
+import { getClassifiedsForOption, type ClassifiedObjective } from '../../shared/classifieds';
 import { getUnitDetails, type ArmyList, type ListUnit } from '../../shared/listTypes';
 
 // ============================================================================

@@ -66,8 +66,9 @@ export function NavBar() {
     const hasNavRowContent = appMode === 'explorer' || (appMode === 'builder' && isWorkspace);
 
     // Close mobile menu on route change or resize to desktop
-    useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
-    useEffect(() => { if (!isMobile) setMobileMenuOpen(false); }, [isMobile]);
+    const pathname = location.pathname;
+    useEffect(() => { requestAnimationFrame(() => setMobileMenuOpen(false)); }, [pathname]);
+    useEffect(() => { if (!isMobile) requestAnimationFrame(() => setMobileMenuOpen(false)); }, [isMobile]);
 
     return (
         <header className="app-header">

@@ -206,7 +206,7 @@ export abstract class BaseDatabase {
     // Unit ingestion - shared logic
     // ========================================================================
 
-    protected ingestUnits(processedUnits: ProcessedUnit[], currentFactionId?: number): void {
+    protected ingestUnits(processedUnits: ProcessedUnit[], _currentFactionId?: number): void {
         for (const u of processedUnits) {
             // Only explicit factionIds determine which factions a unit belongs to.
             // Empty factionIds means this entry carries no faction-membership information

@@ -8,7 +8,7 @@
 import type { ArmyList, ListUnit } from './listTypes';
 import { getUnitDetails } from './listTypes';
 import type { Unit } from './types';
-import type { Profile, Loadout } from './game-model';
+import type { Profile, Loadout, ProfileCategoryId } from './game-model';
 import type { UnitRole } from './unit-roles';
 import { classifyUnit } from './unit-roles';
 import type { ClassifiedObjective } from './classifieds';
@@ -19,7 +19,7 @@ export interface ResolvedListUnit {
     unit: Unit;
     profile: Profile;
     option: Loadout;
-    profileGroupCategory?: number;
+    profileGroupCategory?: ProfileCategoryId;
 }
 
 /** Resolve all non-peripheral units in a list into {unit, profile, option} triples. */

@@ -2,7 +2,7 @@
 // Evaluates lists on multiple dimensions for MCP tools
 
 import type { Unit } from './types';
-import type { Profile, Loadout as Option } from './game-model.js';
+import type { Profile, Loadout as Option, ProfileCategoryId } from './game-model.js';
 import type { UnitRoleAnalysis, RoleScore } from './unit-roles';
 import { classifyUnit } from './unit-roles';
 import type { ClassifiedObjective } from './classifieds';
@@ -14,7 +14,7 @@ export interface ScoredListUnit {
     option: Option;
     isc: string;
     roleAnalysis: UnitRoleAnalysis;
-    profileGroupCategory?: number;
+    profileGroupCategory?: ProfileCategoryId;
 }
 
 export interface ListScore {
@@ -95,7 +95,7 @@ export interface ListAnalysis {
  * Score a list of units on multiple dimensions.
  */
 export function scoreList(
-    units: Array<{ unit: Unit; profile: Profile; option: Option; profileGroupCategory?: number }>,
+    units: Array<{ unit: Unit; profile: Profile; option: Option; profileGroupCategory?: ProfileCategoryId }>,
     classifieds: ClassifiedObjective[],
     _pointsLimit: number = 300
 ): ListScore {

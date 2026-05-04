@@ -69,6 +69,7 @@ function createMockUnit(overrides: Partial<ProcessedUnit> = {}): Unit {
         allItemsWithMods: [],
         pointsRange: [25, 35],
         raw,
+        rawByFaction: new Map(),
     };
 }
 
