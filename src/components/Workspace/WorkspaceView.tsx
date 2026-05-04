@@ -17,19 +17,28 @@ interface DragDividerProps {
     columnWidths: number[];
     setColumnWidths: (widths: number[]) => void;
     containerRef: React.RefObject<HTMLDivElement | null>;
+    trackRef: React.RefObject<HTMLDivElement | null>;
 }
 
-function DragDivider({ index, columnWidths, setColumnWidths, containerRef }: DragDividerProps) {
-    const dragState = useRef<{ startX: number; startWidths: number[] } | null>(null);
+function DragDivider({ index, columnWidths, setColumnWidths, containerRef, trackRef }: DragDividerProps) {
+    // During a drag we write column widths directly to CSS variables on the
+    // track (bypassing React/zustand) and only commit to the store on pointer
+    // up. This skips ~60 reconciliations per second of all panel content while
+    // the user is dragging.
+    const dragState = useRef<{ startX: number; startWidths: number[]; latest: number[] } | null>(null);
 
     const onPointerDown = useCallback((e: React.PointerEvent) => {
         e.preventDefault();
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        dragState.current = { startX: e.clientX, startWidths: [...columnWidths] };
+        dragState.current = {
+            startX: e.clientX,
+            startWidths: [...columnWidths],
+            latest: [...columnWidths],
+        };
     }, [columnWidths]);
 
     const onPointerMove = useCallback((e: React.PointerEvent) => {
-        if (!dragState.current || !containerRef.current) return;
+        if (!dragState.current || !containerRef.current || !trackRef.current) return;
         const { startX, startWidths } = dragState.current;
         const containerWidth = containerRef.current.offsetWidth;
         const total = startWidths.reduce((a, b) => a + b, 0);
@@ -39,12 +48,23 @@ function DragDivider({ index, columnWidths, setColumnWidths, containerRef }: Dra
         const newWidths = [...startWidths];
         newWidths[index] = Math.max(minW, startWidths[index] + deltaFraction);
         newWidths[index + 1] = Math.max(minW, startWidths[index + 1] - deltaFraction);
-        setColumnWidths(newWidths);
-    }, [index, containerRef, setColumnWidths]);
+        dragState.current.latest = newWidths;
+
+        // Imperative update — no React render this tick.
+        const track = trackRef.current;
+        for (let i = 0; i < newWidths.length; i++) {
+            track.style.setProperty(`--col-w-${i}`, String(newWidths[i]));
+        }
+    }, [index, containerRef, trackRef]);
 
     const onPointerUp = useCallback(() => {
+        if (dragState.current) {
+            // Commit final widths to the store exactly once. The store's
+            // localStorage write is debounced (200ms trailing).
+            setColumnWidths(dragState.current.latest);
+        }
         dragState.current = null;
-    }, []);
+    }, [setColumnWidths]);
 
     return (
         <div
@@ -52,6 +72,7 @@ function DragDivider({ index, columnWidths, setColumnWidths, containerRef }: Dra
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
         />
     );
 }
@@ -64,6 +85,7 @@ export function WorkspaceView() {
     const { showMenu } = useContextMenu();
     const currentList = useListStore(s => s.currentList);
     const columnsRef = useRef<HTMLDivElement>(null);
+    const trackRef = useRef<HTMLDivElement>(null);
     const isMobile = useIsMobile();
     const touchStartX = useRef(0);
 
@@ -124,9 +146,15 @@ export function WorkspaceView() {
         const floatingWindows = isMobile
             ? []
             : visibleWindows.filter(w => !columnTypes.has(w.type));
-        const trackStyle = isMobile
+        // On desktop, expose each column width as a CSS variable on the track.
+        // Columns read these via `flex: var(--col-w-N)`. The DragDivider
+        // mutates them imperatively during a drag, so React only re-renders on
+        // drag-end.
+        const trackStyle: React.CSSProperties = isMobile
             ? { transform: `translateX(-${activeColumnIndex * 100}vw)` }
-            : undefined;
+            : Object.fromEntries(
+                columnWidths.map((w, i) => [`--col-w-${i}`, w]),
+            ) as React.CSSProperties;
 
         return (
             <div
@@ -136,6 +164,7 @@ export function WorkspaceView() {
                 <div className={styles.workspaceColumns} ref={columnsRef}>
                     <div
                         className={styles.workspaceColumnsTrack}
+                        ref={trackRef}
                         style={trackStyle}
                         onTouchStart={isMobile ? handleTouchStart : undefined}
                         onTouchEnd={isMobile ? handleTouchEnd : undefined}
@@ -152,11 +181,12 @@ export function WorkspaceView() {
                                             columnWidths={columnWidths}
                                             setColumnWidths={setColumnWidths}
                                             containerRef={columnsRef}
+                                            trackRef={trackRef}
                                         />
                                     )}
                                     <div
                                         className={styles.workspaceColumn}
-                                        style={isMobile ? undefined : { flex: columnWidths[i] ?? 1 }}
+                                        style={isMobile ? undefined : { flex: `var(--col-w-${i})` }}
                                     >
                                         <div className={styles.columnHeader}>
                                             <IconComponent size={13} />

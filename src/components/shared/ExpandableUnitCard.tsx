@@ -133,6 +133,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                         <div
                             key={isThisOptionHighlighted ? `h-${opt.id}-t${highlightOption!.tick}` : `opt-${opt.id}`}
                             onClick={(e) => {
+                                if ((e.target as HTMLElement).closest('[data-weapon-tooltip-trigger]')) return;
                                 if (onAddUnit) { e.stopPropagation(); onAddUnit(unit, group.id, profile.id, opt.id); }
                                 else if (onViewUnit) { e.stopPropagation(); onViewUnit(unit); }
                             }}

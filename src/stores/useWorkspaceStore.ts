@@ -446,9 +446,24 @@ export const useWorkspaceStore = create<WorkspaceStore>()((set) => ({
     setActiveColumn: (index) => set(s => applyAction(s, { type: 'SET_ACTIVE_COLUMN', index })),
 }));
 
-// Persist to localStorage on every state change
+// Persist to localStorage on state change. Writes are coalesced via a trailing
+// debounce so high-frequency updates (column-divider drag, window resize) don't
+// each trigger a synchronous JSON.stringify + setItem on the main thread.
+// 200ms is short enough that anything the user does feels persistent on reload
+// and long enough to skip the per-frame churn during a drag.
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingState: WorkspaceState | null = null;
+
+const flushSave = () => {
+    saveTimer = null;
+    if (pendingState) {
+        saveToStorage(pendingState);
+        pendingState = null;
+    }
+};
+
 useWorkspaceStore.subscribe((state) => {
-    saveToStorage({
+    pendingState = {
         windows: state.windows,
         nextZIndex: state.nextZIndex,
         layoutMode: state.layoutMode,
@@ -456,5 +471,16 @@ useWorkspaceStore.subscribe((state) => {
         columnWidths: state.columnWidths,
         columnCount: state.columnCount,
         activeColumnIndex: state.activeColumnIndex,
-    });
+    };
+    if (saveTimer === null) {
+        saveTimer = setTimeout(flushSave, 200);
+    }
 });
+
+// Make sure the latest state lands on tab close / refresh / mobile background.
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', flushSave);
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushSave();
+    });
+}

@@ -228,9 +228,9 @@ export function WeaponTooltip({ weaponId, children }: { weaponId: number; childr
         <>
             <span
                 ref={triggerRef}
+                data-weapon-tooltip-trigger="true"
                 style={{ cursor: 'pointer' }}
                 onClick={(e) => {
-                    e.stopPropagation();
                     if (pinned) {
                         setPinned(false);
                         setPos(null);
