@@ -71,7 +71,7 @@ export const ContextMenu: React.FC = () => {
     const menuContent = (
         <div
             ref={menuRef}
-            className="fixed z-[9999] bg-slate-900 border border-slate-700/50 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[260px] text-lg overflow-hidden backdrop-blur-md backdrop-filter bg-opacity-95 text-slate-200"
+            className="fixed z-[9999] bg-slate-900 border border-slate-700/50 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[min(260px,90vw)] max-w-[90vw] text-lg overflow-hidden backdrop-blur-md backdrop-filter bg-opacity-95 text-slate-200"
             style={{
                 left: `${adjustedPosition.x}px`,
                 top: `${adjustedPosition.y}px`,

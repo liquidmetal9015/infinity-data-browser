@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { ExternalLink } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { RANGE_BANDS } from '@shared/weapon-utils';
 
 const TEMPLATE_LENGTHS = { small: 8.4, large: 10.2 };
@@ -25,7 +26,15 @@ function RangeCellStyle(mod: number | null, isTemplate: boolean, templateCovers:
 
 interface TooltipPosition { x: number; y: number }
 
-function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition }) {
+interface WeaponCardProps {
+    weaponId: number;
+    pos: TooltipPosition;
+    pinned: boolean;
+    isMobile: boolean;
+    cardRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+function WeaponCard({ weaponId, pos, pinned, isMobile, cardRef }: WeaponCardProps) {
     const db = useDatabase();
     const weapon = useMemo(() => db?.getWeaponDetails(weaponId), [db, weaponId]);
     const wikiUrl = useMemo(() => db?.metadata?.weapons?.find(w => w.id === weaponId)?.wiki, [db, weaponId]);
@@ -35,27 +44,44 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
     const isTemplate = weapon.templateType === 'small' || weapon.templateType === 'large';
     const templateLen = isTemplate ? TEMPLATE_LENGTHS[weapon.templateType as 'small' | 'large'] : 0;
 
-    // Viewport-aware positioning
-    const cardWidth = 320;
-    const cardHeight = 160;
-    let x = pos.x + 15;
-    let y = pos.y + 15;
-    if (x + cardWidth > window.innerWidth - 8) x = pos.x - cardWidth - 8;
-    if (y + cardHeight > window.innerHeight - 8) y = pos.y - cardHeight - 8;
+    // Mobile pinned: render as a bottom sheet centered horizontally.
+    // Otherwise: viewport-aware cursor-relative positioning.
+    let positionStyle: React.CSSProperties;
+    if (pinned && isMobile) {
+        positionStyle = {
+            position: 'fixed',
+            left: '50%',
+            bottom: 16,
+            transform: 'translateX(-50%)',
+            width: 'min(320px, calc(100vw - 24px))',
+        };
+    } else {
+        const cardWidth = 320;
+        const cardHeight = 160;
+        let x = pos.x + 15;
+        let y = pos.y + 15;
+        if (x + cardWidth > window.innerWidth - 8) x = pos.x - cardWidth - 8;
+        if (y + cardHeight > window.innerHeight - 8) y = pos.y - cardHeight - 8;
+        positionStyle = {
+            position: 'fixed',
+            left: x,
+            top: y,
+            width: 'min(320px, calc(100vw - 24px))',
+        };
+    }
 
     return ReactDOM.createPortal(
         <div
+            ref={cardRef}
+            onClick={(e) => e.stopPropagation()}
             style={{
-                position: 'fixed',
-                left: x,
-                top: y,
+                ...positionStyle,
                 zIndex: 9999,
-                width: cardWidth,
                 background: '#0f1929',
                 border: '1px solid rgba(99,102,241,0.25)',
                 borderRadius: 10,
                 boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-                pointerEvents: 'none',
+                pointerEvents: pinned ? 'auto' : 'none',
                 fontFamily: 'inherit',
             }}
         >
@@ -167,19 +193,59 @@ function WeaponCard({ weaponId, pos }: { weaponId: number; pos: TooltipPosition 
 
 export function WeaponTooltip({ weaponId, children }: { weaponId: number; children: React.ReactNode }) {
     const [pos, setPos] = useState<TooltipPosition | null>(null);
+    const [pinned, setPinned] = useState(false);
+    const isMobile = useIsMobile();
+    const triggerRef = useRef<HTMLSpanElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    // Outside-click / Escape closes the pinned card.
+    useEffect(() => {
+        if (!pinned) return;
+        const onDown = (e: MouseEvent | TouchEvent) => {
+            const target = e.target as Node;
+            if (triggerRef.current?.contains(target)) return;
+            if (cardRef.current?.contains(target)) return;
+            setPinned(false);
+            setPos(null);
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setPinned(false);
+                setPos(null);
+            }
+        };
+        window.addEventListener('mousedown', onDown);
+        window.addEventListener('touchstart', onDown);
+        window.addEventListener('keydown', onKey);
+        return () => {
+            window.removeEventListener('mousedown', onDown);
+            window.removeEventListener('touchstart', onDown);
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [pinned]);
 
     return (
         <>
             <span
-                style={{ cursor: 'help' }}
-                onMouseEnter={(e) => setPos({ x: e.clientX, y: e.clientY })}
-                onMouseMove={(e) => setPos({ x: e.clientX, y: e.clientY })}
-                onMouseLeave={() => setPos(null)}
-    
+                ref={triggerRef}
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (pinned) {
+                        setPinned(false);
+                        setPos(null);
+                    } else {
+                        setPinned(true);
+                        setPos({ x: e.clientX, y: e.clientY });
+                    }
+                }}
+                onMouseEnter={(e) => { if (!pinned) setPos({ x: e.clientX, y: e.clientY }); }}
+                onMouseMove={(e) => { if (!pinned) setPos({ x: e.clientX, y: e.clientY }); }}
+                onMouseLeave={() => { if (!pinned) setPos(null); }}
             >
                 {children}
             </span>
-            {pos && <WeaponCard weaponId={weaponId} pos={pos} />}
+            {pos && <WeaponCard weaponId={weaponId} pos={pos} pinned={pinned} isMobile={isMobile} cardRef={cardRef} />}
         </>
     );
 }

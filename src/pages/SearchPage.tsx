@@ -310,11 +310,11 @@ export function SearchPage() {
                         >
                             <div className="bg-[#0d1117] border border-[#1e293b] rounded-lg overflow-hidden">
                                 {/* Compact table header */}
-                                <div className="flex items-center px-3 py-2 bg-[#161b22] border-b border-[#1e293b] text-[length:var(--text-2xs)] font-semibold text-gray-500 uppercase tracking-wider">
-                                    <div className="w-[50px]">Type</div>
+                                <div className="flex items-center px-3 py-2 bg-[#161b22] border-b border-[#1e293b] text-[length:var(--text-2xs)] font-semibold text-gray-500 uppercase tracking-wider gap-2">
+                                    <div className="w-[50px] flex-shrink-0">Type</div>
                                     <div className="flex-1 min-w-0">Unit</div>
-                                    <div className="w-[200px] text-right">Factions</div>
-                                    <div className="w-[80px] text-right">Points</div>
+                                    <div className="hidden sm:block w-[200px] text-right">Factions</div>
+                                    <div className="w-[64px] sm:w-[80px] text-right flex-shrink-0">Points</div>
                                 </div>
                                 {/* Compact rows */}
                                 {displayedUnits.slice(0, 200).map(unit => {
@@ -328,10 +328,10 @@ export function SearchPage() {
                                     return (
                                         <div key={unit.id}>
                                             <div
-                                                className="flex items-center px-3 py-2 border-b border-[#1e293b]/50 hover:bg-[#1e293b] cursor-pointer transition-colors"
+                                                className="flex items-center px-3 py-2 border-b border-[#1e293b]/50 hover:bg-[#1e293b] cursor-pointer transition-colors gap-2 min-h-[40px]"
                                                 onClick={() => toggleExpand(unit.id)}
                                             >
-                                                <div className="w-[50px]">
+                                                <div className="w-[50px] flex-shrink-0">
                                                     {primaryType > 0 && CLASSIFICATION_LABELS[primaryType] && (
                                                         <span
                                                             className="text-[length:var(--text-2xs)] font-bold px-1.5 py-0.5 rounded uppercase"
@@ -345,15 +345,20 @@ export function SearchPage() {
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <span className="text-sm font-semibold text-gray-200">{unit.isc}</span>
+                                                    <span className="text-sm font-semibold text-gray-200 truncate block">{unit.isc}</span>
+                                                    {/* Mobile-only: show factions inline below name */}
+                                                    <span className="sm:hidden text-[length:var(--text-2xs)] text-gray-500 truncate block">
+                                                        {factionNames.join(', ')}
+                                                        {unit.factions.length > 3 && ` +${unit.factions.length - 3}`}
+                                                    </span>
                                                 </div>
-                                                <div className="w-[200px] text-right">
+                                                <div className="hidden sm:block w-[200px] text-right">
                                                     <span className="text-xs text-gray-500 truncate">
                                                         {factionNames.join(', ')}
                                                         {unit.factions.length > 3 && ` +${unit.factions.length - 3}`}
                                                     </span>
                                                 </div>
-                                                <div className="w-[80px] text-right">
+                                                <div className="w-[64px] sm:w-[80px] text-right flex-shrink-0">
                                                     <span className="text-xs font-mono text-blue-400">
                                                         {unit.pointsRange[0] === unit.pointsRange[1]
                                                             ? `${unit.pointsRange[0]}`

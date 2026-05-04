@@ -1,0 +1,46 @@
+.pill {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.with-logo {
+    padding: 0.25rem 0.65rem 0.25rem 0.4rem;
+    font-size: var(--text-sm);
+}
+
+.pill img { width: 16px; height: 16px; object-fit: contain; opacity: 0.85; }
+
+.tone-accent.active {
+    border-color: var(--accent);
+    background: rgba(99,102,241,0.15);
+    color: var(--accent);
+}
+
+.tone-amber.active {
+    border-color: #f59e0b;
+    background: rgba(245,158,11,0.15);
+    color: #f59e0b;
+}
+
+@media (max-width: 767px) {
+    .pill {
+        min-height: 36px;
+        padding: 0.4rem 0.85rem;
+        font-size: var(--text-sm);
+    }
+    .with-logo {
+        padding: 0.4rem 0.85rem 0.4rem 0.5rem;
+    }
+}

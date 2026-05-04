@@ -1,0 +1,20 @@
+.badge {
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    font-size: var(--text-2xs);
+    font-weight: var(--font-medium);
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.removable {
+    cursor: pointer;
+    padding: 0.15rem 0.55rem;
+}
+
+.removable:hover {
+    background: rgba(99,102,241,0.18);
+}

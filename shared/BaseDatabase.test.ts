@@ -247,9 +247,9 @@ describe('BaseDatabase - init', () => {
 
         const unit = db.units.find(u => u.isc === 'Yuan Yuan');
         expect(unit).toBeDefined();
-        // The empty-factionIds entry should be attributed to the file's faction (101)
-        // and override the rawByFaction entry for faction 101 with AVA=2.
-        expect(unit!.rawByFaction.get(101)!.profileGroups[0].profiles[0].ava).toBe(2);
+        // Empty factionIds means "no faction-membership info" — the entry is NOT attributed
+        // to the file's faction. rawByFaction for faction 101 stays as the explicit entry (AVA=4).
+        expect(unit!.rawByFaction.get(101)!.profileGroups[0].profiles[0].ava).toBe(4);
     });
 
     it('merges weapon/skill IDs from all faction entries into the cross-faction search index', async () => {

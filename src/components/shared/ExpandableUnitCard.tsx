@@ -181,7 +181,8 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                             {onViewUnit && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onViewUnit(unit); }}
-                                    className="flex items-center justify-center px-3 bg-black/20 hover:bg-white/10 border-l border-white/5 text-gray-500 hover:text-white transition-colors"
+                                    className="flex items-center justify-center px-3 sm:px-3 min-w-[44px] bg-black/20 hover:bg-white/10 border-l border-white/5 text-gray-500 hover:text-white transition-colors"
+                                    aria-label="View unit details"
                                 >
                                     <Eye size={16} />
                                 </button>

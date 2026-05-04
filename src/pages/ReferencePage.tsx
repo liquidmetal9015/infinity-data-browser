@@ -184,7 +184,7 @@ export function ReferencePage() {
                                 animate={{ opacity: 1 }}
                                 className={`row-${row.type}`}
                             >
-                                <td className={styles.typeCell}>
+                                <td className={styles.typeCell} data-label="Type">
                                     <span
                                         className={styles.typeBadge}
                                         style={{
@@ -197,7 +197,7 @@ export function ReferencePage() {
                                         {row.type}
                                     </span>
                                 </td>
-                                <td className={styles.nameCell}>
+                                <td className={styles.nameCell} data-label="Name">
                                     <div className={styles.nameWrapper}>
                                         <span className={styles.entryName}>{row.displayName}</span>
                                         {row.wiki && (
@@ -214,7 +214,7 @@ export function ReferencePage() {
                                         )}
                                     </div>
                                 </td>
-                                <td className={styles.countCell}>
+                                <td className={styles.countCell} data-label="Count">
                                     <button
                                         className={styles.countBtn}
                                         onClick={() => navigateToSearch(row)}
@@ -223,7 +223,7 @@ export function ReferencePage() {
                                         {row.count} units →
                                     </button>
                                 </td>
-                                <td className={styles.examplesCell}>
+                                <td className={styles.examplesCell} data-label="Examples">
                                     <div className={styles.examplesList}>
                                         {row.examples.map((ex, i) => (
                                             <span key={i} className={styles.exampleTag}>{ex}</span>

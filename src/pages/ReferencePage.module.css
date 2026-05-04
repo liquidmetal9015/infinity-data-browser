@@ -207,3 +207,57 @@
     text-align: center;
     color: var(--text-secondary);
 }
+
+/* ── Mobile: convert table to card stack ─────────────────────── */
+@media (max-width: 767px) {
+    .reference-page { padding: 1rem; }
+
+    .table-container {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .reference-table,
+    .reference-table tbody,
+    .reference-table tr,
+    .reference-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .reference-table thead { display: none; }
+
+    .reference-table tr {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color, var(--border));
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .reference-table td {
+        padding: 0.4rem 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    .reference-table td:last-child {
+        border-bottom: none;
+    }
+    .reference-table td::before {
+        content: attr(data-label);
+        flex: 0 0 80px;
+        font-size: var(--text-2xs);
+        font-weight: var(--font-semibold);
+        color: var(--text-tertiary, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding-top: 0.15rem;
+    }
+
+    .count-btn { min-height: 40px; padding: 0.5rem 0.75rem; }
+}
+

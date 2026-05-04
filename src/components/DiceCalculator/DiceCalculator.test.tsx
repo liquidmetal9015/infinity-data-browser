@@ -240,7 +240,7 @@ describe('DiceCalculator Components', () => {
             );
 
             // Check for favored class on active side
-            const activeSide = document.querySelector('.active-side.favored');
+            const activeSide = document.querySelector('.activeSide.favored');
             expect(activeSide).toBeInTheDocument();
         });
 
@@ -291,7 +291,7 @@ describe('DiceCalculator Components', () => {
                 <WoundsBar active={mockActive} reactive={mockReactive} fail={0.1} />
             );
 
-            expect(container.querySelector('.wounds-bar-container')).toBeInTheDocument();
+            expect(container.querySelector('.woundsBarContainer')).toBeInTheDocument();
         });
 
         it('renders bar segments for wounds', () => {
@@ -299,7 +299,7 @@ describe('DiceCalculator Components', () => {
                 <WoundsBar active={mockActive} reactive={mockReactive} fail={0.1} />
             );
 
-            const segments = container.querySelectorAll('.bar-seg');
+            const segments = container.querySelectorAll('.barSeg');
             expect(segments.length).toBeGreaterThan(0);
         });
     });

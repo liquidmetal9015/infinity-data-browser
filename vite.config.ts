@@ -29,6 +29,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.ts',
+    css: {
+      modules: {
+        classNameStrategy: 'non-scoped',
+      },
+    },
     exclude: [
       'ai-tmp/**',
       'e2e/**',

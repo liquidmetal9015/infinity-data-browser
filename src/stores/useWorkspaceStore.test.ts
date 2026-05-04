@@ -13,11 +13,11 @@ describe('workspaceReducer', () => {
             expect(result.windows[0].type).toBe('DICE_CALCULATOR');
             expect(result.windows[0].title).toBe('Dice Calculator');
             expect(result.windows[0].isMinimized).toBe(false);
-            expect(result.windows[0].zIndex).toBe(1);
+            expect(result.windows[0].zIndex).toBe(200);
             expect(result.windows[0].size.width).toBe(550);
             // jsdom window.innerHeight=768, clamped to Math.min(700, 768-100)=668
             expect(result.windows[0].size.height).toBe(668);
-            expect(result.nextZIndex).toBe(2);
+            expect(result.nextZIndex).toBe(201);
         });
 
         it('assigns cascading positions for multiple windows', () => {

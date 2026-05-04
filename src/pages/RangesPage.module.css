@@ -413,3 +413,36 @@
 .remove-btn:hover {
     color: var(--color-danger, #ef4444);
 }
+
+/* ── Mobile / narrow viewports ───────────────────────────────── */
+@media (max-width: 1023px) {
+    .ranges-page {
+        height: auto;
+        padding: 1rem;
+    }
+    .ranges-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        height: auto;
+        overflow: visible;
+    }
+    .sidebar {
+        max-height: 60vh;
+    }
+    .chart-area {
+        overflow-y: visible;
+    }
+}
+
+@media (max-width: 767px) {
+    /* Allow the weapon stats table to scroll horizontally rather than overflow.
+       The range strip needs to stay horizontal; squeezing the table risks
+       making numbers unreadable. */
+    .stats-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .weapon-table {
+        min-width: 640px;
+    }
+}
