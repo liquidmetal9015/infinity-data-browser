@@ -62,6 +62,79 @@ async function fetchFactionData(faction: FactionMetadata): Promise<boolean> {
     }
 }
 
+// Rebuild weapons/skills/equips/ammunitions catalogs in data/metadata.json by
+// merging entries from each faction's filters block. The CB API does not expose
+// a public metadata endpoint (all candidate routes return 403), but every
+// per-faction response ships a `filters` dictionary with names for every ID it
+// references. Existing richer entries (with stats) are preserved; new IDs get a
+// minimal entry so the ETL can still resolve them.
+async function rebuildMetadataCatalogs(factions: FactionMetadata[]): Promise<void> {
+    console.log('Rebuilding metadata.json weapon/skill/equip/ammo catalogs from faction filters...');
+    const metadataStr = await fs.readFile(METADATA_PATH, 'utf-8');
+    const metadata = JSON.parse(metadataStr) as Record<string, unknown> & {
+        weapons?: Array<{ id: number;[k: string]: unknown }>;
+        skills?: Array<{ id: number;[k: string]: unknown }>;
+        equips?: Array<{ id: number;[k: string]: unknown }>;
+        ammunitions?: Array<{ id: number;[k: string]: unknown }>;
+    };
+
+    const catalogs = {
+        weapons: new Map<number, Record<string, unknown>>(),
+        skills: new Map<number, Record<string, unknown>>(),
+        equips: new Map<number, Record<string, unknown>>(),
+        ammunitions: new Map<number, Record<string, unknown>>(),
+    } as const;
+
+    // Seed from existing metadata (preserves stats like burst/damage/distance).
+    for (const w of metadata.weapons ?? []) catalogs.weapons.set(w.id, w);
+    for (const s of metadata.skills ?? []) catalogs.skills.set(s.id, s);
+    for (const e of metadata.equips ?? []) catalogs.equips.set(e.id, e);
+    for (const a of metadata.ammunitions ?? []) catalogs.ammunitions.set(a.id, a);
+
+    const beforeCounts = {
+        weapons: catalogs.weapons.size, skills: catalogs.skills.size,
+        equips: catalogs.equips.size, ammunitions: catalogs.ammunitions.size,
+    };
+
+    interface FactionFilters {
+        weapons?: Array<{ id: number; name: string; type?: string }>;
+        skills?: Array<{ id: number; name: string; wiki?: string }>;
+        equip?: Array<{ id: number; name: string; type?: string; wiki?: string }>;
+        ammunition?: Array<{ id: number; name: string; wiki?: string }>;
+    }
+
+    for (const faction of factions) {
+        const filePath = path.join(DATA_DIR, `${faction.slug}.json`);
+        let raw: string;
+        try { raw = await fs.readFile(filePath, 'utf-8'); } catch { continue; }
+        const data = JSON.parse(raw) as { filters?: FactionFilters };
+        const f = data.filters;
+        if (!f) continue;
+        for (const w of f.weapons ?? []) if (!catalogs.weapons.has(w.id)) catalogs.weapons.set(w.id, { ...w });
+        for (const s of f.skills ?? []) if (!catalogs.skills.has(s.id)) catalogs.skills.set(s.id, { ...s });
+        for (const e of f.equip ?? []) if (!catalogs.equips.has(e.id)) catalogs.equips.set(e.id, { ...e });
+        for (const a of f.ammunition ?? []) if (!catalogs.ammunitions.has(a.id)) catalogs.ammunitions.set(a.id, { ...a });
+    }
+
+    metadata.weapons = [...catalogs.weapons.values()].sort((a, b) => (a.id as number) - (b.id as number));
+    metadata.skills = [...catalogs.skills.values()].sort((a, b) => (a.id as number) - (b.id as number));
+    metadata.equips = [...catalogs.equips.values()].sort((a, b) => (a.id as number) - (b.id as number));
+    metadata.ammunitions = [...catalogs.ammunitions.values()].sort((a, b) => (a.id as number) - (b.id as number));
+
+    await fs.writeFile(METADATA_PATH, JSON.stringify(metadata, null, 4));
+
+    const added = {
+        weapons: catalogs.weapons.size - beforeCounts.weapons,
+        skills: catalogs.skills.size - beforeCounts.skills,
+        equips: catalogs.equips.size - beforeCounts.equips,
+        ammunitions: catalogs.ammunitions.size - beforeCounts.ammunitions,
+    };
+    console.log(`  weapons: ${beforeCounts.weapons} -> ${catalogs.weapons.size} (+${added.weapons})`);
+    console.log(`  skills: ${beforeCounts.skills} -> ${catalogs.skills.size} (+${added.skills})`);
+    console.log(`  equips: ${beforeCounts.equips} -> ${catalogs.equips.size} (+${added.equips})`);
+    console.log(`  ammunitions: ${beforeCounts.ammunitions} -> ${catalogs.ammunitions.size} (+${added.ammunitions})`);
+}
+
 async function main() {
     console.log("Starting data refresh...");
 
@@ -96,6 +169,9 @@ async function main() {
 
         console.log('-----------------------------------');
         console.log(`Finished. Success: ${successCount}, Failed: ${failCount}`);
+
+        // 3. Rebuild metadata catalogs from union of per-faction filters
+        await rebuildMetadataCatalogs(factions);
     } catch (err) {
         console.error("Fatal error:", err);
         process.exit(1);

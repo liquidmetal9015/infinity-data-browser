@@ -36,14 +36,6 @@ export interface MatchContext {
 // ============================================================================
 
 /**
- * Maps classified criterion strings to the actual data they should match against.
- * Some criteria don't map cleanly to skill/equipment names in CB data.
- */
-const CRITERION_ALIASES: Record<string, string> = {
-    'MSV': 'Multispectral Visor',
-};
-
-/**
  * Unit type criteria — these match against profile.unitType, not skill names.
  */
 const UNIT_TYPE_CRITERIA: Record<string, number> = {
@@ -70,6 +62,7 @@ const HACKER_IMPLICIT_CRITERIA = new Set([
     'Spotlight Hacking Program',
 ]);
 
+
 // ============================================================================
 // Logic
 // ============================================================================
@@ -82,9 +75,9 @@ const HACKER_IMPLICIT_CRITERIA = new Set([
  * 2. Unit type criteria (MI, HI) → check profile.unitType
  * 3. Category criteria (Veteran, Elite) → check profileGroup.category
  * 4. Hacker-implicit criteria (Spotlight) → check for Hacker skill
- * 5. Equipment/weapon name criteria (D-Charges, Biometric Visor) → substring match
- * 6. Skill name criteria (Hacker, Doctor, etc.) → substring match on skills
- * 7. Equipment name match → substring match on equipment
+ * 5. Skill name criteria (Hacker, Doctor, etc.) → substring match on skills
+ * 6. Equipment name match → substring match on equipment
+ * 7. Weapon name match → substring match on weapons
  */
 export function checkCriterion(
     _unit: Unit,
@@ -115,9 +108,7 @@ export function checkCriterion(
         if (hasHacker(profile.skills) || hasHacker(option.skills)) return true;
     }
 
-    // Resolve alias for remaining checks
-    const resolvedTarget = CRITERION_ALIASES[target] || target;
-    const lowerTarget = resolvedTarget.toLowerCase();
+    const lowerTarget = target.toLowerCase();
 
     // 5. Check skills (profile + option)
     const hasSkill = (skills: { name: string }[]) =>
@@ -133,7 +124,7 @@ export function checkCriterion(
     if (hasEquip(profile.equipment)) return true;
     if (hasEquip(option.equipment)) return true;
 
-    // 7. Check weapons (profile + option) — needed for D-Charges etc.
+    // 7. Check weapons (profile + option)
     const hasWeapon = (weapons: { name: string }[]) =>
         weapons.some(w => w.name.toLowerCase().includes(lowerTarget));
 

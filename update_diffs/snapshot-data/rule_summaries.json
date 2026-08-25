@@ -1,0 +1,139 @@
+{
+    "_comment": "Rule summaries for skills and equipment. Fill in 'summary' fields to provide compact explanations for agents. The 'id' corresponds to the skill/equipment ID in metadata.json.",
+    "skills": {
+        "58": {
+            "name": "Mimetism",
+            "summary": "Imposes a negative Modifier on the attacker's BS (-3 or -6). Reduced/cancelled by MSV."
+        },
+        "201": {
+            "name": "Neurocinetics",
+            "summary": "User can react with full Burst in ARO. Active turn Burst is reduced to 1."
+        },
+        "84": {
+            "name": "Super-Jump",
+            "summary": "Move with Super-Jump skill. Can jump horizontally or vertically. No fall damage."
+        },
+        "189": {
+            "name": "Tactical Awareness",
+            "summary": "Grants an extra Irregular Order usable only by this trooper."
+        },
+        "119": {
+            "name": "Lieutenant",
+            "summary": "Trooper is the Lieutenant. Grants +1 Command Token if on field. Loss puts army in Loss of Lieutenant."
+        },
+        "64": {
+            "name": "Paramedic",
+            "summary": "Specialist. Can use MediKit (PH-3). Revive Unconscious to W1 or remove immobilized/stunned."
+        },
+        "65": {
+            "name": "Doctor",
+            "summary": "Specialist. Can use MediKit (PH). Revive Unconscious to W1 or remove states. Reroll failed heal."
+        },
+        "56": {
+            "name": "Engineer",
+            "summary": "Specialist. Repair Structure, Burnt, Imm-A/B, Isolated, Targeted. Deactivates mines."
+        },
+        "59": {
+            "name": "Forward Observer",
+            "summary": "Specialist. Flash Pulse. Target enemies (Targeted state) with WIP roll."
+        },
+        "82": {
+            "name": "Stealth",
+            "summary": "Move short skills without generating AROs if outside LoF and ZoC. Cautious Move."
+        },
+        "28": {
+            "name": "Climbing Plus",
+            "summary": "Move on vertical surfaces as if horizontal. Can stop on vertical surfaces."
+        },
+        "40": {
+            "name": "Forward Deployment",
+            "summary": "Deploy outside Deployment Zone. L1: +4\", L2: +8\"."
+        },
+        "213": {
+            "name": "Courage",
+            "summary": "Can choose to fail Guts Roll. Ignore Retreat state effects."
+        },
+        "235": {
+            "name": "Veteran",
+            "summary": "Ignore Isolated and Retreat states. Regular orders in Loss of Lieutenant."
+        },
+        "254": {
+            "name": "Immunity",
+            "summary": "Immune to specific traits (e.g. Critical, Shock, AP). Check specific immunity type."
+        },
+        "243": {
+            "name": "Martial Arts",
+            "summary": "CC modifiers. L1: Stealth. L2: Courage. L3: First Strike. L4/5: CC bonuses."
+        },
+        "263": {
+            "name": "Fireteam",
+            "summary": "Trooper can join specific Fireteams. Bonuses for 2, 3, 4, 5 members (BS, Burst, Sixth Sense)."
+        },
+        "29": {
+            "name": "Camouflage",
+            "summary": "Deploy as Marker (-3 to Discover). Stealth. Surprise Attack (-3)."
+        },
+        "47": {
+            "name": "Infiltration",
+            "summary": "Deploy up to half table. Roll PH-3 for enemy half. Fail: user DZ."
+        },
+        "35": {
+            "name": "Combat Jump",
+            "summary": "Deploy on any table edge on PH roll. Fail: own DZ."
+        },
+        "33": {
+            "name": "Parachutist",
+            "summary": "Deploy on table edge (Deployment Phase) or enter from side edge (Active Turn)."
+        },
+        "67": {
+            "name": "Sixth Sense",
+            "summary": "Ignore Stealth. Delay ARO against camo. 360 LoF vs Attacks. Ignore Data Scan mods."
+        },
+        "86": {
+            "name": "No Wound Incapacitation",
+            "summary": "Unconscious state becomes NWI state (operational). 2nd wound -> Dead."
+        },
+        "19": {
+            "name": "Martial Arts L1",
+            "summary": "CC Attack (-3 to enemy). Stealth."
+        },
+        "20": {
+            "name": "Martial Arts L2",
+            "summary": "CC Attack (+3 Damage). Courage."
+        },
+        "21": {
+            "name": "Martial Arts L3",
+            "summary": "CC Attack (+3 to hit). First Strike (ignore enemy CC attack)."
+        },
+        "22": {
+            "name": "Martial Arts L4",
+            "summary": "CC Attack (+3 to hit, +3 Damage or -6 to enemy). 2 Wounds in CC."
+        },
+        "23": {
+            "name": "Martial Arts L5",
+            "summary": "CC Attack (+6 to hit, +3 Damage or -6 to enemy). 2 Wounds in CC."
+        }
+    },
+    "equipment": {
+        "114": {
+            "name": "Multispectral Visor",
+            "summary": "Ignores visual modifiers. L1 ignores Mimetism(-3). L2 ignores all Mimetism and Smoke."
+        },
+        "100": {
+            "name": "Repeater",
+            "summary": "Extends Hacking Area of allied Hackers. Enemies in ZoC are in Hacking Area."
+        },
+        "106": {
+            "name": "Hacking Device",
+            "summary": "Allows use of Hacking Programs. Base device (Standard)."
+        },
+        "240": {
+            "name": "MediKit",
+            "summary": "Heal/Repair. Ranged or B2B. PH roll usually."
+        },
+        "239": {
+            "name": "ECM",
+            "summary": "Defensive mods against Guided (L1 -3, L2 -6) or Hacking (Hacker -3)."
+        }
+    }
+}

@@ -308,20 +308,8 @@
         width: 18px;
         height: 18px;
     }
-    /* Show the Builder/Explorer (and any other) segmented-control labels on mobile */
-    .layout-label {
-        display: inline;
-    }
-    .nav-action-btn {
-        min-height: 44px;
-        padding: 0.55rem 0.85rem;
-        font-size: 0.95rem;
-        gap: 0.5rem;
-    }
-    /* Always show the label on mobile so the button reads as a button, not just an icon */
-    .nav-action-btn .tab-label {
-        display: inline;
-    }
+    /* Hide New List / My Lists from Row 1 on mobile — they live in the hamburger dropdown */
+    .controls-nav .nav-action-btn { display: none; }
 }
 
 @media (min-width: 768px) {

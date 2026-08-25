@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Infinity Data Update Diff</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+<a class="home active" href="index.html">Overview</a>
+<h2>Reports</h2>
+<a href="by-faction/index.html">By Faction (unit-level)</a>
+<a href="by-profile/index.html">By Profile (mod-level)</a>
+</nav>
+<main>
+<h1>Infinity Data Update Diff</h1>
+<p>Generated 2026-05-27T13:51:31.868Z</p>
+
+<h2>Reports</h2>
+<ul>
+    <li><a href="by-faction/index.html"><strong>By Faction</strong></a> — unit-level adds / removes / modifications.
+        Each modified unit lists the aggregate skill/weapon/equipment changes across all its profiles &amp; options,
+        reported by mod-aware <code>displayName</code> (e.g. <code>Mimetism(-6)</code>, <code>Thunderbolt(+2B)</code>).</li>
+    <li><a href="by-profile/index.html"><strong>By Profile</strong></a> — profile-level diff.
+        Walks <code>profileGroups → profiles + options</code>, matches by name, and reports stat changes plus
+        skill/weapon/equipment changes per profile. This is the report that lines up best with the official CB changelog.</li>
+</ul>
+
+<h2>Legend</h2>
+<ul>
+    <li class="add">Added items / new options / new profiles</li>
+    <li class="rem">Removed items / dropped options</li>
+    <li class="mod">Modified items (points, stats, swapped options)</li>
+</ul>
+</main>
+</div>
+</body>
+</html>

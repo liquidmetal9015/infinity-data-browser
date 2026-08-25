@@ -335,6 +335,27 @@ export function NavBar() {
 
                 {/* Account / data actions — always available on mobile */}
                 <div className={styles.mobileAccountActions}>
+                    {appMode === 'builder' && user && (
+                        <>
+                            <button
+                                className={styles.navActionBtn}
+                                onClick={() => { setShowNewModal(true); setMobileMenuOpen(false); }}
+                                style={{ color: 'var(--accent)', borderColor: 'rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', flex: '1 1 auto', justifyContent: 'center', minHeight: '44px' }}
+                            >
+                                <Plus size={16} />
+                                <span>New List</span>
+                            </button>
+                            <Link
+                                to="/lists"
+                                className={styles.navActionBtn}
+                                onClick={() => setMobileMenuOpen(false)}
+                                style={{ color: 'var(--accent)', borderColor: 'rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', flex: '1 1 auto', justifyContent: 'center', minHeight: '44px' }}
+                            >
+                                <ListChecks size={16} />
+                                <span>My Lists</span>
+                            </Link>
+                        </>
+                    )}
                     {user
                         ? !STATIC_MODE && (
                             <button

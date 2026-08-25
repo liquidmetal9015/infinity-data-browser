@@ -1,0 +1,1080 @@
+=== PROCESSED DIFF ===
+Files: old=45, new=45, added=0, removed=0
+
+TOTALS — added units: 55, removed units: 14, modified units: 365
+Factions with changes: 45
+
+-- aleph.json (86 -> 97 units)
+   + ADD  [1898] Dikpala Tacbots / Dikpala Tacbots
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   + ADD  [1178] Arjuna Unit / ARJUNA Unit
+   + ADD  [600] Thorakitai / THORAKITAI
+   + ADD  [1899] Sharvara HoundBots / SHARVARA HoundBots
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1534] Parvati, Circle League star / PARVATI, Circle League star
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1901] Kinnara Scoutbots /  KINNARA Scoutbots 
+   + ADD  [1904] Tarkshya Interception Wing / Tarkshya Interception Wing
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1906] Yaksha Tacbots / Yaksha Tacbots
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+   ~ MOD  [1720] Maximus, Optimate and HexaDome Legend / MAXIMUS, Optimate and HexaDome Legend
+         · pointsRange: [76,76] -> [80,82]
+         · weapons: 107,207,213,78 -> 107,213,230,3,78
+   ~ MOD  [1129] Yadu Troopers, Tactical Assault Teams / YADU Troopers, Tactical Assault Teams
+         · equipment: 100,238 -> 100,183,238
+   ~ MOD  [1862] Optimate Agent Maximus / Optimate Agent Maximus
+         · pointsRange: [40,40] -> [45,48]
+         · profileGroups: 1 -> 2
+         · skills: 119,162,189,213,240,39,40,84,86 -> 119,122,162,189,213,240,243,28,39,40,84,86
+         · equipment:  -> 183,248,63
+         · weapons: 107,207,213,78 -> 107,11,213,23,230,71,72,78
+   ~ MOD  [597] Posthumans / POST-HUMANS
+         · pointsRange: [13,28] -> [13,30]
+         · skills: 1000,161,164,191,242,252,28,29,47,49,53,58,59,84,86 -> 1000,161,162,164,191,201,252,28,29,47,49,53,58,59,84,86
+         · weapons: 17,2,26,33,36,47,5,64,65,69,72,77,89 -> 107,17,2,26,33,36,47,5,64,65,69,72,77,89
+   ~ MOD  [59] Nagas / NAGAS
+         · pointsRange: [24,30] -> [25,29]
+         · skills: 1000,164,191,28,29,47,56,58,59,84,85 -> 1000,164,191,201,28,29,47,56,58,59,84,85
+         · equipment: 100,145 -> 100,111,145
+         · weapons: 17,196,26,33,36,5,62,69,72,77 -> 17,196,197,214,26,36,5,62,65,69,72
+   ~ MOD  [587] Dasyus / DASYUS
+         · pointsRange: [34,37] -> [28,34]
+         · skills: 1000,164,191,211,238,28,29,47,58,59,84,86 -> 1000,162,164,191,201,238,28,29,47,56,58,59,84
+         · equipment: 100,145 -> 100,111,145
+         · weapons: 17,196,211,26,36,5,65,72,77 -> 145,17,211,214,26,36,5,63,72
+   ~ MOD  [185] Sophotects / SOPHOTECTS
+         · pointsRange: [29,34] -> [25,32]
+         · weapons: 145,17,226,33,5,69 -> 145,17,226,33,5,69,72,77
+   ~ MOD  [1771] Artalis Unit / Artalis Unit
+         · skills: 162,211,40,49,53,84 -> 162,201,211,40,49,53
+   ~ MOD  [602] Agêma Marksmen / AGÊMA Marksmen
+         · skills: 191,238,29,84 -> 191,215,238,29,84
+   ~ MOD  [584] Asuras / ASURAS
+         · pointsRange: [58,62] -> [61,65]
+         · equipment: 101,116 -> 101,116,241
+         · weapons: 41,6,65,69,74 -> 145,157,169,189,6
+   ~ MOD  [1557] Chandra Specialist Operative Trisha N33 / Chandra Specialist Operative TRISHA N33
+         · pointsRange: [25,25] -> [24,24]
+         · weapons: 103,17,197,5,65,69 -> 103,145,17,5,69,87
+   ~ MOD  [1471] Hippolyta, Amazon Officer / HIPPOLYTA, Amazon Officer
+         · pointsRange: [38,38] -> [37,37]
+   ~ MOD  [1130] Dart, Optimate Huntress / DART, Optimate Huntress
+         · pointsRange: [35,36] -> [35,42]
+         · profileGroups: 1 -> 2
+         · skills: 161,162,164,189,191,215,28,29,56,58,82,84,86 -> 161,162,164,189,191,215,240,243,28,29,39,40,56,58,82,84,86
+         · weapons: 179,196,214,47,5,69 -> 11,179,188,196,214,23,47,5,69,71,72
+   ~ MOD  [1197] Rudras GunBots / RUDRAS GunBots
+         · pointsRange: [34,37] -> [35,38]
+         · skills: 235,40,82,84 -> 162,201,235,275,82,84
+         · equipment: 117,63 -> 241,63
+         · weapons: 107,152,176,181,41,71 -> 107,145,152,181,68,71
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- ariadna.json (100 -> 100 units)
+   ~ MOD  [247] Loup-Garous / LOUP-GAROU, Groupe Mobile d'Action Spéciale
+         · pointsRange: [15,26] -> [15,24]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- bakunin.json (93 -> 94 units)
+   + ADD  [382] Mobile Brigada / MOBILE BRIGADA
+   + ADD  [296] Corregidor Alguaciles / CORREGIDOR ALGUACILES
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   ~ MOD  [1544] Vostok Sputniks  / VOSTOK Sputniks
+         · pointsRange: [35,40] -> [34,38]
+         · weapons: 64,71 -> 28,64,71,74
+   ~ MOD  [1608] Mother Healer Agatha Wabara / MOTHER HEALER AGATHA WABARA
+         · pointsRange: [31,32] -> [31,31]
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [423] Tsyklon Sputniks / TSYKLON Sputnik
+         · pointsRange: [26,28] -> [26,29]
+   ~ MOD  [408] Stempler Zonds / STEMPLER ZONDS
+         · pointsRange: [15,18] -> [15,22]
+         · skills: 213,235,242,59,65,82,84 -> 213,235,242,278,59,65,74,82,84
+         · weapons: 33,71,72 -> 207,33,71,72
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- caledonian-highlander-army.json (71 -> 71 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- combined-army.json (100 -> 100 units)
+   ~ MOD  [1298] Greif Operators / GREIF OPERATORS
+         · pointsRange: [20,25] -> [21,25]
+         · weapons: 155,17,33,5,63,98 -> 103,155,17,211,33,5,63,98
+   ~ MOD  [502] Malignos / MALIGNOS Shasvastii Deep Incursion Corps
+         · pointsRange: [31,35] -> [30,34]
+         · skills: 1000,164,191,237,238,28,29,47,58,59,62 -> 1000,164,191,237,238,28,29,47,56,58,59,62
+         · weapons: 17,196,211,26,33,36,5,62,72,77 -> 145,17,196,211,26,36,5,62,63,72,77
+   ~ MOD  [783] Nexus Operatives / NEXUS Operatives
+         · weapons: 17,175,197,214,25,41,5,74,98 -> 17,175,197,214,25,33,41,5,74,98
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- corregidor.json (84 -> 87 units)
+   + ADD  [411] Meteor Zonds / METEOR ZONDS
+   + ADD  [1891] Bearcats, Airborne Heavy Regiment / Bearcats, Airborne Heavy Regiment
+   + ADD  [1896] Coyotes, Recon and Maneuver Team / Coyotes, Recon and Maneuver Team
+   + ADD  [1895] Vigilantes, Tactical Support and Surveillance Special Group / Vigilantes, Tactical Support and Surveillance Special Group
+   + ADD  [1902] Shifta Insertion Group / Shifta Insertion Group
+   + ADD  [1893] Territorials, Territorial Domination Unit / Territorials, Territorial Domination Unit
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   - DEL  [1588] Raveneye Officers / RAVENEYE Officers
+   - DEL  [423] Tsyklon Sputniks / TSYKLON Sputnik
+   ~ MOD  [395] Intruders / INTRUDERS, Corregidor Assault Commandos
+         · pointsRange: [32,38] -> [33,38]
+         · equipment: 115,117,145 -> 115,145
+         · weapons: 145,2,214,36,44,5,69 -> 107,145,17,2,214,36,44,5
+   ~ MOD  [400] Corregidor Bandits / CORREGIDOR BANDITS
+         · pointsRange: [24,30] -> [23,28]
+         · weapons: 11,196,212,216,28,72,77 -> 11,17,196,212,216,28,72,77
+   ~ MOD  [1578] The Diablos of D-Block / The DIABLOS of D-Block
+         · pointsRange: [9,14] -> [8,9]
+         · skills: 24,246,256,264,39,40,84 -> 24,240,246,256,264,39,40,83
+         · weapons: 177,212,28,33,44,5,77,82 -> 177,212,28,44,5,77,82
+   ~ MOD  [432] 'Gecko' Squad / 'GECKO' SQUADRON
+         · pointsRange: [52,53] -> [49,55]
+         · equipment: 239 -> 239,241
+         · weapons: 14,169,18,5,64,68 -> 14,169,18,5,64,68,81
+   ~ MOD  [296] Corregidor Alguaciles / CORREGIDOR ALGUACILES
+         · skills: 1000,119,189,260,59,64 -> 1000,119,189,260,280,59,64
+         · weapons: 2,33,5,58,69,72 -> 19,2,216,220,25,33,5,58,69,72,77
+   ~ MOD  [415] Tomcats / TOMCATS, Emergency and Rescue Special Team
+         · pointsRange: [19,26] -> [17,26]
+         · skills: 243,28,33,49,53,58,82,84 -> 243,28,33,49,53,58,64,82,84
+         · weapons: 17,28,33,41,5,56,68,69,71 -> 17,28,33,41,5,56,68,69,71,77
+   ~ MOD  [1543] Evaders, EVA Tactical Group / EVADERS, EVA Tactical Group
+         · pointsRange: [20,34] -> [23,35]
+         · equipment: 169,237,238 -> 169,183,237,238
+   ~ MOD  [430] Wildcats, Polyvalent Tactical Unit / WILDCATS, Polyvalent Tactical Unit
+         · pointsRange: [19,28] -> [21,28]
+         · skills: 1000,119,122,162,211,262,49,56,58,84 -> 1000,119,122,162,211,262,49,58,84
+         · weapons: 17,26,28,33,5,56,69,74,89 -> 17,26,28,33,5,56,69,74,82,87,89
+   ~ MOD  [382] Mobile Brigada / MOBILE BRIGADA
+         · skills: 1000,119,162,263 -> 1000,119,263,84
+   ~ MOD  [1542] Sombras, Forward Interdiction Team / SOMBRAS, Forward Interdiction Team
+         · pointsRange: [36,40] -> [29,40]
+         · skills: 1000,161,162,164,189,191,28,29,58,82,86 -> 1000,161,162,164,189,191,28,29,58,59,82,86
+         · weapons: 152,199,212,28,41,5 -> 152,17,199,212,214,28,41,5,72
+   ~ MOD  [408] Stempler Zonds / STEMPLER ZONDS
+         · pointsRange: [15,18] -> [15,22]
+         · skills: 213,235,242,59,65,82,84 -> 213,235,242,278,59,65,74,82,84
+         · weapons: 33,71,72 -> 207,33,71,72
+   ~ MOD  [1544] Vostok Sputniks  / VOSTOK Sputniks
+         · pointsRange: [35,40] -> [34,38]
+         · weapons: 64,71 -> 28,64,71,74
+   ~ MOD  [383] 'Iguana' Squadron / 'IGUANA' SQUADRON
+         · pointsRange: [64,64] -> [64,68]
+   ~ MOD  [433] Alguacil Vortex Lupe Balboa / ALGUACIL VORTEX LUPE BALBOA
+         · pointsRange: [24,24] -> [19,23]
+         · skills: 189,28,84,85 -> 162,189,26,28
+         · weapons: 212,25,33,45,5,68 -> 212,214,25,45,5,68
+   ~ MOD  [427] Carlota Kowalsky, Tomcats Sergeant / CARLOTA KOWALSKY, Tomcats Sergeant
+         · pointsRange: [29,33] -> [28,32]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- dahshat.json (83 -> 83 units)
+   ~ MOD  [324] Odalisques / ODALISQUES
+         · pointsRange: [19,28] -> [19,27]
+         · weapons: 145,189,19,206,208,26,28,31,69,71,72,77 -> 145,189,19,208,225,26,28,31,69,71,72,77
+   ~ MOD  [325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- druze.json (78 -> 78 units)
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- force-de-reponse-rapide-merovingienne.json (69 -> 69 units)
+   ~ MOD  [247] Loup-Garous / LOUP-GAROU, Groupe Mobile d'Action Spéciale
+         · pointsRange: [15,26] -> [15,24]
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- haqqislam.json (101 -> 103 units)
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1905] RacerBots / RacerBots
+   ~ MOD  [1589] Hassassin Bokhtar / Hassassin BOKHTAR
+         · pointsRange: [46,52] -> [45,52]
+   ~ MOD  [305] Zhayedan Intervention Troops / ZHAYEDAN Intervention Troops
+         · pointsRange: [23,31] -> [22,31]
+   ~ MOD  [1590] Sunduqbut, Covert Heavy-Support Unit / SUNDUQBUT, Covert Heavy-Support Unit
+         · pointsRange: [45,50] -> [42,50]
+   ~ MOD  [328] Hassassin Lasiqs / HASSASSIN LASIQS
+         · pointsRange: [25,27] -> [22,25]
+   ~ MOD  [325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [324] Odalisques / ODALISQUES
+         · pointsRange: [19,28] -> [19,27]
+         · weapons: 145,189,19,206,208,26,28,31,69,71,72,77 -> 145,189,19,208,225,26,28,31,69,71,72,77
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- hassassin-bahram.json (80 -> 81 units)
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   ~ MOD  [341] Hassassin Husam Yasbir / HASSASSIN HUSAM YASBIR
+         · pointsRange: [28,32] -> [25,29]
+   ~ MOD  [1590] Sunduqbut, Covert Heavy-Support Unit / SUNDUQBUT, Covert Heavy-Support Unit
+         · pointsRange: [45,50] -> [42,50]
+   ~ MOD  [779] Hassassin Áyyār / Hassassin ÁYYĀR
+         · pointsRange: [39,40] -> [38,40]
+   ~ MOD  [1589] Hassassin Bokhtar / Hassassin BOKHTAR
+         · pointsRange: [46,52] -> [45,52]
+   ~ MOD  [1547] Hassassin Shujae / Hassassin SHUJAE
+         · pointsRange: [27,33] -> [27,30]
+   ~ MOD  [328] Hassassin Lasiqs / HASSASSIN LASIQS
+         · pointsRange: [25,27] -> [22,25]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- ikari.json (82 -> 82 units)
+   ~ MOD  [325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- imperial-service.json (90 -> 89 units)
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+   ~ MOD  [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+   ~ MOD  [1839] Lóngwáng, Imperial TAG Police / LÓNGWÁNG, Imperial TAG Police
+         · pointsRange: [72,74] -> [68,72]
+         · weapons: 188,2,216,64,71 -> 187,216,3,64,71
+   ~ MOD  [125] Zhànyīng Imperial Agents / ZHÀNYĪNG Imperial Agents
+         · pointsRange: [21,26] -> [20,26]
+   ~ MOD  [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+-- invincible-army.json (82 -> 83 units)
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   ~ MOD  [1263] Tai Sheng, Zúyŏng Invincibles NCO / TAI SHENG, Zúyŏng Invincibles NCO
+         · pointsRange: [33,41] -> [33,40]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- jsa.json (90 -> 90 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- kestrel-colonial-force.json (86 -> 86 units)
+   ~ MOD  [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [1072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [1862] Optimate Agent Maximus / Optimate Agent Maximus
+         · pointsRange: [40,40] -> [45,48]
+         · profileGroups: 1 -> 2
+         · skills: 119,162,189,213,240,39,40,84,86 -> 119,122,162,189,213,240,243,28,39,40,84,86
+         · equipment:  -> 183,248,63
+         · weapons: 107,207,213,78 -> 107,11,213,23,230,71,72,78
+   ~ MOD  [1720] Maximus, Optimate and HexaDome Legend / MAXIMUS, Optimate and HexaDome Legend
+         · pointsRange: [76,76] -> [80,82]
+         · weapons: 107,207,213,78 -> 107,213,230,3,78
+   ~ MOD  [1130] Dart, Optimate Huntress / DART, Optimate Huntress
+         · pointsRange: [35,36] -> [35,42]
+         · profileGroups: 1 -> 2
+         · skills: 161,162,164,189,191,215,28,29,56,58,82,84,86 -> 161,162,164,189,191,215,240,243,28,29,39,40,56,58,82,84,86
+         · weapons: 179,196,214,47,5,69 -> 11,179,188,196,214,23,47,5,69,71,72
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- kosmoflot.json (84 -> 84 units)
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- military-orders.json (86 -> 86 units)
+   ~ MOD  [1130] Dart, Optimate Huntress / DART, Optimate Huntress
+         · pointsRange: [35,36] -> [35,42]
+         · profileGroups: 1 -> 2
+         · skills: 161,162,164,189,191,215,28,29,56,58,82,84,86 -> 161,162,164,189,191,215,240,243,28,29,39,40,56,58,82,84,86
+         · weapons: 179,196,214,47,5,69 -> 11,179,188,196,214,23,47,5,69,71,72
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- morat.json (85 -> 85 units)
+   ~ MOD  [499] Raicho Armored Brigade / RAICHO Armored Brigade
+         · pointsRange: [74,81] -> [75,85]
+         · weapons: 176,29,4,57,6,89 -> 176,29,4,57,6
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- neoterran-capitaline-army.json (84 -> 84 units)
+   ~ MOD  [1862] Optimate Agent Maximus / Optimate Agent Maximus
+         · pointsRange: [40,40] -> [45,48]
+         · profileGroups: 1 -> 2
+         · skills: 119,162,189,213,240,39,40,84,86 -> 119,122,162,189,213,240,243,28,39,40,52,84,86
+         · equipment:  -> 183,248,63
+         · weapons: 107,207,213,78 -> 107,11,213,23,230,71,72,78
+   ~ MOD  [1720] Maximus, Optimate and HexaDome Legend / MAXIMUS, Optimate and HexaDome Legend
+         · pointsRange: [76,76] -> [80,84]
+         · skills: 119,162,189,201,213,240,246,39,40,84 -> 119,162,189,201,213,240,246,39,40,52,84
+         · weapons: 107,207,213,78 -> 107,213,230,3,78
+   ~ MOD  [769] Locust, Clandestine Action Team  / LOCUST, Clandestine Action Team
+         · pointsRange: [21,32] -> [21,31]
+   ~ MOD  [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- next-wave.json (84 -> 84 units)
+   ~ MOD  [783] Nexus Operatives / NEXUS Operatives
+         · weapons: 17,175,197,214,25,41,5,74,98 -> 17,175,197,214,25,33,41,5,74,98
+   ~ MOD  [1876] Harbingers, New Mankind Defense Infantry / HARBINGERS, New Mankind Defense Infantry
+         · equipment: 100,106 -> 100,106,111,145
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- nomads.json (97 -> 102 units)
+   + ADD  [1902] Shifta Insertion Group / Shifta Insertion Group
+   + ADD  [1893] Territorials, Territorial Domination Unit / Territorials, Territorial Domination Unit
+   + ADD  [1896] Coyotes, Recon and Maneuver Team / Coyotes, Recon and Maneuver Team
+   + ADD  [1905] RacerBots / RacerBots
+   + ADD  [1891] Bearcats, Airborne Heavy Regiment / Bearcats, Airborne Heavy Regiment
+   + ADD  [1895] Vigilantes, Tactical Support and Surveillance Special Group / Vigilantes, Tactical Support and Surveillance Special Group
+   + ADD  [11564] Fiddler, Aristeia!'s ex-toymaker / Fiddler, Aristeia!'s ex-toymaker
+   - DEL  [1564] Fiddler, Aristeia!'s ex-toymaker / Fiddler, Aristeia!'s ex-toymaker
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   ~ MOD  [423] Tsyklon Sputniks / TSYKLON Sputnik
+         · pointsRange: [26,28] -> [26,31]
+         · skills: 235,82,84 -> 161,235,56,82,84
+         · weapons: 154,18,30,71,74 -> 154,18,20,30,71,74
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [1543] Evaders, EVA Tactical Group / EVADERS, EVA Tactical Group
+         · pointsRange: [20,34] -> [23,35]
+         · equipment: 169,237,238 -> 169,183,237,238
+   ~ MOD  [1855] Tunguska Triggermen / Tunguska TRIGGERMEN
+         · pointsRange: [44,47] -> [43,47]
+   ~ MOD  [432] 'Gecko' Squad / 'GECKO' SQUADRON
+         · pointsRange: [52,53] -> [49,55]
+         · equipment: 239 -> 239,241
+         · weapons: 14,169,18,5,64,68 -> 14,169,18,5,64,68,81
+   ~ MOD  [408] Stempler Zonds / STEMPLER ZONDS
+         · pointsRange: [15,18] -> [15,22]
+         · skills: 213,235,242,59,65,82,84 -> 213,235,242,278,59,65,74,82,84
+         · weapons: 33,71,72 -> 207,33,71,72
+   ~ MOD  [1544] Vostok Sputniks  / VOSTOK Sputniks
+         · pointsRange: [35,40] -> [34,38]
+         · weapons: 64,71 -> 28,64,71,74
+   ~ MOD  [1101] Perseus, Rogue Myrmidon / PERSEUS, Rogue Myrmidon
+         · pointsRange: [34,34] -> [33,34]
+   ~ MOD  [395] Intruders / INTRUDERS, Corregidor Assault Commandos
+         · pointsRange: [32,38] -> [33,38]
+         · equipment: 115,117,145 -> 115,145
+         · weapons: 145,2,214,36,44,5,69 -> 107,145,17,2,214,36,44,5
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- o-12.json (96 -> 97 units)
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   ~ MOD  [1471] Hippolyta, Amazon Officer / HIPPOLYTA, Amazon Officer
+         · pointsRange: [38,38] -> [37,37]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- oban.json (80 -> 80 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- onyx.json (85 -> 85 units)
+   ~ MOD  [783] Nexus Operatives / NEXUS Operatives
+         · weapons: 17,175,197,214,25,41,5,74,98 -> 17,175,197,214,25,33,41,5,74,98
+   ~ MOD  [1298] Greif Operators / GREIF OPERATORS
+         · pointsRange: [20,25] -> [21,25]
+         · weapons: 155,17,33,5,63,98 -> 103,155,17,211,33,5,63,98
+   ~ MOD  [502] Malignos / MALIGNOS Shasvastii Deep Incursion Corps
+         · pointsRange: [31,35] -> [30,34]
+         · skills: 1000,164,191,237,238,28,29,47,58,59,62 -> 1000,164,191,237,238,28,29,47,56,58,59,62
+         · weapons: 17,196,211,26,33,36,5,62,72,77 -> 145,17,196,211,26,36,5,62,63,72,77
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- operations.json (88 -> 95 units)
+   + ADD  [600] Thorakitai / THORAKITAI
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   + ADD  [1901] Kinnara Scoutbots /  KINNARA Scoutbots 
+   + ADD  [1904] Tarkshya Interception Wing / Tarkshya Interception Wing
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1898] Dikpala Tacbots / Dikpala Tacbots
+   + ADD  [1899] Sharvara HoundBots / SHARVARA HoundBots
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1906] Yaksha Tacbots / Yaksha Tacbots
+   + ADD  [10680] Armand 'Le Muet', Freelance Killer / ARMAND 'LE MUET', FREELANCE KILLER
+   - DEL  [680] Armand 'Le Muet', Freelance Killer / ARMAND 'LE MUET', FREELANCE KILLER
+   - DEL  [1557] Chandra Specialist Operative Trisha N33 / Chandra Specialist Operative TRISHA N33
+   - DEL  [1534] Parvati, Circle League star / PARVATI, Circle League star
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+   ~ MOD  [1174] Apsaras / APSARAS
+         · pointsRange: [18,21] -> [17,20]
+         · skills: 1000,255 -> 1000,119,255,270
+         · weapons: 26,5,69,77 -> 175,5,69,77
+   ~ MOD  [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [1130] Dart, Optimate Huntress / DART, Optimate Huntress
+         · pointsRange: [35,36] -> [35,42]
+         · profileGroups: 1 -> 2
+         · skills: 161,162,164,189,191,215,28,29,56,58,82,84,86 -> 161,162,164,189,191,215,240,243,28,29,39,40,56,58,82,84,86
+         · weapons: 179,196,214,47,5,69 -> 11,179,188,196,214,23,47,5,69,71,72
+   ~ MOD  [597] Posthumans / POST-HUMANS
+         · pointsRange: [13,28] -> [13,30]
+         · skills: 1000,161,164,191,242,252,28,29,47,49,53,58,59,84,86 -> 1000,161,162,164,191,201,252,28,29,47,49,53,58,59,84,86
+         · weapons: 17,2,26,33,36,47,5,64,65,69,72,77,89 -> 107,17,2,26,33,36,47,5,64,65,69,72,77,89
+   ~ MOD  [1191] Yadu Officer Shakti / SHAKTI, Yadu Officer
+         · equipment: 145 -> 145,183
+         · weapons: 107,174,226,23,5,64 -> 107,199,226,23,5,64
+   ~ MOD  [584] Asuras / ASURAS
+         · pointsRange: [58,64] -> [61,67]
+         · equipment: 101,116 -> 101,116,241
+         · weapons: 41,6,65,69,74 -> 145,157,169,189,6
+   ~ MOD  [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [587] Dasyus / DASYUS
+         · pointsRange: [34,37] -> [28,34]
+         · skills: 1000,164,191,211,238,28,29,47,58,59,84,86 -> 1000,162,164,191,201,238,28,29,47,56,58,59,84
+         · equipment: 100,145 -> 100,111,145
+         · weapons: 17,196,211,26,36,5,65,72,77 -> 145,17,211,214,26,36,5,63,72
+   ~ MOD  [1178] Arjuna Unit / ARJUNA Unit
+         · pointsRange: [21,35] -> [21,42]
+         · skills: 189,213,243,28,40,84 -> 161,162,189,213,243,28,40,83,84
+         · equipment:  -> 111,169,241
+         · weapons: 1,155,17,174,23,26,5,71,74,98 -> 100,145,17,214,23,25,26,5,63,71,72,74,98
+   ~ MOD  [1771] Artalis Unit / Artalis Unit
+         · skills: 162,211,40,49,53,84 -> 162,201,211,40,49,53
+   ~ MOD  [1720] Maximus, Optimate and HexaDome Legend / MAXIMUS, Optimate and HexaDome Legend
+         · pointsRange: [76,76] -> [80,82]
+         · weapons: 107,207,213,78 -> 107,213,230,3,78
+   ~ MOD  [59] Nagas / NAGAS
+         · pointsRange: [24,30] -> [25,29]
+         · skills: 1000,164,191,28,29,47,56,58,59,84,85 -> 1000,164,191,201,28,29,47,56,58,59,84,85
+         · equipment: 100,145 -> 100,111,145
+         · weapons: 17,196,26,33,36,5,62,69,72,77 -> 17,196,197,214,26,36,5,62,65,69,72
+   ~ MOD  [1862] Optimate Agent Maximus / Optimate Agent Maximus
+         · pointsRange: [40,40] -> [45,48]
+         · profileGroups: 1 -> 2
+         · skills: 119,162,189,213,240,39,40,84,86 -> 119,122,162,189,213,240,243,28,39,40,84,86
+         · equipment:  -> 183,248,63
+         · weapons: 107,207,213,78 -> 107,11,213,23,230,71,72,78
+   ~ MOD  [1129] Yadu Troopers, Tactical Assault Teams / YADU Troopers, Tactical Assault Teams
+         · equipment: 100,238 -> 100,183,238
+   ~ MOD  [185] Sophotects / SOPHOTECTS
+         · pointsRange: [29,34] -> [25,32]
+         · weapons: 145,17,226,33,5,69 -> 145,17,226,33,5,69,72,77
+   ~ MOD  [1197] Rudras GunBots / RUDRAS GunBots
+         · pointsRange: [34,37] -> [35,38]
+         · skills: 235,40,82,84 -> 162,201,235,275,82,84
+         · equipment: 117,63 -> 241,63
+         · weapons: 107,152,176,181,41,71 -> 107,145,152,181,68,71
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- panoceania.json (100 -> 102 units)
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1905] RacerBots / RacerBots
+   ~ MOD  [769] Locust, Clandestine Action Team  / LOCUST, Clandestine Action Team
+         · pointsRange: [21,32] -> [21,31]
+   ~ MOD  [1720] Maximus, Optimate and HexaDome Legend / MAXIMUS, Optimate and HexaDome Legend
+         · pointsRange: [76,76] -> [80,82]
+         · weapons: 107,207,213,78 -> 107,213,230,3,78
+   ~ MOD  [1862] Optimate Agent Maximus / Optimate Agent Maximus
+         · pointsRange: [40,40] -> [45,48]
+         · profileGroups: 1 -> 2
+         · skills: 119,162,189,213,240,39,40,84,86 -> 119,122,162,189,213,240,243,28,39,40,84,86
+         · equipment:  -> 183,248,63
+         · weapons: 107,207,213,78 -> 107,11,213,23,230,71,72,78
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- qapu-khalqi.json (82 -> 83 units)
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   ~ MOD  [383] 'Iguana' Squadron / 'IGUANA' SQUADRON
+         · pointsRange: [64,64] -> [64,68]
+   ~ MOD  [324] Odalisques / ODALISQUES
+         · pointsRange: [19,28] -> [19,27]
+         · weapons: 145,189,19,206,208,26,28,31,69,71,72,77 -> 145,189,19,208,225,26,28,31,69,71,72,77
+   ~ MOD  [325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- ramah-taskforce.json (82 -> 83 units)
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   ~ MOD  [305] Zhayedan Intervention Troops / ZHAYEDAN Intervention Troops
+         · pointsRange: [23,31] -> [22,31]
+   ~ MOD  [1315] Namurr Experimental Operative Group / NAMURR Experimental Operative Group
+         · pointsRange: [42,44] -> [41,44]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- shasvastii.json (78 -> 78 units)
+   ~ MOD  [502] Malignos / MALIGNOS Shasvastii Deep Incursion Corps
+         · pointsRange: [31,35] -> [30,34]
+         · skills: 1000,164,191,237,238,28,29,47,58,59,62 -> 1000,164,191,237,238,28,29,47,56,58,59,62
+         · weapons: 17,196,211,26,33,36,5,62,72,77 -> 145,17,196,211,26,36,5,62,63,72,77
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- shindenbutai.json (80 -> 80 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- shock-army-of-acontecimento.json (78 -> 78 units)
+   ~ MOD  [1130] Dart, Optimate Huntress / DART, Optimate Huntress
+         · pointsRange: [35,36] -> [35,42]
+         · profileGroups: 1 -> 2
+         · skills: 161,162,164,189,191,215,28,29,56,58,82,84,86 -> 161,162,164,189,191,215,240,243,28,29,39,40,56,58,82,84,86
+         · weapons: 179,196,214,47,5,69 -> 11,179,188,196,214,23,47,5,69,71,72
+   ~ MOD  [28] Knights of Montesa / KNIGHTS OF MONTESA
+         · pointsRange: [20,32] -> [20,35]
+         · weapons: 11,14,152,212,26 -> 11,14,152,212,26,74,96
+   ~ MOD  [59] Nagas / NAGAS
+         · pointsRange: [24,30] -> [25,29]
+         · skills: 1000,164,191,28,29,47,56,58,59,84,85 -> 1000,164,191,201,28,29,47,56,58,59,84,85
+         · equipment: 100,145 -> 100,111,145
+         · weapons: 17,196,26,33,36,5,62,69,72,77 -> 17,196,197,214,26,36,5,62,65,69,72
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- starco-free-company-of-the-star.json (77 -> 76 units)
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   ~ MOD  [1072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [400] Corregidor Bandits / CORREGIDOR BANDITS
+         · pointsRange: [24,30] -> [23,28]
+         · weapons: 11,196,212,216,28,72,77 -> 11,17,196,212,216,28,72,77
+   ~ MOD  [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [423] Tsyklon Sputniks / TSYKLON Sputnik
+         · pointsRange: [26,28] -> [26,31]
+         · skills: 235,82,84 -> 161,235,56,82,84
+         · weapons: 154,18,30,71,74 -> 154,18,20,30,71,74
+   ~ MOD  [408] Stempler Zonds / STEMPLER ZONDS
+         · pointsRange: [15,18] -> [15,22]
+         · skills: 213,235,242,59,65,82,84 -> 213,235,242,278,59,65,74,82,84
+         · weapons: 33,71,72 -> 207,33,71,72
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- starmada.json (90 -> 90 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- steel-phalanx.json (83 -> 84 units)
+   + ADD  [1178] Arjuna Unit / ARJUNA Unit
+   ~ MOD  [1471] Hippolyta, Amazon Officer / HIPPOLYTA, Amazon Officer
+         · pointsRange: [38,38] -> [37,37]
+   ~ MOD  [602] Agêma Marksmen / AGÊMA Marksmen
+         · skills: 191,238,29,84 -> 191,215,238,29,84
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- svalarheima-s-winter-force.json (82 -> 83 units)
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   ~ MOD  [769] Locust, Clandestine Action Team  / LOCUST, Clandestine Action Team
+         · pointsRange: [21,32] -> [21,31]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- tartary.json (78 -> 78 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- tohaa.json (87 -> 87 units)
+   ~ MOD  [1552] Rasail Boarding Team / RASAIL Boarding Team
+         · weapons: 19,196,26,28,33,5,57,69,74,83 -> 19,196,26,28,5,57,69,74,83
+   ~ MOD  [647] Sakiel Regiment / SAKIEL Regiment
+         · pointsRange: [18,23] -> [19,22]
+         · weapons: 17,33,47,5,69,72,74,83 -> 17,47,5,69,72,74,83
+   ~ MOD  [1298] Greif Operators / GREIF OPERATORS
+         · pointsRange: [20,25] -> [21,25]
+         · weapons: 155,17,33,5,63,98 -> 103,155,17,211,33,5,63,98
+   ~ MOD  [660] Nikoul Ambush Unit / NIKOUL AMBUSH UNIT
+         · pointsRange: [27,29] -> [25,27]
+   ~ MOD  [1304] Taagma Schemers / TAAGMA Schemers
+         · pointsRange: [16,24] -> [15,22]
+   ~ MOD  [1307] Kriigel Agents / KRIIGEL Agents
+         · pointsRange: [22,22] -> [21,21]
+   ~ MOD  [657] Neema Saatar, Ectros Regiment Officer / NEEMA SAATAR, Ectros Regiment Officer
+         · weapons: 10,103,156,157,65,68 -> 10,103,13,156,157,65,68
+   ~ MOD  [801] Taqeul Officers / TAQEUL Officers
+         · pointsRange: [33,40] -> [35,36]
+         · weapons: 203,205,33,5,65,69,83 -> 203,205,5,65,69,83
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- torchlight-brigade.json (84 -> 85 units)
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   ~ MOD  [1471] Hippolyta, Amazon Officer / HIPPOLYTA, Amazon Officer
+         · pointsRange: [38,38] -> [37,37]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- tunguska.json (88 -> 89 units)
+   + ADD  [296] Corregidor Alguaciles / CORREGIDOR ALGUACILES
+   + ADD  [382] Mobile Brigada / MOBILE BRIGADA
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   ~ MOD  [1550]  Jelena Kovač, Securitate DI / JELENA KOVAČ, Securitate DI
+         · pointsRange: [22,22] -> [21,21]
+   ~ MOD  [423] Tsyklon Sputniks / TSYKLON Sputnik
+         · pointsRange: [26,30] -> [26,31]
+         · skills: 161,235,82,84 -> 161,235,56,82,84
+         · weapons: 154,18,30,71,74 -> 154,18,20,30,71,74
+   ~ MOD  [1544] Vostok Sputniks  / VOSTOK Sputniks
+         · pointsRange: [35,40] -> [34,38]
+         · weapons: 64,71 -> 28,64,71,74
+   ~ MOD  [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [1101] Perseus, Rogue Myrmidon / PERSEUS, Rogue Myrmidon
+         · pointsRange: [34,34] -> [33,34]
+   ~ MOD  [408] Stempler Zonds / STEMPLER ZONDS
+         · pointsRange: [15,18] -> [15,22]
+         · skills: 213,235,242,59,65,74,82,84 -> 213,235,242,278,59,65,74,82,84
+         · weapons: 33,71,72 -> 207,33,71,72
+   ~ MOD  [1855] Tunguska Triggermen / Tunguska TRIGGERMEN
+         · pointsRange: [44,47] -> [43,47]
+   ~ MOD  [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
+         · pointsRange: [34,34] -> [33,33]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- usariadna.json (70 -> 70 units)
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- varuna-immediate-reaction-division.json (77 -> 77 units)
+   ~ MOD  [1216] Zulu-Cobra, Recon and Special Intervention Group / ZULÚ-COBRA, Recon and Special Intervention Group
+         · weapons: 103,154,169,197,33,5,70,72,74,87 -> 103,154,169,197,33,5,70,72,74,87,
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- white-banner.json (93 -> 94 units)
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- white-company.json (83 -> 83 units)
+   ~ MOD  [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [1072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,28] -> [22,28]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183
+   ~ MOD  [10947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+-- yu-jing.json (102 -> 104 units)
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1905] RacerBots / RacerBots
+   ~ MOD  [125] Zhànyīng Imperial Agents / ZHÀNYĪNG Imperial Agents
+         · pointsRange: [21,26] -> [20,26]
+   ~ MOD  [947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
+         · pointsRange: [28,28] -> [29,29]
+   ~ MOD  [1839] Lóngwáng, Imperial TAG Police / LÓNGWÁNG, Imperial TAG Police
+         · pointsRange: [72,74] -> [68,72]
+         · weapons: 188,2,216,64,71 -> 187,216,3,64,71
+   ~ MOD  [11072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
+         · pointsRange: [23,24] -> [22,24]
+   ~ MOD  [10325] Bashi Bazouks / BASHI BAZOUKS
+         · pointsRange: [13,16] -> [12,16]
+   ~ MOD  [10122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
+         · pointsRange: [11,14] -> [10,13]
+   ~ MOD  [10198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
+         · pointsRange: [25,28] -> [23,26]
+         · skills: 161,162,164,191,262,83,85 -> 161,162,164,191,201,211,262,83,85
+         · equipment: 104,117,24 -> 104,117,183

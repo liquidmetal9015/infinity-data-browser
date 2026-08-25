@@ -1,0 +1,156 @@
+================================================================
+ INFINITY DATA REFRESH — CHANGE REPORT
+ Snapshot (old): /tmp/infinity-data-snapshot-20260527-085240
+ Working (new): /home/clindbeck9/infinity-data
+ Date: Wed May 27 08:56:09 EDT 2026
+================================================================
+
+REFRESH STATUS: 57/58 factions fetched. 1 failure:
+  - [901] Non-Aligned Armies — API returned XML (likely 4xx/5xx page).
+    (Pre-existing condition; same behavior likely on prior runs.)
+
+----- RAW data (data/*.json) -----
+Files: old=57, new=57, added=0, removed=0
+TOTALS — added units: 55, removed units: 15, modified units: 10
+Factions with changes: 56
+
+----- PROCESSED data (data/processed/*.json) -----
+Files: old=45, new=45, added=0, removed=0
+TOTALS — added units: 55, removed units: 14, modified units: 365
+Factions with changes: 45
+
+================================================================
+ ADDED / REMOVED UNITS (from RAW diff — authoritative)
+================================================================
+-- aleph.json (86 -> 97 units) v:7.25316.267 -> 7.26147.194
+   + ADD  [1898] Dikpala Tacbots / Dikpala Tacbots
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   + ADD  [1178] Arjuna Unit / ARJUNA Unit
+   + ADD  [600] Thorakitai / THORAKITAI
+   + ADD  [1899] Sharvara HoundBots / SHARVARA HoundBots
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1534] Parvati, Circle League star / PARVATI, Circle League star
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1901] Kinnara Scoutbots /  KINNARA Scoutbots 
+   + ADD  [1904] Tarkshya Interception Wing / Tarkshya Interception Wing
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1906] Yaksha Tacbots / Yaksha Tacbots
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+-- ank-program.json (13 -> 13 units) v:7.25288.295 -> 7.26147.194
+-- ariadna.json (100 -> 100 units) v:7.25289.414 -> 7.26147.193
+-- bakunin.json (93 -> 94 units) v:7.25289.466 -> 7.26147.194
+   + ADD  [382] Mobile Brigada / MOBILE BRIGADA
+   + ADD  [296] Corregidor Alguaciles / CORREGIDOR ALGUACILES
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+-- caledonian-highlander-army.json (71 -> 71 units) v:7.25288.294 -> 7.26147.193
+-- code-capital.json (13 -> 13 units) v:7.25316.267 -> 7.26147.192
+-- combined-army.json (100 -> 100 units) v:7.25318.86 -> 7.26147.194
+-- contracted-back-up.json (10 -> 10 units) v:7.25288.295 -> 7.26147.194
+-- corregidor.json (84 -> 87 units) v:7.25289.466 -> 7.26147.194
+   + ADD  [411] Meteor Zonds / METEOR ZONDS
+   + ADD  [1891] Bearcats, Airborne Heavy Regiment / Bearcats, Airborne Heavy Regiment
+   + ADD  [1896] Coyotes, Recon and Maneuver Team / Coyotes, Recon and Maneuver Team
+   + ADD  [1895] Vigilantes, Tactical Support and Surveillance Special Group / Vigilantes, Tactical Support and Surveillance Special Group
+   + ADD  [1902] Shifta Insertion Group / Shifta Insertion Group
+   + ADD  [1893] Territorials, Territorial Domination Unit / Territorials, Territorial Domination Unit
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+   - DEL  [1588] Raveneye Officers / RAVENEYE Officers
+   - DEL  [423] Tsyklon Sputniks / TSYKLON Sputnik
+-- daebak-force.json (13 -> 13 units) v:7.25288.293 -> 7.26147.193
+-- dahshat.json (83 -> 83 units) v:7.25288.295 -> 7.26147.194
+-- deras-kaar.json (12 -> 12 units) v:7.25288.295 -> 7.26147.194
+-- druze.json (78 -> 78 units) v:7.25288.295 -> 7.26147.194
+-- force-de-reponse-rapide-merovingienne.json (69 -> 69 units) v:7.25288.294 -> 7.26147.193
+-- haqqislam.json (101 -> 103 units) v:7.25288.294 -> 7.26147.194
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1905] RacerBots / RacerBots
+-- hassassin-bahram.json (80 -> 81 units) v:7.25288.294 -> 7.26147.194
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+-- hayabusa.json (12 -> 12 units) v:7.25288.295 -> 7.26147.195
+-- ikari.json (82 -> 82 units) v:7.25288.295 -> 7.26147.194
+-- imperial-service.json (90 -> 89 units) v:7.25288.293 -> 7.26147.193
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+-- invincible-army.json (82 -> 83 units) v:7.25288.293 -> 7.26147.193
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+-- jsa.json (90 -> 90 units) v:7.25316.267 -> 7.26147.195
+-- kestrel-colonial-force.json (86 -> 86 units) v:7.25316.267 -> 7.26147.192
+-- kosmoflot.json (84 -> 84 units) v:7.25288.294 -> 7.26147.193
+-- l-equipe-argent.json (12 -> 12 units) v:7.25288.294 -> 7.26147.193
+-- melek-reaction-group.json (13 -> 13 units) v:7.25288.294 -> 7.26147.194
+-- military-orders.json (86 -> 86 units) v:7.25316.330 -> 7.26147.192
+-- morat.json (85 -> 85 units) v:7.25288.295 -> 7.26147.194
+-- neoterran-capitaline-army.json (84 -> 84 units) v:7.25316.267 -> 7.26147.192
+-- next-wave.json (84 -> 84 units) v:7.25318.86 -> 7.26147.194
+-- nomads.json (97 -> 102 units) v:7.25289.466 -> 7.26147.194
+   + ADD  [1902] Shifta Insertion Group / Shifta Insertion Group
+   + ADD  [1893] Territorials, Territorial Domination Unit / Territorials, Territorial Domination Unit
+   + ADD  [1896] Coyotes, Recon and Maneuver Team / Coyotes, Recon and Maneuver Team
+   + ADD  [1905] RacerBots / RacerBots
+   + ADD  [1891] Bearcats, Airborne Heavy Regiment / Bearcats, Airborne Heavy Regiment
+   + ADD  [1895] Vigilantes, Tactical Support and Surveillance Special Group / Vigilantes, Tactical Support and Surveillance Special Group
+   + ADD  [11564] Fiddler, Aristeia!'s ex-toymaker / Fiddler, Aristeia!'s ex-toymaker
+   - DEL  [1564] Fiddler, Aristeia!'s ex-toymaker / Fiddler, Aristeia!'s ex-toymaker
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+-- o-12.json (96 -> 97 units) v:7.25288.295 -> 7.26147.195
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+-- oban.json (80 -> 80 units) v:7.25288.295 -> 7.26147.195
+-- onyx.json (85 -> 85 units) v:7.25316.330 -> 7.26147.194
+-- operations.json (88 -> 95 units) v:7.25316.267 -> 7.26147.194
+   + ADD  [600] Thorakitai / THORAKITAI
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+   + ADD  [1901] Kinnara Scoutbots /  KINNARA Scoutbots 
+   + ADD  [1904] Tarkshya Interception Wing / Tarkshya Interception Wing
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1898] Dikpala Tacbots / Dikpala Tacbots
+   + ADD  [1899] Sharvara HoundBots / SHARVARA HoundBots
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+   + ADD  [1906] Yaksha Tacbots / Yaksha Tacbots
+   + ADD  [10680] Armand 'Le Muet', Freelance Killer / ARMAND 'LE MUET', FREELANCE KILLER
+   - DEL  [680] Armand 'Le Muet', Freelance Killer / ARMAND 'LE MUET', FREELANCE KILLER
+   - DEL  [1557] Chandra Specialist Operative Trisha N33 / Chandra Specialist Operative TRISHA N33
+   - DEL  [1534] Parvati, Circle League star / PARVATI, Circle League star
+   - DEL  [183] Dakini Tacbots / DAKINI Tacbots
+-- panoceania.json (100 -> 102 units) v:7.25316.267 -> 7.26147.192
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+   + ADD  [1905] RacerBots / RacerBots
+-- qapu-khalqi.json (82 -> 83 units) v:7.25288.294 -> 7.26147.194
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+-- ramah-taskforce.json (82 -> 83 units) v:7.25288.294 -> 7.26147.194
+   + ADD  [1894] Dr. Claire Lazhari, Genephilosopher and Optimate / Dr. Claire Lazhari, Genephilosopher and Optimate
+-- shasvastii.json (78 -> 78 units) v:7.25288.295 -> 7.26147.194
+-- shindenbutai.json (80 -> 80 units) v:7.25288.295 -> 7.26147.195
+-- shock-army-of-acontecimento.json (78 -> 78 units) v:7.25316.267 -> 7.26147.192
+-- starco-free-company-of-the-star.json (77 -> 76 units) v:7.25288.295 -> 7.26147.194
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+-- starmada.json (90 -> 90 units) v:7.25288.295 -> 7.26147.195
+-- steel-phalanx.json (83 -> 84 units) v:7.25288.295 -> 7.26147.194
+   + ADD  [1178] Arjuna Unit / ARJUNA Unit
+-- svalarheima-s-winter-force.json (82 -> 83 units) v:7.25316.318 -> 7.26147.192
+   + ADD  [1903]  Pilot-X Team /  Pilot-X Team
+-- tartary.json (78 -> 78 units) v:7.25288.294 -> 7.26147.193
+-- teams-gladius.json (13 -> 13 units) v:7.25288.295 -> 7.26147.195
+-- the-exrah-comissariat.json (12 -> 12 units) v:7.25288.295 -> 7.26147.194
+-- tohaa.json (87 -> 87 units) v:7.25288.295 -> 7.26147.194
+-- torchlight-brigade.json (84 -> 85 units) v:7.25288.295 -> 7.26147.195
+   + ADD  [1897] Kyra Sharma, The  Iron Maiden of the Optimates / KYRA SHARMA, The  Iron Maiden of the Optimates
+-- tunguska.json (88 -> 89 units) v:7.25289.466 -> 7.26147.194
+   + ADD  [296] Corregidor Alguaciles / CORREGIDOR ALGUACILES
+   + ADD  [382] Mobile Brigada / MOBILE BRIGADA
+   - DEL  [424] Lunokhod Sputniks / LUNOKHOD Sputnik
+-- usariadna.json (70 -> 70 units) v:7.25288.294 -> 7.26147.193
+-- varuna-immediate-reaction-division.json (77 -> 77 units) v:7.25316.330 -> 7.26147.192
+-- vipera-pursuit-force.json (13 -> 12 units) v:7.25289.466 -> 7.26147.194
+   - DEL  [1737] Reinf. Lunokhod Sputniks  / REINF: LUNOKHOD Sputniks
+-- white-banner.json (93 -> 94 units) v:7.25288.293 -> 7.26147.193
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+-- white-company.json (83 -> 83 units) v:7.25288.295 -> 7.26147.194
+-- yu-jing.json (102 -> 104 units) v:7.25288.293 -> 7.26147.221
+   + ADD  [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+   + ADD  [1905] RacerBots / RacerBots
+
+================================================================
+ Full reports written:
+   /tmp/diff-raw.txt        (raw API data changes)
+   /tmp/diff-processed.txt  (ETL output changes — derived fields)
+================================================================

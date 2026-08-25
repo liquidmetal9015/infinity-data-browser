@@ -1,0 +1,146 @@
+# Order Pool
+
+Source: https://infinitythewiki.com/Order_Pool
+
+**[Basic Rules](/Basic_Rules "Basic Rules")**
+
+* * *
+
+[Open and Private Information](/Open_and_Private_Information "Open and Private Information") | [Unit Profile](/Unit_Profile "Unit Profile") | [Army List](/Army_List "Army List") | Orders and the Order Pool | [Trooper Activation](/Trooper_Activation "Trooper Activation") | [ARO: Automatic Reaction Order](/ARO:_Automatic_Reaction_Order "ARO: Automatic Reaction Order") | [Order Expenditure Sequence](/Order_Expenditure_Sequence "Order Expenditure Sequence") | [Initiative and Deployment](/Initiative_and_Deployment "Initiative and Deployment") | [Game Sequence](/Game_Sequence "Game Sequence") | [Loss of Lieutenant](/Loss_of_Lieutenant "Loss of Lieutenant") | [Silhouettes](/Silhouettes "Silhouettes") | [Line of Fire](/Line_of_Fire "Line of Fire") | [Zone of Control](/Zone_of_Control "Zone of Control") | [Zones, Bases and Silhouettes](/Zones,_Bases_and_Silhouettes "Zones, Bases and Silhouettes") | [Coherency](/Coherency "Coherency") | [Distances and Measurements](/Distances_and_Measurements "Distances and Measurements") | [Replacing Game Elements](/Replacing_Game_Elements "Replacing Game Elements") | [Rolls](/Rolls "Rolls") | [Face to Face Rolls](/Face_to_Face_Rolls "Face to Face Rolls")
+
+  
+In Infinity, the capacity of an army to maneuver and take actions is measured in Orders. An Order is a game concept, a sort of currency spent to activate a [Trooper](/Trooper "Trooper") so that it can take part in the battle. The higher the number of Orders at its disposal, the more an army can do.
+
+  
+
+Contents
+--------
+
+*   [1 Types of Orders](#Types_of_Orders)
+    *   [1.1 Regular Order](#Regular_Order)
+    *   [1.2 Irregular Order](#Irregular_Order)
+    *   [1.3 Special Lieutenant Order](#Special_Lieutenant_Order)
+    *   [1.4 Tactical Order](#Tactical_Order)
+*   [2 Order Pool](#Order_Pool)
+*   [3 Examples](#Examples)
+
+Types of Orders
+---------------
+
+### Regular Order
+
+![eng-regular-order-512.jpg](https://assets.corvusbelli.net/wiki/eng-regular-order-512.jpg) Regular Orders are those contributed by Troopers who have received regular military training, and can be expected to follow instructions, maintain discipline under enemy fire, work in a team and coordinate with his comrades.
+
+Regular Troopers add their Orders to the [Order Pool](/Order_Pool "Order Pool"), where they can be spent by any Trooper in the same [Combat Group](/Combat_Group "Combat Group") to take actions.
+
+  
+
+### Irregular Order
+
+![eng-irregular-512.jpg](https://assets.corvusbelli.net/wiki/eng-irregular-512.jpg) Irregular Orders are those contributed by Troopers who have learned to fight in an undisciplined, disorganized way, who can be expected to worry first and foremost about themselves.
+
+The Order contributed by an Irregular Trooper is not added to the [Order Pool](/Order_Pool "Order Pool") of their [Combat Group](/Combat_Group "Combat Group") but is instead kept by them for their own use. However, the player must clearly state which Combat Group the Trooper, and their Irregular Order belong to. These Irregular Troopers can still spend Regular Orders from the Order Pool of their Combat Group.
+
+SEE ALSO
+
+**[Restrictions Chart](/Restrictions_Chart "Restrictions Chart")**
+
+Restrictions Chart
+
+[Irregular](/Irregular "Irregular") Troops may not be chosen as [Lieutenant](/Lieutenant "Lieutenant").
+
+  
+
+### Special Lieutenant Order
+
+![eng-lieutenant-order-512.jpg](https://assets.corvusbelli.net/wiki/eng-lieutenant-order-512.jpg) Lieutenant Special Orders are not added to the Order Pool, but are kept separate for the [Lieutenant](/Lieutenant "Lieutenant")'s own use. The status and expenditure of the Lieutenant Special Order is [Open Information](/Open_Information "Open Information").
+
+  
+
+### Tactical Order
+
+![tactical-order-512.png](https://assets.corvusbelli.net/wiki/tactical-order-512.png) Tactical Orders are only available to Troopers who have undergone special training and possess greater operational versatility.
+
+Tactical Orders are special Orders that are not added to the [Order Pool](/Order_Pool "Order Pool"), but are instead kept by the Trooper which generates them for their own use, though they may also be spent for advanced rules and for [Fireteams](/Fireteam "Fireteam").
+
+SEE ALSO
+
+**[NCO](/NCO "NCO")**
+
+*   Allows the user to replace any [Special Lieutenant Orders](/Lieutenant_Special_Order "Lieutenant Special Order") with [Tactical Orders](/Tactical_Order "Tactical Order") and to use them.
+
+  
+**[Tactical Awareness](/Tactical_Awareness "Tactical Awareness")**
+
+*   This Special Skill grants its user a [Tactical Order](/Tactical_Order "Tactical Order") in addition to the one provided by their [Training](/Training "Training") Characteristic (Regular or Irregular).
+
+  
+
+REMEMBER
+
+A player is not obliged to spend all the Orders available to him, regardless of their category.
+
+  
+
+IMPORTANT
+
+The status and expenditure of every Order is [Open Information](/Open_Information "Open Information"). Players must place the Tokens for each Order, including the [Lieutenant](/Lieutenant "Lieutenant")’s, where all players can see them. Moreover, they must warn their opponent when they are going to using it to activate their Troopers, including the Lieutenant.
+
+  
+
+Order Pool
+----------
+
+The Order Pool is the number of Regular Orders available to an Army List in its Active Turn. The more Regular Troopers in an Army List, the bigger its Order Pool.
+
+*   Each [Combat Group](/Combat_Group "Combat Group") has its own Order Pool, that cannot be transferred from one Combat Group to another.
+*   Only Regular Orders go into the Order Pool. Irregular Orders, the Lieutenant Special Order, and Tactical Orders are not part of any Order Pool.
+*   Players recalculate Order Pools at the beginning of each of their Active Turns, during the [Tactical Phase](/Tactical_Phase "Tactical Phase"). (further detailed in the [Game Sequence](/Game_Sequence "Game Sequence") section).
+*   Each Regular Trooper deployed on the battlefield, in the form of a [Model](/Model "Model") or [Marker](/Marker "Marker") and not in any [Null](/Null "Null") State, contributes an Order to the Order Pool of their Combat Group.
+*   Regular Troopers that are not on the battlefield in the form of a Model or Marker, due to [Special Skills](/Special_Skills "Special Skills"), do not add their Order to their Order Pool until they start their Active Turn on the battlefield as a Model or Marker. The status and existence of Orders provided by these Troopers is [Private Information](/Private_Information "Private Information"). Regular Orders provided by these Troopers can be kept secret and out of sight of the opponent.
+*   There is no limit to the number of Regular Orders may be spent to activate the same Trooper during their Active Turn; the only limit is the size of the Order Pool of their Combat Group.
+*   You can spend Regular Orders from your Order Pools in any order. When you activate a Trooper, you do not need to spend all Orders you plan to use on that Trooper consecutively, but can alternate between Troopers.
+*   Players are not required to spend all the Regular Orders in their Order Pools.
+
+  
+
+Examples
+--------
+
+Order Pool Example 1
+
+![dual-order-pool-example-1-2048.jpg](https://assets.corvusbelli.net/wiki/n5/dual-order-pool-example-1-2048.jpg)
+
+List composed of:
+
+*   10 Troopers which provide a Pool of 10 Orders.
+*   12 Models (10 Troopers and 2 Peripherals).
+*   [Peripherals](/Peripheral "Peripheral") do not provide an Order for the player’s Order Pool and they are disregarded for the 10-member limit for the player’s list.
+
+Players have several ways to consume said Orders:
+
+The 10 Regular Orders may be consumed as seen fit. Whether to activate up to 10 Troopers once each, to activate a single Trooper up to 10 times, or to activate different Troopers alternatively. 4 Regular Orders to one Trooper, 4 Regular Orders to another Trooper, and 2 Regular Orders to a different one, for example.
+
+Keep in mind that a Peripheral is activated by the same Order that activates their Controller, the Trooper who is actually spending the Order. So that single Order activates both of them at the same time.
+
+  
+
+Order Pool Example 2
+
+The player has an Army List made up of 12 Troopers, all of them Regular, distributed in two Combat Groups. One containing 8 Troopers and the other containing 4 Troopers. Therefore, the player has 2 different Order Pools, one with 8 Regular Orders and the other one with 4 Regular Orders. The first Combat Group, with its 8 Regular Orders, could spend 1 Order on each of the Troopers in the Group, activating all of them, once. Alternatively, the player could spend all the Orders on a single Trooper, activating it 8 times. Or he could spend 4 Orders on one Trooper, 3 Orders on another, and 1 Order on a different one…
+
+In the same way, with the second Combat Group, which has a Pool of 4 Regular Orders, the player would also be free to choose how the Orders are spent. What you cannot do is activate Troopers from the second Combat Group by spending Orders from the first Combat Group.
+
+  
+
+REMEMBER
+
+In an Infinity [Army List](/Army_List "Army List"), players must assign each Trooper to a [Combat Group](/Combat_Group "Combat Group"); they can create extra Combat Groups as needed, as long as the total number of Troopers in each one is no greater than 10, each with its own Order Pool.
+
+  
+
+**[Basic Rules](/Basic_Rules "Basic Rules")**
+
+* * *
+
+[Open and Private Information](/Open_and_Private_Information "Open and Private Information") | [Unit Profile](/Unit_Profile "Unit Profile") | [Army List](/Army_List "Army List") | Orders and the Order Pool | [Trooper Activation](/Trooper_Activation "Trooper Activation") | [ARO: Automatic Reaction Order](/ARO:_Automatic_Reaction_Order "ARO: Automatic Reaction Order") | [Order Expenditure Sequence](/Order_Expenditure_Sequence "Order Expenditure Sequence") | [Initiative and Deployment](/Initiative_and_Deployment "Initiative and Deployment") | [Game Sequence](/Game_Sequence "Game Sequence") | [Loss of Lieutenant](/Loss_of_Lieutenant "Loss of Lieutenant") | [Silhouettes](/Silhouettes "Silhouettes") | [Line of Fire](/Line_of_Fire "Line of Fire") | [Zone of Control](/Zone_of_Control "Zone of Control") | [Zones, Bases and Silhouettes](/Zones,_Bases_and_Silhouettes "Zones, Bases and Silhouettes") | [Coherency](/Coherency "Coherency") | [Distances and Measurements](/Distances_and_Measurements "Distances and Measurements") | [Replacing Game Elements](/Replacing_Game_Elements "Replacing Game Elements") | [Rolls](/Rolls "Rolls") | [Face to Face Rolls](/Face_to_Face_Rolls "Face to Face Rolls")
