@@ -1,26 +1,36 @@
 #!/usr/bin/env node
-// Render the markdown diff reports in by-faction/ and by-profile/ to static HTML
-// pages with shared CSS and a sidebar nav. No JS dependencies.
+// Render the profile-level markdown diff reports in update_diffs/by-profile/
+// into a unified static HTML site with sidebar navigation and single-page view.
 //
 // Usage: node update_diffs/render-html.mjs
-//
-// Reads:  update_diffs/by-faction/*.md, update_diffs/by-profile/*.md
-// Writes: update_diffs/html/by-faction/*.html, update_diffs/html/by-profile/*.html,
-//         update_diffs/html/index.html, update_diffs/html/style.css
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SRC = __dirname;
-const OUT = path.join(__dirname, 'html');
+const ROOT = path.resolve(__dirname, '..');
+const SRC_DIR = path.join(__dirname, 'by-profile');
+const OUT_DIR = path.join(__dirname, 'html');
 
-function esc(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function loadJson(p) {
+    try { return JSON.parse(fs.readFileSync(p, 'utf8')); }
+    catch { return null; }
 }
 
-// Inline markdown: **bold**, *italic*, `code`, [text](url)
+const metadata = loadJson(path.join(ROOT, 'data/metadata.json')) || {};
+const factionNameMap = new Map((metadata.factions || []).map(f => [f.slug, f.name]));
+
+function getFactionDisplayName(slug) {
+    if (factionNameMap.has(slug)) return factionNameMap.get(slug);
+    return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Inline markdown formatting
 function renderInline(s) {
     let out = esc(s);
     out = out.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
@@ -30,8 +40,6 @@ function renderInline(s) {
     return out;
 }
 
-// Categorize list-item lines and strip any leading +/−/~ marker (so it doesn't
-// double up with the CSS ::before marker).
 function classifyAndStripListItem(content) {
     let cls = '';
     let text = content;
@@ -44,18 +52,17 @@ function classifyAndStripListItem(content) {
         else if (marker === '~') cls = 'mod';
     }
     if (!cls) {
-        // Sub-line patterns like "weapons + Heavy Pistol", "skills − Foo"
         if (/^(weapons|skills|equipment)\s+\+\s/.test(text)) cls = 'add';
         else if (/^(weapons|skills|equipment)\s+[−-]\s/.test(text)) cls = 'rem';
         else if (/added\b/i.test(text) && !/removed/i.test(text)) cls = 'add';
         else if (/removed\b/i.test(text) && !/added/i.test(text)) cls = 'rem';
-        else if (/^(Points|Profile groups|points|SWC|swc):/i.test(text)) cls = 'mod';
-        else if (/^\w+:\s.*→/.test(text)) cls = 'mod'; // stat changes like "bts: 0 → 3"
+        else if (/^(Points|SWC|points|swc):/i.test(text)) cls = 'mod';
+        else if (/^\w+:\s.*→/.test(text)) cls = 'mod';
     }
     return { cls, text };
 }
 
-function renderMarkdown(md, opts = {}) {
+function renderMarkdown(md) {
     const lines = md.split('\n');
     const out = [];
     let inList = false;
@@ -76,22 +83,24 @@ function renderMarkdown(md, opts = {}) {
         if (line.startsWith('## ')) {
             closeList(); closeTable();
             const text = line.slice(3);
-            // Unit anchor: extract [id] if present
             const m = text.match(/^\[(\d+)\]/);
             const id = m ? `id="u${m[1]}"` : '';
-            out.push(`<h2 ${id}>${renderInline(text)}</h2>`);
+            out.push(`<h2 ${id} class="unit-title">${renderInline(text)}</h2>`);
             continue;
         }
         if (line.startsWith('### ')) {
             closeList(); closeTable();
-            out.push(`<h3>${renderInline(line.slice(4))}</h3>`);
+            const heading = line.slice(4);
+            let hClass = 'section-header';
+            if (heading.includes('Added')) hClass += ' add-hdr';
+            else if (heading.includes('Removed')) hClass += ' rem-hdr';
+            else if (heading.includes('Modified')) hClass += ' mod-hdr';
+            out.push(`<h3 class="${hClass}">${renderInline(heading)}</h3>`);
             continue;
         }
 
-        // Tables (pipe syntax)
         if (line.startsWith('|')) {
             const cells = line.slice(1, line.endsWith('|') ? -1 : undefined).split('|').map(c => c.trim());
-            // Separator row: |---|---|
             if (cells.every(c => /^:?-+:?$/.test(c))) { tableHeader = false; continue; }
             if (!inTable) {
                 closeList();
@@ -106,7 +115,6 @@ function renderMarkdown(md, opts = {}) {
             closeTable();
         }
 
-        // List items — support nested indent
         const liMatch = line.match(/^(\s*)-\s+(.*)$/);
         if (liMatch) {
             const content = liMatch[2];
@@ -116,7 +124,6 @@ function renderMarkdown(md, opts = {}) {
             continue;
         }
         if (inList && line.match(/^\s{4,}·/)) {
-            // continuation lines with bullet "    · foo" — attach as sub-item
             const sub = line.replace(/^\s+·\s*/, '');
             const { cls, text } = classifyAndStripListItem(sub);
             out.push(`<li class="sub ${cls}">${renderInline(text)}</li>`);
@@ -127,7 +134,6 @@ function renderMarkdown(md, opts = {}) {
             closeList();
             continue;
         }
-        // Italic-only line like `*Unit name*`
         if (/^\*[^*]+\*$/.test(line.trim())) {
             closeList();
             out.push(`<p class="subtitle">${renderInline(line.trim())}</p>`);
@@ -142,19 +148,24 @@ function renderMarkdown(md, opts = {}) {
 
 const CSS = `
 :root {
-    --bg: #fafaf7;
-    --bg-card: #fff;
-    --fg: #222;
-    --fg-muted: #666;
-    --border: #ddd;
-    --accent: #2c5282;
-    --add-bg: #e6ffed;
-    --add-fg: #22863a;
-    --rem-bg: #ffeef0;
-    --rem-fg: #b31d28;
-    --mod-bg: #fffbdd;
-    --mod-fg: #735c0f;
-    --code-bg: #f1efe9;
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #334155;
+    --fg: #f8fafc;
+    --fg-muted: #94a3b8;
+    --border: #334155;
+    --accent: #38bdf8;
+    --accent-bg: rgba(56, 189, 248, 0.12);
+    --add-bg: rgba(34, 197, 94, 0.15);
+    --add-fg: #4ade80;
+    --add-border: rgba(34, 197, 94, 0.3);
+    --rem-bg: rgba(239, 68, 68, 0.15);
+    --rem-fg: #f87171;
+    --rem-border: rgba(239, 68, 68, 0.3);
+    --mod-bg: rgba(234, 179, 8, 0.12);
+    --mod-fg: #fde047;
+    --mod-border: rgba(234, 179, 8, 0.25);
+    --code-bg: #0f172a;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -162,370 +173,206 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--fg);
-    line-height: 1.5;
+    line-height: 1.6;
     font-size: 14px;
 }
 .layout { display: flex; min-height: 100vh; }
 nav.sidebar {
-    width: 240px;
+    width: 260px;
     background: var(--bg-card);
     border-right: 1px solid var(--border);
     padding: 16px 12px;
     position: sticky; top: 0; align-self: flex-start;
     height: 100vh; overflow-y: auto;
     font-size: 13px;
+    flex-shrink: 0;
 }
-nav.sidebar h2 { font-size: 12px; text-transform: uppercase; color: var(--fg-muted); margin: 16px 0 6px; letter-spacing: 0.5px; }
-nav.sidebar h2:first-child { margin-top: 0; }
-nav.sidebar a { display: block; padding: 3px 6px; color: var(--fg); text-decoration: none; border-radius: 3px; }
-nav.sidebar a:hover { background: var(--bg); }
-nav.sidebar a.active { background: var(--accent); color: white; }
-nav.sidebar .home { font-weight: 600; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+nav.sidebar h2 {
+    font-size: 11px; text-transform: uppercase; color: var(--fg-muted);
+    margin: 16px 0 8px; letter-spacing: 0.8px; font-weight: 700;
+}
+nav.sidebar a {
+    display: block; padding: 5px 8px; color: var(--fg-muted);
+    text-decoration: none; border-radius: 4px; transition: all 0.15s ease;
+    margin-bottom: 2px;
+}
+nav.sidebar a:hover { background: var(--bg-card-hover); color: var(--fg); }
+nav.sidebar a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+nav.sidebar .home {
+    font-weight: 600; margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border); color: var(--fg);
+}
 main {
     flex: 1;
-    padding: 24px 32px;
-    max-width: 1100px;
+    padding: 32px 40px;
+    max-width: 1000px;
 }
-h1 { font-size: 24px; margin: 0 0 12px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-h2 { font-size: 18px; margin: 24px 0 8px; color: var(--accent); }
-h3 { font-size: 15px; margin: 14px 0 6px; color: var(--fg-muted); }
+h1 {
+    font-size: 26px; margin: 0 0 12px;
+    border-bottom: 1px solid var(--border); padding-bottom: 12px;
+    color: #fff; font-weight: 700;
+}
+h2.unit-title {
+    font-size: 18px; margin: 28px 0 4px;
+    color: var(--accent); display: flex; align-items: center; gap: 8px;
+}
+h3.section-header {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 16px 0 8px; color: var(--fg-muted); font-weight: 700;
+}
+h3.add-hdr { color: var(--add-fg); }
+h3.rem-hdr { color: var(--rem-fg); }
+h3.mod-hdr { color: var(--mod-fg); }
 p { margin: 6px 0; }
-p.subtitle { color: var(--fg-muted); font-style: italic; margin-top: -4px; }
-code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 0.92em; }
-strong { font-weight: 600; }
-ul { list-style: none; padding-left: 0; margin: 6px 0 14px; }
-li {
-    padding: 3px 8px 3px 24px;
-    border-radius: 3px;
-    position: relative;
-    margin: 1px 0;
+p.subtitle { color: var(--fg-muted); font-style: italic; margin-top: -2px; margin-bottom: 12px; }
+code {
+    background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-size: 0.9em; border: 1px solid rgba(255,255,255,0.08);
 }
-li::before { position: absolute; left: 6px; top: 3px; font-weight: 700; }
-li.sub { padding-left: 36px; font-size: 0.92em; color: var(--fg-muted); }
-li.sub::before { left: 18px; }
-li.add { background: var(--add-bg); color: var(--add-fg); }
-li.add::before { content: "+"; }
-li.rem { background: var(--rem-bg); color: var(--rem-fg); }
-li.rem::before { content: "−"; }
-li.mod { background: var(--mod-bg); color: var(--mod-fg); }
-li.mod::before { content: "~"; }
+strong { font-weight: 600; }
+ul { list-style: none; padding-left: 0; margin: 6px 0 16px; }
+li {
+    padding: 6px 12px 6px 28px;
+    border-radius: 6px;
+    position: relative;
+    margin: 3px 0;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+li::before { position: absolute; left: 10px; top: 6px; font-weight: 700; font-family: monospace; }
+li.sub {
+    padding-left: 36px; font-size: 0.93em; color: var(--fg-muted);
+    background: transparent; border: none; margin: 0; padding-top: 2px; padding-bottom: 2px;
+}
+li.sub::before { left: 20px; top: 2px; }
+li.add { background: var(--add-bg); color: var(--add-fg); border: 1px solid var(--add-border); }
+li.add::before { content: "+"; color: var(--add-fg); }
+li.rem { background: var(--rem-bg); color: var(--rem-fg); border: 1px solid var(--rem-border); }
+li.rem::before { content: "−"; color: var(--rem-fg); }
+li.mod { background: var(--mod-bg); color: var(--mod-fg); border: 1px solid var(--mod-border); }
+li.mod::before { content: "~"; color: var(--mod-fg); }
 li:not(.add):not(.rem):not(.mod)::before { content: "·"; color: var(--fg-muted); }
-table { border-collapse: collapse; width: 100%; margin: 12px 0; background: var(--bg-card); }
-th, td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; font-size: 13px; }
-th { background: var(--bg); font-weight: 600; }
-td:nth-child(n+2):nth-last-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; }
+table {
+    border-collapse: collapse; width: 100%; margin: 16px 0;
+    background: var(--bg-card); border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+}
+th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+th { background: rgba(255,255,255,0.03); font-weight: 600; color: var(--accent); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+td:nth-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-.tabs a {
-    padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px;
-    background: var(--bg-card); color: var(--fg);
+.top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
 }
-.tabs a.active { background: var(--accent); color: white; border-color: var(--accent); }
+.view-all-link {
+    font-size: 13px; padding: 6px 12px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 6px;
+}
+@media (max-width: 768px) {
+    .layout { flex-direction: column; }
+    nav.sidebar { width: 100%; height: auto; position: static; }
+    main { padding: 20px 16px; }
+}
 `;
 
-function renderPage({ title, body, sidebar, activeReport, activePage }) {
-    const tabs = `
-<div class="tabs">
-    <a href="../by-faction/index.html" class="${activeReport === 'by-faction' ? 'active' : ''}">By Faction (unit-level)</a>
-    <a href="../by-profile/index.html" class="${activeReport === 'by-profile' ? 'active' : ''}">By Profile (mod-level)</a>
-</div>`;
+function buildSidebar(slugs, activeSlug) {
+    const items = slugs.map(s => {
+        const name = getFactionDisplayName(s);
+        const active = s === activeSlug ? 'class="active"' : '';
+        return `<a href="${s}.html" ${active}>${esc(name)}</a>`;
+    }).join('\n');
+
+    return `
+<a class="home" href="index.html">📊 Overview & Summary</a>
+<a class="home" href="combined.html">📜 View All Factions</a>
+<h2>Factions</h2>
+${items}
+`;
+}
+
+function renderHtmlPage({ title, body, sidebar }) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<link rel="stylesheet" href="../style.css">
-</head>
-<body>
-<div class="layout">
-<nav class="sidebar">
-<a class="home" href="../index.html">← Overview</a>
-${sidebar}
-</nav>
-<main>
-${tabs}
-${body}
-</main>
-</div>
-</body>
-</html>
-`;
-}
-
-function buildSidebar(slugs, activePage) {
-    const items = slugs.map(s => `<a href="${s}.html" class="${s === activePage ? 'active' : ''}">${s}</a>`).join('\n');
-    return `<h2>Factions</h2>\n<a href="index.html" class="${activePage === 'index' ? 'active' : ''}">Overview</a>\n${items}`;
-}
-
-function processReport(reportName, reportTitle) {
-    const srcDir = path.join(SRC, reportName);
-    const outDir = path.join(OUT, reportName);
-    if (!fs.existsSync(srcDir)) {
-        console.warn(`Skipping ${reportName}: ${srcDir} not found`);
-        return [];
-    }
-    fs.mkdirSync(outDir, { recursive: true });
-
-    const allFiles = fs.readdirSync(srcDir).filter(f => f.endsWith('.md'));
-    const factionFiles = allFiles.filter(f => f !== 'INDEX.md').sort();
-    const slugs = factionFiles.map(f => f.replace(/\.md$/, ''));
-    const indexExists = allFiles.includes('INDEX.md');
-
-    // INDEX page
-    if (indexExists) {
-        const md = fs.readFileSync(path.join(srcDir, 'INDEX.md'), 'utf8');
-        // Rewrite intra-report links: faction.md → faction.html
-        const rewritten = md.replace(/\]\(([a-z0-9-]+)\.md\)/g, '](.$1.html)').replace(/\]\(\.([^)]+)\)/g, '](./$1)');
-        const html = renderPage({
-            title: `${reportTitle} — Overview`,
-            body: renderMarkdown(rewritten),
-            sidebar: buildSidebar(slugs, 'index'),
-            activeReport: reportName, activePage: 'index',
-        });
-        fs.writeFileSync(path.join(outDir, 'index.html'), html);
-    }
-
-    for (const file of factionFiles) {
-        const slug = file.replace(/\.md$/, '');
-        const md = fs.readFileSync(path.join(srcDir, file), 'utf8');
-        const html = renderPage({
-            title: `${slug} — ${reportTitle}`,
-            body: renderMarkdown(md),
-            sidebar: buildSidebar(slugs, slug),
-            activeReport: reportName, activePage: slug,
-        });
-        fs.writeFileSync(path.join(outDir, `${slug}.html`), html);
-    }
-    return slugs;
-}
-
-// --- main ---
-
-fs.mkdirSync(OUT, { recursive: true });
-fs.writeFileSync(path.join(OUT, 'style.css'), CSS.trim());
-
-const factionSlugs = processReport('by-faction', 'By-Faction Report');
-const profileSlugs = processReport('by-profile', 'By-Profile Report');
-
-// Top-level landing page
-const landing = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Infinity Data Update Diff</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="layout">
 <nav class="sidebar">
-<a class="home active" href="index.html">Overview</a>
-<h2>Reports</h2>
-<a href="by-faction/index.html">By Faction (unit-level)</a>
-<a href="by-profile/index.html">By Profile (mod-level)</a>
+${sidebar}
 </nav>
 <main>
-<h1>Infinity Data Update Diff</h1>
-<p>Generated ${new Date().toISOString()}</p>
-
-<h2>Reports</h2>
-<ul>
-    <li><a href="by-faction/index.html"><strong>By Faction</strong></a> — unit-level adds / removes / modifications.
-        Each modified unit lists the aggregate skill/weapon/equipment changes across all its profiles &amp; options,
-        reported by mod-aware <code>displayName</code> (e.g. <code>Mimetism(-6)</code>, <code>Thunderbolt(+2B)</code>).</li>
-    <li><a href="by-profile/index.html"><strong>By Profile</strong></a> — profile-level diff.
-        Walks <code>profileGroups → profiles + options</code>, matches by name, and reports stat changes plus
-        skill/weapon/equipment changes per profile. This is the report that lines up best with the official CB changelog.</li>
-</ul>
-
-<h2>Legend</h2>
-<ul>
-    <li class="add">Added items / new options / new profiles</li>
-    <li class="rem">Removed items / dropped options</li>
-    <li class="mod">Modified items (points, stats, swapped options)</li>
-</ul>
+${body}
 </main>
 </div>
 </body>
-</html>
+</html>`;
+}
+
+// Clean and create OUT_DIR
+fs.rmSync(OUT_DIR, { recursive: true, force: true });
+fs.mkdirSync(OUT_DIR, { recursive: true });
+fs.writeFileSync(path.join(OUT_DIR, 'style.css'), CSS);
+
+const allMdFiles = fs.readdirSync(SRC_DIR).filter(f => f.endsWith('.md') && f !== 'INDEX.md').sort();
+const slugs = allMdFiles.map(f => f.replace(/\.md$/, ''));
+
+// 1. Index Page
+if (fs.existsSync(path.join(SRC_DIR, 'INDEX.md'))) {
+    let indexMd = fs.readFileSync(path.join(SRC_DIR, 'INDEX.md'), 'utf8');
+    // Replace markdown table links [slug](slug.md) with [DisplayName](slug.html)
+    indexMd = indexMd.replace(/\[([a-z0-9-]+)\]\(\1\.md\)/g, (_, slug) => {
+        const name = getFactionDisplayName(slug);
+        return `[${name}](${slug}.html)`;
+    });
+
+    const indexBody = renderMarkdown(indexMd);
+    const indexHtml = renderHtmlPage({
+        title: 'Infinity Data Changelog & Patch Notes',
+        body: indexBody,
+        sidebar: buildSidebar(slugs, 'index'),
+    });
+    fs.writeFileSync(path.join(OUT_DIR, 'index.html'), indexHtml);
+}
+
+// 2. Per-Faction Pages & Combined Page
+const combinedSections = [];
+
+for (const slug of slugs) {
+    const filePath = path.join(SRC_DIR, `${slug}.md`);
+    let md = fs.readFileSync(filePath, 'utf8');
+
+    // Replace internal anchor links if any
+    const body = renderMarkdown(md);
+    combinedSections.push(`<section id="${slug}">\n${body}\n</section><hr style="border:0;border-top:1px solid var(--border);margin:40px 0;">`);
+
+    const html = renderHtmlPage({
+        title: `${getFactionDisplayName(slug)} — Infinity Changelog`,
+        body: body,
+        sidebar: buildSidebar(slugs, slug),
+    });
+    fs.writeFileSync(path.join(OUT_DIR, `${slug}.html`), html);
+}
+
+// 3. Combined Page (All in one)
+const combinedBody = `
+<h1>All Factions — Infinity Patch Notes</h1>
+<p style="color:var(--fg-muted);">Single-page view of all faction profile and loadout changes. Use browser search (Ctrl+F) to find any unit or weapon.</p>
+${combinedSections.join('\n')}
 `;
-fs.writeFileSync(path.join(OUT, 'index.html'), landing);
+const combinedHtml = renderHtmlPage({
+    title: 'All Factions — Infinity Patch Notes',
+    body: combinedBody,
+    sidebar: buildSidebar(slugs, 'combined'),
+});
+fs.writeFileSync(path.join(OUT_DIR, 'combined.html'), combinedHtml);
 
-// ---------------------------------------------------------------------------
-// Single-file combined HTML — everything bundled, sticky sidebar nav,
-// per-faction collapsible sections, inlined CSS. No external assets.
-// ---------------------------------------------------------------------------
-
-function buildCombinedSection(reportName, reportTitle, slugs) {
-    const srcDir = path.join(SRC, reportName);
-    const parts = [];
-    parts.push(`<section id="${reportName}" class="report">`);
-    parts.push(`<h1>${esc(reportTitle)}</h1>`);
-    const indexPath = path.join(srcDir, 'INDEX.md');
-    if (fs.existsSync(indexPath)) {
-        const md = fs.readFileSync(indexPath, 'utf8');
-        // Rewrite faction.md links to #faction-faction-{reportName} anchors
-        const rewritten = md.replace(/\[([a-z0-9-]+)\]\(([a-z0-9-]+)\.md\)/g,
-            (_, label, slug) => `[${label}](#${reportName}-${slug})`);
-        parts.push('<div class="overview">');
-        parts.push(renderMarkdown(rewritten));
-        parts.push('</div>');
-    }
-    for (const slug of slugs) {
-        const md = fs.readFileSync(path.join(srcDir, `${slug}.md`), 'utf8');
-        parts.push(`<details id="${reportName}-${slug}" class="faction-section">`);
-        parts.push(`<summary><strong>${esc(slug)}</strong></summary>`);
-        parts.push('<div class="faction-body">');
-        parts.push(renderMarkdown(md));
-        parts.push('</div>');
-        parts.push('</details>');
-    }
-    parts.push('</section>');
-    return parts.join('\n');
-}
-
-function buildCombinedNav(factionSlugs, profileSlugs) {
-    const sectionLink = (id, label) =>
-        `<a href="#${id}" class="section-link">${esc(label)}</a>`;
-    const factionLinks = factionSlugs
-        .map(s => `<a href="#by-faction-${s}">${esc(s)}</a>`).join('\n');
-    const profileLinks = profileSlugs
-        .map(s => `<a href="#by-profile-${s}">${esc(s)}</a>`).join('\n');
-    return `
-<a class="home" href="#top">▲ Top</a>
-<h2>Sections</h2>
-${sectionLink('by-faction', 'By Faction (unit-level)')}
-${sectionLink('by-profile', 'By Profile (mod-level)')}
-<h2>By Faction</h2>
-${factionLinks}
-<h2>By Profile</h2>
-${profileLinks}
-`;
-}
-
-const COMBINED_EXTRA_CSS = `
-section.report { margin: 32px 0; padding-top: 16px; border-top: 3px solid var(--accent); }
-section.report:first-of-type { border-top: none; }
-.overview { margin-bottom: 24px; }
-details.faction-section {
-    margin: 8px 0;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg-card);
-}
-details.faction-section[open] { padding-bottom: 8px; }
-details.faction-section > summary {
-    padding: 10px 14px;
-    cursor: pointer;
-    user-select: none;
-    background: var(--bg);
-    border-radius: 4px;
-    list-style: none;
-    font-size: 15px;
-}
-details.faction-section[open] > summary {
-    border-bottom: 1px solid var(--border);
-    border-radius: 4px 4px 0 0;
-}
-details.faction-section > summary::before { content: '▶ '; color: var(--fg-muted); font-size: 11px; }
-details.faction-section[open] > summary::before { content: '▼ '; }
-.faction-body { padding: 8px 16px; }
-.faction-body h1 { font-size: 18px; }
-.faction-body h2 { font-size: 16px; }
-.faction-body h3 { font-size: 14px; }
-nav.sidebar .section-link {
-    font-weight: 600;
-    color: var(--accent);
-    padding: 4px 6px;
-    margin-bottom: 4px;
-}
-.toolbar {
-    position: sticky; top: 0;
-    background: var(--bg);
-    padding: 8px 0 4px;
-    z-index: 5;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-}
-.toolbar a {
-    padding: 6px 12px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--fg);
-    margin-right: 8px;
-}
-.toolbar a:hover { background: var(--accent); color: white; border-color: var(--accent); }
-`;
-
-function renderCombined(factionSlugs, profileSlugs) {
-    const factionSection = buildCombinedSection('by-faction', 'By Faction — unit-level diff', factionSlugs);
-    const profileSection = buildCombinedSection('by-profile', 'By Profile — mod-level diff', profileSlugs);
-    const nav = buildCombinedNav(factionSlugs, profileSlugs);
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Infinity Data Update Diff — combined report</title>
-<style>
-${CSS.trim()}
-${COMBINED_EXTRA_CSS.trim()}
-</style>
-</head>
-<body>
-<div class="layout">
-<nav class="sidebar">
-${nav}
-</nav>
-<main id="top">
-<div class="toolbar">
-    <a href="#by-faction">By Faction</a>
-    <a href="#by-profile">By Profile</a>
-    <span style="color: var(--fg-muted); font-size: 12px; margin-left: 16px;">
-        Generated ${new Date().toISOString()}
-    </span>
-</div>
-<h1>Infinity Data Update Diff</h1>
-<p>Single-file combined report. Click a faction in the sidebar to jump, or expand sections inline.
-Skill/weapon/equipment changes show mod-aware <code>displayName</code>
-(e.g. <code>Mimetism(-6)</code>, <code>Thunderbolt(+2B)</code>).
-Universal mercenaries (units with empty <code>factionIds</code>) are filtered.</p>
-<h2>Legend</h2>
-<ul>
-<li class="add">Added items / new options / new profiles</li>
-<li class="rem">Removed items / dropped options</li>
-<li class="mod">Modified items (points, stats, swapped options)</li>
-</ul>
-${factionSection}
-${profileSection}
-</main>
-</div>
-<script>
-// Auto-expand the <details> targeted by the URL hash (initial load + each
-// hashchange from sidebar clicks). Pure navigation, no other behavior.
-function openTarget() {
-    if (!location.hash) return;
-    const el = document.getElementById(location.hash.slice(1));
-    if (el && el.tagName === 'DETAILS') {
-        el.open = true;
-        el.scrollIntoView({ block: 'start' });
-    }
-}
-window.addEventListener('hashchange', openTarget);
-window.addEventListener('DOMContentLoaded', openTarget);
-</script>
-</body>
-</html>
-`;
-}
-
-const combinedHtml = renderCombined(factionSlugs, profileSlugs);
-const combinedPath = path.join(OUT, 'combined.html');
-fs.writeFileSync(combinedPath, combinedHtml);
-
-console.log(`Wrote HTML to ${OUT}`);
-console.log(`  by-faction: ${factionSlugs.length} faction pages + index`);
-console.log(`  by-profile: ${profileSlugs.length} faction pages + index`);
-console.log(`  combined.html: single self-contained file (${Math.round(combinedHtml.length / 1024)} KB)`);
-console.log(`Open: file://${path.join(OUT, 'index.html')}`);
-console.log(`Combined: file://${combinedPath}`);
+console.log(`Rendered clean static site to ${OUT_DIR}`);
+console.log(`Factions: ${slugs.length}, Index: index.html, Combined: combined.html`);
