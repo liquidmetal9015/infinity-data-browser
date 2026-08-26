@@ -1,17 +1,39 @@
-# morat — profile-level changes
+# morat — Profile & Loadout Changes
 
-Units with profile/option changes: **1**
-Profile-level changes: **1** · Option-level changes: **1**
+Units changed: **3** · Stat/Chassis updates: **1** · Modified loadouts: **5** · Added: **0** · Removed: **1**
+
+## [492] Morat Vanguard Infantry
+*MORAT VANGUARD INFANTRY*
+
+### Modified Loadouts
+- ~ **MORAT VANGUARD (Combi Rifle, Heavy Pistol | Commlink(+1), Specialist Operative)**
+    · skills + Commlink(+1)
+    · skills − Skill#260(+1)
+
+## [507] Med-Tech Obsidon Medchanoid
+*MED-TECH OBSIDON MEDCHANOIDS*
+
+### Modified Loadouts
+- ~ **MED-TECH OBSIDON (Combi Rifle, Zapper, D-Charges, Armed Turret (Combi R.))**
+    · weapons + Armed Turret (Combi R.)
+    · weapons − Weapon#209
+- ~ **MED-TECH OBSIDON (Combi Rifle, Zapper, D-Charges, Armed Turret (Marksman R.))**
+    · weapons + Armed Turret (Marksman R.)
+    · weapons − Weapon#215
 
 ## [499] Raicho Armored Brigade
 *RAICHO Armored Brigade*
 
-### Profile group 0
-- ~ **Profile modified:** RAICHO Armored Brigade
-    · ph: 17 → 16
+### Base Statline & Skills
+- ~ **[RAICHO Armored Brigade]** **Stat / Skill Update** (RAICHO Armored Brigade)
+    · PH: 17 → 16
     · skills + BS Attack(-3)
-- ~ **Option modified:** RAICHO
-    · points: 78 → 85
-    · weapons + Heavy Shotgun(+1B), Mine Dispenser(Shock)
-    · weapons − Heavy Rocket Launcher
 
+### Modified Loadouts
+- ~ **[RAICHO Armored Brigade] RAICHO (MULTI Heavy Machine Gun, Heavy Shotgun(+1B), Mine Dispenser(Shock), AP CC Weapon(PS=3))**
+    · Points: 81 → 85
+- ~ **[RAICHO Armored Brigade] RAICHO (MULTI Heavy Machine Gun, Heavy Flamethrower, AP CC Weapon(PS=3) | NCO)**
+    · Points: 74 → 75
+
+### Removed Loadouts
+- − **[RAICHO Armored Brigade] RAICHO (MULTI Heavy Machine Gun, Heavy Rocket Launcher, AP CC Weapon(PS=3))** (was 78 pts)

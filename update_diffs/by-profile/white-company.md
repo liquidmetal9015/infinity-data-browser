@@ -1,39 +1,47 @@
-# white-company — profile-level changes
+# white-company — Profile & Loadout Changes
 
-Units with profile/option changes: **4**
-Profile-level changes: **2** · Option-level changes: **3**
+Units changed: **5** · Stat/Chassis updates: **0** · Modified loadouts: **9** · Added: **0** · Removed: **0**
+
+## [138] Mech-Engineer, Zhanshi Gongchéng
+*MECH-ENGINEERS (Zhanshi Gōngchéng)*
+
+### Modified Loadouts
+- ~ **MECH-ENGINEER (Combi Rifle, Armed Turret (Combi R.))**
+    · weapons + Armed Turret (Combi R.)
+    · weapons − Weapon#209
+
+## [1494] Jujak Regiment, Korean Shock Infantry
+*JUJAK Regiment, Korean Shock Infantry*
+
+### Modified Loadouts
+- ~ **JUJAK (Breaker Combi Rifle, Heavy Flamethrower)**
+    · Points: 27 → 26
+- ~ **JUJAK (Breaker Combi Rifle, Heavy Flamethrower | TinBot: Firewall(-6))**
+    · Points: 29 → 28
 
 ## [122] CSU, Corporate Security Unit
-*CSU, Corporate Security Unit*
 
-### Profile group 0
-- ~ **Option modified:** CSU
-    · points: 12 → 10
-
+### Modified Loadouts
+- ~ **CSU (Breaker Rifle, Nanopulser(+1B), MULTI Pistol, PARA CC Weapon(-6))**
+    · Points: 12 → 10
+- ~ **CSU (Rifle, Light Shotgun, MULTI Pistol, PARA CC Weapon(-6), Nanopulser(+1B) | Specialist Operative)**
+    · weapons + Nanopulser(+1B)
+    · weapons − Nanopulser
+- ~ **CSU (Breaker Combi Rifle, Nanopulser(+1B), MULTI Pistol, PARA CC Weapon(-6) | Specialist Operative)**
+    · Points: 14 → 13
 
 ## [1750] Blockers, Attached Agents of the CDCI
 *BLOCKERS, Attached Agents of the CDCI*
 
-### Profile group 0
-- ~ **Option modified:** BLOCKER
+### Modified Loadouts
+- ~ **BLOCKER (Adhesive Launcher Rifle, Flash Pulse, MULTI Pistol, PARA CC Weapon(-6), Pulzar, Pitcher | Specialist Operative)**
     · weapons + Pitcher
-
-
-## [380] Scarface & Cordelia, Mercenary Armored Team
-*SCARFACE & CORDELIA, MERCENARY ARMORED TEAM*
-
-### Profile group 0
-- − **Profile removed:** SCARFACE TURNER, T.A.G. MERCENARIO
-- + **Profile added:** SCARFACE TURNER, MERCENARY TAG
-    · unitType=4, move=[6,4], cc=22, bs=13, ph=16, wip=13, arm=7, bts=6, w=3, s=7, ava=1
-    · skills: CC Attack(-3), BS Attack(SR-1), Berserk(+3), Courage, Dodge(PH=11), Gizmokit(PH=11), Tactical Awareness
-    · equipment: ECM: Guided(-6), ECM: Hacker(-3)
-
+- ~ **BLOCKER (Adhesive Launcher Rifle, Flash Pulse, MULTI Pistol, PARA CC Weapon(-6), Pulzar | Hacker | Hacking Device(UPGRADE: Firewall (-3)))**
+    · weapons − Pitcher
 
 ## [1072] Emily Handelman, Intel Agent
 *EMILY HANDELMAN, Intel Agent*
 
-### Profile group 0
-- ~ **Option modified:** EMILY
-    · points: 23 → 22
-
+### Modified Loadouts
+- ~ **EMILY (Breaker Combi Rifle(PS=6), Nanopulser, Flash Pulse, Assault Pistol)**
+    · Points: 23 → 22

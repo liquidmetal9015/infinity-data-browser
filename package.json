@@ -15,7 +15,9 @@
     "lint:css-modules-only": "! find src/components src/pages -name '*.css' ! -name '*.module.css' | grep -q . || (echo 'ERROR: Use .module.css for component/page styles' && exit 1)",
     "preview": "vite preview",
     "test": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "diff:run": "bash update_diffs/run-pipeline.sh",
+    "diff:deploy": "npx gh-pages -d update_diffs/html -r git@github.com:liquidmetal9015/infinity-changelog-host.git -b main"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

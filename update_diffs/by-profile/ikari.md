@@ -1,25 +1,32 @@
-# ikari — profile-level changes
+# ikari — Profile & Loadout Changes
 
-Units with profile/option changes: **2**
-Profile-level changes: **2** · Option-level changes: **1**
+Units changed: **3** · Stat/Chassis updates: **0** · Modified loadouts: **5** · Added: **0** · Removed: **0**
 
-## [380] Scarface & Cordelia, Mercenary Armored Team
-*SCARFACE & CORDELIA, MERCENARY ARMORED TEAM*
+## [265] Wardrivers, Mercenary Hackers
+*WARDRIVERS, Mercenary Hackers*
 
-### Profile group 0
-- − **Profile removed:** SCARFACE TURNER, T.A.G. MERCENARIO
-- + **Profile added:** SCARFACE TURNER, MERCENARY TAG
-    · unitType=4, move=[6,4], cc=22, bs=13, ph=16, wip=13, arm=7, bts=6, w=3, s=7, ava=1
-    · skills: CC Attack(-3), BS Attack(SR-1), Berserk(+3), Courage, Dodge(PH=11), Gizmokit(PH=11), Tactical Awareness
-    · equipment: ECM: Guided(-6), ECM: Hacker(-3)
+### Modified Loadouts
+- ~ **WARDRIVER  (Boarding Shotgun, Flash Pulse, Cybermine | Hacker(Zero Pain), Commlink)**
+    · skills + Commlink
+    · skills − Skill#260
 
+## [158] Tokusetsu Butai
+*TOKUSETSU Butai*
+
+### Modified Loadouts
+- ~ **TOKUSETSU KOHEI (Combi Rifle, D-Charges, Armed Turret (Combi R.) | Engineer | Deactivator, GizmoKit)**
+    · weapons + Armed Turret (Combi R.)
+    · weapons − Weapon#209
 
 ## [325] Bashi Bazouks
 *BASHI BAZOUKS*
 
-### Profile group 0
-- ~ **Option modified:** BASHI BAZOUK
-    · points: 14 → 13
+### Modified Loadouts
+- ~ **BASHI BAZOUK (Boarding Pistol(+1B), Contender(+1SD))**
+    · Points: 14 → 13
     · weapons + Contender(+1SD)
     · weapons − Contender(+1B)
-
+- ~ **BASHI BAZOUK (Breaker Rifle, Boarding Pistol(+1B) | Specialist Operative)**
+    · Points: 15 → 14
+- ~ **BASHI BAZOUK (Submachine Gun, Boarding Pistol(+1B) | Specialist Operative)**
+    · Points: 13 → 12

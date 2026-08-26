@@ -13,8 +13,14 @@ if (!OLD_ROOT || !NEW_ROOT || !OUT_DIR) {
     process.exit(1);
 }
 
-const oldProc = path.join(OLD_ROOT, 'data/processed');
-const newProc = path.join(NEW_ROOT, 'data/processed');
+function resolveProcDir(root) {
+    if (fs.existsSync(path.join(root, 'data/processed'))) return path.join(root, 'data/processed');
+    if (fs.existsSync(path.join(root, 'processed'))) return path.join(root, 'processed');
+    return root;
+}
+
+const oldProc = resolveProcDir(OLD_ROOT);
+const newProc = resolveProcDir(NEW_ROOT);
 
 function load(p) {
     try { return JSON.parse(fs.readFileSync(p, 'utf8')); }

@@ -22,10 +22,12 @@ cd "$(dirname "$0")/.."   # project root
 
 REFRESH=1
 REUSE_SNAPSHOT=0
+DEPLOY=0
 for arg in "$@"; do
     case "$arg" in
         --no-refresh) REFRESH=0 ;;
         --reuse-snapshot) REUSE_SNAPSHOT=1 ;;
+        --deploy) DEPLOY=1 ;;
         -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
         *) echo "Unknown arg: $arg" >&2; exit 1 ;;
     esac
@@ -103,6 +105,14 @@ rm -rf update_diffs/html
 node update_diffs/render-html.mjs
 
 # ---------------------------------------------------------------------------
+# 7. Optional Deploy
+# ---------------------------------------------------------------------------
+if [ "$DEPLOY" -eq 1 ]; then
+    log "Deploying to infinity-changelog-host"
+    npm run diff:deploy
+fi
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 echo
@@ -112,5 +122,8 @@ echo "================================================================"
 echo " Snapshot:   $SNAPSHOT_DIR"
 echo " Reports:    update_diffs/by-faction/  update_diffs/by-profile/"
 echo " HTML:       update_diffs/html/index.html"
+if [ "$DEPLOY" -eq 1 ]; then
+    echo " Live Site:  https://liquidmetal9015.github.io/infinity-changelog-host/"
+fi
 echo
 echo " Open:  file://$PWD/update_diffs/html/index.html"
