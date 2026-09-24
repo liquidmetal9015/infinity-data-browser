@@ -1,194 +1,107 @@
 # nomads — Profile & Loadout Changes
 
-Units changed: **15** · Stat/Chassis updates: **4** · Modified loadouts: **23** · Added: **7** · Removed: **3**
+Units changed: **4** (Added: **2**, Removed: **1**, Modified: **1**) · Fireteam updates: **0** · Stat updates: **1** · Modified loadouts: **0** · Added loadouts: **0** · Removed loadouts: **0**
 
-## [434] Securitate
-*SECURITATE*
-
-### Modified Loadouts
-- ~ **SECURITATE (Combi Rifle | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
-
-## [406] Clockmakers
-*Bakunin CLOCKMAKERS*
-
-### Modified Loadouts
-- ~ **CLOCKMAKER (Combi Rifle, D-Charges, Armed Turret (Combi R.))**
-    · weapons + Armed Turret (Combi R.)
-    · weapons − Weapon#209
-
-## [1855] Tunguska Triggermen
-*Tunguska TRIGGERMEN*
-
-### Modified Loadouts
-- ~ **TRIGGERMEN (K1 Combi Rifle(PS=6), E/Marat(+1B), Pulzar(+1B), Drop Bears, MULTI Pistol, Silenced Pistol, CC Weapon(-3) | Surprise Attack(-3), Forward Deployment(+4"), Decoy(1))**
-    · Points: 45 → 43
-
-## [382] Mobile Brigada
-*MOBILE BRIGADA*
-
-### Removed Loadouts
-- − **MOBILE BRIGADA (Boarding Shotgun, Boarding Pistol(+1B) | TinBot: Firewall(-6))** (was 29 pts)
-
-## [423] Tsyklon Sputniks
-*TSYKLON Sputnik*
-
-### Modified Loadouts
-- ~ **TSYKLON FTO (Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6))**
-    · Points: 28 → 29
-
-### Added Loadouts
-- + **TSYKLON (Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6) | Forward Deployment(+4"))** (31 pts, SWC 1)
-    · weapons: Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6)
-    · skills: Forward Deployment(+4")
-- + **TSYKLON (Spitfire, Chain Rifle, Pitcher, Crazykoala, PARA CC Weapon(-6) | Forward Deployment(+4"), Minelayer(2))** (31 pts, SWC 1)
-    · weapons: Spitfire, Chain Rifle, Pitcher, Crazykoala, PARA CC Weapon(-6)
-    · skills: Forward Deployment(+4"), Minelayer(2)
-
-## [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter
-*WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter*
-
-### Modified Loadouts
-- ~ **WOLFGANG AMADEUS (MULTI Rifle(+1SD), E/M Grenades(+1SD), Heavy Pistol, PARA CC Weapon(-6), DA CC Weapon(PS=4), Chain-colt)**
-    · Points: 34 → 33
-    · weapons + E/M Grenades(+1SD), MULTI Rifle(+1SD)
-    · weapons − E/M Grenades(+1B), MULTI Rifle(+1B)
-
-## [1543] Evaders, EVA Tactical Group
-*EVADERS, EVA Tactical Group*
+## [1917] Vortex Spec-Ops
+*VORTEX SPEC-OPS* — **NEW UNIT** (17-26 pts)
 
 ### Base Statline & Skills
-- ~ **Stat / Skill Update** (EVADERS, EVA Tactical Group)
-    · skills − Specialist Operative
-    · equipment + Albedo(-3), Deactivator(ReRoll)
-    · equipment − Deactivator
+- + **INITIAL PROFILE** (UNITTYPE=2, MOVE=[4-4], CC=14, BS=12, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Spec-Ops, Immunity(Shock), Terrain(Total)
+- + **ENHANCED PROFILE** (UNITTYPE=3, MOVE=[6-5], CC=18, BS=13, PH=13, WIP=13, ARM=4, BTS=3, W=2, S=2, AVA=-1)
+    · skills: Terrain(Total)
+    · equipment: ECM: Hacker(-3), Deployable Repeater
+- + **MARVIN SPECBOTS** (UNITTYPE=5, MOVE=[6-4], CC=13, BS=10, PH=10, WIP=11, ARM=0, BTS=3, W=1, S=1, AVA=-1)
+    · skills: Peripheral(Synchronized), Courage, Mimetism(-3), Terrain(Total)
+    · equipment: ECM: Hacker(-3), 360º Visor
 
-### Modified Loadouts
-- ~ **EVADER (AP Spitfire, D-Charges | Specialist Operative | TinBot: Firewall(-3))**
-    · Points: 29 → 31
-    · SWC: 1.5 → 1
-    · skills + Specialist Operative
-    · equipment + TinBot: Firewall(-3)
-- ~ **EVADER (Boarding Shotgun(+1SD), D-Charges, AP Mine | Specialist Operative | TinBot: Firewall(-3))**
-    · Points: 20 → 23
-    · weapons + Boarding Shotgun(+1SD)
-    · weapons − Boarding Shotgun
-    · skills + Specialist Operative
-- ~ **EVADER (Feuerbach, D-Charges | Specialist Operative | TinBot: Firewall(-3))**
-    · Points: 31 → 32
-    · skills + Specialist Operative
-- ~ **EVADER (MULTI Rifle, Panzerfaust, D-Charges | Engineer | GizmoKit)**
-    · Points: 28 → 29
-- ~ **EVADER (Boarding Shotgun, D-Charges, AP Mine | Engineer | GizmoKit)**
-    · Points: 23 → 24
-- ~ **EVADER (AP Spitfire, D-Charges | Engineer | GizmoKit, TinBot: Firewall(-3))**
-    · Points: 34 → 35
-
-### Removed Loadouts
-- − **EVADER (MULTI Rifle, Panzerfaust, D-Charges)** (was 24 pts)
-- − **EVADER (MULTI Rifle, Panzerfaust, D-Charges | TinBot: Firewall(-3))** (was 25 pts)
-
-## [1580] 'Gator' Squadron
-*'GATOR' SQUADRON*
-
-### Base Statline & Skills
-- ~ **['GATOR' SQUADRON]** **Stat / Skill Update** ('GATOR' SQUADRON)
-    · CC: 20 → 21
-
-### Modified Loadouts
-- ~ **['GATOR' SQUADRON] GATOR (MULTI Heavy Machine Gun, Chain Rifle(+1B), E/M CC Weapon(PS=5), Mine Dispenser(AP))**
-    · weapons + Mine Dispenser(AP)
-    · weapons − Mine Dispenser(Cybermines)
-
-## [414] Moderators from Bakunin
-*MODERATORS from Bakunin*
-
-### Modified Loadouts
-- ~ **MODERATOR (Combi Rifle, PARA CC Weapon(-6) | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
-
-## [432] 'Gecko' Squad
-*'GECKO' SQUADRON*
-
-### Base Statline & Skills
-- ~ **['GECKO' SQUADRON]** **Stat / Skill Update** ('GECKO' SQUADRON)
-    · equipment + ECM: Hacker(-3)
-
-### Modified Loadouts
-- ~ **['GECKO' SQUADRON] GECKO (MULTI Marksman Rifle, Chain Rifle, Panzerfaust, CC Weapon(PS=6))**
-    · Points: 52 → 54
-- ~ **['GECKO' SQUADRON] GECKO (Mk12, Chain Rifle, Blitzen, CC Weapon(PS=6))**
-    · Points: 53 → 55
-
-### Added Loadouts
-- + **['GECKO' SQUADRON] GECKO (Vulkan Shotgun, Chain Rifle, Panzerfaust, CC Weapon(PS=6))** (49 pts)
-    · weapons: Vulkan Shotgun, Chain Rifle, Panzerfaust, CC Weapon(PS=6)
-
-## [408] Stempler Zonds
-*STEMPLER ZONDS*
-
-### Added Loadouts
-- + **STEMPLER ZOND FTO (Combi Rifle, Flash Pulse, PARA CC Weapon(-3) | Super-Jump)** (17 pts)
-    · weapons: Combi Rifle, Flash Pulse, PARA CC Weapon(-3)
-    · skills: Super-Jump
-- + **STEMPLER ZOND (Thunderbolt(+1B), Flash Pulse, PARA CC Weapon(-3) | BS=12, Tactical Awareness)** (22 pts)
-    · weapons: Thunderbolt(+1B), Flash Pulse, PARA CC Weapon(-3)
-    · skills: BS=12, Tactical Awareness
-
-## [1544] Vostok Sputniks 
-*VOSTOK Sputniks*
-
-### Modified Loadouts
-- ~ **VOSTOK (Mk12, Light Shotgun, PARA CC Weapon(-3) | Repeater)**
-    · Points: 40 → 38
-    · weapons + Light Shotgun, Mk12
-    · weapons − Mk12(PS=4)
-- ~ **VOSTOK FTO (Mk12, Light Shotgun, PARA CC Weapon(-3))**
-    · weapons + Light Shotgun
-
-### Added Loadouts
-- + **VOSTOK (Spitfire, PARA CC Weapon(-3) | Repeater)** (37 pts, SWC 1)
-    · weapons: Spitfire, PARA CC Weapon(-3)
+### Available Loadouts
+- + **VORTEX (Heavy Machine Gun, D-Charges)** (26 pts, SWC 1)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **VORTEX (MULTI Sniper Rifle, D-Charges)** (24 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, D-Charges, Pistol, CC Weapon
+- + **VORTEX (MULTI Rifle, D-Charges | Specialist Operative | GizmoKit)** (21 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **VORTEX (AP Submachine Gun, Panzerfaust, D-Charges | Hacker | Hacking Device(UPGRADE: White Noise))** (21 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Panzerfaust, D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device(UPGRADE: White Noise)
+- + **VORTEX (MULTI Rifle, Flash Pulse, D-Charges | Forward Observer)** (21 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **VORTEX (AP Submachine Gun, Panzerfaust, D-Charges | Paramedic | MediKit)** (17 pts)
+    · weapons: AP Submachine Gun, Panzerfaust, D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **MARVIN SPECBOT_1 (Heavy Flamethrower, PARA CC Weapon(-3) | Repeater)** (8 pts)
+    · weapons: Heavy Flamethrower, PARA CC Weapon(-3)
     · equipment: Repeater
-- + **VOSTOK FTO (Spitfire, PARA CC Weapon(-3))** (34 pts, SWC 1)
-    · weapons: Spitfire, PARA CC Weapon(-3)
+- + **MARVIN SPECBOT_2 (Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (7 pts)
+    · weapons: Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-## [1101] Perseus, Rogue Myrmidon
-*PERSEUS, Rogue Myrmidon*
-
-### Modified Loadouts
-- ~ **PERSEUS (Breaker Combi Rifle, Nanopulser, Smoke Grenades, AP Heavy Pistol, DA CC Weapon(PS=5))**
-    · Points: 34 → 33
-
-## [395] Intruders
-*INTRUDERS, Corregidor Assault Commandos*
+## [1931] Nomads Team-Ops
+*NOMADS TEAM-OPS* — **NEW UNIT** (6-43 pts)
 
 ### Base Statline & Skills
-- ~ **Stat / Skill Update** (INTRUDERS, Corregidor Assault Commandos)
-    · BTS: 0 → 3
+- + **VORTEX-1 SPEC-OPS** (UNITTYPE=2, MOVE=[4-4], CC=14, BS=12, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Immunity(Shock), Mimetism(-3), Terrain(Total)
+- + **VORTEX HEAVY SPEC-OPS** (UNITTYPE=3, MOVE=[6-5], CC=18, BS=13, PH=13, WIP=13, ARM=4, BTS=3, W=2, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Terrain(Total)
+    · equipment: ECM: Hacker(-3), Deployable Repeater, Multispectral Visor L1
+- + **MARVIN SPECBOTS** (UNITTYPE=5, MOVE=[6-5], CC=13, BS=11, PH=10, WIP=13, ARM=0, BTS=3, W=1, S=1, AVA=1)
+    · skills: Remote Presence, Courage, Infinity Team-Ops, Mimetism(-3), Terrain(Total)
+    · equipment: ECM: Hacker(-3), 360º Visor
 
-### Modified Loadouts
-- ~ **INTRUDER (Heavy Machine Gun, Heavy Pistol)**
-    · weapons + Heavy Pistol
-    · weapons − Grenades, Pistol
-- ~ **INTRUDER (AP Submachine Gun(+1B), Pulzar(+1B), Grenades, D-Charges, Heavy Pistol | Hacker, Infiltration | Killer Hacking Device)**
-    · Points: 32 → 33
-    · weapons + D-Charges, Heavy Pistol
-    · weapons − Pistol
-- ~ **INTRUDER (MULTI Sniper Rifle(+1SD), Heavy Pistol)**
-    · Points: 36 → 38
-    · weapons + Heavy Pistol, MULTI Sniper Rifle(+1SD)
-    · weapons − MULTI Sniper Rifle, Pistol
-    · equipment − X Visor
+### Available Loadouts
+- + **VORTEX-1 (Heavy Machine Gun, D-Charges)** (23 pts, SWC 1)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **VORTEX-1 (MULTI Sniper Rifle, D-Charges)** (21 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, D-Charges, Pistol, CC Weapon
+- + **VORTEX-1 (MULTI Rifle, D-Charges | Specialist Operative | GizmoKit)** (18 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **VORTEX-1 (AP Submachine Gun, Panzerfaust, D-Charges | Hacker | Hacking Device(UPGRADE: White Noise))** (18 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Panzerfaust, D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device(UPGRADE: White Noise)
+- + **VORTEX-1 (MULTI Rifle, Flash Pulse, D-Charges | Forward Observer)** (18 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **VORTEX-1 (AP Submachine Gun, Panzerfaust, D-Charges | Paramedic | MediKit)** (16 pts)
+    · weapons: AP Submachine Gun, Panzerfaust, D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **VORTEX HEAVY (Heavy Machine Gun, D-Charges)** (42 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **VORTEX HEAVY (MULTI Sniper Rifle(+1B), D-Charges)** (43 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle(+1B), D-Charges, Pistol, CC Weapon
+- + **VORTEX HEAVY (MULTI Rifle, D-Charges | Specialist Operative | GizmoKit)** (35 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **VORTEX HEAVY (AP Submachine Gun, Panzerfaust, D-Charges | Hacker | Hacking Device(UPGRADE: White Noise))** (34 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Panzerfaust, D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device(UPGRADE: White Noise)
+- + **MARVIN SPECBOT_1 (Heavy Flamethrower, PARA CC Weapon(-3) | Repeater)** (6 pts)
+    · weapons: Heavy Flamethrower, PARA CC Weapon(-3)
+    · equipment: Repeater
+- + **MARVIN SPECBOT_2 (Combi Rifle, Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (13 pts)
+    · weapons: Combi Rifle, Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-## [296] Corregidor Alguaciles
-*CORREGIDOR ALGUACILES*
+## [1874] Sāchā, Xenotech Hunters
+*SĀCHĀ, Xenotech Hunters* — **REMOVED UNIT** (was 6 pts)
 
-### Modified Loadouts
-- ~ **ALGUACIL (Combi Rifle | Lieutenant)**
-    · SWC: 0.5 → 0
-- ~ **ALGUACIL (Combi Rifle | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
+### Removed Unit
+- − **Unit removed from faction roster** (was 6 pts)
+
+## [1905] RacerBots
+
+### Base Statline & Skills
+- ~ **Stat / Skill Update** (RacerBots)
+    · equipment + Bangbomb(+4)

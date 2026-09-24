@@ -1,105 +1,103 @@
 # onyx — Profile & Loadout Changes
 
-Units changed: **9** · Stat/Chassis updates: **5** · Modified loadouts: **12** · Added: **0** · Removed: **1**
+Units changed: **3** (Added: **2**, Removed: **1**, Modified: **0**) · Fireteam updates: **1** · Stat updates: **0** · Modified loadouts: **0** · Added loadouts: **0** · Removed loadouts: **0**
 
-## [1763] WCD Vector Operators
+## Fireteam Chart Updates
 
-### Base Statline & Skills
-- ~ **Stat / Skill Update** (VECTOR)
-    · skills + Exrah
-    · skills − Skill#259
+### Modified Fireteams
+- ~ **Wildcards**
+    · + -- (max: 1, Spec-Ops)
 
-## [783] Nexus Operatives
-*NEXUS Operatives*
-
-### Modified Loadouts
-- ~ **NEXUS (Breaker Pistol, Combi Rifle(+1SD), Zapper, D-Charges, E/M Mine | Hacker | Hacking Device(UPGRADE: Carbonite (+1 B)))**
-    · weapons + Combi Rifle(+1SD)
-    · weapons − MULTI Rifle
-- ~ **NEXUS (Breaker Pistol, Combi Rifle(+1SD), Zapper, D-Charges, E/M Mine | Lieutenant, Hacker | Hacking Device(UPGRADE: Carbonite (+1 B)))**
-    · weapons + Combi Rifle(+1SD)
-    · weapons − MULTI Rifle
-
-## [1298] Greif Operators
-*GREIF OPERATORS*
-
-### Modified Loadouts
-- ~ **GREIF-OP  (Breaker Combi Rifle, D-Charges, Silenced Pistol(+1B) | Surprise Attack(-3), Impersonation(IMP-2))**
-    · Points: 20 → 21
-    · weapons + Breaker Combi Rifle, Silenced Pistol(+1B)
-    · weapons − Breaker Pistol(+1B), Combi Rifle
-
-## [493] Unidron Batroids
-*UNIDRON BATROIDS*
-
-### Modified Loadouts
-- ~ **UNIDRON (Plasma Carbine, PARA CC Weapon(-3) | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
-
-## [502] Malignos
-*MALIGNOS Shasvastii Deep Incursion Corps*
+## [1918] Nexus-7 Spec-Ops
+*NEXUS-7 SPEC-OPS* — **NEW UNIT** (25-33 pts)
 
 ### Base Statline & Skills
-- ~ **Stat / Skill Update** (MALIGNOS Shasvastii Deep Incursion Corps)
-    · MOVE: [4-4] → [6-5]
+- + **INITIAL PROFILE** (UNITTYPE=2, MOVE=[4-4], CC=17, BS=12, PH=11, WIP=13, ARM=2, BTS=6, W=1, S=2, AVA=1)
+    · skills: Courage, Dodge(+3), Infinity Spec-Ops, Immunity(Shock), Mimetism(-3), Terrain(Total)
+- + **ENHANCED PROFILE** (UNITTYPE=3, MOVE=[6-5], CC=18, BS=13, PH=13, WIP=13, ARM=4, BTS=9, W=2, S=2, AVA=-1)
+    · skills: Courage, Dodge(+3), Mimetism(-3), Terrain(Total)
+- + **VOLDRON 401 SPECBOTS** (UNITTYPE=5, MOVE=[6-4], CC=13, BS=10, PH=10, WIP=11, ARM=0, BTS=3, W=1, S=1, AVA=-1)
+    · skills: Peripheral(Synchronized), Courage, Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
 
-### Modified Loadouts
-- ~ **MALIGNOS  (Submachine Gun, Monofilament Mine, Silenced Pistol | Minelayer)**
-    · Points: 35 → 31
-    · weapons + Submachine Gun
-    · weapons − Combi Rifle
-    · skills + Minelayer
-- ~ **MALIGNOS  (Boarding Shotgun, Pulzar(+1B), Viral Mine, Silenced Pistol)**
-    · Points: 31 → 30
-    · weapons + Pulzar(+1B), Viral Mine
-    · weapons − Shock Mine
-- ~ **MALIGNOS  (MULTI Sniper Rifle, Pulzar, Silenced Pistol)**
-    · Points: 34 → 33
-    · weapons + Pulzar
-- ~ **MALIGNOS  (Submachine Gun, D-Charges, Shock Mine, Silenced Pistol | Hacker | Hacking Device)**
-    · Points: 35 → 34
-    · weapons + D-Charges
-- ~ **MALIGNOS  (Submachine Gun, Flash Pulse, D-Charges, Shock Mine, Silenced Pistol | Forward Observer)**
-    · Points: 35 → 30
-    · weapons + Submachine Gun
-    · weapons − Combi Rifle
-- ~ **MALIGNOS  (Submachine Gun, D-Charges, Shock Mine, Silenced Pistol | Hacker | Killer Hacking Device, Dazer)**
-    · Points: 33 → 32
-    · weapons + D-Charges
+### Available Loadouts
+- + **NEXUS-7  (Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol)** (33 pts, SWC 1)
+    · weapons: Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7  (Heavy Rocket Launcher(+1B), Zapper, D-Charges, Breaker Pistol)** (25 pts, SWC 1)
+    · weapons: Heavy Rocket Launcher(+1B), Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7  (MULTI Rifle, Zapper, D-Charges, Breaker Pistol | Specialist Operative | GizmoKit)** (29 pts)
+    · weapons: MULTI Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **NEXUS-7  (Vulkan Shotgun(+1B), Zapper, D-Charges, Breaker Pistol | Hacker | Hacking Device)** (32 pts, SWC 0.5)
+    · weapons: Vulkan Shotgun(+1B), Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **NEXUS-7  (MULTI Rifle, Zapper, Flash Pulse, D-Charges, Breaker Pistol | Forward Observer)** (29 pts)
+    · weapons: MULTI Rifle, Zapper, Flash Pulse, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Forward Observer
+- + **NEXUS-7  (MULTI Rifle, Zapper, D-Charges, Breaker Pistol | Paramedic | MediKit)** (30 pts)
+    · weapons: MULTI Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **VOLDRON 401 SPECBOT_1  (Pulzar, Zapper(+1B), PARA CC Weapon(-3))** (6 pts)
+    · weapons: Pulzar, Zapper(+1B), PARA CC Weapon(-3)
+- + **VOLDRON 401 SPECBOT_2 (Pulzar, Zapper, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (6 pts)
+    · weapons: Pulzar, Zapper, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-### Removed Loadouts
-- − **MALIGNOS  (Combi Rifle, Shock Mine, Silenced Pistol)** (was 34 pts)
-
-## [1764] WCD Void Operators
-
-### Base Statline & Skills
-- ~ **Stat / Skill Update** (VOID OPERATOR)
-    · skills + Exrah
-    · skills − Skill#259
-
-## [1766] EXOs, Exrah Executive Officers
-*EXOs, EXRAH EXECUTIVE OFFICERS*
+## [1932] Combined Army Team-Ops
+*COMBINED ARMY TEAM-OPS* — **NEW UNIT** (6-44 pts)
 
 ### Base Statline & Skills
-- ~ **Stat / Skill Update** (EXOs, EXRAH EXECUTIVE OFFICERS)
-    · skills + Exrah
-    · skills − Skill#259
+- + **NEXUS-7A SPEC-OPS** (UNITTYPE=2, MOVE=[4-4], CC=17, BS=12, PH=11, WIP=13, ARM=2, BTS=6, W=1, S=2, AVA=1)
+    · skills: Courage, Dodge(+3), Infinity Team-Ops, Immunity(Shock), Mimetism(-3), Terrain(Total)
+- + **NEXUS-7 HEAVY SPEC-OPS** (UNITTYPE=3, MOVE=[6-5], CC=18, BS=13, PH=13, WIP=13, ARM=4, BTS=9, W=2, S=2, AVA=1)
+    · skills: Courage, Dodge(+3), Infinity Team-Ops, Mimetism(-3), Terrain(Total)
+- + **VOLDRON 401 SPECBOTS** (UNITTYPE=5, MOVE=[6-5], CC=13, BS=11, PH=10, WIP=13, ARM=0, BTS=3, W=1, S=1, AVA=1)
+    · skills: Remote Presence, Courage, Infinity Team-Ops, Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
 
-## [1765] WCD Base Operators
+### Available Loadouts
+- + **NEXUS-7A (Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol)** (28 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7A (K1 Sniper Rifle, Zapper, D-Charges, Breaker Pistol)** (23 pts, SWC 1.5)
+    · weapons: K1 Sniper Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7A (MULTI Rifle, Zapper, D-Charges, Breaker Pistol | Specialist Operative | GizmoKit)** (23 pts)
+    · weapons: MULTI Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **NEXUS-7A (Vulkan Shotgun(+1B), Zapper, Blitzen, D-Charges, Breaker Pistol | Hacker | Hacking Device)** (24 pts, SWC 0.5)
+    · weapons: Vulkan Shotgun(+1B), Zapper, Blitzen, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **NEXUS-7A (MULTI Rifle, Zapper, Flash Pulse, D-Charges, Breaker Pistol | Forward Observer)** (23 pts)
+    · weapons: MULTI Rifle, Zapper, Flash Pulse, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Forward Observer
+- + **NEXUS-7A (MULTI Rifle, Zapper, D-Charges, Breaker Pistol | Paramedic | MediKit)** (24 pts)
+    · weapons: MULTI Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **NEXUS-7 HEAVY (Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol)** (44 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7 HEAVY (Heavy Rocket Launcher(+1B), Zapper, D-Charges, Breaker Pistol)** (36 pts, SWC 1.5)
+    · weapons: Heavy Rocket Launcher(+1B), Zapper, D-Charges, Breaker Pistol, CC Weapon
+- + **NEXUS-7 HEAVY (MULTI Rifle, Zapper, D-Charges, Breaker Pistol | Specialist Operative | GizmoKit)** (39 pts)
+    · weapons: MULTI Rifle, Zapper, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **NEXUS-7 HEAVY (Vulkan Shotgun(+1B), Zapper, Blitzen, D-Charges, Breaker Pistol | Hacker | Hacking Device)** (40 pts, SWC 0.5)
+    · weapons: Vulkan Shotgun(+1B), Zapper, Blitzen, D-Charges, Breaker Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **VOLDRON 401 SPECBOT_1  (Pulzar, Zapper(+1B), PARA CC Weapon(-3))** (6 pts)
+    · weapons: Pulzar, Zapper(+1B), PARA CC Weapon(-3)
+- + **VOLDRON 401 SPECBOT (Combi Rifle, Pulzar, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (14 pts)
+    · weapons: Combi Rifle, Pulzar, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-### Base Statline & Skills
-- ~ **Stat / Skill Update** (BASE OPERATORS)
-    · skills + Exrah
-    · skills − Skill#259
+## [1874] Sāchā, Xenotech Hunters
+*SĀCHĀ, Xenotech Hunters* — **REMOVED UNIT** (was 6 pts)
 
-## [507] Med-Tech Obsidon Medchanoid
-*MED-TECH OBSIDON MEDCHANOIDS*
-
-### Modified Loadouts
-- ~ **MED-TECH OBSIDON (Combi Rifle, Zapper, D-Charges, Armed Turret (Combi R.))**
-    · weapons + Armed Turret (Combi R.)
-    · weapons − Weapon#209
-- ~ **MED-TECH OBSIDON (Combi Rifle, Zapper, D-Charges, Armed Turret (Marksman R.))**
-    · weapons + Armed Turret (Marksman R.)
-    · weapons − Weapon#215
+### Removed Unit
+- − **Unit removed from faction roster** (was 6 pts)

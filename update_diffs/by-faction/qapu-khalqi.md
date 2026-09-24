@@ -1,22 +1,15 @@
 # qapu-khalqi
 
-Units: 38 → 39
-Added: 1 · Removed: 0 · Modified: 3
+Units: 39 → 40
+Added: 2 · Removed: 1 · Modified: 1
 
 ## Added units
-- **[1894] Dr. Claire Lazhari, Genephilosopher and Optimate** / Dr. Claire Lazhari, Genephilosopher and Optimate — 33 pts
+- **[1916] Husam Spec-Ops** / HUSAM SPEC-OPS — 22-27 pts
+- **[1930] Haqqislam Team-Ops** / HAQQISLAM TEAM-OPS — 6-44 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts
 
 ## Modified units
-### [383] 'Iguana' Squadron / 'IGUANA' SQUADRON
-- **Points:** 64 → 64-68
-- **Skills added:** BS Attack(-3)
-
-### [324] Odalisques / ODALISQUES
-- **Points:** 19-28 → 19-27
-- **Weapons added:** Breaker Marksman Rifle
-- **Weapons removed:** Viral Marksman Rifle
-
-### [325] Bashi Bazouks / BASHI BAZOUKS
-- **Points:** 13-16 → 12-16
-- **Weapons added:** Contender(+1SD)
-- **Weapons removed:** Contender(+1B)
+### [314] Najjarun Engineers / NAJJARUN Engineer
+- **Equipment added:** Deactivator

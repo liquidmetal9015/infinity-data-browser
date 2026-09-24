@@ -1,10 +1,11 @@
 # morat
 
-Units: 36 → 36
-Added: 0 · Removed: 0 · Modified: 1
+Units: 36 → 37
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [499] Raicho Armored Brigade / RAICHO Armored Brigade
-- **Points:** 74-81 → 75-85
-- **Weapons removed:** Heavy Rocket Launcher
-- **Skills added:** BS Attack(-3)
+## Added units
+- **[1933] Morat Team-Ops** / MORAT TEAM-OPS — 7-46 pts
+- **[1919] Treitak Spec-Ops** / TREITAK SPEC-OPS — 7-30 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

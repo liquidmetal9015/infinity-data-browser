@@ -1,98 +1,106 @@
 # starco-free-company-of-the-star — Profile & Loadout Changes
 
-Units changed: **9** · Stat/Chassis updates: **1** · Modified loadouts: **13** · Added: **4** · Removed: **1**
+Units changed: **3** (Added: **2**, Removed: **1**, Modified: **0**) · Fireteam updates: **3** · Stat updates: **0** · Modified loadouts: **0** · Added loadouts: **0** · Removed loadouts: **0**
 
-## [265] Wardrivers, Mercenary Hackers
-*WARDRIVERS, Mercenary Hackers*
+## Fireteam Chart Updates
 
-### Modified Loadouts
-- ~ **WARDRIVER  (Boarding Shotgun, Flash Pulse | Hacker(Zero Pain), Commlink)**
-    · skills + Commlink
-    · skills − Skill#260
+### Modified Fireteams
+- ~ **StarCo Fireteams**
+    · + RUMBLER (max: 1, Spec-Ops)
+- ~ **PMC Fireteams**
+    · + RUMBLER (max: 1, Spec-Ops)
+- ~ **Armored Fireteams**
+    · + RUMBLER (max: 1, Spec-Ops)
 
-## [1072] Emily Handelman, Intel Agent
-*EMILY HANDELMAN, Intel Agent*
-
-### Modified Loadouts
-- ~ **EMILY (Breaker Combi Rifle(PS=6), Nanopulser, Flash Pulse, Assault Pistol)**
-    · Points: 23 → 22
-
-## [400] Corregidor Bandits
-*CORREGIDOR BANDITS*
+## [1925] Rumbler Spec-Ops
+*RUMBLER SPEC-OPS* — **NEW UNIT** (23-28 pts)
 
 ### Base Statline & Skills
-- ~ **Stat / Skill Update** (CORREGIDOR BANDITS)
-    · skills + BS Attack(+1SD)
-    · skills − BS Attack(+1B)
+- + **INITIAL PROFILE** (UNITTYPE=2, MOVE=[4-4], CC=17, BS=12, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Spec-Ops, Immunity(Shock), Sixth Sense, Terrain(Total)
+- + **ENHANCED PROFILE** (UNITTYPE=3, MOVE=[4-4], CC=17, BS=13, PH=13, WIP=13, ARM=5, BTS=3, W=2, S=2, AVA=-1)
+    · skills: Sixth Sense, Terrain(Total)
+- + **GORT SPECBOTS** (UNITTYPE=5, MOVE=[6-4], CC=13, BS=10, PH=10, WIP=11, ARM=0, BTS=3, W=1, S=1, AVA=-1)
+    · skills: Peripheral(Synchronized), Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
 
-### Modified Loadouts
-- ~ **BANDIT (Light Shotgun, Adhesive Launcher Rifle, Boarding Pistol, DA CC Weapon(PS=6))**
-    · Points: 24 → 23
-- ~ **BANDIT (Light Shotgun, Adhesive Launcher Rifle, D-Charges, Boarding Pistol, DA CC Weapon(PS=6) | Hacker | Hacking Device)**
-    · Points: 30 → 28
-    · weapons + D-Charges
-- ~ **BANDIT (Light Shotgun, Adhesive Launcher Rifle, D-Charges, Boarding Pistol, DA CC Weapon(PS=6) | Hacker | Killer Hacking Device)**
-    · Points: 28 → 26
-    · weapons + D-Charges
-- ~ **BANDIT (Boarding Pistol, DA CC Weapon(PS=6), Submachine Gun, Shock Mine | Minelayer | Deployable Repeater)**
-    · Points: 27 → 25
-- ~ **BANDIT (Light Shotgun, Adhesive Launcher Rifle, Flash Pulse, Boarding Pistol, DA CC Weapon(PS=6) | Forward Observer)**
-    · Points: 25 → 24
+### Available Loadouts
+- + **RUMBLER (Heavy Machine Gun, D-Charges)** (28 pts, SWC 1)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **RUMBLER (AP Spitfire, D-Charges)** (28 pts, SWC 1)
+    · weapons: AP Spitfire, D-Charges, Pistol, CC Weapon
+- + **RUMBLER (MULTI Rifle | Specialist Operative | GizmoKit)** (23 pts)
+    · weapons: MULTI Rifle, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **RUMBLER (Combi Rifle(AP), D-Charges | Forward Observer)** (26 pts, SWC 0.5)
+    · weapons: Combi Rifle(AP), D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **RUMBLER (MULTI Rifle, Flash Pulse, D-Charges | Forward Observer)** (23 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **RUMBLER (Combi Rifle(AP), D-Charges | Paramedic | MediKit)** (23 pts)
+    · weapons: Combi Rifle(AP), D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **GORT  SPECBOT_1 (Chain Rifle(PS=5), Shock Mine, PARA CC Weapon(-3))** (6 pts)
+    · weapons: Chain Rifle(PS=5), Shock Mine, PARA CC Weapon(-3)
+- + **GORT  SPECBOT_2 (Chain Rifle(PS=5), Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (6 pts)
+    · weapons: Chain Rifle(PS=5), Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-## [122] CSU, Corporate Security Unit
+## [1939] NA2 Team-Ops
+*NA2 TEAM-OPS* — **NEW UNIT** (6-44 pts)
 
-### Modified Loadouts
-- ~ **CSU (Breaker Rifle, Nanopulser(+1B), MULTI Pistol, PARA CC Weapon(-6))**
-    · Points: 12 → 10
-- ~ **CSU (Rifle, Light Shotgun, MULTI Pistol, PARA CC Weapon(-6), Nanopulser(+1B) | Specialist Operative)**
-    · weapons + Nanopulser(+1B)
-    · weapons − Nanopulser
-- ~ **CSU (Breaker Combi Rifle, Nanopulser(+1B), MULTI Pistol, PARA CC Weapon(-6) | Specialist Operative)**
-    · Points: 14 → 13
+### Base Statline & Skills
+- + **RUMBLER-1 SPEC-OPS** (UNITTYPE=2, MOVE=[4-4], CC=17, BS=12, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Immunity(Shock), Mimetism(-3), Sixth Sense, Terrain(Total)
+- + **RUMBLER HEAVY SPEC-OPS** (UNITTYPE=3, MOVE=[4-4], CC=17, BS=13, PH=13, WIP=13, ARM=5, BTS=3, W=2, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Sixth Sense, Terrain(Total)
+    · equipment: Multispectral Visor L1
+- + **GORT SPECBOTS** (UNITTYPE=5, MOVE=[6-5], CC=13, BS=11, PH=10, WIP=13, ARM=0, BTS=3, W=1, S=1, AVA=1)
+    · skills: Remote Presence, Courage, Infinity Team-Ops, Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
 
-## [382] Mobile Brigada
-*MOBILE BRIGADA*
+### Available Loadouts
+- + **RUMBLER-1 (Heavy Machine Gun, D-Charges, Boarding Pistol)** (26 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, D-Charges, Boarding Pistol, CC Weapon
+- + **RUMBLER-1 (MULTI Sniper Rifle, D-Charges, Boarding Pistol)** (24 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, D-Charges, Boarding Pistol, CC Weapon
+- + **RUMBLER-1 (MULTI Rifle, D-Charges, Boarding Pistol | Specialist Operative | GizmoKit)** (21 pts)
+    · weapons: MULTI Rifle, D-Charges, Boarding Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **RUMBLER-1 (Submachine Gun(+1SD), D-Charges, Boarding Pistol | Hacker | Hacking Device)** (21 pts, SWC 0.5)
+    · weapons: Submachine Gun(+1SD), D-Charges, Boarding Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **RUMBLER-1 (MULTI Rifle, Flash Pulse, D-Charges, Boarding Pistol | Forward Observer)** (21 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Boarding Pistol, CC Weapon
+    · skills: Forward Observer
+- + **RUMBLER-1 (Combi Rifle(AP), D-Charges, Boarding Pistol | Paramedic | MediKit)** (21 pts)
+    · weapons: Combi Rifle(AP), D-Charges, Boarding Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **RUMBLER HEAVY (Heavy Machine Gun, Grenades, D-Charges, Boarding Pistol)** (43 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, Grenades, D-Charges, Boarding Pistol, CC Weapon
+- + **RUMBLER HEAVY (AP Spitfire, Akrylat-Kanone, Grenades, D-Charges, Boarding Pistol)** (44 pts, SWC 1.5)
+    · weapons: AP Spitfire, Akrylat-Kanone, Grenades, D-Charges, Boarding Pistol, CC Weapon
+- + **RUMBLER HEAVY (MULTI Rifle, Grenades, D-Charges, Boarding Pistol | Specialist Operative | GizmoKit)** (38 pts)
+    · weapons: MULTI Rifle, Grenades, D-Charges, Boarding Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **RUMBLER HEAVY (Submachine Gun(+1SD), Grenades, D-Charges, Boarding Pistol | Hacker)** (38 pts, SWC 0.5)
+    · weapons: Submachine Gun(+1SD), Grenades, D-Charges, Boarding Pistol, CC Weapon
+    · skills: Hacker
+- + **GORT SPECBOT_1 (Chain Rifle(PS=5), Shock Mine, PARA CC Weapon(-3))** (6 pts)
+    · weapons: Chain Rifle(PS=5), Shock Mine, PARA CC Weapon(-3)
+- + **GORT  SPECBOT_2 (Thunderbolt, Chain Rifle(PS=5), Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (10 pts)
+    · weapons: Thunderbolt, Chain Rifle(PS=5), Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-### Removed Loadouts
-- − **MOBILE BRIGADA (Boarding Shotgun, Boarding Pistol(+1B) | TinBot: Firewall(-6))** (was 29 pts)
+## [1874] Sāchā, Xenotech Hunters
+*SĀCHĀ, Xenotech Hunters* — **REMOVED UNIT** (was 6 pts)
 
-## [423] Tsyklon Sputniks
-*TSYKLON Sputnik*
-
-### Modified Loadouts
-- ~ **TSYKLON FTO (Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6))**
-    · Points: 28 → 29
-
-### Added Loadouts
-- + **TSYKLON (Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6) | Forward Deployment(+4"))** (31 pts, SWC 1)
-    · weapons: Feuerbach, Chain Rifle, Pitcher, PARA CC Weapon(-6)
-    · skills: Forward Deployment(+4")
-- + **TSYKLON (Spitfire, Chain Rifle, Pitcher, Crazykoala, PARA CC Weapon(-6) | Forward Deployment(+4"), Minelayer(2))** (31 pts, SWC 1)
-    · weapons: Spitfire, Chain Rifle, Pitcher, Crazykoala, PARA CC Weapon(-6)
-    · skills: Forward Deployment(+4"), Minelayer(2)
-
-## [406] Clockmakers
-*Bakunin CLOCKMAKERS*
-
-### Modified Loadouts
-- ~ **CLOCKMAKER (Combi Rifle, D-Charges, Armed Turret (Combi R.))**
-    · weapons + Armed Turret (Combi R.)
-    · weapons − Weapon#209
-
-## [408] Stempler Zonds
-*STEMPLER ZONDS*
-
-### Added Loadouts
-- + **STEMPLER ZOND FTO (Combi Rifle, Flash Pulse, PARA CC Weapon(-3) | Super-Jump)** (17 pts)
-    · weapons: Combi Rifle, Flash Pulse, PARA CC Weapon(-3)
-    · skills: Super-Jump
-- + **STEMPLER ZOND (Thunderbolt(+1B), Flash Pulse, PARA CC Weapon(-3) | BS=12, Tactical Awareness)** (22 pts)
-    · weapons: Thunderbolt(+1B), Flash Pulse, PARA CC Weapon(-3)
-    · skills: BS=12, Tactical Awareness
-
-## [296] Corregidor Alguaciles
-*CORREGIDOR ALGUACILES*
-
-### Modified Loadouts
-- ~ **ALGUACIL (Combi Rifle | Lieutenant)**
-    · SWC: 0.5 → 0
+### Removed Unit
+- − **Unit removed from faction roster** (was 6 pts)

@@ -1,8 +1,11 @@
 # ariadna
 
-Units: 52 → 52
-Added: 0 · Removed: 0 · Modified: 1
+Units: 52 → 53
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [247] Loup-Garous / LOUP-GAROU, Groupe Mobile d'Action Spéciale
-- **Points:** 15-26 → 15-24
+## Added units
+- **[1915] Intel Spec-Ops** / INTEL SPEC-OPS — 18-27 pts
+- **[1929] AriadnaTeam-Ops** / ARIADNA TEAM-OPS — 6-44 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

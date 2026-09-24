@@ -1,13 +1,11 @@
 # force-de-reponse-rapide-merovingienne
 
-Units: 23 → 23
-Added: 0 · Removed: 0 · Modified: 2
+Units: 23 → 24
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [247] Loup-Garous / LOUP-GAROU, Groupe Mobile d'Action Spéciale
-- **Points:** 15-26 → 15-24
+## Added units
+- **[1915] Intel Spec-Ops** / INTEL SPEC-OPS — 18-27 pts
+- **[1929] AriadnaTeam-Ops** / ARIADNA TEAM-OPS — 6-44 pts
 
-### [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
-- **Points:** 34 → 33
-- **Weapons added:** E/M Grenades(+1SD), MULTI Rifle(+1SD)
-- **Weapons removed:** E/M Grenades(+1B), MULTI Rifle(+1B)
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

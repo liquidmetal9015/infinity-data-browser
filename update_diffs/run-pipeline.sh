@@ -89,6 +89,10 @@ trap - EXIT
 # ---------------------------------------------------------------------------
 # 5. Generate diffs
 # ---------------------------------------------------------------------------
+log "Generating faction-level diffs"
+rm -rf update_diffs/by-faction
+node update_diffs/diff-by-faction.mjs "$WORK" "$PWD" update_diffs/by-faction
+
 log "Generating profile & loadout diffs"
 rm -rf update_diffs/by-profile
 node update_diffs/diff-by-profile.mjs "$WORK" "$PWD" update_diffs/by-profile

@@ -1,11 +1,13 @@
 # next-wave
 
-Units: 35 → 35
-Added: 0 · Removed: 0 · Modified: 2
+Units: 35 → 38
+Added: 4 · Removed: 1 · Modified: 0
 
-## Modified units
-### [783] Nexus Operatives / NEXUS Operatives
-- **Weapons added:** Combi Rifle(+1SD)
+## Added units
+- **[1921] Blur Spec-Ops** / BLUR SPEC-OPS — 20-27 pts
+- **[1918] Nexus-7 Spec-Ops** / NEXUS-7 SPEC-OPS — 25-33 pts
+- **[1935] Next Wave Team-Ops** / NEXT WAVE TEAM-OPS — 6-40 pts
+- **[1940] Ioann Bann, Varangian Dog-Warrior** / IOANN BANN, VARANGIAN DOG-WARRIOR   — 30 pts
 
-### [1876] Harbingers, New Mankind Defense Infantry / HARBINGERS, New Mankind Defense Infantry
-- **Equipment added:** Deployable Repeater, Killer Hacking Device
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

@@ -1,14 +1,15 @@
 # ramah-taskforce
 
-Units: 37 → 38
-Added: 1 · Removed: 0 · Modified: 2
+Units: 38 → 39
+Added: 2 · Removed: 1 · Modified: 1
 
 ## Added units
-- **[1894] Dr. Claire Lazhari, Genephilosopher and Optimate** / Dr. Claire Lazhari, Genephilosopher and Optimate — 33 pts
+- **[1916] Husam Spec-Ops** / HUSAM SPEC-OPS — 22-27 pts
+- **[1930] Haqqislam Team-Ops** / HAQQISLAM TEAM-OPS — 6-44 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts
 
 ## Modified units
-### [305] Zhayedan Intervention Troops / ZHAYEDAN Intervention Troops
-- **Points:** 23-31 → 22-31
-
-### [1315] Namurr Experimental Operative Group / NAMURR Experimental Operative Group
-- **Points:** 42-44 → 41-44
+### [314] Najjarun Engineers / NAJJARUN Engineer
+- **Equipment added:** Deactivator

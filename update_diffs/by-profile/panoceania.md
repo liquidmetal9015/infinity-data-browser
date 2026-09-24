@@ -1,142 +1,115 @@
 # panoceania — Profile & Loadout Changes
 
-Units changed: **10** · Stat/Chassis updates: **2** · Modified loadouts: **18** · Added: **5** · Removed: **0**
+Units changed: **5** (Added: **2**, Removed: **1**, Modified: **2**) · Fireteam updates: **0** · Stat updates: **2** · Modified loadouts: **0** · Added loadouts: **0** · Removed loadouts: **0**
 
-## [1809] Fireflies Clandestine Demo Squad
-
-### Modified Loadouts
-- ~ **FIREFLY (Submachine Gun, Panzerfaust, D-Charges, AP Mine, Armed Turret (Marksman R.) | Minelayer)**
-    · weapons + Armed Turret (Marksman R.)
-    · weapons − Weapon#215
-
-## [1815] Team Crux Father-Knights
-*Team CRUX FATHER-KNIGHTS*
-
-### Modified Loadouts
-- ~ **CRUX KNIGHT (AP Submachine Gun, Flash Pulse, D-Charges, DA CC Weapon(PS=5), Armed Turret (Combi R.) | Surprise Attack(-3), Forward Deployment(+8"), Hidden Deployment)**
-    · weapons + Armed Turret (Combi R.)
-    · weapons − Weapon#209
-
-## [769] Locust, Clandestine Action Team 
-*LOCUST, Clandestine Action Team*
-
-### Modified Loadouts
-- ~ **LOCUST (Breaker Combi Rifle, D-Charges, Boarding Pistol, Pitcher | Hacker | Hacking Device(UPGRADE: Firewall (-3)))**
-    · Points: 30 → 29
-- ~ **LOCUST (Breaker Combi Rifle, D-Charges, Boarding Pistol, Pitcher | Hacker | Killer Hacking Device(UPGRADE: Firewall (-3)))**
-    · Points: 28 → 27
-- ~ **LOCUST (Breaker Combi Rifle, Flash Pulse, D-Charges, Boarding Pistol | Hacker, Camouflage(1 Use) | Hacking Device(UPGRADE: Firewall (-3)))**
-    · Points: 32 → 31
-
-## [1720] Maximus, Optimate and HexaDome Legend
-*MAXIMUS, Optimate and HexaDome Legend*
+## [1912] Índigo Spec-Ops
+*INDIGO SPEC-OPS* — **NEW UNIT** (19-25 pts)
 
 ### Base Statline & Skills
-- ~ **[OPERATOR MAXIMUS]** **Stat / Skill Update** (OPERATOR MAXIMUS)
-    · CC: 23 → 22
-    · BS: 12 → 13
+- + **INITIAL PROFILE** (UNITTYPE=2, MOVE=[4-4], CC=13, BS=13, PH=11, WIP=12, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Spec-Ops, Immunity(Shock), Terrain(Total)
+- + **ENHANCED PROFILE** (UNITTYPE=3, MOVE=[6-5], CC=15, BS=14, PH=14, WIP=12, ARM=4, BTS=3, W=2, S=2, AVA=-1)
+    · skills: Terrain(Total)
+    · equipment: X Visor
+- + **BLUEBERRY SPECBOT** (UNITTYPE=5, MOVE=[6-4], CC=13, BS=10, PH=10, WIP=11, ARM=0, BTS=3, W=1, S=0, AVA=-1)
+    · skills: Peripheral(Synchronized), Courage, Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
 
-### Modified Loadouts
-- ~ **[MAXIMUS, Optimate and HexaDome Legend] MAXIMUS OPTIMATE (AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=4))**
-    · Points: 76 → 82
-    · SWC: 0.5 → 1.5
-    · weapons + AP Heavy Machine Gun
-    · weapons − Thunderbolt(+2B)
-- ~ **[MAXIMUS, Optimate and HexaDome Legend] MAXIMUS OPTIMATE (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=4))**
-    · Points: 76 → 80
-    · SWC: 0 → 1
-    · weapons + Thunderbolt AP(+2B)
-    · weapons − Thunderbolt(+2B)
-    · skills − Lieutenant
-- ~ **[OPERATOR MAXIMUS] OPERATOR MAXIMUS (AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6))**
-    · Points: 76 → 82
-    · weapons + AP Heavy Machine Gun
-    · weapons − Thunderbolt(+2B)
-- ~ **[OPERATOR MAXIMUS] OPERATOR MAXIMUS (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6))**
-    · Points: 76 → 80
-    · weapons + Thunderbolt AP(+2B)
-    · weapons − Thunderbolt(+2B)
-    · skills − Lieutenant
+### Available Loadouts
+- + **INDIGO (Heavy Machine Gun, D-Charges)** (25 pts, SWC 1)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **INDIGO (MULTI Sniper Rifle, D-Charges)** (23 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, D-Charges, Pistol, CC Weapon
+- + **INDIGO (MULTI Rifle, D-Charges | Specialist Operative | GizmoKit)** (20 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **INDIGO (AP Submachine Gun, Flash Pulse(+3), D-Charges | Hacker | Hacking Device, Deployable Repeater)** (19 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Flash Pulse(+3), D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device, Deployable Repeater
+- + **INDIGO (MULTI Rifle, Flash Pulse, D-Charges | Forward Observer)** (20 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **INDIGO (MULTI Rifle, D-Charges | Paramedic | MediKit)** (21 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **BLUEBERRY SPECBOT_1 (Heavy Flamethrower, PARA CC Weapon(-3) | Deployable Repeater)** (6 pts)
+    · weapons: Heavy Flamethrower, PARA CC Weapon(-3)
+    · equipment: Deployable Repeater
+- + **BLUEBERRY SPECBOT_2 (Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (6 pts)
+    · weapons: Heavy Flamethrower, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-### Added Loadouts
-- + **[MAXIMUS, Optimate and HexaDome Legend] MAXIMUS OPTIMATE (AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=4) | Lieutenant)** (82 pts)
-    · weapons: AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=4)
-    · skills: Lieutenant
-- + **[OPERATOR MAXIMUS] OPERATOR MAXIMUS (AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6) | Lieutenant)** (82 pts)
-    · weapons: AP Heavy Machine Gun, E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6)
-    · skills: Lieutenant
-
-## [1216] Zulu-Cobra, Recon and Special Intervention Group
-*ZULÚ-COBRA, Recon and Special Intervention Group*
-
-### Modified Loadouts
-- ~ **ZULU-COBRA (Breaker Combi Rifle, Assault Pistol, Pitcher | Hacker | Killer Hacking Device)**
-    · Points: 27 → 26
-- ~ **ZULU-COBRA (Breaker Combi Rifle, Flash Pulse, Assault Pistol | Forward Observer)**
-    · Points: 25 → 24
-
-## [1803] Fennec Fusiliers
-*FENNEC Fusiliers*
-
-### Modified Loadouts
-- ~ **FENNEC (Combi Rifle | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
-
-## [1] Fusiliers
-*FUSILIERS*
-
-### Modified Loadouts
-- ~ **FUSILIER (Combi Rifle | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
-
-## [1750] Blockers, Attached Agents of the CDCI
-*BLOCKERS, Attached Agents of the CDCI*
-
-### Modified Loadouts
-- ~ **BLOCKER (Adhesive Launcher Rifle, Flash Pulse, MULTI Pistol, PARA CC Weapon(-6), Pulzar, Pitcher | Specialist Operative)**
-    · weapons + Pitcher
-- ~ **BLOCKER (Adhesive Launcher Rifle, Flash Pulse, MULTI Pistol, PARA CC Weapon(-6), Pulzar | Hacker | Hacking Device(UPGRADE: Firewall (-3)))**
-    · weapons − Pitcher
-
-## [1862] Optimate Agent Maximus
+## [1926] Indigo Team-Ops
+*INDIGO TEAM-OPS* — **NEW UNIT** (6-42 pts)
 
 ### Base Statline & Skills
-- ~ **[Optimate Agent MAXIMUS]** **Stat / Skill Update** (Optimate Agent MAXIMUS)
-    · CC: 23 → 22
-    · BS: 12 → 13
-    · skills + Number 2
-    · equipment + Albedo(-3)
+- + **INDIGO-1 SPEC-OPS** (UNITTYPE=2, MOVE=[4-4], CC=13, BS=13, PH=11, WIP=12, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Immunity(Shock), Terrain(Total)
+    · equipment: Albedo(-3), X Visor
+- + **INDIGO HEAVY SPEC-OPS** (UNITTYPE=3, MOVE=[6-5], CC=15, BS=14, PH=12, WIP=12, ARM=4, BTS=3, W=2, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Terrain(Total)
+    · equipment: Multispectral Visor L1, X Visor
+- + **BLUEBERRY SPECBOTS** (UNITTYPE=5, MOVE=[6-5], CC=13, BS=11, PH=10, WIP=13, ARM=0, BTS=3, W=1, S=1, AVA=1)
+    · skills: Remote Presence, Infinity Team-Ops, Courage, Terrain(Total)
+    · equipment: Albedo(-3), 360º Visor
 
-### Modified Loadouts
-- ~ **[Optimate Agent MAXIMUS] MAXIMUS AGENT (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6))**
-    · Points: 40 → 48
-    · weapons + Thunderbolt AP(+2B)
-    · weapons − Thunderbolt(+2B)
-- ~ **[Optimate Agent MAXIMUS] MAXIMUS AGENT FTO (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6) | Tinbot (Repeater))**
-    · Points: 40 → 45
-    · SWC: 0 → 1
-    · weapons + Thunderbolt AP(+2B)
-    · weapons − Thunderbolt(+2B)
-    · skills − Lieutenant
-    · equipment + Tinbot (Repeater)
+### Available Loadouts
+- + **INDIGO-1 (Heavy Machine Gun, D-Charges)** (23 pts, SWC 1)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **INDIGO-1 (MULTI Sniper Rifle, D-Charges)** (21 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, D-Charges, Pistol, CC Weapon
+- + **INDIGO-1 (MULTI Rifle, D-Charges | Specialist Operative | GizmoKit)** (18 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **INDIGO-1 (AP Submachine Gun, Flash Pulse(+3), D-Charges | Hacker | Hacking Device, Deployable Repeater)** (17 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Flash Pulse(+3), D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device, Deployable Repeater
+- + **INDIGO-1 (MULTI Rifle, Flash Pulse, D-Charges | Forward Observer)** (18 pts)
+    · weapons: MULTI Rifle, Flash Pulse, D-Charges, Pistol, CC Weapon
+    · skills: Forward Observer
+- + **INDIGO-1 (MULTI Rifle, D-Charges | Paramedic | MediKit)** (19 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **INDIGO HEAVY (Heavy Machine Gun, D-Charges)** (40 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, D-Charges, Pistol, CC Weapon
+- + **INDIGO HEAVY (Feuerbach(PS=4), D-Charges)** (42 pts, SWC 1.5)
+    · weapons: Feuerbach(PS=4), D-Charges, Pistol, CC Weapon
+- + **INDIGO HEAVY (AP Submachine Gun, Flash Pulse(+3), D-Charges | Hacker | Hacking Device, Deployable Repeater)** (34 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Flash Pulse(+3), D-Charges, Pistol, CC Weapon
+    · skills: Hacker
+    · equipment: Hacking Device, Deployable Repeater
+- + **INDIGO HEAVY (MULTI Rifle, D-Charges | Paramedic | MediKit)** (36 pts)
+    · weapons: MULTI Rifle, D-Charges, Pistol, CC Weapon
+    · skills: Paramedic
+    · equipment: MediKit
+- + **BLUEBERRY SPECBOT_1 (Heavy Flamethrower, PARA CC Weapon(-3) | Deployable Repeater)** (6 pts)
+    · weapons: Heavy Flamethrower, PARA CC Weapon(-3)
+    · equipment: Deployable Repeater
+- + **BLUEBERRY SPECBOT_2 (Combi Rifle, Heavy Rocket Launcher, Flash Pulse, PARA CC Weapon(-3) | Forward Observer)** (14 pts)
+    · weapons: Combi Rifle, Heavy Rocket Launcher, Flash Pulse, PARA CC Weapon(-3)
+    · skills: Forward Observer
 
-### Added Loadouts
-- + **[Optimate Agent MAXIMUS] MAXIMUS AGENT (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6) | Lieutenant)** (48 pts, SWC 1)
-    · weapons: Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6)
-    · skills: Lieutenant
-- + **[Optimate Agent MAXIMUS] MAXIMUS AGENT FTO (Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6) | Lieutenant | Tinbot (Repeater))** (45 pts, SWC 1)
-    · weapons: Thunderbolt AP(+2B), E/M Carbine, Heavy Pistol, AP + DA CC Weapon(PS=6)
-    · skills: Lieutenant
-    · equipment: Tinbot (Repeater)
-- + **[Minimus MateBot] MINIMUS (Flash Pulse, E/Marat, DA CC Weapon(PS=7), PARA CC Weapon)** (6 pts)
-    · weapons: Flash Pulse, E/Marat, DA CC Weapon(PS=7), PARA CC Weapon
+## [1874] Sāchā, Xenotech Hunters
+*SĀCHĀ, Xenotech Hunters* — **REMOVED UNIT** (was 6 pts)
 
-## [15] Machinists
-*MACHINISTS*
+### Removed Unit
+- − **Unit removed from faction roster** (was 6 pts)
 
-### Modified Loadouts
-- ~ **MACHINIST (Combi Rifle, D-Charges, Armed Turret (Combi R.))**
-    · weapons + Armed Turret (Combi R.)
-    · weapons − Weapon#209
+## [1903]  Pilot-X Team
+
+### Base Statline & Skills
+- ~ **[RACERBOTS]** **Stat / Skill Update** (RACERBOTS)
+    · skills − Bangbomb(+4)
+    · equipment + Bangbomb(+4)
+
+## [1905] RacerBots
+
+### Base Statline & Skills
+- ~ **Stat / Skill Update** (RacerBots)
+    · equipment + Bangbomb(+4)

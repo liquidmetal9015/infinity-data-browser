@@ -1,18 +1,121 @@
 # starmada — Profile & Loadout Changes
 
-Units changed: **2** · Stat/Chassis updates: **0** · Modified loadouts: **2** · Added: **0** · Removed: **0**
+Units changed: **4** (Added: **3**, Removed: **1**, Modified: **0**) · Fireteam updates: **2** · Stat updates: **0** · Modified loadouts: **0** · Added loadouts: **0** · Removed loadouts: **0**
 
-## [788] Andromeda, Sophistes of the Steel Phalanx
-*ANDROMEDA, Sophistes of the Steel Phalanx*
+## Fireteam Chart Updates
 
-### Modified Loadouts
-- ~ **ANDROMEDA (Boarding Shotgun(+1B), Zapper, Flash Pulse, D-Charges, Breaker Pistol, DA CC Weapon(PS=6))**
-    · weapons + Zapper
+### Modified Fireteams
+- ~ **Security Fireteams**
+    · + ŜTORMO (max: 1, Spec-Ops)
+- ~ **Varangian Guards Fireteams**
+    · + IOANN BANN (max: 1, (Varangian))
 
-## [1447] Kappa Unit
-*KAPPA UNIT*
+## [1923] Ŝtormo Spec-Ops
+*ŜTORMO SPEC-OPS* — **NEW UNIT** (18-27 pts)
 
-### Modified Loadouts
-- ~ **KAPPA (Combi Rifle | Commlink(+1), Specialist Operative)**
-    · skills + Commlink(+1)
-    · skills − Skill#260(+1)
+### Base Statline & Skills
+- + **INITIAL PROFILE** (UNITTYPE=3, MOVE=[4-4], CC=14, BS=13, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Spec-Ops, Immunity(Shock), Terrain(Total)
+- + **ENHANCED PROFILE** (UNITTYPE=3, MOVE=[6-5], CC=16, BS=13, PH=12, WIP=13, ARM=3, BTS=6, W=2, S=2, AVA=-1)
+    · skills: Courage, Terrain(Total)
+    · equipment: 360º Visor
+- + **KOLEGO SPECBOTS** (UNITTYPE=5, MOVE=[6-4], CC=13, BS=10, PH=11, WIP=11, ARM=0, BTS=3, W=1, S=1, AVA=-1)
+    · skills: Peripheral(Synchronized), Courage, Mimetism(-3), Terrain(Total)
+    · equipment: 360º Visor
+
+### Available Loadouts
+- + **ŜTORMO (Heavy Machine Gun, Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (27 pts, SWC 1)
+    · weapons: Heavy Machine Gun, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO (MULTI Sniper Rifle, Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (25 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO (MULTI Rifle, Light Riotstopper, D-Charges, PARA CC Weapon(-6) | Specialist Operative | GizmoKit)** (22 pts)
+    · weapons: MULTI Rifle, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **ŜTORMO (AP Submachine Gun, Light Riotstopper, Akrylat-Kanone, D-Charges, PARA CC Weapon(-6) | Hacker | Hacking Device)** (21 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Light Riotstopper, Akrylat-Kanone, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **ŜTORMO (MULTI Rifle, Light Riotstopper, Flash Pulse, D-Charges, PARA CC Weapon(-6) | Forward Observer)** (22 pts)
+    · weapons: MULTI Rifle, Light Riotstopper, Flash Pulse, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Forward Observer
+- + **ŜTORMO (AP Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, PARA CC Weapon(-6) | Paramedic | MediKit)** (18 pts)
+    · weapons: AP Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Paramedic
+    · equipment: MediKit
+- + **KOLEGO SPECBOT_1  (Heavy Riotstopper(+1B), PARA CC Weapon(-6))** (7 pts)
+    · weapons: Heavy Riotstopper(+1B), PARA CC Weapon(-6)
+- + **KOLEGO SPECBOT_2 (Heavy Riotstopper, Flash Pulse, PARA Mine, PARA CC Weapon(-6) | Forward Observer)** (7 pts)
+    · weapons: Heavy Riotstopper, Flash Pulse, PARA Mine, PARA CC Weapon(-6)
+    · skills: Forward Observer
+
+## [1937] O12 Team-Ops
+*O12 TEAM-OPS* — **NEW UNIT** (6-40 pts)
+
+### Base Statline & Skills
+- + **ŜTORMO-1 SPEC-OPS** (UNITTYPE=3, MOVE=[4-4], CC=14, BS=12, PH=11, WIP=13, ARM=2, BTS=3, W=1, S=2, AVA=1)
+    · skills: Infinity Team-Ops, Immunity(Shock), Terrain(Total)
+    · equipment: Albedo(-6)
+- + **ŜTORMO HEAVY SPEC-OPS** (UNITTYPE=3, MOVE=[6-5], CC=16, BS=13, PH=12, WIP=13, ARM=3, BTS=6, W=2, S=2, AVA=1)
+    · skills: Courage, Infinity Team-Ops, Immunity(AP), Terrain(Total)
+    · equipment: Multispectral Visor L1
+- + **KOLEGO SPECBOTS** (UNITTYPE=5, MOVE=[6-5], CC=13, BS=11, PH=10, WIP=13, ARM=0, BTS=3, W=1, S=1, AVA=1)
+    · skills: Remote Presence, Courage, Infinity Team-Ops, Terrain(Total)
+    · equipment: Albedo(-3), 360º Visor
+
+### Available Loadouts
+- + **ŜTORMO-1 (Heavy Machine Gun, Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (23 pts, SWC 1)
+    · weapons: Heavy Machine Gun, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO-1 (MULTI Sniper Rifle, Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (21 pts, SWC 1.5)
+    · weapons: MULTI Sniper Rifle, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO-1 (MULTI Rifle, Light Riotstopper, D-Charges, PARA CC Weapon(-6) | Specialist Operative | GizmoKit)** (18 pts)
+    · weapons: MULTI Rifle, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **ŜTORMO-1 (AP Submachine Gun, Light Riotstopper, Akrylat-Kanone, D-Charges, PARA CC Weapon(-6) | Hacker | Hacking Device)** (18 pts, SWC 0.5)
+    · weapons: AP Submachine Gun, Light Riotstopper, Akrylat-Kanone, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Hacker
+    · equipment: Hacking Device
+- + **ŜTORMO-1 (MULTI Rifle, Light Riotstopper, Flash Pulse, D-Charges, PARA CC Weapon(-6) | Forward Observer)** (18 pts)
+    · weapons: MULTI Rifle, Light Riotstopper, Flash Pulse, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Forward Observer
+- + **ŜTORMO-1 (AP Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, PARA CC Weapon(-6) | Paramedic | MediKit)** (14 pts)
+    · weapons: AP Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Paramedic
+    · equipment: MediKit
+- + **ŜTORMO HEAVY (Heavy Machine Gun, Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (40 pts, SWC 1.5)
+    · weapons: Heavy Machine Gun, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO HEAVY (Redfury AP(PS=6), Light Riotstopper, D-Charges, PARA CC Weapon(-6))** (39 pts, SWC 1.5)
+    · weapons: Redfury AP(PS=6), Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+- + **ŜTORMO HEAVY (MULTI Rifle, Light Riotstopper, D-Charges, PARA CC Weapon(-6) | Specialist Operative | GizmoKit)** (35 pts)
+    · weapons: MULTI Rifle, Light Riotstopper, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Specialist Operative
+    · equipment: GizmoKit
+- + **ŜTORMO HEAVY (Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, PARA CC Weapon(-6) | Paramedic | MediKit)** (30 pts)
+    · weapons: Submachine Gun, Light Riotstopper, Flash Pulse, D-Charges, Pistol, PARA CC Weapon(-6)
+    · skills: Paramedic
+    · equipment: MediKit
+- + **KOLEGO SPECBOT_1  (Heavy Riotstopper(+1B), PARA Mine, PARA CC Weapon(-6))** (6 pts)
+    · weapons: Heavy Riotstopper(+1B), PARA Mine, PARA CC Weapon(-6)
+- + **KOLEGO SPECBOT_2 (Combi Rifle, Heavy Riotstopper, Flash Pulse, PARA CC Weapon(-6) | Forward Observer)** (14 pts)
+    · weapons: Combi Rifle, Heavy Riotstopper, Flash Pulse, PARA CC Weapon(-6)
+    · skills: Forward Observer
+
+## [1940] Ioann Bann, Varangian Dog-Warrior
+*IOANN BANN, VARANGIAN DOG-WARRIOR  * — **NEW UNIT** (32 pts)
+
+### Base Statline & Skills
+- + **DOGFACE FORM** (UNITTYPE=7, MOVE=[6-4], CC=22, BS=11, PH=14, WIP=13, ARM=2, BTS=3, W=3, S=2, AVA=1)
+    · skills: Martial Arts L3, BS Attack(-3), Berserk, Dodge(+2"), Immunity(ARM), No Cover, Super-Jump, Transmutation(1), Religious Troop
+- + **DOG-WARRIOR FORM** (UNITTYPE=7, MOVE=[6-4], CC=23, BS=11, PH=16, WIP=13, ARM=4, BTS=6, W=3, S=3, AVA=-1)
+    · skills: Martial Arts L3, BS Attack(-3), Berserk, Dodge(+2"), Immunity(ARM), No Cover, Super-Jump, Religious Troop
+
+### Available Loadouts
+- + **IOANN BANN (Chain Rifle(+1B), Viral Tactical Bow(+1SD), Smoke Grenades, AP Heavy Pistol(+1B), AP + T2 CC Weapon(PS=4))** (32 pts)
+    · weapons: Chain Rifle(+1B), Viral Tactical Bow(+1SD), Smoke Grenades, AP Heavy Pistol(+1B), AP + T2 CC Weapon(PS=4)
+
+## [1874] Sāchā, Xenotech Hunters
+*SĀCHĀ, Xenotech Hunters* — **REMOVED UNIT** (was 6 pts)
+
+### Removed Unit
+- − **Unit removed from faction roster** (was 6 pts)

@@ -1,10 +1,11 @@
 # ikari
 
-Units: 37 → 37
-Added: 0 · Removed: 0 · Modified: 1
+Units: 37 → 38
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [325] Bashi Bazouks / BASHI BAZOUKS
-- **Points:** 13-16 → 12-16
-- **Weapons added:** Contender(+1SD)
-- **Weapons removed:** Contender(+1B)
+## Added units
+- **[1925] Rumbler Spec-Ops** / RUMBLER SPEC-OPS — 23-28 pts
+- **[1939] NA2 Team-Ops** / NA2 TEAM-OPS — 6-44 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

@@ -1,16 +1,11 @@
 # steel-phalanx
 
-Units: 34 → 35
-Added: 1 · Removed: 0 · Modified: 2
+Units: 35 → 36
+Added: 2 · Removed: 1 · Modified: 0
 
 ## Added units
-- **[1178] Arjuna Unit** / ARJUNA Unit — 21-42 pts
+- **[1922] Chandra Spec-Ops** / CHANDRA SPEC-OPS — 22-33 pts
+- **[1936] Aleph Team-Ops** / ALEPH TEAM-OPS — 8-47 pts
 
-## Modified units
-### [1471] Hippolyta, Amazon Officer / HIPPOLYTA, Amazon Officer
-- **Points:** 38 → 37
-
-### [602] Agêma Marksmen / AGÊMA Marksmen
-- **Weapons added:** Missile Launcher(+1SD)
-- **Weapons removed:** Missile Launcher
-- **Skills added:** Decoy(1)
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

@@ -1,15 +1,11 @@
 # druze
 
-Units: 36 → 36
-Added: 0 · Removed: 0 · Modified: 2
+Units: 36 → 37
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
-- **Points:** 34 → 33
-- **Weapons added:** E/M Grenades(+1SD), MULTI Rifle(+1SD)
-- **Weapons removed:** E/M Grenades(+1B), MULTI Rifle(+1B)
+## Added units
+- **[1925] Rumbler Spec-Ops** / RUMBLER SPEC-OPS — 23-28 pts
+- **[1939] NA2 Team-Ops** / NA2 TEAM-OPS — 6-44 pts
 
-### [325] Bashi Bazouks / BASHI BAZOUKS
-- **Points:** 13-16 → 12-16
-- **Weapons added:** Contender(+1SD)
-- **Weapons removed:** Contender(+1B)
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

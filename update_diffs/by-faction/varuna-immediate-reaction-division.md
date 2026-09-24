@@ -1,8 +1,10 @@
 # varuna-immediate-reaction-division
 
 Units: 28 → 28
-Added: 0 · Removed: 0 · Modified: 1
+Added: 1 · Removed: 1 · Modified: 0
 
-## Modified units
-### [1216] Zulu-Cobra, Recon and Special Intervention Group / ZULÚ-COBRA, Recon and Special Intervention Group
-- **Weapons added:** Weapon#undefined
+## Added units
+- **[1912] Índigo Spec-Ops** / INDIGO SPEC-OPS — 19-25 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

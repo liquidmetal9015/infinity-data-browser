@@ -1,10 +1,12 @@
 # kosmoflot
 
-Units: 36 → 36
-Added: 0 · Removed: 0 · Modified: 1
+Units: 36 → 38
+Added: 3 · Removed: 1 · Modified: 0
 
-## Modified units
-### [1555] Wolfgang Amadeus Wolff, Wulver Bounty Hunter / WOLFGANG AMADEUS WOLFF, Wulver Bounty Hunter
-- **Points:** 34 → 33
-- **Weapons added:** E/M Grenades(+1SD), MULTI Rifle(+1SD)
-- **Weapons removed:** E/M Grenades(+1B), MULTI Rifle(+1B)
+## Added units
+- **[1929] AriadnaTeam-Ops** / ARIADNA TEAM-OPS — 6-44 pts
+- **[1915] Intel Spec-Ops** / INTEL SPEC-OPS — 18-27 pts
+- **[1940] Ioann Bann, Varangian Dog-Warrior** / IOANN BANN, VARANGIAN DOG-WARRIOR   — 32 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

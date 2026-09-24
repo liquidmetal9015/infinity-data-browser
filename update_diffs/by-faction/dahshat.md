@@ -1,23 +1,20 @@
 # dahshat
 
-Units: 40 → 40
-Added: 0 · Removed: 0 · Modified: 3
+Units: 40 → 41
+Added: 2 · Removed: 1 · Modified: 2
+
+## Added units
+- **[1925] Rumbler Spec-Ops** / RUMBLER SPEC-OPS — 23-28 pts
+- **[1939] NA2 Team-Ops** / NA2 TEAM-OPS — 6-44 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts
 
 ## Modified units
 ### [324] Odalisques / ODALISQUES
-- **Points:** 19-28 → 19-27
-- **Weapons added:** Breaker Marksman Rifle
-- **Weapons removed:** Viral Marksman Rifle
+- **Points:** 19-27 → 19-26
+- **Weapons added:** Viral Marksman Rifle
+- **Weapons removed:** Breaker Marksman Rifle
 
-### [325] Bashi Bazouks / BASHI BAZOUKS
-- **Points:** 13-16 → 12-16
-- **Weapons added:** Contender(+1SD)
-- **Weapons removed:** Contender(+1B)
-
-### [198] Father Lucien Sforza, Authorized Bounty Hunter / FATHER LUCIEN SFORZA, Authorized Bounty Hunter
-- **Points:** 25-28 → 23-26
-- **Weapons added:** Adhesive Launcher Rifle, Heavy Pistol
-- **Weapons removed:** Adhesive Launcher Rifle(+1B), Heavy Pistol(+1B)
-- **Skills added:** BS Attack(+1SD), NCO
-- **Equipment added:** Albedo(-6)
-- **Equipment removed:** Holomask
+### [314] Najjarun Engineers / NAJJARUN Engineer
+- **Equipment added:** Deactivator

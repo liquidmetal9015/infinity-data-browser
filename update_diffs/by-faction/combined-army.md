@@ -1,18 +1,12 @@
 # combined-army
 
-Units: 53 → 53
-Added: 0 · Removed: 0 · Modified: 3
+Units: 53 → 55
+Added: 3 · Removed: 1 · Modified: 0
 
-## Modified units
-### [1298] Greif Operators / GREIF OPERATORS
-- **Points:** 20-25 → 21-25
-- **Weapons added:** Breaker Combi Rifle, Silenced Pistol(+1B)
+## Added units
+- **[1918] Nexus-7 Spec-Ops** / NEXUS-7 SPEC-OPS — 25-33 pts
+- **[1919] Treitak Spec-Ops** / TREITAK SPEC-OPS — 7-30 pts
+- **[1932] Combined Army Team-Ops** / COMBINED ARMY TEAM-OPS — 6-44 pts
 
-### [502] Malignos / MALIGNOS Shasvastii Deep Incursion Corps
-- **Points:** 31-35 → 30-34
-- **Weapons added:** Pulzar, Pulzar(+1B), Viral Mine
-- **Weapons removed:** Combi Rifle
-- **Skills added:** Minelayer
-
-### [783] Nexus Operatives / NEXUS Operatives
-- **Weapons added:** Combi Rifle(+1SD)
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts

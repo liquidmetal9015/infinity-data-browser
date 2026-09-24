@@ -1,22 +1,18 @@
 # yu-jing
 
-Units: 54 → 56
-Added: 2 · Removed: 0 · Modified: 3
+Units: 56 → 57
+Added: 2 · Removed: 1 · Modified: 2
 
 ## Added units
-- **[1892] Johnny Kao, Optimate and Technomancer Master** / Johnny Kao, Optimate and Technomancer Master — 36-42 pts
-- **[1905] RacerBots** / RacerBots — 9 pts
+- **[1914] Guǐ Fēng  Spec-Ops** / GUǏ FĒNG SPEC-OPS — 20-25 pts
+- **[1928] Yu Jing  Team-Ops** / YU JING TEAM-OPS — 6-47 pts
+
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts
 
 ## Modified units
-### [125] Zhànyīng Imperial Agents / ZHÀNYĪNG Imperial Agents
-- **Points:** 21-26 → 20-26
+### [1892] Johnny Kao, Optimate and Technomancer Master / Johnny Kao, Optimate and Technomancer Master
+- **Skills removed:** Immunity(Shock)
 
-### [947] Major Lunah, ex-Aristeia! Sniper / MAJOR LUNAH, ex-Aristeia! Sniper
-- **Points:** 28 → 29
-- **Weapons added:** VIRAL Sniper Rifle(+1SD)
-- **Weapons removed:** VIRAL Sniper Rifle
-
-### [1839] Lóngwáng, Imperial TAG Police / LÓNGWÁNG, Imperial TAG Police
-- **Points:** 72-74 → 68-72
-- **Weapons added:** AP Heavy Machine Gun, Light Riotstopper, Light Riotstopper(+1B)
-- **Weapons removed:** Heavy Machine Gun, Heavy Riotstopper, Heavy Riotstopper(+1B)
+### [1905] RacerBots / RacerBots
+- **Equipment added:** Bangbomb(+4)

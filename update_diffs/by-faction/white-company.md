@@ -1,12 +1,11 @@
 # white-company
 
-Units: 45 → 45
-Added: 0 · Removed: 0 · Modified: 2
+Units: 45 → 46
+Added: 2 · Removed: 1 · Modified: 0
 
-## Modified units
-### [122] CSU, Corporate Security Unit / CSU, Corporate Security Unit
-- **Points:** 11-14 → 10-13
-- **Weapons removed:** Nanopulser
+## Added units
+- **[1939] NA2 Team-Ops** / NA2 TEAM-OPS — 6-44 pts
+- **[1925] Rumbler Spec-Ops** / RUMBLER SPEC-OPS — 23-28 pts
 
-### [1072] Emily Handelman, Intel Agent / EMILY HANDELMAN, Intel Agent
-- **Points:** 23-28 → 22-28
+## Removed units
+- **[1874] Sāchā, Xenotech Hunters** / SĀCHĀ, Xenotech Hunters — was 6 pts
