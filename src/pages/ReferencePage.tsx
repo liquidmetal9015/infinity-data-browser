@@ -100,7 +100,7 @@ export function ReferencePage() {
         if (row.modifiers.length > 0) {
             params.set('filterModifiers', row.modifiers.join(','));
         }
-        navigate(`/search?${params.toString()}`);
+        navigate(`/?${params.toString()}`);
     };
 
     const handleSort = (field: typeof sortField) => {

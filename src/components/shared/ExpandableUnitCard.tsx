@@ -66,8 +66,8 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
 
     return (
         <div className="space-y-2">
-            {/* Stats Row */}
-            <div className="flex gap-1 p-1.5 bg-black/20 rounded-lg justify-between overflow-x-auto">
+            {/* Stats Row: 5-column 2-row grid on mobile, horizontal strip on desktop */}
+            <div className="grid grid-cols-5 sm:flex gap-1 p-1.5 bg-black/20 rounded-lg sm:justify-between sm:overflow-x-auto">
                 {ATTRIBUTES.map((attr) => {
                     const rec = profile as unknown as Record<string, unknown>;
                     let val: string | number | undefined = rec[attr.key] as string | number | undefined;
@@ -76,9 +76,9 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                     if (attr.key === 'ava') val = val === 255 ? '∞' : val;
                     const label = attr.key === 'w' && profile.isStructure ? 'STR' : attr.label;
                     return (
-                        <div key={attr.key} className="flex flex-col items-center min-w-[32px]">
+                        <div key={attr.key} className="flex flex-col items-center justify-center p-1 sm:p-0 min-w-0 sm:min-w-[32px] bg-white/[0.02] sm:bg-transparent rounded">
                             <div className="text-[length:var(--text-2xs)] font-bold text-gray-500">{label}</div>
-                            <div className="font-mono text-gray-200 font-bold">{val ?? '-'}</div>
+                            <div className="font-mono text-gray-200 font-bold text-xs sm:text-sm">{val ?? '-'}</div>
                         </div>
                     );
                 })}

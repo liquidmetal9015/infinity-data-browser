@@ -1,6 +1,7 @@
 // Weapon Stats Table Component
 import { clsx } from 'clsx';
 import * as d3 from 'd3';
+import { Search } from 'lucide-react';
 import type { ParsedWeapon } from './types';
 import { RANGE_BANDS } from './types';
 import styles from '../../pages/RangesPage.module.css';
@@ -37,6 +38,13 @@ export function WeaponTable({ weapons, onRemoveWeapon }: WeaponTableProps) {
                                 <td className={styles.weaponCellName}>
                                     <div className={styles.colorIndicator} style={{ background: color }}></div>
                                     <span style={{ fontWeight: 'var(--font-semibold)' }}>{w.name}</span>
+                                    <a
+                                        href={`/?filterType=weapon&filterName=${encodeURIComponent(w.name)}&filterId=${w.id}`}
+                                        title={`Find all units equipped with ${w.name}`}
+                                        style={{ color: 'var(--text-secondary)', opacity: 0.6, marginLeft: '0.4rem', display: 'inline-flex', alignItems: 'center' }}
+                                    >
+                                        <Search size={13} />
+                                    </a>
                                 </td>
                                 <td>
                                     <div className={styles.rangeStripRow}>

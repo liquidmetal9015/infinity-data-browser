@@ -37,8 +37,15 @@ export function SearchPage() {
         hasSearch
     } = useUnitSearch(db, false);
 
-    // Pre-populate filter from URL params (e.g. from the reference page)
+    // Pre-populate filter from URL params (e.g. from the reference page or direct link)
     useEffect(() => {
+        const textParam = searchParams.get('q');
+        if (textParam) {
+            setTextQuery(textParam);
+            setSearchParams({}, { replace: true });
+            return;
+        }
+
         const filterType = searchParams.get('filterType') as ItemFilter['type'] | null;
         const filterName = searchParams.get('filterName');
         const filterId = searchParams.get('filterId');
@@ -57,8 +64,7 @@ export function SearchPage() {
             setQuery({ filters: [filter], operator: 'or' });
             setSearchParams({}, { replace: true });
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [searchParams, setQuery, setSearchParams, setTextQuery]);
 
     const hasAnyFilter = hasSearch || selectedTypes.size > 0 || selectedOrderTypes.size > 0;
 
@@ -109,21 +115,24 @@ export function SearchPage() {
         });
     };
 
-    // Auto-expand only when few results
-    useEffect(() => {
+    // Auto-expand only when few results change
+    const [prevQueryKey, setPrevQueryKey] = useState('');
+    const currentQueryKey = `${textQuery}|${query.filters.length}|${displayedUnits.length}`;
+    if (currentQueryKey !== prevQueryKey) {
+        setPrevQueryKey(currentQueryKey);
         if (displayedUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
             setExpandedIds(new Set(displayedUnits.map(u => u.id)));
         } else {
             setExpandedIds(new Set());
         }
-    }, [textQuery, query.filters.length, displayedUnits]);
+    }
 
     return (
-        <div className="search-page-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '1.5rem' }}>
-            <section className="search-section" style={{ width: '100%', maxWidth: '56rem' }}>
+        <div className="search-page-container flex flex-col items-center w-full px-3 py-4 sm:px-6 sm:py-6">
+            <section className="search-section w-full max-w-4xl">
                 {/* Unified Search Bar */}
-                <div className="global-search-container mb-6">
-                    <div className="p-4 bg-black/20 border border-white/5 rounded-xl">
+                <div className="global-search-container mb-4 sm:mb-6">
+                    <div className="p-3 sm:p-4 bg-black/20 border border-white/5 rounded-xl">
                         <UnifiedSearchBar
                             query={query}
                             setQuery={setQuery}
@@ -200,14 +209,31 @@ export function SearchPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             key="empty"
-                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-12 text-center mt-8"
+                            className="bg-[#0b1221] border border-white/5 rounded-2xl p-6 sm:p-10 text-center mt-4 sm:mt-6"
                         >
-                            <div className="text-4xl mb-4 opacity-50">⚡</div>
-                            <div className="text-xl font-bold text-gray-300 mb-2">Search the Infinity Database</div>
-                            <div className="text-gray-500">
-                                Use the search bar above to look up units, weapons, or skills.
-                                Use the autocomplete suggestions to add specific filter chips, or just type freely to search by name.
-                                Click "+ Stat" to add stat-based filters like "WIP &gt; 13".
+                            <div className="text-3xl sm:text-4xl mb-3 opacity-60">⚡</div>
+                            <div className="text-lg sm:text-xl font-bold text-gray-200 mb-2">Search Infinity Catalog</div>
+                            <p className="text-gray-400 text-xs sm:text-sm max-w-lg mx-auto mb-5 leading-relaxed">
+                                Explore every profile, weapon, and skill in the game. Filter by stats (e.g. <span className="text-blue-400 font-mono">WIP &gt;= 14</span>), find loadouts, or tap a quick search below.
+                            </p>
+                            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-white/5">
+                                <span className="text-xs text-gray-500 font-semibold mr-1">Quick searches:</span>
+                                {[
+                                    { label: 'Mimetism', action: () => setTextQuery('Mimetism') },
+                                    { label: 'Doctor', action: () => setTextQuery('Doctor') },
+                                    { label: 'HMG', action: () => setTextQuery('HMG') },
+                                    { label: 'Heavy Infantry', action: () => setSelectedTypes(new Set([2])) },
+                                    { label: 'TAGs', action: () => setSelectedTypes(new Set([4])) },
+                                    { label: 'Skirmishers', action: () => setSelectedTypes(new Set([3])) },
+                                ].map((item) => (
+                                    <button
+                                        key={item.label}
+                                        onClick={item.action}
+                                        className="text-xs px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 transition-colors cursor-pointer"
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
                             </div>
                         </motion.div>
                     )}
@@ -235,38 +261,38 @@ export function SearchPage() {
 
                 {/* View Toggle */}
                 {hasAnyFilter && displayedUnits.length > 0 && (
-                    <div className="view-controls flex justify-between items-end border-b border-white/10 pb-4 mb-6">
-                        <div className="view-toggle flex gap-2">
+                    <div className="view-controls flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-end border-b border-white/10 pb-4 mb-6">
+                        <div className="view-toggle flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0">
                             <button
                                 onClick={() => setViewMode('compact')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'compact' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
+                                className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${viewMode === 'compact' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <AlignJustify size={16} />
+                                <AlignJustify size={15} />
                                 <span>Compact</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
+                                className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <List size={16} />
+                                <List size={15} />
                                 <span>Detail</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('faction')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'faction' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
+                                className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${viewMode === 'faction' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <LayoutGrid size={16} />
+                                <LayoutGrid size={15} />
                                 <span>By Faction</span>
                             </button>
                             <button
                                 onClick={() => setViewMode('bubble')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${viewMode === 'bubble' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
+                                className={`px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${viewMode === 'bubble' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-transparent text-gray-400 hover:bg-white/5 border border-transparent'}`}
                             >
-                                <Circle size={16} />
-                                <span>Stats Bubble</span>
+                                <Circle size={15} />
+                                <span>Stats</span>
                             </button>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                             <select
                                 value={sortBy}
                                 onChange={e => setSortBy(e.target.value as SortOption)}
