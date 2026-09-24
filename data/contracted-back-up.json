@@ -1,5 +1,5 @@
 {
-    "version": "7.26147.194",
+    "version": "7.26244.321",
     "units": [
         {
             "id": 1691,
@@ -3299,11 +3299,6 @@
                 "wiki": "https://infinitythewiki.com/BS_Attack?version=n4"
             },
             {
-                "id": 204,
-                "name": "Infinity Spec-Ops",
-                "specops": true
-            },
-            {
                 "id": 211,
                 "name": "NCO",
                 "wiki": "https://infinitythewiki.com/NCO?version=n4"
@@ -3826,7 +3821,7 @@
     ],
     "fireteams": [],
     "relations": [],
-    "specops": {
+    "teamops": {
         "units": []
     },
     "fireteamChart": {

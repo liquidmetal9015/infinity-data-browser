@@ -4790,6 +4790,14 @@
             "name": "BTS=3"
         },
         {
+            "id": 281,
+            "name": "Infinity Spec-Ops"
+        },
+        {
+            "id": 282,
+            "name": "Infinity Team-Ops"
+        },
+        {
             "id": 1000,
             "name": "Hacker",
             "wiki": "https://infinitythewiki.com/Hacker?version=n4"
