@@ -94,12 +94,15 @@ export function SortableFireteamContainer({
         updateFireteamDef(groupIndex, fireteamId, { selectedTeamName: tName, selectedTeamType: tType });
     };
 
+    const isCoreMax4 = Boolean(chart?.desc?.includes('maximum of 4 members') || factionId === 703);
+    const maxCoreSize = isCoreMax4 ? 4 : 5;
+
     // Filter team types by whether the current member count is valid for that type
     function getValidTypes(team: Fireteam, memberCount: number): string[] {
         return team.type.filter(type => {
             if (type === 'DUO') return memberCount === 2;
             if (type === 'HARIS') return memberCount === 3;
-            if (type === 'CORE') return memberCount >= 3 && memberCount <= 5;
+            if (type === 'CORE') return memberCount >= 3 && memberCount <= maxCoreSize;
             return true;
         });
     }
@@ -123,8 +126,8 @@ export function SortableFireteamContainer({
 
     const bonuses = useMemo(() => {
         if (!activeTeamDef || members.length === 0) return [];
-        return getFireteamBonuses(activeTeamDef, members);
-    }, [activeTeamDef, members]);
+        return getFireteamBonuses(activeTeamDef, members, maxCoreSize);
+    }, [activeTeamDef, members, maxCoreSize]);
 
     const activeLevel = activeTeamDef ? calculateFireteamLevel(activeTeamDef, members) : 0;
     const activeBonuses = bonuses.filter(b => b.isActive);

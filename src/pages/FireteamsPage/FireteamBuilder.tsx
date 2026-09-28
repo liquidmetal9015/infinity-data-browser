@@ -20,14 +20,17 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
     const [selectedTeam, setSelectedTeam] = useState<Fireteam | null>(null);
     const [teamMembers, setTeamMembers] = useState<FireteamUnit[]>([]);
 
+    const isCoreMax4 = Boolean(chart?.desc?.includes('maximum of 4 members') || factionId === 703);
+    const maxCoreSize = isCoreMax4 ? 4 : 5;
+
     // Determine max team size based on team type
     const maxTeamSize = useMemo(() => {
         if (!selectedTeam) return 0;
-        if (selectedTeam.type.includes('CORE')) return 5;
+        if (selectedTeam.type.includes('CORE')) return maxCoreSize;
         if (selectedTeam.type.includes('HARIS')) return 3;
         if (selectedTeam.type.includes('DUO')) return 2;
-        return 5;
-    }, [selectedTeam]);
+        return maxCoreSize;
+    }, [selectedTeam, maxCoreSize]);
 
     // Get wildcards
     const wildcards = useMemo(() => {
@@ -62,8 +65,8 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
     // Calculate Bonuses
     const bonuses = useMemo(() => {
         if (!selectedTeam) return [];
-        return getFireteamBonuses(selectedTeam, mappedTeamMembers);
-    }, [selectedTeam, mappedTeamMembers]);
+        return getFireteamBonuses(selectedTeam, mappedTeamMembers, maxCoreSize);
+    }, [selectedTeam, mappedTeamMembers, maxCoreSize]);
 
     return (
         <div className={styles.builderContainer}>

@@ -158,13 +158,13 @@ export const useUnitSearch = (db: IDatabase, loading: boolean) => {
 
                 for (const group of unit.raw.profileGroups) {
                     for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => normalize(s.name).includes(lowerTerm))) return true;
-                        if (profile.equipment?.some(e => normalize(e.name).includes(lowerTerm))) return true;
+                        if (profile.skills?.some(s => normalize(s.displayName || s.name).includes(lowerTerm))) return true;
+                        if (profile.equipment?.some(e => normalize(e.displayName || e.name).includes(lowerTerm))) return true;
                     }
                     for (const opt of group.options) {
-                        if (opt.weapons?.some(w => normalize(w.name).includes(lowerTerm))) return true;
-                        if (opt.equipment?.some(e => normalize(e.name).includes(lowerTerm))) return true;
-                        if (opt.skills?.some(s => normalize(s.name).includes(lowerTerm))) return true;
+                        if (opt.weapons?.some(w => normalize(w.displayName || w.name).includes(lowerTerm))) return true;
+                        if (opt.equipment?.some(e => normalize(e.displayName || e.name).includes(lowerTerm))) return true;
+                        if (opt.skills?.some(s => normalize(s.displayName || s.name).includes(lowerTerm))) return true;
                         if (normalize(opt.name ?? '').includes(lowerTerm) || normalize(group.isc ?? '').includes(lowerTerm)) return true;
                     }
                 }

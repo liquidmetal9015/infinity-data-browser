@@ -67,6 +67,7 @@ export function SearchPage() {
     }, [searchParams, setQuery, setSearchParams, setTextQuery]);
 
     const hasAnyFilter = hasSearch || selectedTypes.size > 0 || selectedOrderTypes.size > 0;
+    const selectedFactionId = filters.factions.length === 1 ? filters.factions[0] : undefined;
 
     const displayedUnits = useMemo(() => {
         let results = filteredUnits;
@@ -400,6 +401,7 @@ export function SearchPage() {
                                                         onToggle={() => toggleExpand(unit.id)}
                                                         searchQuery={textQuery.trim()}
                                                         activeFilters={query.filters}
+                                                        factionId={selectedFactionId}
                                                     />
                                                 </div>
                                             )}
@@ -429,6 +431,7 @@ export function SearchPage() {
                                     onToggle={() => toggleExpand(unit.id)}
                                     searchQuery={textQuery.trim()}
                                     activeFilters={query.filters}
+                                    factionId={selectedFactionId}
                                 />
                             ))}
                             {displayedUnits.length > 100 && (

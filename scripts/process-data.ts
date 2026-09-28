@@ -141,6 +141,7 @@ interface RawFactionFile {
 
 interface RawFireteamChart {
     spec: { CORE?: number; HARIS?: number; DUO?: number; [k: string]: number | undefined };
+    desc?: string;
     teams?: Array<{
         name: string;
         type: string[] | string;
@@ -544,7 +545,7 @@ function transformFireteamChart(raw: RawFireteamChart | null | undefined): Facti
         };
     });
 
-    return { spec, compositions };
+    return { spec, compositions, ...(raw.desc ? { desc: raw.desc } : {}) };
 }
 
 // ============================================================================

@@ -104,11 +104,18 @@ export function FireteamsPage() {
             ) : (
                 <div className="content-area">
                     <div className={styles.factionHeader}>
-                        <h3>{activeFaction?.name} Fireteams</h3>
+                        <div>
+                            <h3>{activeFaction?.name} Fireteams</h3>
+                            {fireteamChart.desc && (
+                                <p className="text-xs text-amber-400/90 italic mt-1">{fireteamChart.desc}</p>
+                            )}
+                        </div>
                         <div className={styles.legend}>
                             <span className={clsx(styles.badge, styles.duo)}>DUO (2)</span>
                             <span className={clsx(styles.badge, styles.haris)}>HARIS (3)</span>
-                            <span className={clsx(styles.badge, styles.core)}>CORE (3-5)</span>
+                            <span className={clsx(styles.badge, styles.core)}>
+                                CORE ({fireteamChart?.desc?.includes('maximum of 4 members') || effectiveFactionId === 703 ? '3-4' : '3-5'})
+                            </span>
                         </div>
                     </div>
 

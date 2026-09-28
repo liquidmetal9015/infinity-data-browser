@@ -222,6 +222,55 @@ describe('BaseDatabase - init', () => {
         expect(unit!.raw.profileGroups[0].profiles[0].ava).toBe(1);
     });
 
+    it('merges profile options from multiple factions into raw fallback', async () => {
+        function makeUnitWithOptions(id: number, isc: string, factionIds: number[], optionIds: number[]): ProcessedUnit {
+            const base = makeMockUnit(id, isc, factionIds);
+            const unit = { ...base };
+            unit.profileGroups = [{
+                ...base.profileGroups[0],
+                options: optionIds.map(optId => ({
+                    id: optId,
+                    name: `Option ${optId}`,
+                    points: 20 + optId,
+                    swc: 0,
+                    minis: 1,
+                    disabled: false,
+                    orders: [],
+                    skills: [],
+                    equipment: [],
+                    weapons: [],
+                    includes: [],
+                    chars: [],
+                })),
+            }];
+            return unit as unknown as ProcessedUnit;
+        }
+
+        const panoFile: ProcessedFactionFile = {
+            faction: PANO_FACTION_FILE.faction,
+            units: [makeUnitWithOptions(10, 'Ekdromoi', [101], [6, 7])],
+        } as unknown as ProcessedFactionFile;
+
+        const yjFile: ProcessedFactionFile = {
+            faction: YU_JING_FACTION_FILE.faction,
+            units: [makeUnitWithOptions(20, 'Ekdromoi', [201], [3, 4, 6, 7])],
+        } as unknown as ProcessedFactionFile;
+
+        const db = new TestDatabase(new Map([
+            ['panoceania', panoFile],
+            ['yu-jing', yjFile],
+        ]));
+        await db.init();
+
+        const unit = db.units.find(u => u.isc === 'Ekdromoi');
+        expect(unit).toBeDefined();
+        // Faction-specific raw entries keep their original options
+        expect(unit!.rawByFaction.get(101)!.profileGroups[0].options.map(o => o.id)).toEqual([6, 7]);
+        expect(unit!.rawByFaction.get(201)!.profileGroups[0].options.map(o => o.id)).toEqual([3, 4, 6, 7]);
+        // Raw fallback holds the merged superset of options across all factions
+        expect(unit!.raw.profileGroups[0].options.map(o => o.id)).toEqual([3, 4, 6, 7]);
+    });
+
     it('handles units with empty factionIds using currentFactionId fallback', async () => {
         // Simulate the Yuan Yuan pattern: one entry has factionIds=[] in a faction file.
         function makeUnitEmptyFactions(id: number, isc: string, ava: number): ProcessedUnit {

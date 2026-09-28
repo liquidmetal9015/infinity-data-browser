@@ -148,7 +148,8 @@ export function calculateFireteamLevel(team: Fireteam, members: { name: string, 
  */
 export function getFireteamBonuses(
     team: Fireteam,
-    members: { name: string, comment?: string, slug?: string }[]
+    members: { name: string, comment?: string, slug?: string }[],
+    maxCoreSize: number = 5
 ): FireteamBonus[] {
     const assignments = assignMembersToSlots(team, members);
     if (!assignments) return [];
@@ -158,7 +159,7 @@ export function getFireteamBonuses(
     const size = members.length;
 
     // Check strict Team Type restrictions (Size)
-    let minValidSize = 5;
+    let minValidSize = maxCoreSize;
     if (team.type.includes('CORE')) minValidSize = Math.min(minValidSize, 3);
     if (team.type.includes('HARIS')) minValidSize = Math.min(minValidSize, 3);
     if (team.type.includes('DUO')) minValidSize = Math.min(minValidSize, 2);
@@ -167,7 +168,7 @@ export function getFireteamBonuses(
     if (size >= minValidSize) {
         if (team.type.includes('DUO') && size <= 2) isSizeValid = true;
         if (team.type.includes('HARIS') && size <= 3) isSizeValid = true;
-        if (team.type.includes('CORE') && size <= 5) isSizeValid = true;
+        if (team.type.includes('CORE') && size <= maxCoreSize) isSizeValid = true;
     }
 
     // Check Minimum Unit Requirements

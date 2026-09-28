@@ -8,7 +8,7 @@ interface ClassifiedMatchEntry {
     completableClassifieds: Set<number>;
     profileMatches: {
         profile: { id: number; name: string };
-        option: { id: number; name: string; weapons: { name: string }[]; skills: { name: string; displayName?: string }[]; equipment: { name: string }[] };
+        option: { id: number; name: string; weapons: { name: string }[]; skills: { name: string; displayName?: string }[]; equipment: { name: string; displayName?: string }[] };
         matches: { objectiveId: number; canComplete: boolean; reason: string }[];
     }[];
 }
@@ -90,7 +90,7 @@ export function UnitListPanel({
                                         const isProfileActive = isActive && selectedProfileId === pm.option.id;
                                         const weapons = pm.option.weapons.map(w => w.name).filter(Boolean);
                                         const skills = pm.option.skills.map(s => s.displayName || s.name).filter(Boolean);
-                                        const equips = pm.option.equipment.map(e => e.name).filter(Boolean);
+                                        const equips = pm.option.equipment.map(e => e.displayName || e.name).filter(Boolean);
                                         const loadoutText = [...weapons, ...skills, ...equips].join(', ');
 
                                         return (

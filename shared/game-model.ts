@@ -413,6 +413,7 @@ export interface FireteamComposition {
  */
 export interface FactionFireteamChart {
     spec:         FireteamSpec;
+    desc?:        string;
     compositions: FireteamComposition[];
 }
 

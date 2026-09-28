@@ -215,13 +215,13 @@ export function UnitRosterPanel() {
                 if (unit.isc.toLowerCase().includes(q) || unit.name?.toLowerCase().includes(q)) return true;
                 for (const group of unit.raw.profileGroups) {
                     for (const profile of group.profiles) {
-                        if (profile.skills?.some(s => s.name.toLowerCase().includes(q))) return true;
-                        if (profile.equipment?.some(e => e.name.toLowerCase().includes(q))) return true;
+                        if (profile.skills?.some(s => (s.displayName || s.name).toLowerCase().includes(q))) return true;
+                        if (profile.equipment?.some(e => (e.displayName || e.name).toLowerCase().includes(q))) return true;
                     }
                     for (const opt of group.options) {
-                        if (opt.weapons?.some(w => w.name.toLowerCase().includes(q))) return true;
-                        if (opt.equipment?.some(e => e.name.toLowerCase().includes(q))) return true;
-                        if (opt.skills?.some(s => s.name.toLowerCase().includes(q))) return true;
+                        if (opt.weapons?.some(w => (w.displayName || w.name).toLowerCase().includes(q))) return true;
+                        if (opt.equipment?.some(e => (e.displayName || e.name).toLowerCase().includes(q))) return true;
+                        if (opt.skills?.some(s => (s.displayName || s.name).toLowerCase().includes(q))) return true;
                         if (opt.name?.toLowerCase().includes(q) || group.isc?.toLowerCase().includes(q)) return true;
                     }
                 }

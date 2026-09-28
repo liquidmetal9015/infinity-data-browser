@@ -145,13 +145,14 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                     <div className="flex flex-wrap gap-2">
                         {profile.equipment?.map((e, i) => {
                             const wikiLink = getWikiLink('equipment', e.id);
+                            const text = e.displayName || e.name;
                             return (
                                 <span key={i} className="inline-flex items-center px-2 py-1 bg-[#162032] border border-white/5 rounded-md text-xs text-gray-300 transition-colors hover:border-white/10 hover:bg-[#1e293b]">
                                     {wikiLink ? (
                                         <a href={wikiLink} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline decoration-white/30 underline-offset-2">
-                                            {e.name}
+                                            {text}
                                         </a>
-                                    ) : e.name}
+                                    ) : text}
                                 </span>
                             );
                         })}
@@ -207,7 +208,7 @@ function ProfileBody({ group, profile, allGroups, onAddLoadout, highlightedOptio
                                                 {(opt.equipment?.length ?? 0) > 0 && (
                                                     <>
                                                         <span className="text-gray-500">|</span>
-                                                        <span className="text-gray-300">{opt.equipment!.map(e => e.name).join(', ')}</span>
+                                                        <span className="text-gray-300">{opt.equipment!.map(e => e.displayName || e.name).join(', ')}</span>
                                                     </>
                                                 )}
                                                 {includedPeripheralNames.length > 0 && (

@@ -108,6 +108,7 @@ export abstract class BaseDatabase {
                     if (data.faction.fireteams) {
                         const chart: FireteamChart = {
                             spec: data.faction.fireteams.spec,
+                            desc: data.faction.fireteams.desc,
                             teams: data.faction.fireteams.compositions,
                         };
                         this.fireteamData.set(faction.id, chart);
@@ -236,8 +237,16 @@ export abstract class BaseDatabase {
                 );
                 this.collectItemsFromProcessedUnit(u, existing, itemsMap);
                 existing.allItemsWithMods = Array.from(itemsMap.values());
+
+                // Merge this faction's profile groups and options into existing.raw for cross-faction views
+                this.mergeRawProfiles(existing.raw, u);
                 continue;
             }
+
+            const clonedRaw: ProcessedUnit = {
+                ...u,
+                profileGroups: JSON.parse(JSON.stringify(u.profileGroups)),
+            };
 
             const unit: Unit = {
                 id: u.id,
@@ -249,7 +258,7 @@ export abstract class BaseDatabase {
                 allEquipmentIds: new Set(),
                 allItemsWithMods: [],
                 pointsRange: [0, 0],
-                raw: u,
+                raw: clonedRaw,
                 rawByFaction: new Map(factionIds.map(fid => [fid, u])),
             };
 
@@ -264,6 +273,37 @@ export abstract class BaseDatabase {
 
             this.unitsByISC.set(u.isc, unit);
             this.unitIdMap.set(u.id, unit);
+        }
+    }
+
+    /**
+     * Merges profile groups and options from an incoming ProcessedUnit into an existing unit's raw fallback,
+     * ensuring that cross-faction views show the complete set of profiles available across all factions.
+     */
+    private mergeRawProfiles(target: ProcessedUnit, incoming: ProcessedUnit): void {
+        for (const inPg of incoming.profileGroups) {
+            const targetPg = target.profileGroups.find(g => g.id === inPg.id || g.isc === inPg.isc);
+            if (!targetPg) {
+                target.profileGroups.push(JSON.parse(JSON.stringify(inPg)));
+                continue;
+            }
+
+            const existingProfileIds = new Set(targetPg.profiles.map(p => p.id));
+            for (const inProf of inPg.profiles) {
+                if (!existingProfileIds.has(inProf.id)) {
+                    targetPg.profiles.push(JSON.parse(JSON.stringify(inProf)));
+                    existingProfileIds.add(inProf.id);
+                }
+            }
+
+            const existingOptIds = new Set(targetPg.options.map(o => o.id));
+            for (const inOpt of inPg.options) {
+                if (!existingOptIds.has(inOpt.id)) {
+                    targetPg.options.push(JSON.parse(JSON.stringify(inOpt)));
+                    existingOptIds.add(inOpt.id);
+                }
+            }
+            targetPg.options.sort((a, b) => a.id - b.id);
         }
     }
 

@@ -42,7 +42,7 @@ export function DraggableUnitRow({
     const orders = getProfileOrders(profile, option);
 
 
-    const equipNames = option?.equipment?.map(e => e.name) || [];
+    const equipNames = option?.equipment?.map(e => e.displayName || e.name) || [];
     const allGroups = listUnit.unit.raw.profileGroups;
     const includedPeripheralNames = (option?.includes || []).map(inc => {
         const pg = allGroups[inc.group - 1];

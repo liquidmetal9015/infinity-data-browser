@@ -126,6 +126,27 @@ describe('getFireteamBonuses', () => {
         const bonuses = getFireteamBonuses(mockCoreTeam, []);
         expect(bonuses[4].description).toContain('Sixth Sense');
     });
+
+    it('respects maxCoreSize when constrained (e.g. Steel Phalanx CORE max 4)', () => {
+        const members4 = [
+            { name: 'Test' },
+            { name: 'Test' },
+            { name: 'Test' },
+            { name: 'Test' },
+        ];
+        const bonuses4 = getFireteamBonuses(mockCoreTeam, members4, 4);
+        expect(bonuses4.some(b => b.isActive)).toBe(true);
+
+        const members5 = [
+            { name: 'Test' },
+            { name: 'Test' },
+            { name: 'Test' },
+            { name: 'Test' },
+            { name: 'Test' },
+        ];
+        const bonuses5 = getFireteamBonuses(mockCoreTeam, members5, 4);
+        expect(bonuses5.every(b => !b.isActive)).toBe(true);
+    });
 });
 
 describe('Integration Scenarios', () => {

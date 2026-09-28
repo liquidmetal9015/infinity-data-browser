@@ -89,7 +89,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                 <span className="font-bold text-gray-500 uppercase tracking-widest mr-2 text-[length:var(--text-2xs)]">Skills & Eq:</span>
                 {[
                     ...(profile.skills || []).map(s => s.displayName || s.name),
-                    ...(profile.equipment || []).map(e => e.name)
+                    ...(profile.equipment || []).map(e => e.displayName || e.name)
                 ].join(' • ') || 'None'}
             </div>
 
@@ -98,7 +98,7 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
                 {group.options.map((opt: Option) => {
                     const orders = getProfileOrders(profile, opt);
                     const weapons = opt.weapons || [];
-                    const equipNames = (opt.equipment || []).map(e => e.name);
+                    const equipNames = (opt.equipment || []).map(e => e.displayName || e.name);
                     const optionModsAndSkills = (opt.skills || []).map(s => s.displayName || s.name);
                     let optName = opt.name || group.isc || unit.isc;
                     if (optionModsAndSkills.length > 0) optName = `${optName} (${optionModsAndSkills.join(', ')})`;
