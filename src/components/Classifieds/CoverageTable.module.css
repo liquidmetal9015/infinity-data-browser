@@ -293,3 +293,55 @@
 .matchReason {
     color: var(--text-secondary);
 }
+
+/* Responsive adjustments for mobile screens */
+@media (max-width: 640px) {
+    .coverageRow {
+        flex-wrap: wrap;
+        padding: var(--space-2) var(--space-3) var(--space-2) 0;
+        row-gap: var(--space-1);
+        min-height: auto;
+    }
+
+    .objName {
+        white-space: normal;
+        flex: 1;
+        min-width: 0;
+        font-size: 0.825rem;
+        line-height: 1.25;
+    }
+
+    .expandBtn {
+        order: 2;
+        margin-left: auto;
+    }
+
+    .designatedTags {
+        order: 3;
+        width: 100%;
+        padding-left: calc(4px + 8px + var(--space-2) * 2);
+        margin-top: 2px;
+    }
+
+    .unitChips {
+        order: 4;
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+        padding-left: calc(4px + 8px + var(--space-2) * 2);
+        margin-top: 2px;
+    }
+
+    .unitChip {
+        max-width: 110px;
+    }
+
+    .expandedDetail {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .matchEntry {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+}

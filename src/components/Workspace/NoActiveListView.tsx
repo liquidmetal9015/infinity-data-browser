@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FilePlus2, FolderOpen } from 'lucide-react';
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
-import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
 import { NewListModal } from '../ListBuilder/NewListModal';
 
@@ -60,10 +59,9 @@ export function NoActiveListView() {
     const createList = useListStore(s => s.createList);
     const addCombatGroup = useListStore(s => s.addCombatGroup);
     const addUnit = useListStore(s => s.addUnit);
-    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const { importCode, importError, setImportCode, handleImportCode } = useArmyListImportExport({
-        db, currentList, createList, setGlobalFactionId, addCombatGroup, addUnit,
+        db, currentList, createList, addCombatGroup, addUnit,
     });
 
     const handleCreate = (name: string, factionId: number, points: number) => {
@@ -103,8 +101,6 @@ export function NoActiveListView() {
             {showNewModal && (
                 <NewListModal
                     db={db}
-                    globalFactionId={globalFactionId}
-                    setGlobalFactionId={setGlobalFactionId}
                     onConfirm={handleCreate}
                     onCancel={() => setShowNewModal(false)}
                     importCode={importCode}

@@ -8,7 +8,6 @@ interface UseArmyListImportExportArgs {
     db: IDatabase;
     currentList: ArmyList | null;
     createList: (factionId: number, factionName: string, maxPoints: number, armyName?: string) => void;
-    setGlobalFactionId: (id: number) => void;
     addCombatGroup: () => void;
     addUnit: (unit: import('@shared/types').Unit, groupIndex: number, profileGroupId: number, profileId: number, optionId: number) => void;
 }
@@ -17,7 +16,6 @@ export function useArmyListImportExport({
     db,
     currentList,
     createList,
-    setGlobalFactionId,
     addCombatGroup,
     addUnit,
 }: UseArmyListImportExportArgs) {
@@ -30,7 +28,6 @@ export function useArmyListImportExport({
         try {
             const decoded = decodeArmyCode(importCode.trim());
             createList(decoded.factionId, decoded.factionSlug || 'Unknown', decoded.maxPoints, decoded.armyName);
-            setGlobalFactionId(decoded.factionId);
 
             decoded.combatGroups.forEach((group, index) => {
                 if (index > 0) addCombatGroup();

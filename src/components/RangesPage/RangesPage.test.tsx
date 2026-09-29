@@ -1,6 +1,7 @@
 // Tests for RangesPage components
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { WeaponSidebar } from './WeaponSidebar';
 import { WeaponTable } from './WeaponTable';
@@ -153,15 +154,17 @@ describe('RangesPage Components', () => {
     });
 
     describe('WeaponTable', () => {
+        const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
+
         it('renders nothing when no weapons', () => {
-            const { container } = render(
+            const { container } = renderWithRouter(
                 <WeaponTable weapons={[]} onRemoveWeapon={vi.fn()} />
             );
             expect(container.firstChild).toBeNull();
         });
 
         it('renders table headers', () => {
-            render(<WeaponTable weapons={mockWeapons} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={mockWeapons} onRemoveWeapon={vi.fn()} />);
 
             expect(screen.getByText('Name')).toBeInTheDocument();
             expect(screen.getByText('Range')).toBeInTheDocument();
@@ -170,45 +173,45 @@ describe('RangesPage Components', () => {
         });
 
         it('renders weapon rows', () => {
-            render(<WeaponTable weapons={mockWeapons} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={mockWeapons} onRemoveWeapon={vi.fn()} />);
 
             expect(screen.getByText('Combi Rifle')).toBeInTheDocument();
             expect(screen.getByText('HMG')).toBeInTheDocument();
         });
 
         it('displays damage and burst', () => {
-            render(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
 
             expect(screen.getByText('13')).toBeInTheDocument();
             expect(screen.getByText('3')).toBeInTheDocument();
         });
 
         it('displays ammunition', () => {
-            render(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
             expect(screen.getByText('Normal')).toBeInTheDocument();
         });
 
         it('displays traits', () => {
-            render(<WeaponTable weapons={[mockWeapons[1]]} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[1]]} onRemoveWeapon={vi.fn()} />);
             expect(screen.getByText('Suppressive Fire')).toBeInTheDocument();
         });
 
         it('shows DT for template weapons', () => {
-            render(<WeaponTable weapons={[mockWeapons[2]]} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[2]]} onRemoveWeapon={vi.fn()} />);
             // Template weapons show DT in multiple range cells
             expect(screen.getAllByText('DT').length).toBeGreaterThan(0);
         });
 
         it('calls onRemoveWeapon when remove clicked', () => {
             const onRemoveWeapon = vi.fn();
-            render(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={onRemoveWeapon} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={onRemoveWeapon} />);
 
             fireEvent.click(screen.getByText('×'));
             expect(onRemoveWeapon).toHaveBeenCalledWith(1);
         });
 
         it('displays range modifiers', () => {
-            render(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
+            renderWithRouter(<WeaponTable weapons={[mockWeapons[0]]} onRemoveWeapon={vi.fn()} />);
 
             // Check for positive modifier
             expect(screen.getAllByText('+3').length).toBeGreaterThan(0);

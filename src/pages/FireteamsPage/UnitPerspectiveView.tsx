@@ -61,6 +61,15 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
         return map;
     }, [chart]);
 
+    const handleUnitClick = (e: React.MouseEvent, unit: Unit) => {
+        e.stopPropagation();
+        selectUnitForDetail(unit, null, null, factionId);
+        openWindow('UNIT_DETAIL');
+        if (window.location.pathname.startsWith('/builder') || window.location.pathname.startsWith('/workspace')) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <div className={styles.unitPerspectiveList}>
             {units.map((unit: Unit) => {
@@ -97,15 +106,18 @@ export function UnitPerspectiveView({ chart, db, factionId }: UnitPerspectiveVie
 
                 return (
                     <div key={unit.id} className={styles.unitPerspectiveCard}>
-                        <div className={styles.unitInfo} style={{ display: 'flex', alignItems: 'center' }}>
-                            {unit.name}
-                            <button
+                        <div className={styles.unitInfo}>
+                            <span>{unit.name}</span>
+                            <a
+                                href={`/?q=${encodeURIComponent(unit.name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className={styles.infoBtn}
-                                onClick={() => { selectUnitForDetail(unit, null, null, factionId); openWindow('UNIT_DETAIL'); }}
-                                title="View Unit Stats"
+                                onClick={(e) => handleUnitClick(e, unit)}
+                                title={`View ${unit.name} details`}
                             >
                                 <Info size={16} />
-                            </button>
+                            </a>
                         </div>
                         <div className={styles.teamsList}>
                             {exactTeams.map((team: Fireteam, idx) => {

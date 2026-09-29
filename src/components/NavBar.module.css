@@ -223,6 +223,33 @@
 
 .mobileNavDropdown.visible {
     display: flex;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    position: relative;
+    z-index: 100;
+}
+
+.mobileBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: 56px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 90;
+    animation: fade-in 0.15s ease;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 767px) {
+    .mobileBackdrop {
+        display: block;
+    }
 }
 
 .mobileToolGrid {

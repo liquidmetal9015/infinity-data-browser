@@ -198,6 +198,29 @@ function ProfileSection({ group, profile, allGroups, unit, onAddUnit, onViewUnit
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
+function UnitLogo({ src, isc }: { src?: string; isc: string }) {
+    const [failed, setFailed] = useState(false);
+
+    if (!src || failed) {
+        return (
+            <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-gray-400 text-xs font-bold uppercase">{isc?.[0] || '?'}</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img
+                src={src}
+                alt={isc}
+                className="w-full h-full object-contain"
+                onError={() => setFailed(true)}
+            />
+        </div>
+    );
+}
+
 export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onViewUnit, detailMode, searchQuery, activeFilters = [], isHighlighted, highlightOption, onMouseEnter, onMouseLeave, factionId }: ExpandableUnitCardProps) {
     const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 
@@ -222,15 +245,7 @@ export function ExpandableUnitCard({ unit, isExpanded, onToggle, onAddUnit, onVi
                 onClick={detailMode && onViewUnit ? () => onViewUnit(unit) : onToggle}
             >
                 <div className="flex items-center gap-2">
-                    {logoPath ? (
-                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                            <img src={logoPath} alt={unit.isc} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        </div>
-                    ) : (
-                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-gray-500 text-xs font-bold">{unit.isc[0]}</span>
-                        </div>
-                    )}
+                    <UnitLogo src={logoPath} isc={unit.isc} />
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-sm text-gray-100 tracking-wide leading-tight">{unit.isc}</span>

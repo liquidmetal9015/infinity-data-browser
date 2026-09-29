@@ -18,6 +18,12 @@ const NAV_ITEMS: NavItem[] = [
         isActive: (p) => p === '/' || p === '/search' || p === '/units',
     },
     {
+        path: '/compare',
+        label: 'Factions',
+        icon: Users,
+        isActive: (p) => p.startsWith('/compare'),
+    },
+    {
         path: '/reference',
         label: 'Skills & Gear',
         icon: Library,
@@ -28,12 +34,6 @@ const NAV_ITEMS: NavItem[] = [
         label: 'Weapons',
         icon: Crosshair,
         isActive: (p) => p.startsWith('/ranges'),
-    },
-    {
-        path: '/compare',
-        label: 'Factions',
-        icon: Users,
-        isActive: (p) => p.startsWith('/compare'),
     },
 ];
 

@@ -68,6 +68,18 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
         return getFireteamBonuses(selectedTeam, mappedTeamMembers, maxCoreSize);
     }, [selectedTeam, mappedTeamMembers, maxCoreSize]);
 
+    const handleUnitClick = (e: React.MouseEvent, unitName: string, unitSlug: string) => {
+        e.stopPropagation();
+        const fullUnit = db.getUnitBySlug(unitSlug) || db.units.find(u => u.name === unitName);
+        if (fullUnit) {
+            selectUnitForDetail(fullUnit, null, null, factionId ?? null);
+            openWindow('UNIT_DETAIL');
+        }
+        if (window.location.pathname.startsWith('/builder') || window.location.pathname.startsWith('/workspace')) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <div className={styles.builderContainer}>
             {/* Left Column: Selection */}
@@ -173,7 +185,7 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
                                 const countsAs = getUnitTags(u.name, u.comment);
                                 const countsAsStr = countsAs.filter(c => c !== u.name.toLowerCase()).join(', ');
 
-                                return (
+                                 return (
                                     <button
                                         key={`${type} -${idx} `}
                                         className={clsx(styles.poolItem, isLevelUp && styles.levelUp, isRequiredHelper && styles.requiredGlow)}
@@ -181,12 +193,23 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
                                         disabled={isDisabled}
                                         style={isDisabled ? { opacity: 0.3, filter: 'grayscale(100%)' } : {}}
                                     >
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                {u.name}
-                                                {countsAsStr && <span className={styles.countsAsTiny}>({countsAsStr})</span>}
-                                            </span>
-                                            {/* Clean visuals: removed text tags */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    {u.name}
+                                                    {countsAsStr && <span className={styles.countsAsTiny}>({countsAsStr})</span>}
+                                                </span>
+                                            </div>
+                                            <a
+                                                href={`/?q=${encodeURIComponent(u.name)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={styles.infoBtn}
+                                                onClick={(e) => handleUnitClick(e, u.name, u.slug)}
+                                                title={`View ${u.name} details`}
+                                            >
+                                                <Info size={13} />
+                                            </a>
                                         </div>
                                         <Plus size={16} />
                                     </button>
@@ -266,18 +289,17 @@ export function FireteamBuilder({ chart, factionId }: FireteamBuilderProps) {
                                                             }
                                                             return null;
                                                         })()}
-                                                        <button
+                                                        <a
+                                                            href={`/?q=${encodeURIComponent(member.name)}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
                                                             className={styles.infoBtn}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                const fullUnit = db.getUnitBySlug(member.slug);
-                                                                if (fullUnit) { selectUnitForDetail(fullUnit, null, null, factionId ?? null); openWindow('UNIT_DETAIL'); }
-                                                            }}
+                                                            onClick={(e) => handleUnitClick(e, member.name, member.slug)}
                                                             style={{ marginTop: '0.25rem' }}
-                                                            title="View Unit Stats"
+                                                            title={`View ${member.name} details`}
                                                         >
-                                                            <Info size={16} /> Profile
-                                                        </button>
+                                                            <Info size={14} /> Profile
+                                                        </a>
                                                     </div>
                                                     <button
                                                         className={styles.removeBtn}

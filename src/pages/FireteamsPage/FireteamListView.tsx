@@ -27,6 +27,18 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
         return '';
     };
 
+    const handleUnitClick = (e: React.MouseEvent, unitName: string, unitSlug: string) => {
+        e.stopPropagation();
+        const fullUnit = db.getUnitBySlug(unitSlug) || db.units.find(u => u.name === unitName);
+        if (fullUnit) {
+            selectUnitForDetail(fullUnit, null, null, factionId ?? null);
+            openWindow('UNIT_DETAIL');
+        }
+        if (window.location.pathname.startsWith('/builder') || window.location.pathname.startsWith('/workspace')) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <div className={styles.fireteamGrid}>
             {regularTeams.map((team: Fireteam, idx: number) => (
@@ -41,24 +53,21 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
                     </div>
                     <div className={styles.cardContent}>
                         {team.units.map((u: FireteamUnit, uIdx: number) => {
-
                             return (
                                 <div key={uIdx} className={clsx(styles.unitRow, u.required && styles.required)}>
-                                    <span>
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                                         {u.name}
-                                        {u.comment && <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '6px', opacity: 0.8 }}>{u.comment}</span>}
-                                        <button
+                                        {u.comment && <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '2px', opacity: 0.8 }}>{u.comment}</span>}
+                                        <a
+                                            href={`/?q=${encodeURIComponent(u.name)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             className={styles.infoBtn}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const fullUnit = db.getUnitBySlug(u.slug);
-                                                if (fullUnit) { selectUnitForDetail(fullUnit, null, null, factionId ?? null); openWindow('UNIT_DETAIL'); }
-                                            }}
-                                            title="View Unit Stats"
-                                            style={{ display: 'inline-flex', verticalAlign: 'middle' }}
+                                            onClick={(e) => handleUnitClick(e, u.name, u.slug)}
+                                            title={`View ${u.name} details`}
                                         >
                                             <Info size={14} />
-                                        </button>
+                                        </a>
                                     </span>
                                     <span className={styles.minMax}>{u.required ? '*' : u.min}-{u.max}</span>
                                 </div>
@@ -72,13 +81,23 @@ export function FireteamListView({ chart, factionId }: FireteamListViewProps) {
                                 </div>
                                 {wildcards.units.map((u: FireteamUnit, wIdx: number) => (
                                     <div key={`w-${wIdx} `} className={styles.unitRow}>
-                                        <span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                                             {u.name}
                                             {u.comment && (
-                                                <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '6px', opacity: 0.8 }}>
+                                                <span className={styles.unitNote} style={{ fontSize: '0.9em', color: 'inherit', marginLeft: '2px', opacity: 0.8 }}>
                                                     {u.comment}
                                                 </span>
                                             )}
+                                            <a
+                                                href={`/?q=${encodeURIComponent(u.name)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={styles.infoBtn}
+                                                onClick={(e) => handleUnitClick(e, u.name, u.slug)}
+                                                title={`View ${u.name} details`}
+                                            >
+                                                <Info size={14} />
+                                            </a>
                                         </span>
                                         <span className={styles.minMax}>{u.min}-{u.max}</span>
                                     </div>

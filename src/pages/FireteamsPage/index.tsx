@@ -1,25 +1,18 @@
 import { useState, useMemo } from 'react';
 import { clsx } from 'clsx';
+import { useSearchParams } from 'react-router-dom';
 import { useDatabase } from '../../hooks/useDatabase';
 import { Layers, Shield, Users, Info, Calculator } from 'lucide-react';
-import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { CompactFactionSelector } from '../../components/shared/CompactFactionSelector';
 import { FireteamListView } from './FireteamListView';
 import { UnitPerspectiveView } from './UnitPerspectiveView';
 import { FireteamBuilder } from './FireteamBuilder';
-import { useAppModeStore } from '../../stores/useAppModeStore';
-import { useListStore } from '../../stores/useListStore';
 import styles from './FireteamsPage.module.css';
 
 export function FireteamsPage() {
     const db = useDatabase();
-    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [viewMode, setViewMode] = useState<'teams' | 'units' | 'builder'>('teams');
-    const { appMode } = useAppModeStore();
-    const { currentList } = useListStore();
-
-    const inBuilderWithList = appMode === 'builder' && !!currentList;
-    const effectiveFactionId = inBuilderWithList ? currentList.factionId : globalFactionId;
 
     // Get all factions with fireteam data, grouped by super-faction
     const groupedOptions = useMemo(() => {
@@ -34,6 +27,13 @@ export function FireteamsPage() {
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [db]);
 
+    const defaultFactionId = useMemo(() => {
+        return groupedOptions[0]?.sectorials[0]?.id || groupedOptions[0]?.vanilla?.id || 101;
+    }, [groupedOptions]);
+
+    const urlFactionParam = searchParams.get('faction');
+    const effectiveFactionId = urlFactionParam ? Number(urlFactionParam) : defaultFactionId;
+
     const fireteamChart = useMemo(() => {
         if (!effectiveFactionId) return null;
         return db.getFireteamChart(effectiveFactionId);
@@ -46,49 +46,63 @@ export function FireteamsPage() {
 
     const handleSelectFaction = (factionId: number) => {
         if (factionId) {
-            setGlobalFactionId(factionId);
+            setSearchParams({ faction: String(factionId) });
             setViewMode('teams');
         }
     };
 
     return (
-        <div className={clsx('page-container', styles.fireteamsPage)}>
-            <div className={styles.controlsSection}>
-                {!inBuilderWithList && (
-                    <div className={styles.selectorContainer}>
-                        <CompactFactionSelector
-                            groupedFactions={groupedOptions}
-                            value={globalFactionId}
-                            onChange={handleSelectFaction}
-                        />
-                    </div>
-                )}
+        <div className="flex flex-col gap-4 p-4 sm:p-6 max-w-7xl mx-auto w-full">
+            {/* Header section with title and faction selector */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                        <Layers className="text-blue-400" size={24} />
+                        <span>Fireteam Charts</span>
+                    </h1>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                        Sectorial fireteam composition options, fireteam rules, and wildcards
+                    </p>
+                </div>
 
-                {fireteamChart && (
-                    <div className={styles.viewToggles}>
-                        <button
-                            className={clsx(styles.toggleBtn, viewMode === 'teams' && styles.active)}
-                            onClick={() => setViewMode('teams')}
-                        >
-                            <Layers size={18} />
-                            Table
-                        </button>
-                        <button
-                            className={clsx(styles.toggleBtn, viewMode === 'builder' && styles.active)}
-                            onClick={() => setViewMode('builder')}
-                        >
-                            <Calculator size={18} />
-                            Builder
-                        </button>
-                        <button
-                            className={clsx(styles.toggleBtn, viewMode === 'units' && styles.active)}
-                            onClick={() => setViewMode('units')}
-                        >
-                            <Users size={18} />
-                            By Unit
-                        </button>
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider shrink-0">Faction:</span>
+                        <div className="flex-1 sm:w-72">
+                            <CompactFactionSelector
+                                groupedFactions={groupedOptions}
+                                value={effectiveFactionId}
+                                onChange={handleSelectFaction}
+                            />
+                        </div>
                     </div>
-                )}
+
+                    {fireteamChart && (
+                        <div className={clsx(styles.viewToggles, "w-full sm:w-auto")}>
+                            <button
+                                className={clsx(styles.toggleBtn, viewMode === 'teams' && styles.active, "flex-1 sm:flex-initial justify-center")}
+                                onClick={() => setViewMode('teams')}
+                            >
+                                <Layers size={16} />
+                                <span>Table</span>
+                            </button>
+                            <button
+                                className={clsx(styles.toggleBtn, viewMode === 'builder' && styles.active, "flex-1 sm:flex-initial justify-center")}
+                                onClick={() => setViewMode('builder')}
+                            >
+                                <Calculator size={16} />
+                                <span>Builder</span>
+                            </button>
+                            <button
+                                className={clsx(styles.toggleBtn, viewMode === 'units' && styles.active, "flex-1 sm:flex-initial justify-center")}
+                                onClick={() => setViewMode('units')}
+                            >
+                                <Users size={16} />
+                                <span>By Unit</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {!effectiveFactionId ? (

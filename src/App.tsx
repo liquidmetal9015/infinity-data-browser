@@ -56,7 +56,7 @@ function App() {
     <GlobalContextMenuHandler>
       <div className="app-container flex flex-col h-screen overflow-hidden">
         <NavBar />
-        <main className="flex-1 min-h-0 overflow-hidden flex flex-col relative pb-14 md:pb-0">
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col relative pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           <Routes>
             {/* Primary Data Exploration Routes */}
             <Route path="/" element={<div className="flex-1 overflow-y-auto"><SearchPage /></div>} />
@@ -71,11 +71,12 @@ function App() {
             <Route path="/fireteams" element={<Suspense fallback={<LoadingFallback />}><div className="flex-1 overflow-y-auto"><FireteamsPage /></div></Suspense>} />
             <Route path="/classifieds" element={<Suspense fallback={<LoadingFallback />}><div className="flex-1 overflow-y-auto"><ClassifiedsPage /></div></Suspense>} />
 
-            {/* Army Lists & Legacy Workspace */}
+            {/* Army Lists & List Builder */}
+            <Route path="/builder" element={<Suspense fallback={<LoadingFallback />}><WorkspaceView /></Suspense>} />
             <Route path="/lists" element={<Suspense fallback={<LoadingFallback />}><div className="flex-1 overflow-y-auto"><MyLists /></div></Suspense>} />
             <Route path="/lists/overview" element={<Suspense fallback={<LoadingFallback />}><div className="flex-1 overflow-y-auto"><ListsOverviewPage /></div></Suspense>} />
             <Route path="/lists/compare" element={<Suspense fallback={<LoadingFallback />}><div className="flex-1 overflow-y-auto"><ListsComparePage /></div></Suspense>} />
-            <Route path="/workspace" element={<Suspense fallback={<LoadingFallback />}><WorkspaceView /></Suspense>} />
+            <Route path="/workspace" element={<Navigate to="/builder" replace />} />
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -25,8 +25,8 @@ export function FactionSelector({
     filterFn,
     className = ''
 }: FactionSelectorProps) {
-    // Track which super-faction groups are collapsed (all collapsed by default)
-    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(() => new Set(groupedFactions.map(g => g.id)));
+    // Track which super-faction groups are collapsed (all expanded by default for instant discoverability)
+    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(() => new Set());
 
     const toggleGroup = (groupId: number, e: React.MouseEvent) => {
         e.preventDefault();

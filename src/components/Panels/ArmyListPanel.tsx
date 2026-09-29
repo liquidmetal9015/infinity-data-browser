@@ -19,7 +19,6 @@ import {
 import { useDatabase } from '../../hooks/useDatabase';
 import { useListStore } from '../../stores/useListStore';
 import { useListBuilderUIStore } from '../../stores/useListBuilderUIStore';
-import { useGlobalFactionStore } from '../../stores/useGlobalFactionStore';
 import { useWorkspaceStore } from '../../stores/useWorkspaceStore';
 import { getColumnPanels } from '../../types/workspace';
 import { useArmyListImportExport } from '../../hooks/useArmyListImportExport';
@@ -80,7 +79,6 @@ export function ArmyListPanel() {
 
     const [editingName, setEditingName] = useState(false);
     const [nameValue, setNameValue] = useState('');
-    const { setGlobalFactionId } = useGlobalFactionStore();
     const { user } = useAuth();
     const queryClient = useQueryClient();
 
@@ -126,7 +124,7 @@ export function ArmyListPanel() {
 
     const {
         codeCopied, handleCopyCode, handleOpenInArmy,
-    } = useArmyListImportExport({ db, currentList, createList, setGlobalFactionId, addCombatGroup, addUnit });
+    } = useArmyListImportExport({ db, currentList, createList, addCombatGroup, addUnit });
 
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeUnit, setActiveUnit] = useState<ListUnit | null>(null);

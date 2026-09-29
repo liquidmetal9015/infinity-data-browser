@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSearchParams } from 'react-router-dom'
 import { UnifiedSearchBar } from '../components/shared/UnifiedSearchBar'
@@ -18,7 +18,7 @@ type SortOption = 'default' | 'name-asc' | 'name-desc' | 'points-asc' | 'points-
 
 export function SearchPage() {
     const db = useDatabase();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const [viewMode, setViewMode] = useState<ViewMode>('compact');
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
     const [selectedTypes, setSelectedTypes] = useState<Set<number>>(new Set());
@@ -37,12 +37,15 @@ export function SearchPage() {
         hasSearch
     } = useUnitSearch(db, false);
 
-    // Pre-populate filter from URL params (e.g. from the reference page or direct link)
+    // Pre-populate filter from URL params (e.g. from the reference page, weapon ranges, or direct link)
+    const initializedFromUrl = useRef(false);
     useEffect(() => {
+        if (initializedFromUrl.current) return;
+
         const textParam = searchParams.get('q');
         if (textParam) {
             setTextQuery(textParam);
-            setSearchParams({}, { replace: true });
+            initializedFromUrl.current = true;
             return;
         }
 
@@ -62,9 +65,9 @@ export function SearchPage() {
                 matchAnyModifier: modifiers.length === 0,
             };
             setQuery({ filters: [filter], operator: 'or' });
-            setSearchParams({}, { replace: true });
+            initializedFromUrl.current = true;
         }
-    }, [searchParams, setQuery, setSearchParams, setTextQuery]);
+    }, [searchParams, setQuery, setTextQuery]);
 
     const hasAnyFilter = hasSearch || selectedTypes.size > 0 || selectedOrderTypes.size > 0;
     const selectedFactionId = filters.factions.length === 1 ? filters.factions[0] : undefined;
@@ -116,14 +119,15 @@ export function SearchPage() {
         });
     };
 
-    // Auto-expand only when few results change
-    const [prevQueryKey, setPrevQueryKey] = useState('');
-    const currentQueryKey = `${textQuery}|${query.filters.length}|${displayedUnits.length}`;
-    if (currentQueryKey !== prevQueryKey) {
-        setPrevQueryKey(currentQueryKey);
-        if (displayedUnits.length <= 5 && (textQuery.trim().length > 1 || query.filters.length > 0)) {
+    // Auto-expand only when search results or filters change to a small set (<= 5 units)
+    const unitIdsKey = displayedUnits.map(u => u.id).join(',');
+    const [prevUnitIdsKey, setPrevUnitIdsKey] = useState<string | null>(null);
+
+    if (unitIdsKey !== prevUnitIdsKey) {
+        setPrevUnitIdsKey(unitIdsKey);
+        if (displayedUnits.length > 0 && displayedUnits.length <= 5 && hasAnyFilter) {
             setExpandedIds(new Set(displayedUnits.map(u => u.id)));
-        } else {
+        } else if (!hasAnyFilter || displayedUnits.length === 0) {
             setExpandedIds(new Set());
         }
     }
@@ -223,9 +227,9 @@ export function SearchPage() {
                                     { label: 'Mimetism', action: () => setTextQuery('Mimetism') },
                                     { label: 'Doctor', action: () => setTextQuery('Doctor') },
                                     { label: 'HMG', action: () => setTextQuery('HMG') },
-                                    { label: 'Heavy Infantry', action: () => setSelectedTypes(new Set([2])) },
+                                    { label: 'Heavy Infantry', action: () => setSelectedTypes(new Set([3])) },
                                     { label: 'TAGs', action: () => setSelectedTypes(new Set([4])) },
-                                    { label: 'Skirmishers', action: () => setSelectedTypes(new Set([3])) },
+                                    { label: 'Skirmishers', action: () => setSelectedTypes(new Set([6])) },
                                 ].map((item) => (
                                     <button
                                         key={item.label}

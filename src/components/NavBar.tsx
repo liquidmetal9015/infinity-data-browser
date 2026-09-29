@@ -23,17 +23,25 @@ import styles from './NavBar.module.css';
 
 const PRIMARY_TABS = [
     { label: 'Units', path: '/', icon: Search, isActive: (p: string) => p === '/' || p === '/search' || p === '/units' },
+    { label: 'Factions', path: '/compare', icon: Users, isActive: (p: string) => p.startsWith('/compare') },
     { label: 'Skills & Gear', path: '/reference', icon: Library, isActive: (p: string) => p.startsWith('/reference') },
     { label: 'Weapons', path: '/ranges', icon: Crosshair, isActive: (p: string) => p.startsWith('/ranges') },
-    { label: 'Factions', path: '/compare', icon: Users, isActive: (p: string) => p.startsWith('/compare') },
+    { label: 'Fireteams', path: '/fireteams', icon: Layers, isActive: (p: string) => p.startsWith('/fireteams') },
+    { label: 'Classifieds', path: '/classifieds', icon: Target, isActive: (p: string) => p.startsWith('/classifieds') },
 ];
 
 const SECONDARY_TOOLS = [
     { label: 'Dice Calculator', path: '/calculator', icon: Calculator, desc: 'F2F probability simulator' },
-    { label: 'Army Lists', path: '/lists', icon: ClipboardList, desc: 'Saved lists & list builder' },
-    { label: 'Fireteams', path: '/fireteams', icon: Layers, desc: 'Fireteam charts viewer' },
-    { label: 'Classifieds', path: '/classifieds', icon: Target, desc: 'Objectives & scoring' },
-    { label: 'Workspace Canvas', path: '/workspace', icon: LayoutGrid, desc: 'Legacy windowed mode' },
+    { label: 'Army Lists', path: '/lists', icon: ClipboardList, desc: 'Saved lists management' },
+    { label: 'Army Builder', path: '/builder', icon: LayoutGrid, desc: 'Interactive list builder' },
+];
+
+const MOBILE_TOOLS = [
+    { label: 'Fireteams', path: '/fireteams', icon: Layers },
+    { label: 'Classifieds', path: '/classifieds', icon: Target },
+    { label: 'Dice Calculator', path: '/calculator', icon: Calculator },
+    { label: 'Army Lists', path: '/lists', icon: ClipboardList },
+    { label: 'Army Builder', path: '/builder', icon: LayoutGrid },
 ];
 
 export function NavBar() {
@@ -43,25 +51,38 @@ export function NavBar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const toolsRef = useRef<HTMLDivElement>(null);
 
-    // Close dropdowns on route changes
-    const [prevPath, setPrevPath] = useState(location.pathname);
-    if (location.pathname !== prevPath) {
-        setPrevPath(location.pathname);
+    // Close dropdowns on route or search query changes
+    const [prevLoc, setPrevLoc] = useState(location.pathname + location.search);
+    if (location.pathname + location.search !== prevLoc) {
+        setPrevLoc(location.pathname + location.search);
         setToolsOpen(false);
         setMobileMenuOpen(false);
     }
 
-    // Close tools menu on click outside
+    // Close on click outside or Escape key
     useEffect(() => {
-        if (!toolsOpen) return;
+        if (!toolsOpen && !mobileMenuOpen) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setToolsOpen(false);
+                setMobileMenuOpen(false);
+            }
+        };
+
         const handleClickOutside = (e: MouseEvent) => {
-            if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
+            if (toolsOpen && toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
                 setToolsOpen(false);
             }
         };
+
+        document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [toolsOpen]);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [toolsOpen, mobileMenuOpen]);
 
     const handleClearData = async () => {
         if (window.confirm('Clear all saved data? This will reset your army lists, calculator settings, and cache. The page will reload.')) {
@@ -181,13 +202,22 @@ export function NavBar() {
                 </div>
             </div>
 
+            {/* Mobile Dropdown Backdrop */}
+            {mobileMenuOpen && (
+                <div
+                    className={styles.mobileBackdrop}
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
+
             {/* Mobile Dropdown (shown when hamburger is open) */}
             <div className={clsx(styles.mobileNavDropdown, mobileMenuOpen && styles.visible)}>
                 <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                     ADDITIONAL TOOLS
                 </div>
                 <div className={styles.mobileToolGrid}>
-                    {SECONDARY_TOOLS.map((tool) => {
+                    {MOBILE_TOOLS.map((tool) => {
                         const Icon = tool.icon;
                         const active = location.pathname.startsWith(tool.path);
                         return (

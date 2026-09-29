@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
 import { useListStore } from '../stores/useListStore';
-import { useGlobalFactionStore } from '../stores/useGlobalFactionStore';
 import { Download, Upload, Star } from 'lucide-react';
 import { clsx } from 'clsx';
 import { getSafeLogo } from '../utils/assets';
@@ -38,7 +37,6 @@ export function MyLists() {
             resetList();
         }
     };
-    const { globalFactionId, setGlobalFactionId } = useGlobalFactionStore();
 
     const [showNewModal, setShowNewModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
@@ -227,7 +225,7 @@ export function MyLists() {
             const armyList = await listService.getList(id);
             if (!armyList.tags) armyList.tags = [];
             loadList(armyList);
-            navigate('/');
+            navigate('/builder');
         } catch (e) {
             console.error('Failed to load list', e);
         } finally {
@@ -516,14 +514,12 @@ export function MyLists() {
                 {showNewModal && (
                     <NewListModal
                         db={db}
-                        globalFactionId={globalFactionId}
-                        setGlobalFactionId={setGlobalFactionId}
                         onConfirm={(name, factionId, points) => {
                             const factionName = db.getFactionName(factionId);
                             const uniqueName = uniqueListName(name, (lists ?? []).map(l => l.name));
                             createList(factionId, factionName, points, uniqueName);
                             setShowNewModal(false);
-                            navigate('/');
+                            navigate('/builder');
                         }}
                         onCancel={() => setShowNewModal(false)}
                     />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { clsx } from 'clsx';
+import { Info } from 'lucide-react';
 import type { IDatabase } from '../../services/Database';
 import styles from './ClassifiedsExplorer.module.css';
 
@@ -80,7 +81,19 @@ export function UnitListPanel({
                                 >
                                     <span className={styles.expandIcon}>&#9656;</span>
                                 </button>
-                                <span className={styles.unitRowName}>{entry.unit.name}</span>
+                                <span className={styles.unitRowName} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    <span>{entry.unit.name}</span>
+                                    <a
+                                        href={`/?q=${encodeURIComponent(entry.unit.name)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.infoBtn}
+                                        onClick={(e) => e.stopPropagation()}
+                                        title={`View ${entry.unit.name} details in Units browser`}
+                                    >
+                                        <Info size={13} />
+                                    </a>
+                                </span>
                                 <span className={styles.unitRowCount}>{entry.completableClassifieds.size} objs</span>
                             </div>
 

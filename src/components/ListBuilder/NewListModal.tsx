@@ -5,8 +5,7 @@ import type { useDatabase } from '../../hooks/useDatabase';
 
 interface NewListModalProps {
     db: ReturnType<typeof useDatabase>;
-    globalFactionId: number | null;
-    setGlobalFactionId: (id: number | null) => void;
+    initialFactionId?: number | null;
     onConfirm: (name: string, factionId: number, points: number) => void;
     onCancel?: () => void;
     // Import support — if provided, shows an "Import from army code" section
@@ -18,8 +17,7 @@ interface NewListModalProps {
 
 export function NewListModal({
     db,
-    globalFactionId,
-    setGlobalFactionId,
+    initialFactionId,
     onConfirm,
     onCancel,
     importCode,
@@ -28,17 +26,18 @@ export function NewListModal({
     onImportCode,
 }: NewListModalProps) {
     const navigate = useNavigate();
+    const [selectedFactionId, setSelectedFactionId] = useState<number | null>(initialFactionId ?? null);
     const [name, setName] = useState('');
     const [points, setPoints] = useState(300);
     const [showImport, setShowImport] = useState(false);
     const groupedFactions = db.getGroupedFactions();
-    const factionName = globalFactionId ? db.getFactionName(globalFactionId) : '';
-    const defaultName = globalFactionId ? `New ${factionName} List` : '';
+    const factionName = selectedFactionId ? db.getFactionName(selectedFactionId) : '';
+    const defaultName = selectedFactionId ? `New ${factionName} List` : '';
     const hasImportSupport = !!(onImportCode && onImportCodeChange !== undefined);
 
     const handleConfirm = () => {
-        if (!globalFactionId) return;
-        onConfirm(name.trim() || defaultName, globalFactionId, points);
+        if (!selectedFactionId) return;
+        onConfirm(name.trim() || defaultName, selectedFactionId, points);
     };
 
     return (
@@ -82,7 +81,7 @@ export function NewListModal({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     <label style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 'var(--font-semibold)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Faction</label>
-                    <CompactFactionSelector groupedFactions={groupedFactions} value={globalFactionId} onChange={setGlobalFactionId} />
+                    <CompactFactionSelector groupedFactions={groupedFactions} value={selectedFactionId} onChange={setSelectedFactionId} />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -92,7 +91,7 @@ export function NewListModal({
                         value={name}
                         onChange={e => setName(e.target.value)}
                         placeholder={defaultName || 'My Army List'}
-                        onKeyDown={e => { if (e.key === 'Enter' && globalFactionId) handleConfirm(); }}
+                        onKeyDown={e => { if (e.key === 'Enter' && selectedFactionId) handleConfirm(); }}
                         style={{
                             background: 'var(--bg-secondary)',
                             border: '1px solid var(--border)',
@@ -141,18 +140,18 @@ export function NewListModal({
                         </button>
                     )}
                     <button
-                        disabled={!globalFactionId}
+                        disabled={!selectedFactionId}
                         onClick={handleConfirm}
                         style={{
                             padding: '0.6rem 1.5rem',
                             borderRadius: '8px',
                             border: 'none',
-                            background: globalFactionId ? 'var(--color-primary, #6366f1)' : 'var(--bg-secondary)',
+                            background: selectedFactionId ? 'var(--color-primary, #6366f1)' : 'var(--bg-secondary)',
                             color: '#fff',
-                            cursor: globalFactionId ? 'pointer' : 'not-allowed',
+                            cursor: selectedFactionId ? 'pointer' : 'not-allowed',
                             fontWeight: 'var(--font-bold)',
                             fontSize: 'var(--text-md)',
-                            opacity: globalFactionId ? 1 : 0.5,
+                            opacity: selectedFactionId ? 1 : 0.5,
                             transition: 'all 0.15s',
                         }}
                     >

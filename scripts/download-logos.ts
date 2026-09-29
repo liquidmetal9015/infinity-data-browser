@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DATA_DIR = path.join(__dirname, '../data');
+const PROCESSED_DATA_DIR = path.join(DATA_DIR, 'processed');
 const METADATA_PATH = path.join(DATA_DIR, 'metadata.json');
 const FACTION_LOGOS_DIR = path.join(__dirname, '../public/logos/factions');
 const UNIT_LOGOS_DIR = path.join(__dirname, '../public/logos/units');
@@ -29,26 +30,37 @@ interface Metadata {
     factions: Faction[];
 }
 
-function downloadFile(url: string, destPath: string): Promise<void> {
+function downloadFile(url: string, destPath: string, retries = 3): Promise<void> {
     return new Promise((resolve, reject) => {
         const file = fs.createWriteStream(destPath);
+        const options = {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                'Accept': 'image/svg+xml,image/*,*/*',
+            },
+        };
 
-        https.get(url, (response) => {
+        const req = https.get(url, options, (response) => {
             if (response.statusCode === 301 || response.statusCode === 302) {
-                // Follow redirect
                 const redirectUrl = response.headers.location;
                 if (redirectUrl) {
                     file.close();
-                    fs.unlinkSync(destPath);
-                    downloadFile(redirectUrl, destPath).then(resolve).catch(reject);
+                    if (fs.existsSync(destPath)) fs.unlinkSync(destPath);
+                    downloadFile(redirectUrl, destPath, retries).then(resolve).catch(reject);
                     return;
                 }
             }
 
             if (response.statusCode !== 200) {
                 file.close();
-                fs.unlinkSync(destPath);
-                reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
+                if (fs.existsSync(destPath)) fs.unlinkSync(destPath);
+                if (retries > 0) {
+                    setTimeout(() => {
+                        downloadFile(url, destPath, retries - 1).then(resolve).catch(reject);
+                    }, 500);
+                } else {
+                    reject(new Error(`Failed ${url}: HTTP ${response.statusCode}`));
+                }
                 return;
             }
 
@@ -58,149 +70,196 @@ function downloadFile(url: string, destPath: string): Promise<void> {
                 file.close();
                 resolve();
             });
-        }).on('error', (err) => {
+        });
+
+        req.on('error', (err) => {
             file.close();
-            fs.unlinkSync(destPath);
-            reject(err);
+            if (fs.existsSync(destPath)) fs.unlinkSync(destPath);
+            if (retries > 0) {
+                setTimeout(() => {
+                    downloadFile(url, destPath, retries - 1).then(resolve).catch(reject);
+                }, 500);
+            } else {
+                reject(err);
+            }
         });
     });
 }
 
-function extractLogosFromJson(obj: unknown, logos: Set<string>) {
+function extractLogosFromJson(obj: unknown, unitLogos: Set<string>, factionLogos: Set<string>) {
     if (!obj || typeof obj !== 'object') return;
     if (Array.isArray(obj)) {
         for (const item of obj) {
-            extractLogosFromJson(item, logos);
+            extractLogosFromJson(item, unitLogos, factionLogos);
         }
         return;
     }
     const record = obj as Record<string, unknown>;
-    if (typeof record.logo === 'string' && record.logo.endsWith('.svg')) {
-        logos.add(record.logo);
+    if (typeof record.logo === 'string' && record.logo.startsWith('http')) {
+        const url = record.logo.trim();
+        if (url.includes('/factions/') || url.includes('logo/factions/')) {
+            factionLogos.add(url);
+        } else {
+            unitLogos.add(url);
+        }
     }
     for (const key in record) {
-        extractLogosFromJson(record[key], logos);
+        extractLogosFromJson(record[key], unitLogos, factionLogos);
     }
+}
+
+async function runPool<T>(items: T[], concurrency: number, fn: (item: T, idx: number) => Promise<void>): Promise<void> {
+    let index = 0;
+    const workers = Array.from({ length: concurrency }, async () => {
+        while (index < items.length) {
+            const currentIdx = index++;
+            await fn(items[currentIdx], currentIdx);
+        }
+    });
+    await Promise.all(workers);
 }
 
 async function main() {
     console.log('🎨 Downloading faction and unit logos...\n');
 
-    // Create output directories
     for (const dir of [FACTION_LOGOS_DIR, UNIT_LOGOS_DIR]) {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
             console.log(`📁 Created directory: ${dir}`);
         }
     }
-    console.log('');
 
-    const downloadedUrls = new Set<string>();
-    let successCount = 0;
-    let skipCount = 0;
-    let failCount = 0;
+    const unitLogos = new Set<string>();
+    const factionLogos = new Set<string>();
 
-    // 1. Download Faction Logos
+    // 1. Collect from metadata.json
+    if (fs.existsSync(METADATA_PATH)) {
+        try {
+            const metadata: Metadata = JSON.parse(fs.readFileSync(METADATA_PATH, 'utf-8'));
+            for (const f of metadata.factions || []) {
+                if (f.logo && f.logo.startsWith('http')) {
+                    factionLogos.add(f.logo.trim());
+                }
+            }
+        } catch (e) {
+            console.error('Error reading metadata.json:', e);
+        }
+    }
+
+    // 2. Collect from data/ and data/processed/
+    const dataDirs = [DATA_DIR, PROCESSED_DATA_DIR];
+    for (const dir of dataDirs) {
+        if (!fs.existsSync(dir)) continue;
+        const files = fs.readdirSync(dir).filter(f => f.endsWith('.json') && f !== 'metadata.json');
+        for (const file of files) {
+            const filePath = path.join(dir, file);
+            try {
+                const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+                extractLogosFromJson(parsed, unitLogos, factionLogos);
+            } catch {
+                console.error(`Error parsing ${filePath}`);
+            }
+        }
+    }
+
+    console.log(`Discovered ${factionLogos.size} faction logos and ${unitLogos.size} unit logos.\n`);
+
+    // 3. Download Faction Logos
     console.log('--- Faction Logos ---');
-    const metadataRaw = fs.readFileSync(METADATA_PATH, 'utf-8');
-    const metadata: Metadata = JSON.parse(metadataRaw);
-
+    let factionDownloaded = 0;
+    let factionSkipped = 0;
+    let factionFailed = 0;
     const factionMapping: Record<string, string> = {};
 
-    for (const faction of metadata.factions) {
-        const logoUrl = faction.logo;
-
-        if (!logoUrl || !logoUrl.startsWith('http')) {
-            console.log(`⏭️  Skipping ${faction.name}: No valid logo URL`);
-            skipCount++;
-            continue;
+    // Load existing mapping if present
+    const factionMappingPath = path.join(FACTION_LOGOS_DIR, 'mapping.json');
+    if (fs.existsSync(factionMappingPath)) {
+        try {
+            Object.assign(factionMapping, JSON.parse(fs.readFileSync(factionMappingPath, 'utf-8')));
+        } catch {
+            // ignore
         }
+    }
 
-        const filename = `${faction.slug}.svg`;
+    for (const logoUrl of Array.from(factionLogos)) {
+        const filename = logoUrl.split('/').pop() || 'unknown.svg';
         const destPath = path.join(FACTION_LOGOS_DIR, filename);
-        factionMapping[faction.slug] = `/logos/factions/${filename}`;
+        factionMapping[logoUrl] = `/logos/factions/${filename}`;
 
         if (fs.existsSync(destPath)) {
-            console.log(`✓  ${faction.name}: Already exists locally`);
-            downloadedUrls.add(logoUrl);
-            skipCount++;
+            factionSkipped++;
             continue;
         }
 
         try {
-            process.stdout.write(`⬇️  Downloading ${faction.name}...`);
+            process.stdout.write(`⬇️  Downloading faction logo ${filename}...`);
             await downloadFile(logoUrl, destPath);
-            downloadedUrls.add(logoUrl);
             console.log(' ✓');
-            successCount++;
-            await new Promise(resolve => setTimeout(resolve, 50));
-        } catch (error) {
-            console.log(` ✗ ${error}`);
-            failCount++;
+            factionDownloaded++;
+        } catch (err) {
+            console.log(` ✗ ${err}`);
+            factionFailed++;
         }
     }
 
-    const factionMappingPath = path.join(FACTION_LOGOS_DIR, 'mapping.json');
     fs.writeFileSync(factionMappingPath, JSON.stringify(factionMapping, null, 2));
-    console.log(`📄 Faction mapping file saved to: ${factionMappingPath}\n`);
+    console.log(`Faction logos: ${factionDownloaded} downloaded, ${factionSkipped} skipped, ${factionFailed} failed.\n`);
 
-    // 2. Download Unit Logos
+    // 4. Download Unit Logos
     console.log('--- Unit Logos ---');
-    const unitLogos = new Set<string>();
-    const dataFiles = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.json') && f !== 'metadata.json');
-
-    for (const file of dataFiles) {
-        const filePath = path.join(DATA_DIR, file);
-        const content = fs.readFileSync(filePath, 'utf-8');
-        try {
-            const parsed = JSON.parse(content);
-            extractLogosFromJson(parsed, unitLogos);
-        } catch {
-            console.error(`Error parsing ${file}`);
-        }
-    }
-
-    console.log(`Found ${unitLogos.size} unique unit logos across all data files.`);
-
+    let unitDownloaded = 0;
+    let unitSkipped = 0;
+    let unitFailed = 0;
     const unitMapping: Record<string, string> = {};
 
-    let i = 0;
-    for (const logoUrl of Array.from(unitLogos)) {
-        i++;
-        if (!logoUrl.startsWith('http')) continue;
-
-        const filename = logoUrl.split('/').pop() || 'unknown.svg';
-        const destPath = path.join(UNIT_LOGOS_DIR, filename);
-        unitMapping[logoUrl] = `/logos/units/${filename}`;
-
-        if (fs.existsSync(destPath)) {
-            if (i % 50 === 0) console.log(`✓  Skipped existing: ${i}/${unitLogos.size}`);
-            downloadedUrls.add(logoUrl);
-            skipCount++;
-            continue;
-        }
-
+    const unitMappingPath = path.join(UNIT_LOGOS_DIR, 'mapping.json');
+    if (fs.existsSync(unitMappingPath)) {
         try {
-            if (i % 10 === 0) process.stdout.write(`⬇️  Downloading ${filename} (${i}/${unitLogos.size})...`);
-            await downloadFile(logoUrl, destPath);
-            downloadedUrls.add(logoUrl);
-            if (i % 10 === 0) console.log(' ✓');
-            successCount++;
-            await new Promise(resolve => setTimeout(resolve, 10)); // small delay to not hammer server
-        } catch (error) {
-            if (i % 10 === 0) console.log(` ✗ ${error}`);
-            failCount++;
+            Object.assign(unitMapping, JSON.parse(fs.readFileSync(unitMappingPath, 'utf-8')));
+        } catch {
+            // ignore
         }
     }
 
-    const unitMappingPath = path.join(UNIT_LOGOS_DIR, 'mapping.json');
+    const unitUrls = Array.from(unitLogos);
+    const missingUnitUrls = unitUrls.filter(url => {
+        const filename = url.split('/').pop() || 'unknown.svg';
+        unitMapping[url] = `/logos/units/${filename}`;
+        return !fs.existsSync(path.join(UNIT_LOGOS_DIR, filename));
+    });
+
+    unitSkipped = unitUrls.length - missingUnitUrls.length;
+    console.log(`Unit logos: ${missingUnitUrls.length} to download, ${unitSkipped} already present.`);
+
+    if (missingUnitUrls.length > 0) {
+        console.log(`Downloading ${missingUnitUrls.length} missing unit logos with concurrency 6...`);
+        let completed = 0;
+
+        await runPool(missingUnitUrls, 6, async (url) => {
+            const filename = url.split('/').pop() || 'unknown.svg';
+            const destPath = path.join(UNIT_LOGOS_DIR, filename);
+
+            try {
+                await downloadFile(url, destPath);
+                unitDownloaded++;
+            } catch (err) {
+                console.error(` ✗ Error downloading ${filename}:`, err);
+                unitFailed++;
+            } finally {
+                completed++;
+                if (completed % 15 === 0 || completed === missingUnitUrls.length) {
+                    process.stdout.write(` Progress: ${completed}/${missingUnitUrls.length} (${Math.round((completed / missingUnitUrls.length) * 100)}%)\n`);
+                }
+            }
+        });
+    }
+
     fs.writeFileSync(unitMappingPath, JSON.stringify(unitMapping, null, 2));
     console.log(`\n📄 Unit mapping file saved to: ${unitMappingPath}`);
 
     console.log('\n📊 Summary:');
-    console.log(`   ✓ Downloaded: ${successCount}`);
-    console.log(`   ⏭️  Skipped: ${skipCount}`);
-    console.log(`   ✗ Failed: ${failCount}`);
+    console.log(`   ✓ Factions: ${factionDownloaded} downloaded, ${factionSkipped} skipped, ${factionFailed} failed`);
+    console.log(`   ✓ Units:    ${unitDownloaded} downloaded, ${unitSkipped} skipped, ${unitFailed} failed`);
 }
 
 main().catch(console.error);

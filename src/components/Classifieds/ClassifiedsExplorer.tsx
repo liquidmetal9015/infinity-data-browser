@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { clsx } from 'clsx';
+import { Target, Users } from 'lucide-react';
 import { useClassifiedsStore } from '../../stores/useClassifiedsStore';
 import { useClassifiedMatches } from '../../hooks/useClassifiedMatches';
 import type { IDatabase } from '../../services/Database';
@@ -18,6 +20,7 @@ export function ClassifiedsExplorer({ factionUnits, db }: ClassifiedsExplorerPro
         setSelectedClassified, setSelectedUnitISC, setSelectedProfileId,
     } = useClassifiedsStore();
 
+    const [mobileTab, setMobileTab] = useState<'objectives' | 'units'>('objectives');
     const unitMatches = useClassifiedMatches(db, factionUnits);
 
     // Compute highlighted objectives (when a unit is selected)
@@ -48,28 +51,68 @@ export function ClassifiedsExplorer({ factionUnits, db }: ClassifiedsExplorerPro
         return matching;
     }, [selectedClassified, unitMatches]);
 
+    const handleSelectObjective = (id: number | null) => {
+        setSelectedClassified(id);
+    };
+
     return (
-        <div className={styles.explorerGrid}>
-            <ObjectiveListPanel
-                classifieds={db.classifieds}
-                selectedClassified={selectedClassified}
-                highlightedObjectives={highlightedObjectives}
-                onSelect={(id) => setSelectedClassified(id)}
-            />
-            {unitMatches && (
-                <UnitListPanel
-                    unitMatches={unitMatches}
-                    db={db}
-                    selectedUnitISC={selectedUnitISC}
-                    selectedProfileId={selectedProfileId}
-                    highlightedUnits={highlightedUnits}
-                    onSelectUnit={(isc) => setSelectedUnitISC(isc)}
-                    onSelectProfile={(isc, profileId) => {
-                        setSelectedUnitISC(isc);
-                        setSelectedProfileId(profileId);
-                    }}
-                />
-            )}
+        <div className="flex flex-col w-full">
+            {/* Mobile Tab Switcher (visible on screens <= 1024px) */}
+            <div className={styles.mobileTabs}>
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('objectives')}
+                    className={clsx(styles.mobileTabBtn, mobileTab === 'objectives' && styles.active)}
+                >
+                    <Target size={16} />
+                    <span>Objectives</span>
+                    {highlightedObjectives && (
+                        <span className={clsx(styles.mobileBadge, styles.activeBadge)}>
+                            {highlightedObjectives.size} valid
+                        </span>
+                    )}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('units')}
+                    className={clsx(styles.mobileTabBtn, mobileTab === 'units' && styles.active)}
+                >
+                    <Users size={16} />
+                    <span>Units</span>
+                    {highlightedUnits && (
+                        <span className={clsx(styles.mobileBadge, styles.activeBadge)}>
+                            {highlightedUnits.size} match
+                        </span>
+                    )}
+                </button>
+            </div>
+
+            <div className={styles.explorerGrid}>
+                <div className={clsx(mobileTab !== 'objectives' && styles.panelHiddenMobile, 'flex flex-col min-h-0')}>
+                    <ObjectiveListPanel
+                        classifieds={db.classifieds}
+                        selectedClassified={selectedClassified}
+                        highlightedObjectives={highlightedObjectives}
+                        onSelect={handleSelectObjective}
+                    />
+                </div>
+                {unitMatches && (
+                    <div className={clsx(mobileTab !== 'units' && styles.panelHiddenMobile, 'flex flex-col min-h-0')}>
+                        <UnitListPanel
+                            unitMatches={unitMatches}
+                            db={db}
+                            selectedUnitISC={selectedUnitISC}
+                            selectedProfileId={selectedProfileId}
+                            highlightedUnits={highlightedUnits}
+                            onSelectUnit={(isc) => setSelectedUnitISC(isc)}
+                            onSelectProfile={(isc, profileId) => {
+                                setSelectedUnitISC(isc);
+                                setSelectedProfileId(profileId);
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
